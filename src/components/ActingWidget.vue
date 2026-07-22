@@ -1,6 +1,10 @@
 <template>
   <div class="three-container">
-    <SceneCanvas :init-scene="initScene" />
+    <div class="canvas-wrapper">
+      <div class="canvas-aspect-container">
+        <SceneCanvas :init-scene="initScene" />
+      </div>
+    </div>
     <div class="info-overlay">
       <div class="title">Acting 3D Node</div>
       <div>Scene Cube: {{ state.scene_data?.cube_size ?? 1.0 }}</div>
@@ -74,6 +78,25 @@ defineExpose({ setState, cleanup })
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 0, 127, 0.3);
+}
+
+.canvas-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0d0a10;
+  overflow: hidden;
+}
+
+.canvas-aspect-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  max-height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .info-overlay {
