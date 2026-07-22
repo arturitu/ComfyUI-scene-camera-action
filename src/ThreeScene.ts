@@ -112,6 +112,7 @@ export class ThreeScene {
       metalness: 0,
     })
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
+    floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
     floorMesh.position.y = -1.002
     floorMesh.receiveShadow = true
@@ -463,5 +464,13 @@ export class ThreeScene {
 
     this.renderer.dispose()
     this.scene.clear()
+  }
+
+  public getScene(): THREE.Scene {
+    return this.scene
+  }
+
+  public getTransformHelper(): THREE.Object3D {
+    return this.transformControls.getHelper()
   }
 }

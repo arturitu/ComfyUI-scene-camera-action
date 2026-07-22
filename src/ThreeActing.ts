@@ -18,6 +18,8 @@ export class ThreeActing {
   private mainLight!: THREE.DirectionalLight
   private animationId: number | null = null
   private isHovered = false
+  private connectedThreeScene: any = null
+  private clonedEnvGroup: THREE.Group | null = null
 
   // BVH Collision data
   private colliderBVH: MeshBVH | null = null
@@ -38,6 +40,7 @@ export class ThreeActing {
   constructor(options: ThreeActingOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
+    this.connectedThreeScene = options.connectedThreeScene ?? null
     this.state = {
       character_speed: options.initialState?.character_speed ?? 10.0,
       scene_data: options.initialState?.scene_data ?? null as any,
@@ -46,6 +49,11 @@ export class ThreeActing {
     this.initThreeJS()
     this.bindEvents()
     this.animate()
+  }
+
+  public setConnectedThreeScene(threeScene: any): void {
+    this.connectedThreeScene = threeScene
+    this.buildSceneEnvironment()
   }
 
   private initThreeJS(): void {
@@ -76,133 +84,114 @@ export class ThreeActing {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-    this.scene.add(ambientLight)
-
-    this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-    this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-    this.mainLight.castShadow = true
-    this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-    this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-    this.mainLight.shadow.bias = config.SHADOW_BIAS
-    this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-
-    const d = config.SHADOW_FRUSTUM_SIZE
-    this.mainLight.shadow.camera.left = -d
-    this.mainLight.shadow.camera.right = d
-    this.mainLight.shadow.camera.top = d
-    this.mainLight.shadow.camera.bottom = -d
-    this.mainLight.shadow.camera.near = 0.1
-    this.mainLight.shadow.camera.far = 100
-    this.scene.add(this.mainLight)
-    this.scene.add(this.mainLight.target)
-
-    const characterLight = new THREE.PointLight(0xff007f, 1.2, 8)
-    characterLight.position.set(0, 2, 2)
-    this.scene.add(characterLight)
-
-    // Floor Grid matching ComfyUI-3D-motion-reference
-    this.gridHelper = new THREE.GridHelper(
-      config.GRID_SIZE,
-      config.GRID_DIVISIONS,
-      config.GRID_COLOR_CENTER,
-      config.GRID_COLOR_GRID
-    )
-    this.gridHelper.position.y = -1.0
-    this.scene.add(this.gridHelper)
-
-    // Floor plane that receives shadows
-    const floorGeo = new THREE.PlaneGeometry(config.GRID_SIZE, config.GRID_SIZE)
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xd3d3d7,
-      roughness: 1,
-      metalness: 0,
-    })
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-    floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = -1.002
-    floorMesh.receiveShadow = true
-    this.scene.add(floorMesh)
-
-    // Build connected scene environment & character
+    // Build environment and character
     this.buildSceneEnvironment()
     this.buildCharacter()
   }
 
   private buildSceneEnvironment(): void {
-    // Clean up old environment meshes
-    this.environmentMeshes.forEach((mesh) => {
-      this.scene.remove(mesh)
-      mesh.geometry.dispose()
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((m) => m.dispose())
-      } else {
-        mesh.material.dispose()
-      }
-    })
+    // 1. Cleanup old cloned environment group if present
+    if (this.clonedEnvGroup) {
+      this.scene.remove(this.clonedEnvGroup)
+      // Traverse to dispose child geometries and materials to avoid memory leaks
+      this.clonedEnvGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose()
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m) => m.dispose())
+          } else {
+            child.material.dispose()
+          }
+        }
+      })
+      this.clonedEnvGroup = null
+    }
+
     this.environmentMeshes = []
+    this.mainLight = null as any
 
-    // Clean up debug visualizations
-    if (this.colliderVisualizer) {
-      this.scene.remove(this.colliderVisualizer)
-      this.colliderVisualizer.geometry.dispose()
-      if (Array.isArray(this.colliderVisualizer.material)) {
-        this.colliderVisualizer.material.forEach((m) => m.dispose())
-      } else {
-        this.colliderVisualizer.material.dispose()
-      }
-      this.colliderVisualizer = null
+    if (this.connectedThreeScene) {
+      const sourceScene = this.connectedThreeScene.getScene()
+      const transformHelper = this.connectedThreeScene.getTransformHelper()
+
+      this.clonedEnvGroup = new THREE.Group()
+      this.scene.add(this.clonedEnvGroup)
+
+      // Clone and add each child of the source Scene except the transform controls helper
+      sourceScene.children.forEach((child: THREE.Object3D) => {
+        if (child !== transformHelper) {
+          const cloned = child.clone()
+          this.clonedEnvGroup!.add(cloned)
+        }
+      })
+
+      // Traverse cloned group to identify main light and asset meshes
+      this.clonedEnvGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          // Skip the mesh named 'floor' so we don't treat it as a box collider for character physics
+          if (child.name !== 'floor') {
+            this.environmentMeshes.push(child)
+          }
+        } else if (child instanceof THREE.DirectionalLight && child.castShadow) {
+          this.mainLight = child
+          // DirectionalLight.target needs to be in the scene to update its world matrix
+          this.scene.add(this.mainLight.target)
+        }
+      })
+    } else {
+      // Fallback: Create simple grid and ambient/directional lights if no SceneNode is connected yet
+      this.clonedEnvGroup = new THREE.Group()
+      this.scene.add(this.clonedEnvGroup)
+
+      const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
+      this.clonedEnvGroup.add(ambientLight)
+
+      this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
+      this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
+      this.mainLight.castShadow = true
+      this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
+      this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
+      this.mainLight.shadow.bias = config.SHADOW_BIAS
+      this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
+      const d = config.SHADOW_FRUSTUM_SIZE
+      this.mainLight.shadow.camera.left = -d
+      this.mainLight.shadow.camera.right = d
+      this.mainLight.shadow.camera.top = d
+      this.mainLight.shadow.camera.bottom = -d
+      this.scene.add(this.mainLight.target)
+      this.clonedEnvGroup.add(this.mainLight)
+
+      const gridHelper = new THREE.GridHelper(
+        config.GRID_SIZE,
+        config.GRID_DIVISIONS,
+        config.GRID_COLOR_CENTER,
+        config.GRID_COLOR_GRID
+      )
+      gridHelper.position.y = -1.0
+      this.clonedEnvGroup.add(gridHelper)
+
+      const floorGeo = new THREE.PlaneGeometry(100, 100)
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0xdbdbdb,
+        roughness: 1,
+        metalness: 0
+      })
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat)
+      floorMesh.rotation.x = -Math.PI / 2
+      floorMesh.position.y = -1.002
+      floorMesh.receiveShadow = true
+      this.clonedEnvGroup.add(floorMesh)
     }
-
-    if (this.bvhHelper) {
-      this.scene.remove(this.bvhHelper)
-      this.bvhHelper = null
-    }
-
-    const sceneData = this.state.scene_data
-    if (!sceneData || !sceneData.asset_transforms) {
-      if (this.gridHelper) {
-        this.gridHelper.visible = false
-      }
-      this.colliderBVH = null
-      return
-    }
-
-    if (this.gridHelper) {
-      this.gridHelper.visible = true
-    }
-
-    // Side: 0xbfbfbf, Top: 0xe6e6e6, Front: 0x3d4974 (blueish)
-    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
-    // Create environment meshes (using 1x1x1 geometry scaled by baked transforms)
-    sceneData.asset_transforms.forEach((t) => {
-      const geometry = new THREE.BoxGeometry(1, 1, 1)
-      const mesh = new THREE.Mesh(geometry, materials)
-
-      mesh.position.set(t.px, t.py, t.pz)
-      mesh.rotation.set(t.rx, t.ry, t.rz)
-      mesh.scale.set(t.sx, t.sy, t.sz)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-
-      this.scene.add(mesh)
-      this.environmentMeshes.push(mesh)
-    })
 
     // 2. Build BVH Collision Tree
     const geometries: THREE.BufferGeometry[] = []
 
     // Add floor box geometry to match vertex layout of boxes (centered at -1.05 height, thin box)
-    const floorBox = new THREE.BoxGeometry(50, 0.1, 50)
+    const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
     floorBox.translate(0, -1.05, 0)
     geometries.push(floorBox)
 
-    // Add all assets geometries transformed to their world positions
+    // Add all asset meshes geometries transformed to their world positions
     this.environmentMeshes.forEach((mesh) => {
       mesh.updateMatrixWorld(true)
       const geom = mesh.geometry.clone()
@@ -215,6 +204,10 @@ export class ThreeActing {
       this.colliderBVH = new MeshBVH(mergedGeom)
 
       // Create collider visualizer
+      if (this.colliderVisualizer) {
+        this.scene.remove(this.colliderVisualizer)
+        this.colliderVisualizer.geometry.dispose()
+      }
       const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         wireframe: true,
@@ -227,6 +220,9 @@ export class ThreeActing {
       this.scene.add(this.colliderVisualizer)
 
       // Create BVH Helper visualizer
+      if (this.bvhHelper) {
+        this.scene.remove(this.bvhHelper)
+      }
       this.bvhHelper = new MeshBVHHelper(colliderMesh)
       this.bvhHelper.visible = this.displayBVH
       this.scene.add(this.bvhHelper)

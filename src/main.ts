@@ -203,8 +203,17 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
   if (connectedSceneNode) {
     const sceneState = readSceneStateFromNode(connectedSceneNode) as SceneState
     actingInst.exposed.setState({ scene_data: sceneState })
+
+    const sceneInst = sceneInstances.get(connectedSceneNode)
+    const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
+    if (threeScene && actingInst.exposed.setConnectedThreeScene) {
+      actingInst.exposed.setConnectedThreeScene(threeScene)
+    }
   } else {
     actingInst.exposed.setState({ scene_data: undefined })
+    if (actingInst.exposed.setConnectedThreeScene) {
+      actingInst.exposed.setConnectedThreeScene(null)
+    }
   }
 }
 
@@ -214,6 +223,8 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
 
   // Iterate over graph nodes to find connected ActingNodes
   const sceneState = readSceneStateFromNode(sceneNode) as SceneState
+  const sceneInst = sceneInstances.get(sceneNode)
+  const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
   
   // Update acting instances that are linked to this sceneNode
   if (graph.links) {
@@ -225,6 +236,9 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
           const actingInst = actingInstances.get(targetNode)
           if (actingInst) {
             actingInst.exposed.setState({ scene_data: sceneState })
+            if (threeScene && actingInst.exposed.setConnectedThreeScene) {
+              actingInst.exposed.setConnectedThreeScene(threeScene)
+            }
           }
         }
       }
@@ -255,6 +269,8 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const stored = readActingStateFromNode(node)
   const connectedSceneNode = findConnectedSceneNode(node)
   const initialSceneState = connectedSceneNode ? (readSceneStateFromNode(connectedSceneNode) as SceneState) : undefined
+  const sceneInst = connectedSceneNode ? sceneInstances.get(connectedSceneNode) : null
+  const connectedThreeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
 
   const vueApp = createApp(ActingWidget, {
     currentNode: node,
@@ -272,6 +288,10 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const mounted = vueApp.mount(container)
   instance.vueApp = vueApp
   instance.exposed = mounted as unknown as ActingAppExposed
+
+  if (connectedThreeScene && instance.exposed.setConnectedThreeScene) {
+    instance.exposed.setConnectedThreeScene(connectedThreeScene)
+  }
 
   actingInstances.set(node, instance)
   return instance

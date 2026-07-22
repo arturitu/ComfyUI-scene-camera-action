@@ -157,7 +157,13 @@ onUnmounted(() => {
   cleanup()
 })
 
-defineExpose({ setState, cleanup })
+const setConnectedThreeScene = (threeScene: any) => {
+  if (threeActing) {
+    threeActing.setConnectedThreeScene(threeScene)
+  }
+}
+
+defineExpose({ setState, cleanup, setConnectedThreeScene })
 </script>
 
 <style scoped>

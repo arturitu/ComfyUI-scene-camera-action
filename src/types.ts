@@ -35,16 +35,19 @@ export interface ThreeActingOptions {
   container: HTMLElement
   initialState?: Partial<ActingState>
   onStateChange?: (state: ActingState) => void
+  connectedThreeScene?: any
 }
 
 export interface SceneAppExposed {
   setState: (state: Partial<SceneState>) => void
   cleanup: () => void
+  getThreeScene: () => any
 }
 
 export interface ActingAppExposed {
   setState: (state: Partial<ActingState>) => void
   cleanup: () => void
+  setConnectedThreeScene: (threeScene: any) => void
 }
 
 export interface CustomNodeInstance {

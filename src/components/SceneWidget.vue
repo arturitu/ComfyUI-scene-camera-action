@@ -112,7 +112,11 @@ const cleanup = () => {
   }
 }
 
-defineExpose({ setState, cleanup })
+const getThreeScene = () => {
+  return threeScene
+}
+
+defineExpose({ setState, cleanup, getThreeScene })
 </script>
 
 <style scoped>
