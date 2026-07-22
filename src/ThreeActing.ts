@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { MapControls } from 'three/addons/controls/MapControls.js'
 import type { ActingState, ThreeActingOptions, CubeTransform } from './types'
 
 export class ThreeActing {
@@ -14,11 +13,10 @@ export class ThreeActing {
   private characterGroup: THREE.Group | null = null
   private gridHelper: THREE.GridHelper | null = null
   private animationId: number | null = null
-  private controls!: MapControls
   private isHovered = false
   private globalWheelHandler?: (e: WheelEvent) => void
 
-  // Character movement control state
+  // Character movement control state (Arrow keys only to prevent conflict with ComfyUI's WASD)
   private keysPressed: Record<string, boolean> = {}
   private characterPosition = new THREE.Vector3(0, 0, 2)
   private characterRotation = 0
@@ -48,6 +46,7 @@ export class ThreeActing {
     this.scene.fog = new THREE.Fog(bgColor, 5, 20)
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+    // Initial camera position relative to origin
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
@@ -65,7 +64,6 @@ export class ThreeActing {
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
-    canvas.style.cursor = 'grab'
 
     // Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
@@ -103,16 +101,6 @@ export class ThreeActing {
     // Build connected scene environment & character
     this.buildSceneEnvironment()
     this.buildCharacter()
-
-    // Controls
-    this.controls = new MapControls(this.camera, this.renderer.domElement)
-    this.controls.enableDamping = true
-    this.controls.dampingFactor = 0.05
-    this.controls.screenSpacePanning = false
-    this.controls.minDistance = 1.5
-    this.controls.maxDistance = 20.0
-    this.controls.maxPolarAngle = Math.PI / 2 - 0.05
-    this.controls.zoomToCursor = true
   }
 
   private buildSceneEnvironment(): void {
@@ -200,16 +188,6 @@ export class ThreeActing {
   }
 
   private bindEvents(): void {
-    const canvas = this.renderer.domElement
-
-    this.controls.addEventListener('start', () => {
-      canvas.style.cursor = 'grabbing'
-    })
-
-    this.controls.addEventListener('end', () => {
-      canvas.style.cursor = 'grab'
-    })
-
     this.container.addEventListener('mouseenter', () => {
       this.isHovered = true
     })
@@ -218,29 +196,17 @@ export class ThreeActing {
       this.isHovered = false
     })
 
-    this.globalWheelHandler = (e: WheelEvent) => {
-      if (!this.isHovered) return
-      e.preventDefault()
-      e.stopPropagation()
-      e.stopImmediatePropagation()
-      if (this.controls && typeof (this.controls as any)._handleMouseWheel === 'function') {
-        (this.controls as any)._handleMouseWheel(e)
-      }
-    }
-
-    window.addEventListener('wheel', this.globalWheelHandler, { capture: true, passive: false })
-
-    // Keyboard listeners when mouse is hovered over canvas
+    // Keyboard listeners when mouse is hovered over canvas (Arrow keys only)
     this.keydownHandler = (e: KeyboardEvent) => {
       if (!this.isHovered) return
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(e.code)) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault()
         this.keysPressed[e.code] = true
       }
     }
 
     this.keyupHandler = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyS', 'KeyA', 'KeyD'].includes(e.code)) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         this.keysPressed[e.code] = false
       }
     }
@@ -261,10 +227,10 @@ export class ThreeActing {
     let moveZ = 0
     let moveX = 0
 
-    if (this.keysPressed['KeyW'] || this.keysPressed['ArrowUp']) moveZ -= 1
-    if (this.keysPressed['KeyS'] || this.keysPressed['ArrowDown']) moveZ += 1
-    if (this.keysPressed['KeyA'] || this.keysPressed['ArrowLeft']) moveX -= 1
-    if (this.keysPressed['KeyD'] || this.keysPressed['ArrowRight']) moveX += 1
+    if (this.keysPressed['ArrowUp']) moveZ -= 1
+    if (this.keysPressed['ArrowDown']) moveZ += 1
+    if (this.keysPressed['ArrowLeft']) moveX -= 1
+    if (this.keysPressed['ArrowRight']) moveX += 1
 
     if (moveX !== 0 || moveZ !== 0) {
       const dir = new THREE.Vector3(moveX, 0, moveZ).normalize()
@@ -274,8 +240,8 @@ export class ThreeActing {
       this.characterPosition.z += dir.z * speed
       
       // Boundary check to keep character on the floor grid roughly
-      this.characterPosition.x = Math.max(-10, Math.min(10, this.characterPosition.x))
-      this.characterPosition.z = Math.max(-10, Math.min(10, this.characterPosition.z))
+      this.characterPosition.x = Math.max(-20, Math.min(20, this.characterPosition.x))
+      this.characterPosition.z = Math.max(-20, Math.min(20, this.characterPosition.z))
       
       // Update group position (y remains relative to grid plane)
       this.characterGroup.position.x = this.characterPosition.x
@@ -299,9 +265,23 @@ export class ThreeActing {
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
     this.updateCharacterMovement()
-    if (this.controls) {
-      this.controls.update()
+
+    // Camera following character: Keep character centered
+    if (this.characterGroup) {
+      // Position camera at a simple fixed offset relative to character (X=0, Y=4, Z=8)
+      this.camera.position.set(
+        this.characterPosition.x,
+        this.characterPosition.y + 4,
+        this.characterPosition.z + 8
+      )
+      // Look at the character (offsetting look target slightly up for visual balance)
+      this.camera.lookAt(
+        this.characterPosition.x,
+        this.characterPosition.y - 0.2,
+        this.characterPosition.z
+      )
     }
+
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -330,18 +310,11 @@ export class ThreeActing {
       this.animationId = null
     }
 
-    if (this.globalWheelHandler) {
-      window.removeEventListener('wheel', this.globalWheelHandler, { capture: true })
-    }
     if (this.keydownHandler) {
       window.removeEventListener('keydown', this.keydownHandler)
     }
     if (this.keyupHandler) {
       window.removeEventListener('keyup', this.keyupHandler)
-    }
-
-    if (this.controls) {
-      this.controls.dispose()
     }
 
     this.renderer.dispose()

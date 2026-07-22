@@ -249,6 +249,12 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
   }
 }
 
+function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
+  return {
+    character_speed: getWidgetValue(node, 'character_speed', 1.0),
+  }
+}
+
 function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const container = document.createElement('div')
   container.id = `acting-widget-${node.id}`
@@ -262,15 +268,15 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   instance.widget = null
   instance.cleanupTimer = null
 
-  const stored = readStoredActingProps(node)
+  const stored = readActingStateFromNode(node)
   const connectedSceneNode = findConnectedSceneNode(node)
   const initialSceneState = connectedSceneNode ? (readSceneStateFromNode(connectedSceneNode) as SceneState) : undefined
 
   const vueApp = createApp(ActingWidget, {
     currentNode: node,
     initialState: {
-      character_speed: stored?.character_speed ?? getWidgetValue(node, 'character_speed', 1.0),
-      scene_data: stored?.scene_data ?? initialSceneState,
+      character_speed: stored.character_speed ?? 1.0,
+      scene_data: initialSceneState,
     },
     onStateChange: (state: ActingState) => {
       const live = instance.currentNode
@@ -424,13 +430,8 @@ app.registerExtension({
         origOnConfigure?.call(this, info)
         const instance = actingInstances.get(this)
         if (instance) {
-          const motionDataWidget = this.widgets?.find(w => w.name === 'motion_data')
-          if (motionDataWidget && motionDataWidget.value) {
-            try {
-              const parsed = JSON.parse(motionDataWidget.value as string)
-              instance.exposed.setState(parsed)
-            } catch (e) {}
-          }
+          const state = readActingStateFromNode(this)
+          instance.exposed.setState(state)
         }
       }
     }

@@ -12,9 +12,8 @@
     <div class="info-overlay">
       <div class="title">Acting 3D Node</div>
       <template v-if="state.scene_data">
-        <div>Assets: {{ state.scene_data?.num_assets ?? 1 }}</div>
         <div>Speed: {{ state.character_speed }}</div>
-        <div class="hint">Use WASD / Arrow keys to move character</div>
+        <div class="hint">Use Arrow keys to move character</div>
       </template>
       <template v-else>
         <div class="hint">Waiting for scene link...</div>
@@ -59,6 +58,9 @@ const initScene = (container: HTMLElement) => {
 const setState = (newState: Partial<ActingState>) => {
   if (newState.hasOwnProperty('scene_data')) {
     state.scene_data = newState.scene_data as any
+  }
+  if (newState.hasOwnProperty('character_speed')) {
+    state.character_speed = newState.character_speed as number
   }
   if (threeActing) {
     threeActing.setState(newState)
