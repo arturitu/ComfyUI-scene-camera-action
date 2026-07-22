@@ -4,18 +4,28 @@
       <div class="canvas-aspect-container">
         <SceneCanvas :init-scene="initScene" />
       </div>
+      <!-- Edit Mode Toolbar -->
+      <div class="canvas-edit-toolbar">
+        <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click="setMode('translate')">
+          Move
+        </button>
+        <button class="edit-btn" :class="{ 'active': activeMode === 'rotate' }" title="Rotate object" @click="setMode('rotate')">
+          Rotate
+        </button>
+        <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click="setMode('scale')">
+          Scale
+        </button>
+      </div>
     </div>
     <div class="info-overlay">
       <div class="title">Scene 3D Node</div>
-      <div>Cube Size: {{ state.cube_size }}</div>
-      <div>Color: {{ state.color }}</div>
-      <div>Grid: {{ state.grid_visible ? 'On' : 'Off' }}</div>
+      <div>Assets: {{ state.num_assets }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import SceneCanvas from './SceneCanvas.vue'
 import { ThreeScene } from '../ThreeScene'
 import type { SceneState } from '../types'
@@ -27,11 +37,11 @@ const props = defineProps<{
 
 const state = reactive<SceneState>({
   type: 'cube_scene',
-  cube_size: props.initialState?.cube_size ?? 1.0,
-  color: props.initialState?.color ?? '#4a90e2',
-  grid_visible: props.initialState?.grid_visible ?? true,
+  num_assets: props.initialState?.num_assets ?? 1,
+  asset_transforms: props.initialState?.asset_transforms ?? [],
 })
 
+const activeMode = ref<'translate' | 'rotate' | 'scale'>('translate')
 let threeScene: ThreeScene | null = null
 
 const initScene = (container: HTMLElement) => {
@@ -45,6 +55,14 @@ const initScene = (container: HTMLElement) => {
       }
     }
   })
+  threeScene.setTransformMode(activeMode.value)
+}
+
+const setMode = (mode: 'translate' | 'rotate' | 'scale') => {
+  activeMode.value = mode
+  if (threeScene) {
+    threeScene.setTransformMode(mode)
+  }
 }
 
 const setState = (newState: Partial<SceneState>) => {
@@ -84,6 +102,7 @@ defineExpose({ setState, cleanup })
   align-items: center;
   background: #0a0d14;
   overflow: hidden;
+  position: relative;
 }
 
 .canvas-aspect-container {
@@ -93,6 +112,41 @@ defineExpose({ setState, cleanup })
   max-height: 100%;
   position: relative;
   overflow: hidden;
+}
+
+.canvas-edit-toolbar {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+}
+
+.edit-btn {
+  background: rgba(12, 12, 18, 0.85);
+  color: #8c8c9e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.edit-btn:hover {
+  background: #2b2b3b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.edit-btn.active {
+  background: #3d4974;
+  color: #ffffff;
+  border-color: #5d6d9e;
 }
 
 .info-overlay {

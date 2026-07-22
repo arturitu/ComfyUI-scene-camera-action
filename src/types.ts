@@ -1,10 +1,21 @@
 import type { App as VueApp } from 'vue'
 
+export interface CubeTransform {
+  px: number
+  py: number
+  pz: number
+  rx: number
+  ry: number
+  rz: number
+  sx: number
+  sy: number
+  sz: number
+}
+
 export interface SceneState {
   type: string
-  cube_size: number
-  color: string
-  grid_visible: boolean
+  num_assets: number
+  asset_transforms?: CubeTransform[]
 }
 
 export interface ActingState {

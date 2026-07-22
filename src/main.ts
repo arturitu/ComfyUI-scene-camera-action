@@ -61,20 +61,14 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   const stored = readStoredSceneProps(node)
   return {
     type: 'cube_scene',
-    cube_size: stored?.cube_size ?? getWidgetValue(node, 'cube_size', 1.0),
-    color: stored?.color ?? getWidgetValue(node, 'color', '#4a90e2'),
-    grid_visible: stored?.grid_visible ?? getWidgetValue(node, 'grid_visible', true),
+    num_assets: stored?.num_assets ?? getWidgetValue(node, 'num_assets', 1),
+    asset_transforms: stored?.asset_transforms ?? [],
   }
 }
 
 function syncSceneWidgetsFromState(node: ComfyNode, state: Partial<SceneState>): void {
-  const cube_size = node.widgets?.find(w => w.name === 'cube_size')
-  const color = node.widgets?.find(w => w.name === 'color')
-  const grid_visible = node.widgets?.find(w => w.name === 'grid_visible')
-
-  if (state.cube_size !== undefined && cube_size) cube_size.value = state.cube_size
-  if (state.color !== undefined && color) color.value = state.color
-  if (state.grid_visible !== undefined && grid_visible) grid_visible.value = state.grid_visible
+  const num_assets = node.widgets?.find(w => w.name === 'num_assets')
+  if (state.num_assets !== undefined && num_assets) num_assets.value = state.num_assets
 }
 
 function createSceneInstance(node: ComfyNode): SceneNodeInstance {
@@ -120,19 +114,9 @@ function bindSceneWidgetCallbacks(node: ComfyNode, exposed: SceneAppExposed): vo
     }
   }
 
-  wire('cube_size', v => {
-    exposed.setState({ cube_size: Number(v) })
-    writeStoredSceneProps(node, { cube_size: Number(v) })
-    notifyConnectedActingNodes(node)
-  })
-  wire('color', v => {
-    exposed.setState({ color: String(v) })
-    writeStoredSceneProps(node, { color: String(v) })
-    notifyConnectedActingNodes(node)
-  })
-  wire('grid_visible', v => {
-    exposed.setState({ grid_visible: Boolean(v) })
-    writeStoredSceneProps(node, { grid_visible: Boolean(v) })
+  wire('num_assets', v => {
+    exposed.setState({ num_assets: Number(v) })
+    writeStoredSceneProps(node, { num_assets: Number(v) })
     notifyConnectedActingNodes(node)
   })
 }
@@ -223,6 +207,8 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
   if (connectedSceneNode) {
     const sceneState = readSceneStateFromNode(connectedSceneNode) as SceneState
     actingInst.exposed.setState({ scene_data: sceneState })
+  } else {
+    actingInst.exposed.setState({ scene_data: undefined })
   }
 }
 
@@ -268,6 +254,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const initialSceneState = connectedSceneNode ? (readSceneStateFromNode(connectedSceneNode) as SceneState) : undefined
 
   const vueApp = createApp(ActingWidget, {
+    currentNode: node,
     initialState: {
       character_speed: stored?.character_speed ?? getWidgetValue(node, 'character_speed', 1.0),
       scene_data: stored?.scene_data ?? initialSceneState,
@@ -335,7 +322,18 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
   const origOnConnectionsChange = node.onConnectionsChange
   node.onConnectionsChange = function(slotType, slotIndex, isConnected, link, ioSlot) {
     origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
-    updateActingNodeFromConnectedScene(node)
+    
+    if (slotType === 1) { // 1 = INPUT
+      const input = this.inputs?.[slotIndex]
+      if (input && input.name === 'scene' && !isConnected) {
+        const actingInst = actingInstances.get(this)
+        if (actingInst) {
+          actingInst.exposed.setState({ scene_data: undefined })
+        }
+        return
+      }
+    }
+    updateActingNodeFromConnectedScene(this)
   }
 
   const baseOnRemove = widget.onRemove?.bind(widget)

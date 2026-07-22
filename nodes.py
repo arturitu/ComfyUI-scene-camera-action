@@ -39,7 +39,7 @@ ActingIO = io.Custom("ACTING")
 class SceneNode(io.ComfyNode):
     """
     Scene Node
-    Configures a 3D scene environment with an adjustable 3D cube.
+    Configures a 3D scene environment with multiple adjustable 3D assets (cubes).
     """
 
     @classmethod
@@ -49,25 +49,13 @@ class SceneNode(io.ComfyNode):
             display_name="Scene 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
-            description="Configures a 3D scene environment (renders a customizable cube scene).",
+            description="Configures a 3D scene environment with multiple assets.",
             inputs=[
-                io.Float.Input(
-                    "cube_size",
-                    default=1.0, min=0.1, max=10.0, step=0.1,
-                    display_name="Cube Size",
-                    tooltip="Size of the 3D cube in the scene",
-                ),
-                io.String.Input(
-                    "color",
-                    default="#4a90e2",
-                    display_name="Color",
-                    tooltip="Hex color of the cube",
-                ),
-                io.Boolean.Input(
-                    "grid_visible",
-                    default=True,
-                    display_name="Show Grid",
-                    tooltip="Show or hide floor grid helper",
+                io.Int.Input(
+                    "num_assets",
+                    default=1, min=1, max=12, step=1,
+                    display_name="Number of Assets",
+                    tooltip="Number of 3D assets to render in the scene",
                 ),
             ],
             outputs=[
@@ -79,15 +67,11 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        cube_size: float,
-        color: str,
-        grid_visible: bool,
+        num_assets: int,
     ) -> io.NodeOutput:
         scene_dict = {
             "type": "cube_scene",
-            "cube_size": cube_size,
-            "color": color,
-            "grid_visible": grid_visible,
+            "num_assets": num_assets,
         }
 
         # Convert dict to JSON string for pipeline IO
@@ -97,11 +81,9 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def fingerprint_inputs(
         cls,
-        cube_size: float,
-        color: str,
-        grid_visible: bool,
+        num_assets: int,
     ):
-        return f"{cube_size}_{color}_{grid_visible}"
+        return f"{num_assets}"
 
 
 class ActingNode(io.ComfyNode):

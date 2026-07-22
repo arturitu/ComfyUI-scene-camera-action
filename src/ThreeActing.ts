@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { MapControls } from 'three/addons/controls/MapControls.js'
-import type { ActingState, SceneState, ThreeActingOptions } from './types'
+import type { ActingState, ThreeActingOptions, CubeTransform } from './types'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -10,7 +10,7 @@ export class ThreeActing {
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
-  private environmentMesh: THREE.Mesh | null = null
+  private environmentMeshes: THREE.Mesh[] = []
   private characterGroup: THREE.Group | null = null
   private gridHelper: THREE.GridHelper | null = null
   private animationId: number | null = null
@@ -30,12 +30,7 @@ export class ThreeActing {
     this.onStateChange = options.onStateChange
     this.state = {
       character_speed: options.initialState?.character_speed ?? 1.0,
-      scene_data: options.initialState?.scene_data ?? {
-        type: 'cube_scene',
-        cube_size: 1.0,
-        color: '#4a90e2',
-        grid_visible: true,
-      },
+      scene_data: options.initialState?.scene_data ?? null as any,
     }
 
     this.initThreeJS()
@@ -48,16 +43,20 @@ export class ThreeActing {
     const height = this.container.clientHeight || 300
 
     this.scene = new THREE.Scene()
-    this.scene.background = new THREE.Color(0x141019)
+    const bgColor = new THREE.Color(0xd3d3d7)
+    this.scene.background = bgColor
+    this.scene.fog = new THREE.Fog(bgColor, 5, 20)
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
-    this.camera.position.set(0, 4, 7)
+    this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(width, height, false)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
+    this.renderer.shadowMap.enabled = true
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
     this.container.appendChild(this.renderer.domElement)
 
     const canvas = this.renderer.domElement
@@ -73,17 +72,33 @@ export class ThreeActing {
     this.scene.add(ambientLight)
 
     const mainLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    mainLight.position.set(6, 12, 6)
+    mainLight.position.set(5, 10, 5)
+    mainLight.castShadow = true
+    mainLight.shadow.mapSize.width = 1024
+    mainLight.shadow.mapSize.height = 1024
     this.scene.add(mainLight)
 
     const characterLight = new THREE.PointLight(0xff007f, 1.2, 8)
     characterLight.position.set(0, 2, 2)
     this.scene.add(characterLight)
 
-    // Floor Grid
-    this.gridHelper = new THREE.GridHelper(12, 24, 0xff007f, 0x332233)
-    this.gridHelper.position.y = 0
+    // Floor Grid (50x50m) matching ComfyUI-3D-motion-reference
+    this.gridHelper = new THREE.GridHelper(50, 50, 0xaaaaaf, 0xc5c5cb)
+    this.gridHelper.position.y = -1.0
     this.scene.add(this.gridHelper)
+
+    // Floor plane that receives shadows
+    const floorGeo = new THREE.PlaneGeometry(50, 50)
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0xd3d3d7,
+      roughness: 1,
+      metalness: 0,
+    })
+    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
+    floorMesh.rotation.x = -Math.PI / 2
+    floorMesh.position.y = -1.002
+    floorMesh.receiveShadow = true
+    this.scene.add(floorMesh)
 
     // Build connected scene environment & character
     this.buildSceneEnvironment()
@@ -93,42 +108,70 @@ export class ThreeActing {
     this.controls = new MapControls(this.camera, this.renderer.domElement)
     this.controls.enableDamping = true
     this.controls.dampingFactor = 0.05
+    this.controls.screenSpacePanning = false
     this.controls.minDistance = 1.5
     this.controls.maxDistance = 20.0
-    this.controls.maxPolarAngle = Math.PI / 2 - 0.02
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.05
+    this.controls.zoomToCursor = true
   }
 
   private buildSceneEnvironment(): void {
-    if (this.environmentMesh) {
-      this.scene.remove(this.environmentMesh)
-      this.environmentMesh.geometry.dispose()
-      if (Array.isArray(this.environmentMesh.material)) {
-        this.environmentMesh.material.forEach((m) => m.dispose())
+    this.environmentMeshes.forEach((mesh) => {
+      this.scene.remove(mesh)
+      mesh.geometry.dispose()
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach((m) => m.dispose())
       } else {
-        this.environmentMesh.material.dispose()
+        mesh.material.dispose()
       }
-      this.environmentMesh = null
-    }
+    })
+    this.environmentMeshes = []
 
-    const sceneData = this.state.scene_data || {}
-    const size = sceneData.cube_size ?? 1.0
-    const color = sceneData.color ?? '#4a90e2'
+    const sceneData = this.state.scene_data
+    if (!sceneData || !sceneData.asset_transforms) {
+      if (this.gridHelper) {
+        this.gridHelper.visible = false
+      }
+      return
+    }
 
     if (this.gridHelper) {
-      this.gridHelper.visible = sceneData.grid_visible ?? true
+      this.gridHelper.visible = true
     }
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const material = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(color),
-      roughness: 0.3,
-      metalness: 0.4,
-    })
+    // Side: 0xbfbfbf, Top: 0xe6e6e6, Front: 0x3d4974 (blueish)
+    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
+    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
+    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
+    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
 
-    this.environmentMesh = new THREE.Mesh(geometry, material)
-    this.environmentMesh.scale.set(size, size, size)
-    this.environmentMesh.position.set(0, size / 2, 0)
-    this.scene.add(this.environmentMesh)
+    sceneData.asset_transforms.forEach((t, i) => {
+      let width = 0.8
+      let depth = 0.8
+      let height = 2.0
+
+      if (i > 0) {
+        const seed1 = Math.sin(i * 12.9898) * 43758.5453
+        const seed2 = Math.sin(i * 78.233) * 43758.5453
+        const rand1 = seed1 - Math.floor(seed1)
+        const rand2 = seed2 - Math.floor(seed2)
+        width = 0.6 + rand1 * 0.4
+        depth = 0.6 + rand2 * 0.4
+        height = 1.0 + rand1 * 1.5
+      }
+
+      const geometry = new THREE.BoxGeometry(width, height, depth)
+      const mesh = new THREE.Mesh(geometry, materials)
+
+      mesh.position.set(t.px, t.py, t.pz)
+      mesh.rotation.set(t.rx, t.ry, t.rz)
+      mesh.scale.set(t.sx, t.sy, t.sz)
+      mesh.castShadow = true
+      mesh.receiveShadow = true
+
+      this.scene.add(mesh)
+      this.environmentMeshes.push(mesh)
+    })
   }
 
   private buildCharacter(): void {
@@ -146,14 +189,14 @@ export class ThreeActing {
       metalness: 0.5,
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    bodyMesh.position.y = 0.6
+    bodyMesh.position.y = 0.6 - 1.0 // Shift down to match grid plane at y=-1
     this.characterGroup.add(bodyMesh)
 
     // Character head sphere
     const headGeo = new THREE.SphereGeometry(0.22, 16, 16)
     const headMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 })
     const headMesh = new THREE.Mesh(headGeo, headMat)
-    headMesh.position.y = 1.15
+    headMesh.position.y = 1.15 - 1.0 // Shift down to match grid plane at y=-1
     this.characterGroup.add(headMesh)
 
     // Character direction arrow / visor
@@ -161,10 +204,11 @@ export class ThreeActing {
     visorGeo.rotateX(Math.PI / 2)
     const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 })
     const visorMesh = new THREE.Mesh(visorGeo, visorMat)
-    visorMesh.position.set(0, 1.15, 0.25)
+    visorMesh.position.set(0, 1.15 - 1.0, 0.25)
     this.characterGroup.add(visorMesh)
 
     this.characterGroup.position.copy(this.characterPosition)
+    this.characterGroup.position.y = 0 // Align base of group with characterPosition height
     this.scene.add(this.characterGroup)
   }
 
@@ -237,8 +281,18 @@ export class ThreeActing {
 
     if (moveX !== 0 || moveZ !== 0) {
       const dir = new THREE.Vector3(moveX, 0, moveZ).normalize()
-      this.characterPosition.addScaledVector(dir, speed)
-      this.characterGroup.position.copy(this.characterPosition)
+      
+      // Update horizontal position
+      this.characterPosition.x += dir.x * speed
+      this.characterPosition.z += dir.z * speed
+      
+      // Boundary check to keep character on the floor grid roughly
+      this.characterPosition.x = Math.max(-10, Math.min(10, this.characterPosition.x))
+      this.characterPosition.z = Math.max(-10, Math.min(10, this.characterPosition.z))
+      
+      // Update group position (y remains relative to grid plane)
+      this.characterGroup.position.x = this.characterPosition.x
+      this.characterGroup.position.z = this.characterPosition.z
 
       const targetAngle = Math.atan2(dir.x, dir.z)
       this.characterGroup.rotation.y = targetAngle
