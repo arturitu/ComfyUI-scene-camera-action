@@ -3,6 +3,7 @@ interface ComfyWidget {
   value: unknown
   type?: string
   callback?: (value: unknown) => void
+  options?: any
 }
 
 interface ComfyInput {

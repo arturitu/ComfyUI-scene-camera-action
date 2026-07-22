@@ -20,6 +20,8 @@ export interface SceneState {
 
 export interface ActingState {
   character_speed: number
+  duration: number
+  motion_data?: string
   scene_data: SceneState
 }
 
@@ -35,6 +37,7 @@ export interface ThreeActingOptions {
   container: HTMLElement
   initialState?: Partial<ActingState>
   onStateChange?: (state: ActingState) => void
+  onRecordingFinished?: (trajectoryJson: string) => void
   connectedThreeScene?: any
 }
 

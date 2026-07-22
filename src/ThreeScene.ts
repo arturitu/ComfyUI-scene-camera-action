@@ -282,6 +282,9 @@ export class ThreeScene {
     const selectedMesh = this.transformControls.object as THREE.Mesh
     const index = this.meshes.indexOf(selectedMesh)
     if (index !== -1) {
+      if (!this.state.asset_transforms) {
+        this.state.asset_transforms = []
+      }
       this.state.asset_transforms.splice(index, 1)
       this.state.num_assets = this.state.asset_transforms.length
 

@@ -27,7 +27,6 @@
       </div>
     </div>
     <div class="info-overlay">
-      <div class="title">Scene 3D Node</div>
       <div>Assets: {{ state.num_assets }}</div>
     </div>
   </div>

@@ -127,9 +127,15 @@ class ActingNode(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "character_speed",
-                    default=10.0, min=1.0, max=20.0, step=0.1,
+                    default=10.0, min=1.0, max=20.0, step=1.0,
                     display_name="Character Speed",
                     tooltip="Movement speed of the 3D character",
+                ),
+                io.Float.Input(
+                    "duration",
+                    default=7.0, min=4.0, max=15.0, step=1.0,
+                    display_name="Duration (s)",
+                    tooltip="Recording duration in seconds",
                 ),
                 io.String.Input(
                     "motion_data",
@@ -149,6 +155,7 @@ class ActingNode(io.ComfyNode):
         cls,
         scene: str | dict | None = None,
         character_speed: float = 10.0,
+        duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
         scene_data = {}
@@ -163,6 +170,7 @@ class ActingNode(io.ComfyNode):
         acting_dict = {
             "scene_data": scene_data,
             "character_speed": character_speed,
+            "duration": duration,
             "motion_data": motion_data,
         }
 

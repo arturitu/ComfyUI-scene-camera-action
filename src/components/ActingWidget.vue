@@ -8,11 +8,70 @@
       <div class="canvas-aspect-container">
         <SceneCanvas :init-scene="initScene" />
       </div>
+
+      <!-- Top-left Countdown Badge -->
+      <div v-if="countdownVal !== null" class="countdown-badge">
+        <span class="countdown-dot"></span>
+        REC IN {{ countdownVal }}s
+      </div>
+
+      <!-- Recording progress bar / state overlay -->
+      <div v-if="isRecording" class="recording-overlay">
+        <div class="rec-header">
+          <span class="rec-dot"></span>
+          <span class="rec-text">RECORDING</span>
+          <span class="rec-timer">{{ recordingElapsed.toFixed(1) }}s / {{ state.duration }}s</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" :style="{ width: (recordingElapsed / state.duration * 100) + '%' }"></div>
+        </div>
+      </div>
+
+      <!-- Controls Overlay (Top Right / Bottom Center) -->
+      <div class="acting-toolbar">
+        <button
+          v-if="!isRecording && !isCounting"
+          class="acting-btn rec-trigger"
+          title="Start Recording"
+          @click="startCountdown"
+        >
+          ● Record
+        </button>
+        <button
+          v-if="isRecording"
+          class="acting-btn rec-stop"
+          title="Stop Recording"
+          @click="stopRecording"
+        >
+          ■ Stop
+        </button>
+
+        <template v-if="state.motion_data && !isRecording && !isCounting">
+          <button
+            class="acting-btn play-btn"
+            :class="{ 'playing': isPlaying }"
+            :title="isPlaying ? 'Pause Playback' : 'Play Playback'"
+            @click="togglePlay"
+          >
+            {{ isPlaying ? 'Pause' : 'Play' }}
+          </button>
+          <button
+            class="acting-btn reset-btn"
+            title="Reset to Keyboard Control"
+            @click="resetToInteractive"
+          >
+            Reset
+          </button>
+        </template>
+      </div>
     </div>
+
     <div class="info-overlay">
-      <div class="title">Acting 3D Node</div>
       <template v-if="state.scene_data">
-        <div>Speed: {{ state.character_speed }}</div>
+        <div v-if="isPlaying" class="state-indicator playing">Replaying Motion</div>
+        <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
+        <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
+        <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
         <div class="hint">Use Arrow keys to move character</div>
       </template>
       <template v-else>
@@ -23,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, watch, onMounted, onUnmounted } from 'vue'
+import { reactive, ref, watch, onMounted, onUnmounted } from 'vue'
 import SceneCanvas from './SceneCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
 import type { ActingState } from '../types'
@@ -36,11 +95,21 @@ const props = defineProps<{
 
 const state = reactive<ActingState>({
   character_speed: props.initialState?.character_speed ?? 10.0,
+  duration: props.initialState?.duration ?? 7.0,
+  motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
 })
 
+const isCounting = ref(false)
+const countdownVal = ref<number | null>(null)
+const isRecording = ref(false)
+const recordingElapsed = ref(0)
+const isPlaying = ref(false)
+
 let threeActing: ThreeActing | null = null
+let currentThreeScene: any = null
 let checkInterval: any = null
+let recordProgressFrameId: number | null = null
 
 const initScene = (container: HTMLElement) => {
   threeActing = new ThreeActing({
@@ -51,8 +120,110 @@ const initScene = (container: HTMLElement) => {
       if (props.onStateChange) {
         props.onStateChange(updatedState)
       }
-    }
+    },
+    onRecordingFinished: onRecordingFinished,
+    connectedThreeScene: currentThreeScene
   })
+
+  // Auto-play initially if there is saved motion data
+  if (state.motion_data) {
+    isPlaying.value = true
+    threeActing.startPlayback(state.motion_data)
+  }
+}
+
+const updateRecordProgress = () => {
+  if (threeActing && isRecording.value) {
+    recordingElapsed.value = (threeActing as any).recordingTime
+    recordProgressFrameId = requestAnimationFrame(updateRecordProgress)
+  }
+}
+
+const startCountdown = () => {
+  if (isCounting.value || isRecording.value) return
+
+  if (isPlaying.value) {
+    isPlaying.value = false
+    if (threeActing) {
+      threeActing.stopPlayback()
+    }
+  }
+
+  isCounting.value = true
+  countdownVal.value = 3
+
+  const interval = setInterval(() => {
+    if (countdownVal.value !== null && countdownVal.value > 1) {
+      countdownVal.value -= 1
+    } else {
+      clearInterval(interval)
+      countdownVal.value = null
+      isCounting.value = false
+
+      // Start recording
+      isRecording.value = true
+      recordingElapsed.value = 0
+      if (threeActing) {
+        threeActing.startRecording()
+        recordProgressFrameId = requestAnimationFrame(updateRecordProgress)
+      }
+    }
+  }, 1000)
+}
+
+const stopRecording = () => {
+  if (threeActing && isRecording.value) {
+    const json = threeActing.stopRecording()
+    onRecordingFinished(json)
+  }
+}
+
+const onRecordingFinished = (json: string) => {
+  isRecording.value = false
+  if (recordProgressFrameId !== null) {
+    cancelAnimationFrame(recordProgressFrameId)
+    recordProgressFrameId = null
+  }
+
+  state.motion_data = json
+  if (props.onStateChange) {
+    props.onStateChange(state)
+  }
+
+  // Auto-play the recording in a loop
+  isPlaying.value = true
+  if (threeActing) {
+    threeActing.startPlayback(json)
+  }
+}
+
+const togglePlay = () => {
+  if (isPlaying.value) {
+    isPlaying.value = false
+    if (threeActing) {
+      threeActing.stopPlayback()
+    }
+  } else {
+    if (state.motion_data) {
+      isPlaying.value = true
+      if (threeActing) {
+        threeActing.startPlayback(state.motion_data)
+      }
+    }
+  }
+}
+
+const resetToInteractive = () => {
+  isPlaying.value = false
+  isRecording.value = false
+  if (threeActing) {
+    threeActing.stopPlayback()
+    threeActing.setState({ motion_data: '' })
+  }
+  state.motion_data = ''
+  if (props.onStateChange) {
+    props.onStateChange(state)
+  }
 }
 
 const setState = (newState: Partial<ActingState>) => {
@@ -62,6 +233,16 @@ const setState = (newState: Partial<ActingState>) => {
   if (newState.hasOwnProperty('character_speed')) {
     state.character_speed = newState.character_speed as number
   }
+  if (newState.hasOwnProperty('duration')) {
+    state.duration = newState.duration as number
+  }
+  if (newState.hasOwnProperty('motion_data')) {
+    state.motion_data = newState.motion_data as string
+    if (!newState.motion_data) {
+      isPlaying.value = false
+    }
+  }
+
   if (threeActing) {
     threeActing.setState(newState)
   } else {
@@ -69,14 +250,24 @@ const setState = (newState: Partial<ActingState>) => {
   }
 }
 
+const setConnectedThreeScene = (threeScene: any) => {
+  currentThreeScene = threeScene
+  if (threeActing) {
+    threeActing.setConnectedThreeScene(threeScene)
+  }
+}
+
 const cleanup = () => {
+  if (recordProgressFrameId !== null) {
+    cancelAnimationFrame(recordProgressFrameId)
+    recordProgressFrameId = null
+  }
   if (threeActing) {
     threeActing.dispose()
     threeActing = null
   }
 }
 
-// Watch scene_data to trigger cleanup when disconnected
 watch(() => state.scene_data, (newVal) => {
   if (!newVal) {
     cleanup()
@@ -96,7 +287,6 @@ onMounted(() => {
         state.scene_data = null as any
       }
     } else {
-      // Access app's graph
       const comfyApp = (window as any).comfyAPI?.app?.app
       const graph = node.graph || comfyApp?.graph
       let linkFound = false
@@ -106,7 +296,6 @@ onMounted(() => {
           const originNode = graph.getNodeById?.(link.origin_id)
           if (originNode) {
             linkFound = true
-            // Read serialized state directly from originNode's widget
             const sceneDataWidget = originNode.widgets?.find((w: any) => w.name === 'scene_data')
             let connectedState: any = null
             if (sceneDataWidget && sceneDataWidget.value) {
@@ -119,18 +308,15 @@ onMounted(() => {
               }
             }
 
-            // Fallback to node properties
             if (!connectedState && originNode.properties?.['sceneNodeState']) {
               connectedState = originNode.properties['sceneNodeState']
             }
 
             if (connectedState) {
-              // Ensure asset_transforms is at least present
               if (!connectedState.asset_transforms) {
                 connectedState.asset_transforms = []
               }
 
-              // Only trigger state change if the data is actually different
               if (JSON.stringify(state.scene_data) !== JSON.stringify(connectedState)) {
                 state.scene_data = connectedState
                 if (threeActing) {
@@ -157,12 +343,6 @@ onUnmounted(() => {
   cleanup()
 })
 
-const setConnectedThreeScene = (threeScene: any) => {
-  if (threeActing) {
-    threeActing.setConnectedThreeScene(threeScene)
-  }
-}
-
 defineExpose({ setState, cleanup, setConnectedThreeScene })
 </script>
 
@@ -185,6 +365,7 @@ defineExpose({ setState, cleanup, setConnectedThreeScene })
   align-items: center;
   background: #0d0a10;
   overflow: hidden;
+  position: relative;
 }
 
 .canvas-aspect-container {
@@ -224,6 +405,164 @@ defineExpose({ setState, cleanup, setConnectedThreeScene })
   color: #a08090;
 }
 
+/* Countdown Badge styling */
+.countdown-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(12, 12, 18, 0.85);
+  border: 1.5px solid #ff007f;
+  color: #ff007f;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+  padding: 6px 12px;
+  z-index: 30;
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+  pointer-events: none;
+  font-family: monospace;
+  animation: pulse 1s infinite alternate;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.countdown-dot {
+  width: 6px;
+  height: 6px;
+  background: #ff007f;
+  border-radius: 50%;
+  animation: blink 0.5s infinite steps(2, start);
+}
+
+/* Recording Overlay styling */
+.recording-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 320px;
+  background: rgba(12, 12, 18, 0.9);
+  border: 1px solid rgba(255, 51, 102, 0.4);
+  border-radius: 6px;
+  padding: 8px 12px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.rec-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #ff3366;
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff3366;
+  border-radius: 50%;
+  animation: blink 1s infinite steps(2, start);
+}
+
+.rec-text {
+  flex-grow: 1;
+  letter-spacing: 1px;
+}
+
+.rec-timer {
+  color: #a08090;
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #ff3366;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+/* Acting Toolbar styling */
+.acting-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  z-index: 20;
+}
+
+.acting-btn {
+  background: rgba(12, 12, 18, 0.85);
+  color: #8c8c9e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.acting-btn:hover {
+  background: #2b2b3b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.rec-trigger {
+  color: #ff3366;
+  border-color: rgba(255, 51, 102, 0.2);
+}
+
+.rec-trigger:hover {
+  background: rgba(255, 51, 102, 0.15);
+  border-color: #ff3366;
+}
+
+.rec-stop {
+  color: #ffffff;
+  background: #ff3366;
+  border-color: #ff3366;
+}
+
+.rec-stop:hover {
+  background: #ff0044;
+}
+
+.play-btn {
+  color: #00ffff;
+}
+
+.play-btn:hover {
+  background: rgba(0, 255, 255, 0.15);
+  border-color: #00ffff;
+}
+
+.play-btn.playing {
+  background: #008888;
+  color: #ffffff;
+  border-color: #00ffff;
+}
+
+.reset-btn {
+  color: #a08090;
+}
+
 .info-overlay {
   position: absolute;
   bottom: 8px;
@@ -240,6 +579,7 @@ defineExpose({ setState, cleanup, setConnectedThreeScene })
   display: flex;
   flex-direction: column;
   gap: 2px;
+  pointer-events: none;
 }
 
 .title {
@@ -248,10 +588,43 @@ defineExpose({ setState, cleanup, setConnectedThreeScene })
   margin-bottom: 2px;
 }
 
+.state-indicator {
+  font-size: 10px;
+  font-weight: bold;
+  margin: 2px 0;
+  text-transform: uppercase;
+}
+
+.state-indicator.playing {
+  color: #00ffff;
+}
+
+.state-indicator.recording {
+  color: #ff3366;
+}
+
+.state-indicator.counting {
+  color: #ff007f;
+}
+
+.state-indicator.interactive {
+  color: #8c8c9e;
+}
+
 .hint {
   margin-top: 2px;
   font-size: 10px;
   color: #00ffff;
   font-style: italic;
+}
+
+@keyframes blink {
+  from { opacity: 1; }
+  to { opacity: 0.2; }
+}
+
+@keyframes pulse {
+  from { transform: scale(0.95); opacity: 0.8; }
+  to { transform: scale(1.05); opacity: 1; }
 }
 </style>

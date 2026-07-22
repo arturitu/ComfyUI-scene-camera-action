@@ -21,6 +21,13 @@ export class ThreeActing {
   private connectedThreeScene: any = null
   private clonedEnvGroup: THREE.Group | null = null
 
+  private isRecording = false
+  private isPlaying = false
+  private recordingTime = 0
+  private playbackTime = 0
+  private trajectory: Array<{ t: number, px: number, py: number, pz: number, ry: number }> = []
+  private onRecordingFinished?: (trajectoryJson: string) => void
+
   // BVH Collision data
   private colliderBVH: MeshBVH | null = null
   private bvhHelper: MeshBVHHelper | null = null
@@ -40,10 +47,17 @@ export class ThreeActing {
   constructor(options: ThreeActingOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
+    this.onRecordingFinished = options.onRecordingFinished
     this.connectedThreeScene = options.connectedThreeScene ?? null
     this.state = {
       character_speed: options.initialState?.character_speed ?? 10.0,
+      duration: options.initialState?.duration ?? 7.0,
+      motion_data: options.initialState?.motion_data ?? '',
       scene_data: options.initialState?.scene_data ?? null as any,
+    }
+
+    if (this.state.motion_data) {
+      this.loadTrajectory(this.state.motion_data)
     }
 
     this.initThreeJS()
@@ -54,6 +68,51 @@ export class ThreeActing {
   public setConnectedThreeScene(threeScene: any): void {
     this.connectedThreeScene = threeScene
     this.buildSceneEnvironment()
+  }
+
+  public startRecording(): void {
+    this.trajectory = []
+    this.isRecording = true
+    this.recordingTime = 0
+    this.isPlaying = false
+  }
+
+  public stopRecording(): string {
+    this.isRecording = false
+    const json = JSON.stringify(this.trajectory)
+    this.state.motion_data = json
+    if (this.onStateChange) {
+      this.onStateChange({ ...this.state })
+    }
+    return json
+  }
+
+  public startPlayback(trajectoryJson?: string): void {
+    if (trajectoryJson) {
+      this.loadTrajectory(trajectoryJson)
+    }
+    if (this.trajectory.length > 0) {
+      this.isPlaying = true
+      this.playbackTime = 0
+      this.isRecording = false
+    }
+  }
+
+  public stopPlayback(): void {
+    this.isPlaying = false
+  }
+
+  public loadTrajectory(trajectoryJson: string): void {
+    if (trajectoryJson && trajectoryJson.trim()) {
+      try {
+        this.trajectory = JSON.parse(trajectoryJson)
+        this.trajectory.sort((a, b) => a.t - b.t)
+      } catch (e) {
+        this.trajectory = []
+      }
+    } else {
+      this.trajectory = []
+    }
   }
 
   private initThreeJS(): void {
@@ -303,11 +362,68 @@ export class ThreeActing {
   private updateCharacterMovement(dt: number): void {
     if (!this.characterGroup) return
 
+    // 1. Playback Mode
+    if (this.isPlaying) {
+      if (this.trajectory.length === 0) {
+        this.isPlaying = false
+        return
+      }
+
+      this.playbackTime += dt
+      const maxDuration = this.state.duration
+
+      // Loop playback at duration boundary
+      if (this.playbackTime >= maxDuration) {
+        this.playbackTime = this.playbackTime % maxDuration
+      }
+
+      const t = this.playbackTime
+
+      // Find frame interval
+      let idxA = 0
+      for (let i = 0; i < this.trajectory.length; i++) {
+        if (this.trajectory[i].t <= t) {
+          idxA = i
+        } else {
+          break
+        }
+      }
+      const idxB = (idxA + 1) % this.trajectory.length
+      const frameA = this.trajectory[idxA]
+      const frameB = this.trajectory[idxB]
+
+      let factor = 0
+      let timeDiff = frameB.t - frameA.t
+      if (timeDiff < 0) {
+        // Loops around at end
+        timeDiff = (maxDuration - frameA.t) + frameB.t
+        const elapsedSinceA = t - frameA.t
+        factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
+      } else {
+        const elapsedSinceA = t - frameA.t
+        factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
+      }
+
+      // Linear interpolate position
+      this.characterPosition.set(
+        frameA.px + (frameB.px - frameA.px) * factor,
+        frameA.py + (frameB.py - frameA.py) * factor,
+        frameA.pz + (frameB.pz - frameA.pz) * factor
+      )
+
+      // Shortest angle rotation interpolation
+      let diffY = frameB.ry - frameA.ry
+      diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
+      this.characterGroup.rotation.y = frameA.ry + diffY * factor
+      this.characterGroup.position.copy(this.characterPosition)
+      return
+    }
+
     const physicsSteps = 5
     const stepDt = dt / physicsSteps
-    const speed = this.state.character_speed // use direct speed (default 10.0)
+    const speed = this.state.character_speed
 
-    // 1. Determine horizontal intent from key presses
+    // 2. Determine horizontal intent from key presses
     let moveZ = 0
     let moveX = 0
 
@@ -323,13 +439,13 @@ export class ThreeActing {
       this.characterGroup.rotation.y = targetAngle
     }
 
-    // Apply horizontal velocity (matching example)
+    // Apply horizontal velocity
     this.characterVelocity.x = dir.x * speed
     this.characterVelocity.z = dir.z * speed
 
     // Run physics simulation and collision resolution in multiple substeps
     for (let step = 0; step < physicsSteps; step++) {
-      // Apply gravity (matching example -30)
+      // Apply gravity
       this.characterVelocity.y -= 30 * stepDt
 
       // Apply tentative position update
@@ -347,10 +463,10 @@ export class ThreeActing {
       this.characterPosition.x = Math.max(-24, Math.min(24, this.characterPosition.x))
       this.characterPosition.z = Math.max(-24, Math.min(24, this.characterPosition.z))
 
-      // 2. Perform BVH Collision Resolution
+      // Perform BVH Collision Resolution
       if (this.colliderBVH) {
         const radius = 0.3
-        const height = 0.6 // Cylinder height between capsule spheres
+        const height = 0.6
 
         const tempSegment = new THREE.Line3()
         tempSegment.start.copy(this.characterPosition)
@@ -390,17 +506,15 @@ export class ThreeActing {
           }
         })
 
-        // Check if Y collision pushed us upwards or downwards (ground and ceiling collision)
+        // Check if Y collision pushed us upwards or downwards
         const resolvedY = tempSegment.start.y - radius
         const deltaY = resolvedY - tentativeY
         if (deltaY > 0.001) {
-          // Only land (stop velocity and set grounded) if we are falling or stationary
           if (this.characterVelocity.y <= 0) {
             this.characterVelocity.y = 0
             this.isOnGround = true
           }
         } else if (deltaY < -0.001) {
-          // Hit a ceiling: stop upward velocity if we were rising
           if (this.characterVelocity.y > 0) {
             this.characterVelocity.y = 0
           }
@@ -413,6 +527,26 @@ export class ThreeActing {
 
     // Set characterGroup position
     this.characterGroup.position.copy(this.characterPosition)
+
+    // 3. Record coordinates if in recording state
+    if (this.isRecording) {
+      this.trajectory.push({
+        t: this.recordingTime,
+        px: this.characterPosition.x,
+        py: this.characterPosition.y,
+        pz: this.characterPosition.z,
+        ry: this.characterGroup.rotation.y
+      })
+
+      this.recordingTime += dt
+
+      if (this.recordingTime >= this.state.duration) {
+        const json = this.stopRecording()
+        if (this.onRecordingFinished) {
+          this.onRecordingFinished(json)
+        }
+      }
+    }
   }
 
   public setDisplayCollider(val: boolean): void {
@@ -481,6 +615,13 @@ export class ThreeActing {
   public setState(newState: Partial<ActingState>): void {
     if (newState.character_speed !== undefined) {
       this.state.character_speed = newState.character_speed
+    }
+    if (newState.duration !== undefined) {
+      this.state.duration = newState.duration
+    }
+    if (newState.motion_data !== undefined) {
+      this.state.motion_data = newState.motion_data
+      this.loadTrajectory(newState.motion_data)
     }
     if (newState.scene_data !== undefined) {
       this.state.scene_data = { ...newState.scene_data }

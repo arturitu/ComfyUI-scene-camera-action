@@ -5,14 +5,14 @@ import type { SceneState, ActingState, SceneAppExposed, ActingAppExposed } from 
 
 const { app } = window.comfyAPI.app
 
-// Inject CSS from built assets if any (main.css)
-;(() => {
-  const cssUrl = new URL(/* @vite-ignore */ './assets/main.css', import.meta.url).href
-  const link = document.createElement('link')
-  link.rel = 'stylesheet'
-  link.href = cssUrl
-  document.head.appendChild(link)
-})()
+  // Inject CSS from built assets if any (main.css)
+  ; (() => {
+    const cssUrl = new URL(/* @vite-ignore */ './assets/main.css', import.meta.url).href
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = cssUrl
+    document.head.appendChild(link)
+  })()
 
 const CLEANUP_DELAY_MS = 200
 const SCENE_PROP_KEY = 'sceneNodeState'
@@ -68,7 +68,7 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   if (sceneDataWidget && sceneDataWidget.value && typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
     try {
       return JSON.parse(sceneDataWidget.value)
-    } catch (e) {}
+    } catch (e) { }
   }
 
   const stored = readStoredSceneProps(node)
@@ -225,7 +225,7 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
   const sceneState = readSceneStateFromNode(sceneNode) as SceneState
   const sceneInst = sceneInstances.get(sceneNode)
   const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
-  
+
   // Update acting instances that are linked to this sceneNode
   if (graph.links) {
     for (const linkId in graph.links) {
@@ -248,8 +248,12 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
 
 function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
   const speedVal = getWidgetValue(node, 'character_speed', 10.0)
+  const durationVal = getWidgetValue(node, 'duration', 7.0)
+  const motionDataVal = getWidgetValue(node, 'motion_data', '')
   return {
     character_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
+    duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
+    motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
   }
 }
 
@@ -275,12 +279,29 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const vueApp = createApp(ActingWidget, {
     currentNode: node,
     initialState: {
-      character_speed: stored.character_speed ?? 1.0,
+      character_speed: stored.character_speed ?? 10.0,
+      duration: stored.duration ?? 8.0,
+      motion_data: stored.motion_data ?? '',
       scene_data: initialSceneState,
     },
     onStateChange: (state: ActingState) => {
       const live = instance.currentNode
       writeStoredActingProps(live, state)
+      
+      // Update the widget values in ComfyUI node if they differ from state
+      const durationWidget = live.widgets?.find(w => w.name === 'duration')
+      if (durationWidget && durationWidget.value !== state.duration) {
+        durationWidget.value = state.duration
+      }
+      const speedWidget = live.widgets?.find(w => w.name === 'character_speed')
+      if (speedWidget && speedWidget.value !== state.character_speed) {
+        speedWidget.value = state.character_speed
+      }
+      const motionWidget = live.widgets?.find(w => w.name === 'motion_data')
+      if (motionWidget && motionWidget.value !== state.motion_data) {
+        motionWidget.value = state.motion_data
+      }
+
       app.graph?.setDirtyCanvas(true, true)
     }
   })
@@ -311,6 +332,16 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
   wire('character_speed', v => {
     exposed.setState({ character_speed: Number(v) })
     writeStoredActingProps(node, { character_speed: Number(v) })
+  })
+
+  wire('duration', v => {
+    exposed.setState({ duration: Number(v) })
+    writeStoredActingProps(node, { duration: Number(v) })
+  })
+
+  wire('motion_data', v => {
+    exposed.setState({ motion_data: String(v) })
+    writeStoredActingProps(node, { motion_data: String(v) })
   })
 }
 
@@ -343,9 +374,9 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
   // Sync connection change
   const origOnConnectionsChange = node.onConnectionsChange
-  node.onConnectionsChange = function(slotType, slotIndex, isConnected, link, ioSlot) {
+  node.onConnectionsChange = function (slotType, slotIndex, isConnected, link, ioSlot) {
     origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
-    
+
     if (slotType === 1) { // 1 = INPUT
       const input = this.inputs?.[slotIndex]
       if (input && input.name === 'scene' && !isConnected) {
@@ -388,7 +419,7 @@ app.registerExtension({
   setup() {
     if (app.canvas && (app.canvas as any).processMouseWheel) {
       const origWheel = (app.canvas as any).processMouseWheel;
-      (app.canvas as any).processMouseWheel = function(this: any, e: WheelEvent) {
+      (app.canvas as any).processMouseWheel = function (this: any, e: WheelEvent) {
         if (document.querySelector('.canvas-container:hover')) {
           return;
         }
@@ -416,9 +447,9 @@ app.registerExtension({
       createSceneNodeWidget(node)
 
       const origOnConfigure = node.onConfigure
-      node.onConfigure = function(info) {
+      node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
-        
+
         const numAssetsWidgetConf = this.widgets?.find(w => w.name === 'num_assets')
         if (numAssetsWidgetConf) {
           numAssetsWidgetConf.type = 'hidden'
@@ -436,13 +467,53 @@ app.registerExtension({
         motionDataWidget.type = 'hidden'
       }
 
-      // Force speed widget options to match 1 to 20 range even on old cached node instances
+      // Hide the motion_data input slot from the left side of the node
+      const motionInputIdx = node.inputs?.findIndex(i => i.name === 'motion_data')
+      if (motionInputIdx !== -1 && motionInputIdx !== undefined) {
+        node.removeInput(motionInputIdx)
+      }
+
+      // Revert speed widget to render as number with step 1.0
       const speedWidget = node.widgets?.find(w => w.name === 'character_speed')
       if (speedWidget) {
-        speedWidget.options = { ...speedWidget.options, min: 1.0, max: 20.0, step: 0.1 }
+        speedWidget.type = 'number'
+        if (!speedWidget.options) speedWidget.options = {}
+        speedWidget.options.min = 1.0
+        speedWidget.options.max = 20.0
+        speedWidget.options.step = 1.0
         if (speedWidget.value === 1.0) {
           speedWidget.value = 10.0
         }
+      }
+
+      let durationWidget = node.widgets?.find(w => w.name === 'duration')
+      if (!durationWidget) {
+        durationWidget = (node as any).addWidget(
+          'number',
+          'duration',
+          7.0,
+          (value: unknown) => {
+            const instance = actingInstances.get(node)
+            if (instance && instance.exposed) {
+              instance.exposed.setState({ duration: Number(value) })
+            }
+            writeStoredActingProps(node, { duration: Number(value) })
+          },
+          { min: 4.0, max: 15.0, step: 0.5 }
+        )
+        if (node.widgets) {
+          const speedIdx = node.widgets.findIndex(w => w.name === 'character_speed')
+          if (speedIdx !== -1) {
+            node.widgets.pop()
+            node.widgets.splice(speedIdx + 1, 0, durationWidget!)
+          }
+        }
+      } else {
+        durationWidget.type = 'number'
+        if (!durationWidget.options) durationWidget.options = {}
+        durationWidget.options.min = 4.0
+        durationWidget.options.max = 15.0
+        durationWidget.options.step = 0.5
       }
 
       const [oldWidth, oldHeight] = node.size
@@ -450,16 +521,56 @@ app.registerExtension({
       createActingNodeWidget(node)
 
       const origOnConfigure = node.onConfigure
-      node.onConfigure = function(info) {
+      node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
-        
-        // Reinforce speed limits on configure load
+
+        // Hide the motion_data input slot on configure load
+        const motionInputIdxConf = this.inputs?.findIndex(i => i.name === 'motion_data')
+        if (motionInputIdxConf !== -1 && motionInputIdxConf !== undefined) {
+          this.removeInput(motionInputIdxConf)
+        }
+
+        // Reinforce speed limits and number type on configure load
         const speedWidgetConf = this.widgets?.find(w => w.name === 'character_speed')
         if (speedWidgetConf) {
-          speedWidgetConf.options = { ...speedWidgetConf.options, min: 1.0, max: 20.0, step: 0.1 }
+          speedWidgetConf.type = 'number'
+          if (!speedWidgetConf.options) speedWidgetConf.options = {}
+          speedWidgetConf.options.min = 1.0
+          speedWidgetConf.options.max = 20.0
+          speedWidgetConf.options.step = 1.0
           if (speedWidgetConf.value === 1.0) {
             speedWidgetConf.value = 10.0
           }
+        }
+
+        let durationWidgetConf = this.widgets?.find(w => w.name === 'duration')
+        if (!durationWidgetConf) {
+          durationWidgetConf = (this as any).addWidget(
+            'number',
+            'duration',
+            7.0,
+            (value: unknown) => {
+              const instance = actingInstances.get(this)
+              if (instance && instance.exposed) {
+                instance.exposed.setState({ duration: Number(value) })
+              }
+              writeStoredActingProps(this, { duration: Number(value) })
+            },
+            { min: 4.0, max: 15.0, step: 0.5 }
+          )
+          if (this.widgets) {
+            const speedIdx = this.widgets.findIndex(w => w.name === 'character_speed')
+            if (speedIdx !== -1) {
+              this.widgets.pop()
+              this.widgets.splice(speedIdx + 1, 0, durationWidgetConf!)
+            }
+          }
+        } else {
+          durationWidgetConf.type = 'number'
+          if (!durationWidgetConf.options) durationWidgetConf.options = {}
+          durationWidgetConf.options.min = 4.0
+          durationWidgetConf.options.max = 15.0
+          durationWidgetConf.options.step = 0.5
         }
 
         const instance = actingInstances.get(this)
