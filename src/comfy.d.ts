@@ -1,6 +1,7 @@
 interface ComfyWidget {
   name: string
   value: unknown
+  type?: string
   callback?: (value: unknown) => void
 }
 
@@ -12,6 +13,7 @@ interface ComfyInput {
 
 interface ComfyNode {
   id: number
+  type?: string
   size: [number, number]
   widgets?: ComfyWidget[]
   inputs?: ComfyInput[]
@@ -70,6 +72,7 @@ interface ComfyUI {
 interface ComfyAppInstance {
   graph?: ComfyGraph
   ui?: ComfyUI
+  canvas?: any
   registerExtension(extension: {
     name: string
     setup?(): void

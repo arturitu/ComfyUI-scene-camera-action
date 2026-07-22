@@ -127,7 +127,7 @@ class ActingNode(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "character_speed",
-                    default=1.0, min=0.1, max=5.0, step=0.1,
+                    default=10.0, min=1.0, max=20.0, step=0.1,
                     display_name="Character Speed",
                     tooltip="Movement speed of the 3D character",
                 ),
@@ -148,7 +148,7 @@ class ActingNode(io.ComfyNode):
     def execute(
         cls,
         scene: str | dict | None = None,
-        character_speed: float = 1.0,
+        character_speed: float = 10.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
         scene_data = {}

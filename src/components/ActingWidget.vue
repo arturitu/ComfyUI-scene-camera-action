@@ -35,7 +35,7 @@ const props = defineProps<{
 }>()
 
 const state = reactive<ActingState>({
-  character_speed: props.initialState?.character_speed ?? 1.0,
+  character_speed: props.initialState?.character_speed ?? 10.0,
   scene_data: props.initialState?.scene_data ?? null as any,
 })
 
@@ -106,15 +106,36 @@ onMounted(() => {
           const originNode = graph.getNodeById?.(link.origin_id)
           if (originNode) {
             linkFound = true
-            const stored = originNode.properties?.['sceneNodeState']
-            const num_assets = stored?.num_assets ?? originNode.widgets?.find((w: any) => w.name === 'num_assets')?.value ?? 1
-            const asset_transforms = stored?.asset_transforms ?? []
+            // Read serialized state directly from originNode's widget
+            const sceneDataWidget = originNode.widgets?.find((w: any) => w.name === 'scene_data')
+            let connectedState: any = null
+            if (sceneDataWidget && sceneDataWidget.value) {
+              if (typeof sceneDataWidget.value === 'object') {
+                connectedState = sceneDataWidget.value
+              } else if (typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
+                try {
+                  connectedState = JSON.parse(sceneDataWidget.value)
+                } catch (e) {}
+              }
+            }
 
-            const connectedState = { type: 'cube_scene', num_assets, asset_transforms }
-            if (JSON.stringify(state.scene_data) !== JSON.stringify(connectedState)) {
-              state.scene_data = connectedState
-              if (threeActing) {
-                threeActing.setState({ scene_data: connectedState })
+            // Fallback to node properties
+            if (!connectedState && originNode.properties?.['sceneNodeState']) {
+              connectedState = originNode.properties['sceneNodeState']
+            }
+
+            if (connectedState) {
+              // Ensure asset_transforms is at least present
+              if (!connectedState.asset_transforms) {
+                connectedState.asset_transforms = []
+              }
+
+              // Only trigger state change if the data is actually different
+              if (JSON.stringify(state.scene_data) !== JSON.stringify(connectedState)) {
+                state.scene_data = connectedState
+                if (threeActing) {
+                  threeActing.setState({ scene_data: connectedState })
+                }
               }
             }
           }
@@ -209,7 +230,6 @@ defineExpose({ setState, cleanup })
   color: #ff007f;
   backdrop-filter: blur(4px);
   font-family: monospace;
-  pointer-events: none;
   z-index: 10;
   display: flex;
   flex-direction: column;

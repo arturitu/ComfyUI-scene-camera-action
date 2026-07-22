@@ -1,7 +1,7 @@
 import { createApp, type App as VueApp } from 'vue'
 import SceneWidget from './components/SceneWidget.vue'
 import ActingWidget from './components/ActingWidget.vue'
-import type { SceneState, ActingState, SceneAppExposed, ActingAppExposed, DOMWidgetInstance } from './types'
+import type { SceneState, ActingState, SceneAppExposed, ActingAppExposed } from './types'
 
 const { app } = window.comfyAPI.app
 
@@ -250,8 +250,9 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
 }
 
 function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
+  const speedVal = getWidgetValue(node, 'character_speed', 10.0)
   return {
-    character_speed: getWidgetValue(node, 'character_speed', 1.0),
+    character_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
   }
 }
 
@@ -421,6 +422,15 @@ app.registerExtension({
         motionDataWidget.type = 'hidden'
       }
 
+      // Force speed widget options to match 1 to 20 range even on old cached node instances
+      const speedWidget = node.widgets?.find(w => w.name === 'character_speed')
+      if (speedWidget) {
+        speedWidget.options = { ...speedWidget.options, min: 1.0, max: 20.0, step: 0.1 }
+        if (speedWidget.value === 1.0) {
+          speedWidget.value = 10.0
+        }
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 360), Math.max(oldHeight, 520)])
       createActingNodeWidget(node)
@@ -428,6 +438,16 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure
       node.onConfigure = function(info) {
         origOnConfigure?.call(this, info)
+        
+        // Reinforce speed limits on configure load
+        const speedWidgetConf = this.widgets?.find(w => w.name === 'character_speed')
+        if (speedWidgetConf) {
+          speedWidgetConf.options = { ...speedWidgetConf.options, min: 1.0, max: 20.0, step: 0.1 }
+          if (speedWidgetConf.value === 1.0) {
+            speedWidgetConf.value = 10.0
+          }
+        }
+
         const instance = actingInstances.get(this)
         if (instance) {
           const state = readActingStateFromNode(this)

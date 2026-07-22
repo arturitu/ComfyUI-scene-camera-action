@@ -1,5 +1,7 @@
 import * as THREE from 'three'
-import type { ActingState, ThreeActingOptions, CubeTransform } from './types'
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
+import { MeshBVH, MeshBVHHelper } from 'three-mesh-bvh'
+import type { ActingState, ThreeActingOptions, CubeTransform, SceneState } from './types'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -14,12 +16,20 @@ export class ThreeActing {
   private gridHelper: THREE.GridHelper | null = null
   private animationId: number | null = null
   private isHovered = false
-  private globalWheelHandler?: (e: WheelEvent) => void
 
-  // Character movement control state (Arrow keys only to prevent conflict with ComfyUI's WASD)
+  // BVH Collision data
+  private colliderBVH: MeshBVH | null = null
+  private bvhHelper: MeshBVHHelper | null = null
+  private colliderVisualizer: THREE.Mesh | null = null
+  private displayBVH = false
+  private displayCollider = false
+
+  // Character movement & physics control state
   private keysPressed: Record<string, boolean> = {}
-  private characterPosition = new THREE.Vector3(0, 0, 2)
-  private characterRotation = 0
+  private characterPosition = new THREE.Vector3(0, -1.0, 2)
+  private characterVelocity = new THREE.Vector3(0, 0, 0)
+  private isOnGround = true
+  private lastTime = performance.now()
   private keydownHandler?: (e: KeyboardEvent) => void
   private keyupHandler?: (e: KeyboardEvent) => void
 
@@ -27,7 +37,7 @@ export class ThreeActing {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.state = {
-      character_speed: options.initialState?.character_speed ?? 1.0,
+      character_speed: options.initialState?.character_speed ?? 10.0,
       scene_data: options.initialState?.scene_data ?? null as any,
     }
 
@@ -46,7 +56,6 @@ export class ThreeActing {
     this.scene.fog = new THREE.Fog(bgColor, 5, 20)
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
-    // Initial camera position relative to origin
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
@@ -104,6 +113,7 @@ export class ThreeActing {
   }
 
   private buildSceneEnvironment(): void {
+    // Clean up old environment meshes
     this.environmentMeshes.forEach((mesh) => {
       this.scene.remove(mesh)
       mesh.geometry.dispose()
@@ -115,11 +125,29 @@ export class ThreeActing {
     })
     this.environmentMeshes = []
 
+    // Clean up debug visualizations
+    if (this.colliderVisualizer) {
+      this.scene.remove(this.colliderVisualizer)
+      this.colliderVisualizer.geometry.dispose()
+      if (Array.isArray(this.colliderVisualizer.material)) {
+        this.colliderVisualizer.material.forEach((m) => m.dispose())
+      } else {
+        this.colliderVisualizer.material.dispose()
+      }
+      this.colliderVisualizer = null
+    }
+
+    if (this.bvhHelper) {
+      this.scene.remove(this.bvhHelper)
+      this.bvhHelper = null
+    }
+
     const sceneData = this.state.scene_data
     if (!sceneData || !sceneData.asset_transforms) {
       if (this.gridHelper) {
         this.gridHelper.visible = false
       }
+      this.colliderBVH = null
       return
     }
 
@@ -133,6 +161,7 @@ export class ThreeActing {
     const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
     const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
 
+    // Create environment meshes
     sceneData.asset_transforms.forEach((t, i) => {
       let width = 0.8
       let depth = 0.8
@@ -160,6 +189,49 @@ export class ThreeActing {
       this.scene.add(mesh)
       this.environmentMeshes.push(mesh)
     })
+
+    // 2. Build BVH Collision Tree
+    const geometries: THREE.BufferGeometry[] = []
+
+    // Add floor box geometry to match vertex layout of boxes (centered at -1.05 height, thin box)
+    const floorBox = new THREE.BoxGeometry(50, 0.1, 50)
+    floorBox.translate(0, -1.05, 0)
+    geometries.push(floorBox)
+
+    // Add all assets geometries transformed to their world positions
+    this.environmentMeshes.forEach((mesh) => {
+      mesh.updateMatrixWorld(true)
+      const geom = mesh.geometry.clone()
+      geom.applyMatrix4(mesh.matrixWorld)
+      geometries.push(geom)
+    })
+
+    if (geometries.length > 0) {
+      const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
+      this.colliderBVH = new MeshBVH(mergedGeom)
+
+      // Create collider visualizer
+      const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.3,
+        depthWrite: false
+      }))
+      this.colliderVisualizer = colliderMesh
+      this.colliderVisualizer.visible = this.displayCollider
+      this.scene.add(this.colliderVisualizer)
+
+      // Create BVH Helper visualizer
+      this.bvhHelper = new MeshBVHHelper(colliderMesh)
+      this.bvhHelper.visible = this.displayBVH
+      this.scene.add(this.bvhHelper)
+
+      // Clean up cloned geometries
+      geometries.forEach(g => g.dispose())
+    } else {
+      this.colliderBVH = null
+    }
   }
 
   private buildCharacter(): void {
@@ -177,13 +249,13 @@ export class ThreeActing {
       metalness: 0.5,
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    bodyMesh.position.y = 0.6 - 1.0 // Shift down to match grid plane at y=-1
+    // Capsule height = 1.2, bottom sphere Y = 0.3. Set Y position to 0.6 so base starts exactly at Y = 0
+    bodyMesh.position.y = 0.6
     bodyMesh.castShadow = true
     bodyMesh.receiveShadow = true
     this.characterGroup.add(bodyMesh)
 
     this.characterGroup.position.copy(this.characterPosition)
-    this.characterGroup.position.y = 0 // Align base of group with characterPosition height
     this.scene.add(this.characterGroup)
   }
 
@@ -196,12 +268,20 @@ export class ThreeActing {
       this.isHovered = false
     })
 
-    // Keyboard listeners when mouse is hovered over canvas (Arrow keys only)
+    // Keyboard listeners when mouse is hovered over canvas (Arrow keys only for keysPressed)
     this.keydownHandler = (e: KeyboardEvent) => {
       if (!this.isHovered) return
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault()
         this.keysPressed[e.code] = true
+      }
+      if (e.code === 'Space') {
+        e.preventDefault()
+        if (e.repeat) return
+        if (this.isOnGround) {
+          this.characterVelocity.y = 10.0 // Jump vertical impulse (matching example)
+          this.isOnGround = false
+        }
       }
     }
 
@@ -220,10 +300,14 @@ export class ThreeActing {
     resizeObserver.observe(this.container)
   }
 
-  private updateCharacterMovement(): void {
+  private updateCharacterMovement(dt: number): void {
     if (!this.characterGroup) return
 
-    const speed = 0.05 * this.state.character_speed
+    const physicsSteps = 5
+    const stepDt = dt / physicsSteps
+    const speed = this.state.character_speed // use direct speed (default 10.0)
+
+    // 1. Determine horizontal intent from key presses
     let moveZ = 0
     let moveX = 0
 
@@ -232,23 +316,116 @@ export class ThreeActing {
     if (this.keysPressed['ArrowLeft']) moveX -= 1
     if (this.keysPressed['ArrowRight']) moveX += 1
 
-    if (moveX !== 0 || moveZ !== 0) {
-      const dir = new THREE.Vector3(moveX, 0, moveZ).normalize()
-      
-      // Update horizontal position
-      this.characterPosition.x += dir.x * speed
-      this.characterPosition.z += dir.z * speed
-      
-      // Boundary check to keep character on the floor grid roughly
-      this.characterPosition.x = Math.max(-20, Math.min(20, this.characterPosition.x))
-      this.characterPosition.z = Math.max(-20, Math.min(20, this.characterPosition.z))
-      
-      // Update group position (y remains relative to grid plane)
-      this.characterGroup.position.x = this.characterPosition.x
-      this.characterGroup.position.z = this.characterPosition.z
-
+    let dir = new THREE.Vector3(moveX, 0, moveZ)
+    if (dir.lengthSq() > 0) {
+      dir.normalize()
       const targetAngle = Math.atan2(dir.x, dir.z)
       this.characterGroup.rotation.y = targetAngle
+    }
+
+    // Apply horizontal velocity (matching example)
+    this.characterVelocity.x = dir.x * speed
+    this.characterVelocity.z = dir.z * speed
+
+    // Run physics simulation and collision resolution in multiple substeps
+    for (let step = 0; step < physicsSteps; step++) {
+      // Apply gravity (matching example -30)
+      this.characterVelocity.y -= 30 * stepDt
+
+      // Apply tentative position update
+      const tentativeY = this.characterPosition.y
+      this.characterPosition.addScaledVector(this.characterVelocity, stepDt)
+
+      // Force floor lock constraint: character can never fall below y=-1.0 (failsafe)
+      if (this.characterPosition.y < -1.0) {
+        this.characterPosition.y = -1.0
+        this.characterVelocity.y = 0
+        this.isOnGround = true
+      }
+
+      // Limit boundaries of characterPosition
+      this.characterPosition.x = Math.max(-24, Math.min(24, this.characterPosition.x))
+      this.characterPosition.z = Math.max(-24, Math.min(24, this.characterPosition.z))
+
+      // 2. Perform BVH Collision Resolution
+      if (this.colliderBVH) {
+        const radius = 0.3
+        const height = 0.6 // Cylinder height between capsule spheres
+
+        const tempSegment = new THREE.Line3()
+        tempSegment.start.copy(this.characterPosition)
+        tempSegment.start.y += radius
+
+        tempSegment.end.copy(this.characterPosition)
+        tempSegment.end.y += radius + height
+
+        const capsuleBounds = new THREE.Box3()
+        capsuleBounds.min.copy(this.characterPosition)
+        capsuleBounds.min.x -= radius
+        capsuleBounds.min.z -= radius
+        capsuleBounds.max.copy(this.characterPosition)
+        capsuleBounds.max.x += radius
+        capsuleBounds.max.z += radius
+        capsuleBounds.max.y += radius + height + radius
+
+        const tempVector = new THREE.Vector3()
+        const tempVector2 = new THREE.Vector3()
+
+        // Resolve intersections
+        this.colliderBVH.shapecast({
+          intersectsBounds: box => box.intersectsBox(capsuleBounds),
+          intersectsTriangle: (tri) => {
+            const triPoint = tempVector
+            const capsulePoint = tempVector2
+            const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
+            const dist = Math.sqrt(distSq)
+
+            if (dist < radius) {
+              const depth = radius - dist
+              const direction = capsulePoint.sub(triPoint).normalize()
+              
+              tempSegment.start.addScaledVector(direction, depth)
+              tempSegment.end.addScaledVector(direction, depth)
+            }
+          }
+        })
+
+        // Check if Y collision pushed us upwards or downwards (ground and ceiling collision)
+        const resolvedY = tempSegment.start.y - radius
+        const deltaY = resolvedY - tentativeY
+        if (deltaY > 0.001) {
+          // Only land (stop velocity and set grounded) if we are falling or stationary
+          if (this.characterVelocity.y <= 0) {
+            this.characterVelocity.y = 0
+            this.isOnGround = true
+          }
+        } else if (deltaY < -0.001) {
+          // Hit a ceiling: stop upward velocity if we were rising
+          if (this.characterVelocity.y > 0) {
+            this.characterVelocity.y = 0
+          }
+        }
+
+        this.characterPosition.copy(tempSegment.start)
+        this.characterPosition.y -= radius
+      }
+    }
+
+    // Set characterGroup position
+    this.characterGroup.position.copy(this.characterPosition)
+  }
+
+  public setDisplayCollider(val: boolean): void {
+    this.displayCollider = val
+    if (this.colliderVisualizer) {
+      this.colliderVisualizer.visible = val
+    }
+  }
+
+  public setDisplayBVH(val: boolean): void {
+    this.displayBVH = val
+    if (this.bvhHelper) {
+      this.bvhHelper.visible = val
     }
   }
 
@@ -264,20 +441,24 @@ export class ThreeActing {
 
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
-    this.updateCharacterMovement()
 
-    // Camera following character: Keep character centered
+    // Calculate real frame delta time (independent of frame rate / monitor refresh rate)
+    const time = performance.now()
+    const dt = Math.min((time - this.lastTime) / 1000, 0.1) // Cap at 0.1s to prevent lag glitches
+    this.lastTime = time
+
+    this.updateCharacterMovement(dt)
+
+    // Camera following character
     if (this.characterGroup) {
-      // Position camera at a simple fixed offset relative to character (X=0, Y=4, Z=8)
       this.camera.position.set(
         this.characterPosition.x,
         this.characterPosition.y + 4,
         this.characterPosition.z + 8
       )
-      // Look at the character (offsetting look target slightly up for visual balance)
       this.camera.lookAt(
         this.characterPosition.x,
-        this.characterPosition.y - 0.2,
+        this.characterPosition.y + 0.5,
         this.characterPosition.z
       )
     }
