@@ -190,22 +190,9 @@ export class ThreeActing {
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
     bodyMesh.position.y = 0.6 - 1.0 // Shift down to match grid plane at y=-1
+    bodyMesh.castShadow = true
+    bodyMesh.receiveShadow = true
     this.characterGroup.add(bodyMesh)
-
-    // Character head sphere
-    const headGeo = new THREE.SphereGeometry(0.22, 16, 16)
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 })
-    const headMesh = new THREE.Mesh(headGeo, headMat)
-    headMesh.position.y = 1.15 - 1.0 // Shift down to match grid plane at y=-1
-    this.characterGroup.add(headMesh)
-
-    // Character direction arrow / visor
-    const visorGeo = new THREE.ConeGeometry(0.12, 0.3, 8)
-    visorGeo.rotateX(Math.PI / 2)
-    const visorMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 0.5 })
-    const visorMesh = new THREE.Mesh(visorGeo, visorMat)
-    visorMesh.position.set(0, 1.15 - 1.0, 0.25)
-    this.characterGroup.add(visorMesh)
 
     this.characterGroup.position.copy(this.characterPosition)
     this.characterGroup.position.y = 0 // Align base of group with characterPosition height
