@@ -1,0 +1,13 @@
+# Node modules & build outputs
+node_modules/
+js/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE / OS
+.DS_Store
+.idea/
+.vscode/
