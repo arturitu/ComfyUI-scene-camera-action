@@ -7,6 +7,7 @@ export class ThreeScene {
   private container: HTMLElement
   private state: SceneState
   private onStateChange?: (state: SceneState) => void
+  private onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -18,11 +19,13 @@ export class ThreeScene {
   private isHovered = false
   private globalWheelHandler?: (e: WheelEvent) => void
   private pointerDownHandler?: (e: PointerEvent) => void
-  private transformMode: 'translate' | 'rotate' | 'scale' = 'translate'
+  private transformMode: 'translate' | 'rotate' | 'scale' | null = null
+  private lastTransformMode: 'translate' | 'rotate' | 'scale' = 'translate'
 
   constructor(options: ThreeSceneOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
+    this.onTransformModeChange = options.onTransformModeChange
     this.state = {
       type: 'cube_scene',
       num_assets: options.initialState?.num_assets ?? 1,
@@ -288,10 +291,18 @@ export class ThreeScene {
 
       if (intersects.length > 0) {
         const clickedMesh = intersects[0].object
+        if (!this.transformMode) {
+          // Restore the last active transform mode
+          this.setTransformMode(this.lastTransformMode)
+          if (this.onTransformModeChange) {
+            this.onTransformModeChange(this.lastTransformMode)
+          }
+        }
         this.transformControls.attach(clickedMesh)
       } else {
         const gizmoIntersects = raycaster.intersectObjects(this.transformControls.getHelper().children, true)
         if (gizmoIntersects.length === 0) {
+          // Deselect object but preserve the active transform mode in the UI
           this.transformControls.detach()
         }
       }
@@ -323,10 +334,17 @@ export class ThreeScene {
     this.renderer.render(this.scene, this.camera)
   }
 
-  public setTransformMode(mode: 'translate' | 'rotate' | 'scale'): void {
+  public setTransformMode(mode: 'translate' | 'rotate' | 'scale' | null): void {
     this.transformMode = mode
+    if (mode) {
+      this.lastTransformMode = mode
+    }
     if (this.transformControls) {
-      this.transformControls.setMode(mode)
+      if (mode) {
+        this.transformControls.setMode(mode)
+      } else {
+        this.transformControls.detach()
+      }
     }
   }
 

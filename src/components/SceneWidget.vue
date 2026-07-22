@@ -7,13 +7,13 @@
       <!-- Edit Mode Toolbar -->
       <div class="canvas-edit-toolbar">
         <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click="setMode('translate')">
-          Move
+          ✛
         </button>
         <button class="edit-btn" :class="{ 'active': activeMode === 'rotate' }" title="Rotate object" @click="setMode('rotate')">
-          Rotate
+          ↺
         </button>
         <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click="setMode('scale')">
-          Scale
+          ⤢
         </button>
       </div>
     </div>
@@ -41,7 +41,7 @@ const state = reactive<SceneState>({
   asset_transforms: props.initialState?.asset_transforms ?? [],
 })
 
-const activeMode = ref<'translate' | 'rotate' | 'scale'>('translate')
+const activeMode = ref<'translate' | 'rotate' | 'scale' | null>(null)
 let threeScene: ThreeScene | null = null
 
 const initScene = (container: HTMLElement) => {
@@ -53,15 +53,22 @@ const initScene = (container: HTMLElement) => {
       if (props.onStateChange) {
         props.onStateChange(updatedState)
       }
+    },
+    onTransformModeChange: (mode) => {
+      activeMode.value = mode
     }
   })
   threeScene.setTransformMode(activeMode.value)
 }
 
 const setMode = (mode: 'translate' | 'rotate' | 'scale') => {
-  activeMode.value = mode
+  if (activeMode.value === mode) {
+    activeMode.value = null
+  } else {
+    activeMode.value = mode
+  }
   if (threeScene) {
-    threeScene.setTransformMode(mode)
+    threeScene.setTransformMode(activeMode.value)
   }
 }
 
@@ -119,7 +126,7 @@ defineExpose({ setState, cleanup })
   left: 12px;
   top: 12px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   z-index: 20;
 }
@@ -129,8 +136,12 @@ defineExpose({ setState, cleanup })
   color: #8c8c9e;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 10px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;

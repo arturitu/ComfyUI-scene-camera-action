@@ -404,7 +404,7 @@ app.registerExtension({
       }
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 360), Math.max(oldHeight, 520)])
+      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createSceneNodeWidget(node)
 
       const origOnConfigure = node.onConfigure
@@ -432,7 +432,7 @@ app.registerExtension({
       }
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 360), Math.max(oldHeight, 520)])
+      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createActingNodeWidget(node)
 
       const origOnConfigure = node.onConfigure

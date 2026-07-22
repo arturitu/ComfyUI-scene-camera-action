@@ -27,6 +27,7 @@ export interface ThreeSceneOptions {
   container: HTMLElement
   initialState?: Partial<SceneState>
   onStateChange?: (state: SceneState) => void
+  onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
 }
 
 export interface ThreeActingOptions {
