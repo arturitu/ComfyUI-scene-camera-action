@@ -41,6 +41,7 @@ interface ComfyNode {
   ) => void
   onExecuted?: (output: unknown) => void
   onPropertyChanged?: (key: string, value: unknown) => void
+  onConfigure?: (info: any) => void
 }
 
 interface DOMWidgetInstance {

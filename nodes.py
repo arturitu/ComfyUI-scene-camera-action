@@ -57,6 +57,12 @@ class SceneNode(io.ComfyNode):
                     display_name="Number of Assets",
                     tooltip="Number of 3D assets to render in the scene",
                 ),
+                io.String.Input(
+                    "scene_data",
+                    default="",
+                    display_name="Scene Data",
+                    tooltip="Serialized JSON data of the scene configurations (hidden)",
+                ),
             ],
             outputs=[
                 SceneIO.Output("scene_data", display_name="Scene Data"),
@@ -68,11 +74,22 @@ class SceneNode(io.ComfyNode):
     def execute(
         cls,
         num_assets: int,
+        scene_data: str = "",
     ) -> io.NodeOutput:
-        scene_dict = {
-            "type": "cube_scene",
-            "num_assets": num_assets,
-        }
+        # Prioritize the serialized scene_data from frontend if it exists
+        scene_dict = {}
+        if scene_data.strip():
+            try:
+                scene_dict = json.loads(scene_data)
+            except Exception:
+                pass
+
+        if not scene_dict:
+            scene_dict = {
+                "type": "cube_scene",
+                "num_assets": num_assets,
+                "asset_transforms": [],
+            }
 
         # Convert dict to JSON string for pipeline IO
         scene_json = json.dumps(scene_dict)
@@ -82,8 +99,9 @@ class SceneNode(io.ComfyNode):
     def fingerprint_inputs(
         cls,
         num_assets: int,
+        scene_data: str = "",
     ):
-        return f"{num_assets}"
+        return f"{num_assets}_{scene_data}"
 
 
 class ActingNode(io.ComfyNode):
@@ -113,6 +131,12 @@ class ActingNode(io.ComfyNode):
                     display_name="Character Speed",
                     tooltip="Movement speed of the 3D character",
                 ),
+                io.String.Input(
+                    "motion_data",
+                    default="",
+                    display_name="Motion Data",
+                    tooltip="Serialized JSON recording of character acting (hidden)",
+                ),
             ],
             outputs=[
                 ActingIO.Output("acting_data", display_name="Acting Data"),
@@ -125,6 +149,7 @@ class ActingNode(io.ComfyNode):
         cls,
         scene: str | dict | None = None,
         character_speed: float = 1.0,
+        motion_data: str = "",
     ) -> io.NodeOutput:
         scene_data = {}
         if isinstance(scene, str) and scene.strip():
@@ -138,6 +163,7 @@ class ActingNode(io.ComfyNode):
         acting_dict = {
             "scene_data": scene_data,
             "character_speed": character_speed,
+            "motion_data": motion_data,
         }
 
         acting_json = json.dumps(acting_dict)

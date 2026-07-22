@@ -54,10 +54,23 @@ function readStoredSceneProps(node: ComfyNode): Partial<SceneState> | null {
 function writeStoredSceneProps(node: ComfyNode, patch: Partial<SceneState>): void {
   if (!node.properties) node.properties = {}
   const existing = (node.properties[SCENE_PROP_KEY] as Partial<SceneState>) ?? {}
-  node.properties[SCENE_PROP_KEY] = { ...existing, ...patch }
+  const updated = { ...existing, ...patch }
+  node.properties[SCENE_PROP_KEY] = updated
+
+  const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
+  if (sceneDataWidget) {
+    sceneDataWidget.value = JSON.stringify(updated)
+  }
 }
 
 function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
+  const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
+  if (sceneDataWidget && sceneDataWidget.value && typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
+    try {
+      return JSON.parse(sceneDataWidget.value)
+    } catch (e) {}
+  }
+
   const stored = readStoredSceneProps(node)
   return {
     type: 'cube_scene',
@@ -378,13 +391,48 @@ app.registerExtension({
     const comfyClass = node.constructor?.comfyClass
 
     if (comfyClass === 'SceneNode') {
+      const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
+      if (sceneDataWidget) {
+        sceneDataWidget.type = 'hidden'
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 360), Math.max(oldHeight, 520)])
       createSceneNodeWidget(node)
+
+      const origOnConfigure = node.onConfigure
+      node.onConfigure = function(info) {
+        origOnConfigure?.call(this, info)
+        const instance = sceneInstances.get(this)
+        if (instance) {
+          const state = readSceneStateFromNode(this)
+          instance.exposed.setState(state)
+        }
+      }
     } else if (comfyClass === 'ActingNode') {
+      const motionDataWidget = node.widgets?.find(w => w.name === 'motion_data')
+      if (motionDataWidget) {
+        motionDataWidget.type = 'hidden'
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 360), Math.max(oldHeight, 520)])
       createActingNodeWidget(node)
+
+      const origOnConfigure = node.onConfigure
+      node.onConfigure = function(info) {
+        origOnConfigure?.call(this, info)
+        const instance = actingInstances.get(this)
+        if (instance) {
+          const motionDataWidget = this.widgets?.find(w => w.name === 'motion_data')
+          if (motionDataWidget && motionDataWidget.value) {
+            try {
+              const parsed = JSON.parse(motionDataWidget.value as string)
+              instance.exposed.setState(parsed)
+            } catch (e) {}
+          }
+        }
+      }
     }
   }
 })
