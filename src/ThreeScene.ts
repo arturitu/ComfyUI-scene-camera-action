@@ -2,12 +2,14 @@ import * as THREE from 'three'
 import { MapControls } from 'three/addons/controls/MapControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import type { SceneState, ThreeSceneOptions, CubeTransform } from './types'
+import * as config from './threeConfig'
 
 export class ThreeScene {
   private container: HTMLElement
   private state: SceneState
   private onStateChange?: (state: SceneState) => void
   private onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
+  private onSelectionChange?: (hasSelection: boolean) => void
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -26,6 +28,7 @@ export class ThreeScene {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onTransformModeChange = options.onTransformModeChange
+    this.onSelectionChange = options.onSelectionChange
     this.state = {
       type: 'cube_scene',
       num_assets: options.initialState?.num_assets ?? 1,
@@ -42,9 +45,9 @@ export class ThreeScene {
     const height = this.container.clientHeight || 300
 
     this.scene = new THREE.Scene()
-    const bgColor = new THREE.Color(0xd3d3d7)
+    const bgColor = new THREE.Color(config.BACKGROUND_COLOR)
     this.scene.background = bgColor
-    this.scene.fog = new THREE.Fog(bgColor, 1, 30)
+    this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
     this.camera.position.set(0, 4, 8)
@@ -67,30 +70,44 @@ export class ThreeScene {
     canvas.style.cursor = 'grab'
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
     this.scene.add(ambientLight)
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    mainLight.position.set(5, 10, 5)
+    const mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
+    mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
     mainLight.castShadow = true
-    mainLight.shadow.mapSize.width = 1024
-    mainLight.shadow.mapSize.height = 1024
-    mainLight.shadow.bias = -0.0005
+    mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
+    mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
+    mainLight.shadow.bias = config.SHADOW_BIAS
+    mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
+    
+    const d = config.SHADOW_FRUSTUM_SIZE
+    mainLight.shadow.camera.left = -d
+    mainLight.shadow.camera.right = d
+    mainLight.shadow.camera.top = d
+    mainLight.shadow.camera.bottom = -d
+    mainLight.shadow.camera.near = 0.1
+    mainLight.shadow.camera.far = 100
     this.scene.add(mainLight)
 
-    const fillLight = new THREE.DirectionalLight(0x3d4974, 0.3)
-    fillLight.position.set(-5, 3, -5)
+    const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
+    fillLight.position.copy(config.FILL_LIGHT_POSITION)
     this.scene.add(fillLight)
 
-    // Floor Grid (50x50m) matching ComfyUI-3D-motion-reference
-    const gridHelper = new THREE.GridHelper(50, 50, 0xaaaaaf, 0xc5c5cb)
+    // Floor Grid matching ComfyUI-3D-motion-reference
+    const gridHelper = new THREE.GridHelper(
+      config.GRID_SIZE,
+      config.GRID_DIVISIONS,
+      config.GRID_COLOR_CENTER,
+      config.GRID_COLOR_GRID
+    )
     gridHelper.position.y = -1.0
     this.scene.add(gridHelper)
 
     // Floor plane that receives shadows
-    const floorGeo = new THREE.PlaneGeometry(50, 50)
+    const floorGeo = new THREE.PlaneGeometry(100, 100)
     const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xd3d3d7,
+      color: 0xdbdbdb,
       roughness: 1,
       metalness: 0,
     })
@@ -175,63 +192,32 @@ export class ThreeScene {
       this.state.asset_transforms = []
     }
 
-    // Align transforms list with num_assets
-    if (this.state.asset_transforms.length !== this.state.num_assets) {
-      const newTransforms: CubeTransform[] = []
-      for (let i = 0; i < this.state.num_assets; i++) {
-        if (this.state.asset_transforms[i]) {
-          newTransforms.push(this.state.asset_transforms[i])
+
+
+    // Migrate old scale 1x1x1 configurations to their calculated dimensions so they don't jump sizes when shifted
+    this.state.asset_transforms.forEach((t, i) => {
+      if (t.sx === 1.0 && t.sy === 1.0 && t.sz === 1.0) {
+        if (i === 0) {
+          t.sx = 0.8
+          t.sz = 0.8
+          t.sy = 2.0
         } else {
-          let x = 0
-          let z = 0
-          let height = 2.0
-          let rotationY = 0
-          if (i > 0) {
-            const seed1 = Math.sin(i * 12.9898) * 43758.5453
-            const seed2 = Math.sin(i * 78.233) * 43758.5453
-            const rand1 = seed1 - Math.floor(seed1)
-            const rand2 = seed2 - Math.floor(seed2)
-            x = (rand1 - 0.5) * 6.0
-            z = (rand2 - 0.5) * 6.0
-            height = 1.0 + (rand1 * 2.0)
-            rotationY = rand1 * 0.5 - 0.25
-          }
-          newTransforms.push({
-            px: x,
-            py: -1.0 + height / 2,
-            pz: z,
-            rx: 0,
-            ry: rotationY,
-            rz: 0,
-            sx: 1,
-            sy: 1,
-            sz: 1
-          })
+          const seed1 = Math.sin(i * 12.9898) * 43758.5453
+          const seed2 = Math.sin(i * 78.233) * 43758.5453
+          const rand1 = seed1 - Math.floor(seed1)
+          const rand2 = seed2 - Math.floor(seed2)
+          t.sx = 0.6 + rand1 * 0.4
+          t.sz = 0.6 + rand2 * 0.4
+          t.sy = 1.0 + rand1 * 1.5
         }
       }
-      this.state.asset_transforms = newTransforms
-      if (this.onStateChange) {
-        this.onStateChange({ ...this.state })
-      }
-    }
+    })
 
-    for (let i = 0; i < this.state.num_assets; i++) {
-      const t = this.state.asset_transforms[i]
-      let width = 0.8
-      let depth = 0.8
-      let height = 2.0
+    this.state.num_assets = this.state.asset_transforms.length
 
-      if (i > 0) {
-        const seed1 = Math.sin(i * 12.9898) * 43758.5453
-        const seed2 = Math.sin(i * 78.233) * 43758.5453
-        const rand1 = seed1 - Math.floor(seed1)
-        const rand2 = seed2 - Math.floor(seed2)
-        width = 0.6 + rand1 * 0.4
-        depth = 0.6 + rand2 * 0.4
-        height = 1.0 + rand1 * 1.5
-      }
-
-      const geometry = new THREE.BoxGeometry(width, height, depth)
+    this.state.asset_transforms.forEach((t) => {
+      // Always create a 1x1x1 box and let the scale represent its true dimensions
+      const geometry = new THREE.BoxGeometry(1, 1, 1)
       const mesh = new THREE.Mesh(geometry, materials)
 
       mesh.position.set(t.px, t.py, t.pz)
@@ -242,6 +228,87 @@ export class ThreeScene {
 
       this.scene.add(mesh)
       this.meshes.push(mesh)
+    })
+  }
+
+  public addNewAsset(): void {
+    if (!this.state.asset_transforms) {
+      this.state.asset_transforms = []
+    }
+
+    // Spawn with random offset from center
+    const px = (Math.random() * 4 - 2)
+    const pz = (Math.random() * 4 - 2)
+    const py = 0.0 // box center Y (spawns on floor)
+
+    // Randomize dimensions directly into scale
+    const rand1 = Math.random()
+    const rand2 = Math.random()
+    const sx = 0.6 + rand1 * 0.4
+    const sz = 0.6 + rand2 * 0.4
+    const sy = 1.0 + rand1 * 1.5
+
+    const newTransform: CubeTransform = {
+      px, py, pz,
+      rx: 0, ry: 0, rz: 0,
+      sx, sy, sz
+    }
+
+    this.state.asset_transforms.push(newTransform)
+    this.state.num_assets = this.state.asset_transforms.length
+
+    this.updateMesh()
+
+    // Select the new asset automatically
+    const newMesh = this.meshes[this.meshes.length - 1]
+    if (newMesh) {
+      if (!this.transformMode) {
+        this.setTransformMode('translate')
+        if (this.onTransformModeChange) {
+          this.onTransformModeChange('translate')
+        }
+      }
+      this.transformControls.attach(newMesh)
+    }
+
+    if (this.onStateChange) {
+      this.onStateChange({ ...this.state })
+    }
+  }
+
+  public deleteSelectedAsset(): void {
+    if (!this.transformControls.object) return
+    const selectedMesh = this.transformControls.object as THREE.Mesh
+    const index = this.meshes.indexOf(selectedMesh)
+    if (index !== -1) {
+      this.state.asset_transforms.splice(index, 1)
+      this.state.num_assets = this.state.asset_transforms.length
+
+      this.transformControls.detach()
+      if (this.onSelectionChange) {
+        this.onSelectionChange(false)
+      }
+      this.updateMesh()
+
+      // Select previous asset if there is one
+      const prevIndex = index - 1
+      if (prevIndex >= 0 && this.meshes[prevIndex]) {
+        const prevMesh = this.meshes[prevIndex]
+        if (!this.transformMode) {
+          this.setTransformMode('translate')
+          if (this.onTransformModeChange) {
+            this.onTransformModeChange('translate')
+          }
+        }
+        this.transformControls.attach(prevMesh)
+        if (this.onSelectionChange) {
+          this.onSelectionChange(true)
+        }
+      }
+
+      if (this.onStateChange) {
+        this.onStateChange({ ...this.state })
+      }
     }
   }
 
@@ -299,11 +366,17 @@ export class ThreeScene {
           }
         }
         this.transformControls.attach(clickedMesh)
+        if (this.onSelectionChange) {
+          this.onSelectionChange(true)
+        }
       } else {
         const gizmoIntersects = raycaster.intersectObjects(this.transformControls.getHelper().children, true)
         if (gizmoIntersects.length === 0) {
           // Deselect object but preserve the active transform mode in the UI
           this.transformControls.detach()
+          if (this.onSelectionChange) {
+            this.onSelectionChange(false)
+          }
         }
       }
     }
@@ -344,6 +417,9 @@ export class ThreeScene {
         this.transformControls.setMode(mode)
       } else {
         this.transformControls.detach()
+        if (this.onSelectionChange) {
+          this.onSelectionChange(false)
+        }
       }
     }
   }

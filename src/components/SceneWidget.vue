@@ -4,8 +4,8 @@
       <div class="canvas-aspect-container">
         <SceneCanvas :init-scene="initScene" />
       </div>
-      <!-- Edit Mode Toolbar -->
-      <div class="canvas-edit-toolbar">
+      <!-- Edit Mode Toolbar (Left Side) -->
+      <div class="canvas-edit-toolbar left">
         <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click="setMode('translate')">
           ✛
         </button>
@@ -14,6 +14,15 @@
         </button>
         <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click="setMode('scale')">
           ⤢
+        </button>
+      </div>
+      <!-- Asset Add/Delete Toolbar (Right Side) -->
+      <div class="canvas-edit-toolbar right">
+        <button class="edit-btn add-btn" title="Add asset" @click="addAsset">
+          ＋
+        </button>
+        <button class="edit-btn delete-btn" title="Delete selected asset" @click="deleteAsset" :disabled="!hasSelection">
+          ✕
         </button>
       </div>
     </div>
@@ -42,6 +51,7 @@ const state = reactive<SceneState>({
 })
 
 const activeMode = ref<'translate' | 'rotate' | 'scale' | null>(null)
+const hasSelection = ref(false)
 let threeScene: ThreeScene | null = null
 
 const initScene = (container: HTMLElement) => {
@@ -56,6 +66,9 @@ const initScene = (container: HTMLElement) => {
     },
     onTransformModeChange: (mode) => {
       activeMode.value = mode
+    },
+    onSelectionChange: (selected) => {
+      hasSelection.value = selected
     }
   })
   threeScene.setTransformMode(activeMode.value)
@@ -69,6 +82,18 @@ const setMode = (mode: 'translate' | 'rotate' | 'scale') => {
   }
   if (threeScene) {
     threeScene.setTransformMode(activeMode.value)
+  }
+}
+
+const addAsset = () => {
+  if (threeScene) {
+    threeScene.addNewAsset()
+  }
+}
+
+const deleteAsset = () => {
+  if (threeScene) {
+    threeScene.deleteSelectedAsset()
   }
 }
 
@@ -123,12 +148,19 @@ defineExpose({ setState, cleanup })
 
 .canvas-edit-toolbar {
   position: absolute;
-  left: 12px;
   top: 12px;
   display: flex;
   flex-direction: row;
   gap: 8px;
   z-index: 20;
+}
+
+.canvas-edit-toolbar.left {
+  left: 12px;
+}
+
+.canvas-edit-toolbar.right {
+  right: 12px;
 }
 
 .edit-btn {
@@ -158,6 +190,33 @@ defineExpose({ setState, cleanup })
   background: #3d4974;
   color: #ffffff;
   border-color: #5d6d9e;
+}
+
+.edit-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: rgba(12, 12, 18, 0.5);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: #5c5c6e;
+}
+
+.add-btn {
+  color: #00ff66;
+}
+
+.add-btn:hover {
+  background: rgba(0, 255, 102, 0.15);
+  border-color: #00ff66;
+}
+
+.delete-btn {
+  color: #ff3366;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: rgba(255, 51, 102, 0.15);
+  border-color: #ff3366;
 }
 
 .info-overlay {

@@ -28,6 +28,7 @@ export interface ThreeSceneOptions {
   initialState?: Partial<SceneState>
   onStateChange?: (state: SceneState) => void
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
+  onSelectionChange?: (hasSelection: boolean) => void
 }
 
 export interface ThreeActingOptions {

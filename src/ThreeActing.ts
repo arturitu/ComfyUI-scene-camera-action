@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { MeshBVH, MeshBVHHelper } from 'three-mesh-bvh'
 import type { ActingState, ThreeActingOptions, CubeTransform, SceneState } from './types'
+import * as config from './threeConfig'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -14,6 +15,7 @@ export class ThreeActing {
   private environmentMeshes: THREE.Mesh[] = []
   private characterGroup: THREE.Group | null = null
   private gridHelper: THREE.GridHelper | null = null
+  private mainLight!: THREE.DirectionalLight
   private animationId: number | null = null
   private isHovered = false
 
@@ -51,9 +53,9 @@ export class ThreeActing {
     const height = this.container.clientHeight || 300
 
     this.scene = new THREE.Scene()
-    const bgColor = new THREE.Color(0xd3d3d7)
+    const bgColor = new THREE.Color(config.BACKGROUND_COLOR)
     this.scene.background = bgColor
-    this.scene.fog = new THREE.Fog(bgColor, 5, 20)
+    this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
     this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
     this.camera.position.set(0, 4, 8)
@@ -75,27 +77,43 @@ export class ThreeActing {
     canvas.style.height = '100%'
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
     this.scene.add(ambientLight)
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    mainLight.position.set(5, 10, 5)
-    mainLight.castShadow = true
-    mainLight.shadow.mapSize.width = 1024
-    mainLight.shadow.mapSize.height = 1024
-    this.scene.add(mainLight)
+    this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
+    this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
+    this.mainLight.castShadow = true
+    this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
+    this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
+    this.mainLight.shadow.bias = config.SHADOW_BIAS
+    this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
+
+    const d = config.SHADOW_FRUSTUM_SIZE
+    this.mainLight.shadow.camera.left = -d
+    this.mainLight.shadow.camera.right = d
+    this.mainLight.shadow.camera.top = d
+    this.mainLight.shadow.camera.bottom = -d
+    this.mainLight.shadow.camera.near = 0.1
+    this.mainLight.shadow.camera.far = 100
+    this.scene.add(this.mainLight)
+    this.scene.add(this.mainLight.target)
 
     const characterLight = new THREE.PointLight(0xff007f, 1.2, 8)
     characterLight.position.set(0, 2, 2)
     this.scene.add(characterLight)
 
-    // Floor Grid (50x50m) matching ComfyUI-3D-motion-reference
-    this.gridHelper = new THREE.GridHelper(50, 50, 0xaaaaaf, 0xc5c5cb)
+    // Floor Grid matching ComfyUI-3D-motion-reference
+    this.gridHelper = new THREE.GridHelper(
+      config.GRID_SIZE,
+      config.GRID_DIVISIONS,
+      config.GRID_COLOR_CENTER,
+      config.GRID_COLOR_GRID
+    )
     this.gridHelper.position.y = -1.0
     this.scene.add(this.gridHelper)
 
     // Floor plane that receives shadows
-    const floorGeo = new THREE.PlaneGeometry(50, 50)
+    const floorGeo = new THREE.PlaneGeometry(config.GRID_SIZE, config.GRID_SIZE)
     const floorMat = new THREE.MeshStandardMaterial({
       color: 0xd3d3d7,
       roughness: 1,
@@ -161,23 +179,9 @@ export class ThreeActing {
     const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
     const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
 
-    // Create environment meshes
-    sceneData.asset_transforms.forEach((t, i) => {
-      let width = 0.8
-      let depth = 0.8
-      let height = 2.0
-
-      if (i > 0) {
-        const seed1 = Math.sin(i * 12.9898) * 43758.5453
-        const seed2 = Math.sin(i * 78.233) * 43758.5453
-        const rand1 = seed1 - Math.floor(seed1)
-        const rand2 = seed2 - Math.floor(seed2)
-        width = 0.6 + rand1 * 0.4
-        depth = 0.6 + rand2 * 0.4
-        height = 1.0 + rand1 * 1.5
-      }
-
-      const geometry = new THREE.BoxGeometry(width, height, depth)
+    // Create environment meshes (using 1x1x1 geometry scaled by baked transforms)
+    sceneData.asset_transforms.forEach((t) => {
+      const geometry = new THREE.BoxGeometry(1, 1, 1)
       const mesh = new THREE.Mesh(geometry, materials)
 
       mesh.position.set(t.px, t.py, t.pz)
@@ -383,7 +387,7 @@ export class ThreeActing {
             if (dist < radius) {
               const depth = radius - dist
               const direction = capsulePoint.sub(triPoint).normalize()
-              
+
               tempSegment.start.addScaledVector(direction, depth)
               tempSegment.end.addScaledVector(direction, depth)
             }
@@ -461,6 +465,13 @@ export class ThreeActing {
         this.characterPosition.y + 0.5,
         this.characterPosition.z
       )
+
+      // Update main directional light to follow the character for high-quality shadows
+      if (this.mainLight) {
+        this.mainLight.position.copy(this.characterPosition).add(config.MAIN_LIGHT_OFFSET)
+        this.mainLight.target.position.copy(this.characterPosition)
+        this.mainLight.target.updateMatrixWorld()
+      }
     }
 
     this.renderer.render(this.scene, this.camera)

@@ -74,14 +74,12 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   const stored = readStoredSceneProps(node)
   return {
     type: 'cube_scene',
-    num_assets: stored?.num_assets ?? getWidgetValue(node, 'num_assets', 1),
+    num_assets: stored?.num_assets ?? 1,
     asset_transforms: stored?.asset_transforms ?? [],
   }
 }
 
 function syncSceneWidgetsFromState(node: ComfyNode, state: Partial<SceneState>): void {
-  const num_assets = node.widgets?.find(w => w.name === 'num_assets')
-  if (state.num_assets !== undefined && num_assets) num_assets.value = state.num_assets
 }
 
 function createSceneInstance(node: ComfyNode): SceneNodeInstance {
@@ -117,21 +115,6 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
 }
 
 function bindSceneWidgetCallbacks(node: ComfyNode, exposed: SceneAppExposed): void {
-  const wire = (name: string, apply: (value: unknown) => void) => {
-    const w = node.widgets?.find(widget => widget.name === name)
-    if (!w) return
-    const origCallback = w.callback
-    w.callback = (value: unknown) => {
-      origCallback?.call(w, value)
-      apply(value)
-    }
-  }
-
-  wire('num_assets', v => {
-    exposed.setState({ num_assets: Number(v) })
-    writeStoredSceneProps(node, { num_assets: Number(v) })
-    notifyConnectedActingNodes(node)
-  })
 }
 
 function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
@@ -403,6 +386,11 @@ app.registerExtension({
         sceneDataWidget.type = 'hidden'
       }
 
+      const numAssetsWidget = node.widgets?.find(w => w.name === 'num_assets')
+      if (numAssetsWidget) {
+        numAssetsWidget.type = 'hidden'
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createSceneNodeWidget(node)
@@ -410,6 +398,12 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure
       node.onConfigure = function(info) {
         origOnConfigure?.call(this, info)
+        
+        const numAssetsWidgetConf = this.widgets?.find(w => w.name === 'num_assets')
+        if (numAssetsWidgetConf) {
+          numAssetsWidgetConf.type = 'hidden'
+        }
+
         const instance = sceneInstances.get(this)
         if (instance) {
           const state = readSceneStateFromNode(this)
