@@ -64,7 +64,7 @@ class SceneNode(io.ComfyNode):
     def define_schema(cls):
         return io.Schema(
             node_id="SceneNode",
-            display_name="Scene 3D Node",
+            display_name="Staging 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
             description="Configures a 3D scene environment with multiple assets.",

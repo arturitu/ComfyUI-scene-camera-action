@@ -2,7 +2,7 @@
   <div class="three-container">
     <div v-if="!state.scene_data" class="disabled-overlay">
       <div class="disabled-title">Acting Canvas Disabled</div>
-      <div class="disabled-subtitle">Connect a Scene 3D Node to activate.</div>
+      <div class="disabled-subtitle">Connect a Staging 3D Node to activate.</div>
     </div>
     <div v-else class="canvas-wrapper">
       <div class="canvas-aspect-container">
