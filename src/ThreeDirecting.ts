@@ -571,6 +571,11 @@ export class ThreeDirecting {
         return
       }
 
+      // Save current playback time and snap character to initial frame (t = 0.0s)
+      const prevTime = this.playbackTime
+      this.playbackTime = 0
+      this.updateCharacterMovement(0)
+
       // Temporarily disable fog for crisp overview render without fog haze
       const prevFog = this.scene.fog
       this.scene.fog = null
@@ -582,17 +587,19 @@ export class ThreeDirecting {
 
       // Dedicated stage camera with lower FOV (15°) for telephoto stage overview
       const stageCamera = new THREE.PerspectiveCamera(15, targetWidth / targetHeight, 0.1, 200)
-      stageCamera.position.set(-36, 32, 36)
+      stageCamera.position.set(-26, 22, 26)
       stageCamera.lookAt(0, 0, 0)
       stageCamera.updateProjectionMatrix()
 
-      // Render stage overview frame at 1280x720
+      // Render stage overview frame at initial frame (t = 0.0s)
       this.renderer.render(this.scene, stageCamera)
 
       const canvas = this.renderer.domElement
       canvas.toBlob((blob) => {
-        // Restore scene fog, standard camera view, and container resolution
+        // Restore scene fog, playback time, character position, standard camera view, and container resolution
         this.scene.fog = prevFog
+        this.playbackTime = prevTime
+        this.updateCharacterMovement(0)
         this.onResize()
         this.renderer.render(this.scene, this.camera)
         if (blob) {

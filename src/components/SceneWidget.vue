@@ -16,10 +16,13 @@
           ⤢
         </button>
       </div>
-      <!-- Asset Add/Delete Toolbar (Right Side) -->
+      <!-- Asset Add/Duplicate/Delete Toolbar (Right Side) -->
       <div class="canvas-edit-toolbar right">
         <button class="edit-btn add-btn" title="Add asset" @click="addAsset">
           ＋
+        </button>
+        <button class="edit-btn duplicate-btn" title="Duplicate selected asset" @click="duplicateAsset" :disabled="!hasSelection">
+          ❐
         </button>
         <button class="edit-btn delete-btn" title="Delete selected asset" @click="deleteAsset" :disabled="!hasSelection">
           ✕
@@ -93,6 +96,12 @@ const addAsset = () => {
 const deleteAsset = () => {
   if (threeScene) {
     threeScene.deleteSelectedAsset()
+  }
+}
+
+const duplicateAsset = () => {
+  if (threeScene) {
+    threeScene.duplicateSelectedAsset()
   }
 }
 

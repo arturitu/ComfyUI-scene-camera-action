@@ -316,6 +316,53 @@ export class ThreeScene {
     }
   }
 
+  public duplicateSelectedAsset(): void {
+    if (!this.transformControls.object) return
+    const selectedMesh = this.transformControls.object as THREE.Mesh
+    const index = this.meshes.indexOf(selectedMesh)
+    if (index === -1 || !this.state.asset_transforms) return
+
+    const srcTransform = this.state.asset_transforms[index]
+    if (!srcTransform) return
+
+    // Clone transform with a small position offset so the duplicate doesn't overlap
+    const dupTransform: CubeTransform = {
+      px: srcTransform.px + 0.8,
+      py: srcTransform.py,
+      pz: srcTransform.pz + 0.8,
+      rx: srcTransform.rx,
+      ry: srcTransform.ry,
+      rz: srcTransform.rz,
+      sx: srcTransform.sx,
+      sy: srcTransform.sy,
+      sz: srcTransform.sz,
+    }
+
+    this.state.asset_transforms.push(dupTransform)
+    this.state.num_assets = this.state.asset_transforms.length
+
+    this.updateMesh()
+
+    // Auto-select the duplicated asset
+    const newMesh = this.meshes[this.meshes.length - 1]
+    if (newMesh) {
+      if (!this.transformMode) {
+        this.setTransformMode('translate')
+        if (this.onTransformModeChange) {
+          this.onTransformModeChange('translate')
+        }
+      }
+      this.transformControls.attach(newMesh)
+      if (this.onSelectionChange) {
+        this.onSelectionChange(true)
+      }
+    }
+
+    if (this.onStateChange) {
+      this.onStateChange({ ...this.state })
+    }
+  }
+
   private bindEvents(): void {
     const canvas = this.renderer.domElement
 
