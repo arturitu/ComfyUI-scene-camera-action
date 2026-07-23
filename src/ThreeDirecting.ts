@@ -514,6 +514,14 @@ export class ThreeDirecting {
 
   public startRecording(fps: number = 30): void {
     this.lastCameraMode = null
+
+    // Enforce fixed 720p (1280x720) WebGL rendering resolution independent of container canvas size
+    const targetWidth = 1280
+    const targetHeight = 720
+    this.renderer.setSize(targetWidth, targetHeight, false)
+    this.camera.aspect = targetWidth / targetHeight
+    this.camera.updateProjectionMatrix()
+
     this.updateCharacterMovement(0)
     this.updateCamera()
 
@@ -547,6 +555,8 @@ export class ThreeDirecting {
 
       this.mediaRecorder.onstop = () => {
         const blob = new Blob(this.recordedChunks, { type: 'video/webm' })
+        // Restore container aspect & buffer size
+        this.onResize()
         resolve(blob)
       }
 
@@ -565,19 +575,25 @@ export class ThreeDirecting {
       const prevFog = this.scene.fog
       this.scene.fog = null
 
+      // Enforce fixed 720p (1280x720) resolution for stage overview snapshot
+      const targetWidth = 1280
+      const targetHeight = 720
+      this.renderer.setSize(targetWidth, targetHeight, false)
+
       // Dedicated stage camera with lower FOV (15°) for telephoto stage overview
-      const stageCamera = new THREE.PerspectiveCamera(15, this.camera.aspect, 0.1, 200)
+      const stageCamera = new THREE.PerspectiveCamera(15, targetWidth / targetHeight, 0.1, 200)
       stageCamera.position.set(-36, 32, 36)
       stageCamera.lookAt(0, 0, 0)
       stageCamera.updateProjectionMatrix()
 
-      // Render stage overview frame
+      // Render stage overview frame at 1280x720
       this.renderer.render(this.scene, stageCamera)
 
       const canvas = this.renderer.domElement
       canvas.toBlob((blob) => {
-        // Restore scene fog and standard camera view
+        // Restore scene fog, standard camera view, and container resolution
         this.scene.fog = prevFog
+        this.onResize()
         this.renderer.render(this.scene, this.camera)
         if (blob) {
           resolve(blob)
