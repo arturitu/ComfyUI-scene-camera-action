@@ -358,6 +358,18 @@ export class ThreeScene {
       mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
       raycaster.setFromCamera(mouse, this.camera)
+
+      // Check gizmo intersection FIRST — if the user is interacting with
+      // gizmo handles, do NOT re-run mesh selection to avoid switching assets
+      if (this.transformControls.object) {
+        const gizmoIntersects = raycaster.intersectObjects(
+          this.transformControls.getHelper().children, true
+        )
+        if (gizmoIntersects.length > 0) {
+          return // User is clicking on the gizmo, don't change selection
+        }
+      }
+
       const intersects = raycaster.intersectObjects(this.meshes)
 
       if (intersects.length > 0) {
@@ -374,13 +386,10 @@ export class ThreeScene {
           this.onSelectionChange(true)
         }
       } else {
-        const gizmoIntersects = raycaster.intersectObjects(this.transformControls.getHelper().children, true)
-        if (gizmoIntersects.length === 0) {
-          // Deselect object but preserve the active transform mode in the UI
-          this.transformControls.detach()
-          if (this.onSelectionChange) {
-            this.onSelectionChange(false)
-          }
+        // Clicked empty space — deselect
+        this.transformControls.detach()
+        if (this.onSelectionChange) {
+          this.onSelectionChange(false)
         }
       }
     }

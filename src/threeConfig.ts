@@ -10,7 +10,7 @@ export const FOG_FAR = 40
 // Grid Helper Config
 export const GRID_SIZE = 100
 export const GRID_DIVISIONS = 100
-export const GRID_COLOR_CENTER = 0xaaaaaf
+export const GRID_COLOR_CENTER = 0x66666f
 export const GRID_COLOR_GRID = 0xc5c5cb
 
 // Ambient Light Config
