@@ -509,6 +509,10 @@ export class ThreeDirecting {
   private recordedChunks: Blob[] = []
 
   public startRecording(fps: number = 30): void {
+    this.lastCameraMode = null
+    this.updateCharacterMovement(0)
+    this.updateCamera()
+
     const canvas = this.renderer.domElement
     const stream = (canvas as any).captureStream ? (canvas as any).captureStream(fps) : (canvas as any).mozCaptureStream(fps)
     this.recordedChunks = []
@@ -546,13 +550,51 @@ export class ThreeDirecting {
     })
   }
 
+  public captureStageSnapshot(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      if (!this.renderer || !this.scene) {
+        reject(new Error('ThreeDirecting not initialized'))
+        return
+      }
+
+      // Temporarily disable fog for crisp overview render without fog haze
+      const prevFog = this.scene.fog
+      this.scene.fog = null
+
+      // Dedicated stage camera with lower FOV (15°) for telephoto stage overview
+      const stageCamera = new THREE.PerspectiveCamera(15, this.camera.aspect, 0.1, 200)
+      stageCamera.position.set(-36, 32, 36)
+      stageCamera.lookAt(0, 0, 0)
+      stageCamera.updateProjectionMatrix()
+
+      // Render stage overview frame
+      this.renderer.render(this.scene, stageCamera)
+
+      const canvas = this.renderer.domElement
+      canvas.toBlob((blob) => {
+        // Restore scene fog and standard camera view
+        this.scene.fog = prevFog
+        this.renderer.render(this.scene, this.camera)
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('Failed to generate stage blob'))
+        }
+      }, 'image/png')
+    })
+  }
+
   public resetPlayback(): void {
     this.playbackTime = 0
+    this.lastCameraMode = null
+    this.updateCharacterMovement(0)
+    this.updateCamera()
   }
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
     this.playbackTime = Math.max(0, Math.min(t, maxDur))
+    this.lastCameraMode = null
     this.updateCharacterMovement(0)
     this.updateCamera()
   }

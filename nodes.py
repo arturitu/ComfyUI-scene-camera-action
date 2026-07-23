@@ -56,7 +56,7 @@ ActingIO = io.Custom("ACTING")
 
 class SceneNode(io.ComfyNode):
     """
-    Scene Node
+    Scene Node / Staging 3D Node
     Configures a 3D scene environment with multiple adjustable 3D assets (cubes).
     """
 
@@ -197,7 +197,7 @@ class ActingNode(io.ComfyNode):
 class DirectingNode(io.ComfyNode):
     """
     Directing Node
-    Records camera cuts on top of acting motion data and outputs captured video.
+    Records camera cuts on top of acting motion data and outputs captured video and captured stage overview image.
     """
 
     @classmethod
@@ -207,7 +207,7 @@ class DirectingNode(io.ComfyNode):
             display_name="Directing 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
-            description="Records camera cuts on top of acting data and outputs captured video.",
+            description="Records camera cuts on top of acting data, outputs captured video and stage overview image.",
             inputs=[
                 ActingIO.Input(
                     "acting",
@@ -224,6 +224,7 @@ class DirectingNode(io.ComfyNode):
             ],
             outputs=[
                 io.Video.Output("captured_video", display_name="Captured Video"),
+                io.Image.Output("captured_stage", display_name="Captured Stage"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -235,8 +236,9 @@ class DirectingNode(io.ComfyNode):
         directing_data: str = "",
     ) -> io.NodeOutput:
         input_dir = folder_paths.get_input_directory()
-        video_path = os.path.join(input_dir, "3d_directing_record.webm")
 
+        # 1. Load Video
+        video_path = os.path.join(input_dir, "3d_directing_record.webm")
         video_output = None
         if os.path.exists(video_path):
             try:
@@ -250,6 +252,27 @@ class DirectingNode(io.ComfyNode):
             video_output = InputImpl.VideoFromComponents(
                 Types.VideoComponents(images=dummy_images, audio=None, frame_rate=Fraction(24))
             )
+
+        # 2. Load Captured Stage Overview Image
+        image_path = os.path.join(input_dir, "3d_directing_stage.png")
+        image_tensor = None
+        if os.path.exists(image_path):
+            try:
+                from PIL import Image, ImageOps
+                import numpy as np
+                import torch
+
+                i = Image.open(image_path)
+                i = ImageOps.exif_transpose(i)
+                image = i.convert("RGB")
+                image_np = np.array(image).astype(np.float32) / 255.0
+                image_tensor = torch.from_numpy(image_np)[None,]
+            except Exception as e:
+                print(f"Error loading stage image file: {e}")
+
+        if image_tensor is None:
+            import torch
+            image_tensor = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
 
         acting_data = {}
         if isinstance(acting, str) and acting.strip():
@@ -275,7 +298,7 @@ class DirectingNode(io.ComfyNode):
             "directing_data": camera_timeline,
         }
 
-        return io.NodeOutput(video_output, ui=_DirectingUIOutput(directing_dict))
+        return io.NodeOutput(video_output, image_tensor, ui=_DirectingUIOutput(directing_dict))
 
     @classmethod
     def fingerprint_inputs(
@@ -293,7 +316,7 @@ class SceneCameraActionExtension(ComfyExtension):
         return [SceneNode, ActingNode, DirectingNode]
 
 
-# --- API Route to receive video uploads ---
+# --- API Routes to receive video and image uploads ---
 @PromptServer.instance.routes.post("/scene_camera_action/upload_video")
 async def upload_video(request):
     post = await request.post()
@@ -309,6 +332,23 @@ async def upload_video(request):
 
         return web.json_response({"success": True, "filepath": filepath, "filename": filename})
     return web.json_response({"success": False, "error": "No video file received"})
+
+
+@PromptServer.instance.routes.post("/scene_camera_action/upload_image")
+async def upload_image(request):
+    post = await request.post()
+    image_file = post.get("image")
+
+    if image_file:
+        input_dir = folder_paths.get_input_directory()
+        filename = "3d_directing_stage.png"
+        filepath = os.path.join(input_dir, filename)
+
+        with open(filepath, "wb") as f:
+            f.write(image_file.file.read())
+
+        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
+    return web.json_response({"success": False, "error": "No image file received"})
 
 
 async def comfy_entrypoint():

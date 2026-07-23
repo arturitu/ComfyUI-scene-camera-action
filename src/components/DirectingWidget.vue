@@ -345,30 +345,38 @@ const syncKeyframes = () => {
 const handleRecordVideo = async () => {
   if (!threeDirecting || isRecordingVideo.value) return
 
-  // Validate that the Captured Video output slot is connected
+  // Validate that BOTH Captured Video AND Captured Stage output slots are connected
   const videoOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_video' ||
-    o.name === 'Captured Video'
+    o.name === 'captured_video' || o.name === 'Captured Video'
   )
-  const isConnected = videoOutput?.links && videoOutput.links.length > 0
+  const stageOutput = props.currentNode?.outputs?.find((o: any) =>
+    o.name === 'captured_stage' || o.name === 'Captured Stage'
+  )
 
-  if (!isConnected) {
+  const isVideoConnected = videoOutput?.links && videoOutput.links.length > 0
+  const isStageConnected = stageOutput?.links && stageOutput.links.length > 0
+
+  if (!isVideoConnected || !isStageConnected) {
     if (props.currentNode) {
       props.currentNode.has_errors = true
-      if (videoOutput) {
-        videoOutput.has_errors = true
-      }
+      if (videoOutput && !isVideoConnected) videoOutput.has_errors = true
+      if (stageOutput && !isStageConnected) stageOutput.has_errors = true
+
       const comfyApp = (window as any).comfyAPI?.app?.app
       if (comfyApp && comfyApp.canvas) {
         comfyApp.canvas.draw(true, true)
       }
+
+      const missingNames: string[] = []
+      if (!isVideoConnected) missingNames.push("'Captured Video'")
+      if (!isStageConnected) missingNames.push("'Captured Stage'")
 
       const validationErrorMsg = {
         "prompt_id": "validation_error",
         "node_id": String(props.currentNode.id),
         "node_type": props.currentNode.type,
         "executed": [],
-        "exception_message": "Required output connection is missing. Connect 'Captured Video' to a Save Video node to record.",
+        "exception_message": `Required output connection(s) missing: ${missingNames.join(' and ')}. Connect outputs to proceed.`,
         "exception_type": "ValueError",
         "traceback": [],
         "current_inputs": [],
@@ -382,9 +390,8 @@ const handleRecordVideo = async () => {
       window.setTimeout(() => {
         if (props.currentNode) {
           delete props.currentNode.has_errors
-          if (videoOutput) {
-            delete videoOutput.has_errors
-          }
+          if (videoOutput) delete videoOutput.has_errors
+          if (stageOutput) delete stageOutput.has_errors
           if (comfyApp && comfyApp.canvas) {
             comfyApp.canvas.draw(true, true)
           }
@@ -427,27 +434,36 @@ const handleRecordVideo = async () => {
         videoStatusText.value = 'Saving Video...'
 
         try {
-          const blob = await threeDirecting.stopRecording()
+          const videoBlob = await threeDirecting.stopRecording()
+          const stageBlob = await threeDirecting.captureStageSnapshot()
           threeDirecting.setIsRecordingMode(false)
 
-          const formData = new FormData()
-          formData.append('video', blob, '3d_directing_record.webm')
+          // 1. Upload Video
+          const videoFormData = new FormData()
+          videoFormData.append('video', videoBlob, '3d_directing_record.webm')
 
-          const response = await fetch('/scene_camera_action/upload_video', {
+          await fetch('/scene_camera_action/upload_video', {
             method: 'POST',
-            body: formData
+            body: videoFormData
           })
-          const result = await response.json()
-          if (result.success) {
-            videoStatusText.value = 'Saved!'
 
-            const comfyApp = (window as any).comfyAPI?.app?.app
-            if (comfyApp && typeof comfyApp.queuePrompt === 'function') {
-              comfyApp.queuePrompt(0)
-            }
+          // 2. Upload Captured Stage Overview Image
+          const imageFormData = new FormData()
+          imageFormData.append('image', stageBlob, '3d_directing_stage.png')
+
+          await fetch('/scene_camera_action/upload_image', {
+            method: 'POST',
+            body: imageFormData
+          })
+
+          videoStatusText.value = 'Saved!'
+
+          const comfyApp = (window as any).comfyAPI?.app?.app
+          if (comfyApp && typeof comfyApp.queuePrompt === 'function') {
+            comfyApp.queuePrompt(0)
           }
         } catch (err) {
-          console.error('Failed to capture and upload video:', err)
+          console.error('Failed to capture and upload video/image:', err)
           threeDirecting.setIsRecordingMode(false)
         } finally {
           window.setTimeout(() => {
