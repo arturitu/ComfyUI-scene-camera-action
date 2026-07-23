@@ -9,11 +9,30 @@
         <SceneCanvas :init-scene="initScene" />
       </div>
 
+      <!-- Top Right Floating Capture Button -->
+      <div class="directing-top-bar" @mousedown.stop>
+        <button
+          class="capture-btn"
+          :class="{ 'recording': isRecordingVideo }"
+          :disabled="isRecordingVideo"
+          title="Capture video from start of acting"
+          @click="handleRecordVideo"
+        >
+          <span class="rec-dot" v-if="isRecordingVideo"></span>
+          {{ isRecordingVideo ? (videoStatusText || 'Capturing...') : '● Capture' }}
+        </button>
+      </div>
+
       <!-- Floating Bottom Timeline Bar -->
-      <div class="timeline-bar" @mousedown.stop>
+      <div
+        class="timeline-bar"
+        :class="{ 'disabled-timeline': isRecordingVideo }"
+        @mousedown.stop
+      >
         <!-- Rewind to Start -->
         <button
           class="tl-btn"
+          :disabled="isRecordingVideo"
           title="Rewind to start"
           @click="rewind"
         >
@@ -23,6 +42,7 @@
         <!-- Play / Pause Toggle -->
         <button
           class="tl-btn play-btn"
+          :disabled="isRecordingVideo"
           :title="isPlaying ? 'Pause' : 'Play'"
           @click="togglePlay"
         >
@@ -33,6 +53,7 @@
         <div class="add-kf-wrapper">
           <button
             class="tl-btn add-kf-btn"
+            :disabled="isRecordingVideo"
             title="Add cut at current position"
             @click="addKeyframe"
           >
@@ -79,7 +100,7 @@
 
             <!-- Selected Keyframe Popover Context Menu directly attached to marker -->
             <div
-              v-if="selectedKeyframe?.id === kf.id && !isPlaying"
+              v-if="selectedKeyframe?.id === kf.id && !isPlaying && !isRecordingVideo"
               class="keyframe-popover"
               :class="{
                 'align-left': (kf.t / duration) < 0.2,
@@ -167,6 +188,9 @@ const currentTime = ref(0)
 const duration = ref(7.0)
 const trackRef = ref<HTMLElement | null>(null)
 
+const isRecordingVideo = ref(false)
+const videoStatusText = ref('')
+
 let threeDirecting: ThreeDirecting | null = null
 let timeFrameId: number | null = null
 let isDraggingPlayhead = false
@@ -240,6 +264,7 @@ const updateTimeLoop = () => {
 }
 
 const togglePlay = () => {
+  if (isRecordingVideo.value) return
   isPlaying.value = !isPlaying.value
   if (isPlaying.value) {
     selectedKeyframe.value = null
@@ -250,6 +275,7 @@ const togglePlay = () => {
 }
 
 const rewind = () => {
+  if (isRecordingVideo.value) return
   if (threeDirecting) {
     threeDirecting.seekToTime(0)
   }
@@ -257,6 +283,7 @@ const rewind = () => {
 }
 
 const addKeyframe = () => {
+  if (isRecordingVideo.value) return
   const curT = Math.round(currentTime.value * 10) / 10
   const activeMode = threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : 'Third Person'
 
@@ -280,8 +307,8 @@ const addKeyframe = () => {
 }
 
 const selectKeyframe = (kf: Keyframe) => {
+  if (isRecordingVideo.value) return
   selectedKeyframe.value = kf
-  // Pause playback so user can inspect the frozen frame at this cut!
   isPlaying.value = false
   if (threeDirecting) {
     threeDirecting.isPlaying = false
@@ -315,12 +342,133 @@ const syncKeyframes = () => {
   }
 }
 
-const onCanvasMouseDown = () => {
+const handleRecordVideo = async () => {
+  if (!threeDirecting || isRecordingVideo.value) return
+
+  // Validate that the Captured Video output slot is connected
+  const videoOutput = props.currentNode?.outputs?.find((o: any) =>
+    o.name === 'captured_video' ||
+    o.name === 'Captured Video'
+  )
+  const isConnected = videoOutput?.links && videoOutput.links.length > 0
+
+  if (!isConnected) {
+    if (props.currentNode) {
+      props.currentNode.has_errors = true
+      if (videoOutput) {
+        videoOutput.has_errors = true
+      }
+      const comfyApp = (window as any).comfyAPI?.app?.app
+      if (comfyApp && comfyApp.canvas) {
+        comfyApp.canvas.draw(true, true)
+      }
+
+      const validationErrorMsg = {
+        "prompt_id": "validation_error",
+        "node_id": String(props.currentNode.id),
+        "node_type": props.currentNode.type,
+        "executed": [],
+        "exception_message": "Required output connection is missing. Connect 'Captured Video' to a Save Video node to record.",
+        "exception_type": "ValueError",
+        "traceback": [],
+        "current_inputs": [],
+        "current_outputs": []
+      }
+
+      if (comfyApp && comfyApp.api && typeof comfyApp.api.dispatchEvent === "function") {
+        comfyApp.api.dispatchEvent(new CustomEvent("execution_error", { detail: validationErrorMsg }))
+      }
+
+      window.setTimeout(() => {
+        if (props.currentNode) {
+          delete props.currentNode.has_errors
+          if (videoOutput) {
+            delete videoOutput.has_errors
+          }
+          if (comfyApp && comfyApp.canvas) {
+            comfyApp.canvas.draw(true, true)
+          }
+        }
+      }, 4000)
+    }
+    return
+  }
+
+  // Hide any open cut popover
   selectedKeyframe.value = null
+  isRecordingVideo.value = true
+  videoStatusText.value = 'Capturing...'
+
+  const dur = threeDirecting.getDuration()
+
+  // Seek to start (t = 0) and enable single-pass recording mode
+  threeDirecting.seekToTime(0)
+  threeDirecting.setIsRecordingMode(true)
+  currentTime.value = 0
+  threeDirecting.isPlaying = true
+  isPlaying.value = true
+
+  // Start recording canvas video stream at 30 fps
+  threeDirecting.startRecording(30)
+
+  const recordStartTime = performance.now()
+
+  const captureCheckInterval = window.setInterval(async () => {
+    if (threeDirecting) {
+      const elapsed = (performance.now() - recordStartTime) / 1000
+      const displayT = Math.min(dur, elapsed)
+      videoStatusText.value = `Capturing ${displayT.toFixed(1)}s / ${dur.toFixed(1)}s...`
+
+      // Stop cleanly as soon as wall-clock duration is reached OR playback stops
+      if (elapsed >= dur || !threeDirecting.isPlaying) {
+        clearInterval(captureCheckInterval)
+        threeDirecting.isPlaying = false
+        isPlaying.value = false
+        videoStatusText.value = 'Saving Video...'
+
+        try {
+          const blob = await threeDirecting.stopRecording()
+          threeDirecting.setIsRecordingMode(false)
+
+          const formData = new FormData()
+          formData.append('video', blob, '3d_directing_record.webm')
+
+          const response = await fetch('/scene_camera_action/upload_video', {
+            method: 'POST',
+            body: formData
+          })
+          const result = await response.json()
+          if (result.success) {
+            videoStatusText.value = 'Saved!'
+
+            const comfyApp = (window as any).comfyAPI?.app?.app
+            if (comfyApp && typeof comfyApp.queuePrompt === 'function') {
+              comfyApp.queuePrompt(0)
+            }
+          }
+        } catch (err) {
+          console.error('Failed to capture and upload video:', err)
+          threeDirecting.setIsRecordingMode(false)
+        } finally {
+          window.setTimeout(() => {
+            videoStatusText.value = ''
+            isRecordingVideo.value = false
+          }, 1000)
+        }
+      }
+    }
+  }, 50)
+}
+
+const onCanvasMouseDown = () => {
+  if (!isRecordingVideo.value) {
+    selectedKeyframe.value = null
+  }
 }
 
 // Mouse Scrubbing & Dragging Handlers
 const onTrackMouseDown = (e: MouseEvent) => {
+  if (isRecordingVideo.value) return
   isDraggingPlayhead = true
   selectedKeyframe.value = null
   updateScrubPosition(e)
@@ -342,7 +490,7 @@ const onTrackMouseDown = (e: MouseEvent) => {
 }
 
 const updateScrubPosition = (e: MouseEvent) => {
-  if (!trackRef.value) return
+  if (!trackRef.value || isRecordingVideo.value) return
   const rect = trackRef.value.getBoundingClientRect()
   const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
   const targetTime = pct * duration.value
@@ -353,9 +501,10 @@ const updateScrubPosition = (e: MouseEvent) => {
 }
 
 const onKeyframeMouseDown = (kf: Keyframe, e: MouseEvent) => {
+  if (isRecordingVideo.value) return
   selectKeyframe(kf)
 
-  if (kf.t === 0) return // Don't drag initial kf at t=0
+  if (kf.t === 0) return
 
   draggingKeyframe = kf
 
@@ -492,6 +641,55 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   color: #8c8c9e;
 }
 
+/* Top Right Capture Toolbar */
+.directing-top-bar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 25;
+}
+
+.capture-btn {
+  background: rgba(12, 12, 18, 0.85);
+  color: #ff3366;
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.capture-btn:hover:not(:disabled) {
+  background: rgba(255, 51, 102, 0.2);
+  border-color: #ff3366;
+  color: #ffffff;
+}
+
+.capture-btn.recording {
+  background: #ff3366;
+  color: #ffffff;
+  border-color: #ff3366;
+}
+
+.rec-dot {
+  width: 7px;
+  height: 7px;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: blink 0.8s infinite steps(2, start);
+}
+
+@keyframes blink {
+  from { opacity: 1; }
+  to { opacity: 0.2; }
+}
+
 /* Floating Timeline Bar (Bottom Center) */
 .timeline-bar {
   position: absolute;
@@ -513,6 +711,12 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.timeline-bar.disabled-timeline {
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* Control Buttons */
@@ -530,7 +734,7 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   transition: all 0.2s ease;
 }
 
-.tl-btn:hover {
+.tl-btn:hover:not(:disabled) {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.1);
 }

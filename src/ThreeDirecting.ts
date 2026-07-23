@@ -321,6 +321,12 @@ export class ThreeDirecting {
     return activeMode
   }
 
+  public isRecordingMode = false
+
+  public setIsRecordingMode(active: boolean): void {
+    this.isRecordingMode = active
+  }
+
   private updateCharacterMovement(dt: number): void {
     if (!this.characterGroup || this.trajectory.length < 2) return
 
@@ -331,7 +337,12 @@ export class ThreeDirecting {
     const maxDuration = this.trajectory[this.trajectory.length - 1].t || 8.0
 
     if (this.playbackTime >= maxDuration) {
-      this.playbackTime = this.playbackTime % maxDuration
+      if (this.isRecordingMode) {
+        this.playbackTime = maxDuration
+        this.isPlaying = false
+      } else {
+        this.playbackTime = this.playbackTime % maxDuration
+      }
     }
 
     const t = this.playbackTime
@@ -455,6 +466,47 @@ export class ThreeDirecting {
     if (newState.directing_data !== undefined) {
       this.state.directing_data = newState.directing_data
     }
+  }
+
+  private mediaRecorder: MediaRecorder | null = null
+  private recordedChunks: Blob[] = []
+
+  public startRecording(fps: number = 30): void {
+    const canvas = this.renderer.domElement
+    const stream = (canvas as any).captureStream ? (canvas as any).captureStream(fps) : (canvas as any).mozCaptureStream(fps)
+    this.recordedChunks = []
+
+    let options: MediaRecorderOptions = { mimeType: 'video/webm;codecs=vp9' }
+    if (!MediaRecorder.isTypeSupported(options.mimeType!)) {
+      options = { mimeType: 'video/webm;codecs=vp8' }
+    }
+    if (!MediaRecorder.isTypeSupported(options.mimeType!)) {
+      options = { mimeType: 'video/webm' }
+    }
+
+    this.mediaRecorder = new MediaRecorder(stream, options)
+    this.mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        this.recordedChunks.push(e.data)
+      }
+    }
+    this.mediaRecorder.start()
+  }
+
+  public stopRecording(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      if (!this.mediaRecorder) {
+        reject(new Error('No recording in progress'))
+        return
+      }
+
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.recordedChunks, { type: 'video/webm' })
+        resolve(blob)
+      }
+
+      this.mediaRecorder.stop()
+    })
   }
 
   public resetPlayback(): void {

@@ -5,8 +5,15 @@ Custom nodes for 3D scene setup and character acting within ComfyUI.
 
 from __future__ import annotations
 import json
-from comfy_api.latest import ComfyExtension, io
+import os
+from aiohttp import web
+from server import PromptServer
+import folder_paths
+
+from comfy_api.latest import ComfyExtension, io, InputImpl, Types
 from comfy_api.latest._io import _UIOutput
+from fractions import Fraction
+from typing_extensions import override
 
 
 class _SceneUIOutput(_UIOutput):
@@ -29,6 +36,17 @@ class _ActingUIOutput(_UIOutput):
 
     def as_dict(self) -> dict:
         return {"acting_state": self.acting_dict}
+
+
+class _DirectingUIOutput(_UIOutput):
+    """Sends directing state to the UI frontend."""
+
+    def __init__(self, directing_dict: dict):
+        super().__init__()
+        self.directing_dict = directing_dict
+
+    def as_dict(self) -> dict:
+        return {"directing_state": self.directing_dict}
 
 
 # Custom IO types for node connections
@@ -76,7 +94,6 @@ class SceneNode(io.ComfyNode):
         num_assets: int,
         scene_data: str = "",
     ) -> io.NodeOutput:
-        # Prioritize the serialized scene_data from frontend if it exists
         scene_dict = {}
         if scene_data.strip():
             try:
@@ -91,7 +108,6 @@ class SceneNode(io.ComfyNode):
                 "asset_transforms": [],
             }
 
-        # Convert dict to JSON string for pipeline IO
         scene_json = json.dumps(scene_dict)
         return io.NodeOutput(scene_json, ui=_SceneUIOutput(scene_dict))
 
@@ -107,7 +123,7 @@ class SceneNode(io.ComfyNode):
 class ActingNode(io.ComfyNode):
     """
     Acting Node
-    Receives scene data from a SceneNode and allows character control/interaction.
+    Receives scene data from a SceneNode and hosts interactive character acting.
     """
 
     @classmethod
@@ -178,25 +194,10 @@ class ActingNode(io.ComfyNode):
         return io.NodeOutput(acting_json, ui=_ActingUIOutput(acting_dict))
 
 
-class _DirectingUIOutput(_UIOutput):
-    """Sends directing state to the UI frontend."""
-
-    def __init__(self, directing_dict: dict):
-        super().__init__()
-        self.directing_dict = directing_dict
-
-    def as_dict(self) -> dict:
-        return {"directing_state": self.directing_dict}
-
-
-CameraIO = io.Custom("CAMERA")
-
-
 class DirectingNode(io.ComfyNode):
     """
     Directing Node
-    Records camera cut timelines on top of acting motion data.
-    Scene is inherited from the connected Acting Data.
+    Records camera cuts on top of acting motion data and outputs captured video.
     """
 
     @classmethod
@@ -206,7 +207,7 @@ class DirectingNode(io.ComfyNode):
             display_name="Directing 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
-            description="Records camera cuts on top of acting data. Scene is inherited from ActingNode.",
+            description="Records camera cuts on top of acting data and outputs captured video.",
             inputs=[
                 ActingIO.Input(
                     "acting",
@@ -222,7 +223,7 @@ class DirectingNode(io.ComfyNode):
                 ),
             ],
             outputs=[
-                CameraIO.Output("camera_data", display_name="Camera Data"),
+                io.Video.Output("captured_video", display_name="Captured Video"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -233,6 +234,23 @@ class DirectingNode(io.ComfyNode):
         acting: str | dict | None = None,
         directing_data: str = "",
     ) -> io.NodeOutput:
+        input_dir = folder_paths.get_input_directory()
+        video_path = os.path.join(input_dir, "3d_directing_record.webm")
+
+        video_output = None
+        if os.path.exists(video_path):
+            try:
+                video_output = InputImpl.VideoFromFile(video_path)
+            except Exception as e:
+                print(f"Error loading video file: {e}")
+
+        if video_output is None:
+            import torch
+            dummy_images = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
+            video_output = InputImpl.VideoFromComponents(
+                Types.VideoComponents(images=dummy_images, audio=None, frame_rate=Fraction(24))
+            )
+
         acting_data = {}
         if isinstance(acting, str) and acting.strip():
             try:
@@ -242,7 +260,6 @@ class DirectingNode(io.ComfyNode):
         elif isinstance(acting, dict):
             acting_data = acting
 
-        # Scene is embedded inside the acting_data
         scene_data = acting_data.get("scene_data", {})
 
         camera_timeline = []
@@ -258,13 +275,40 @@ class DirectingNode(io.ComfyNode):
             "directing_data": camera_timeline,
         }
 
-        directing_json = json.dumps(directing_dict)
-        return io.NodeOutput(directing_json, ui=_DirectingUIOutput(directing_dict))
+        return io.NodeOutput(video_output, ui=_DirectingUIOutput(directing_dict))
+
+    @classmethod
+    def fingerprint_inputs(
+        cls,
+        acting=None,
+        directing_data: str = "",
+    ):
+        import time
+        return f"{acting}_{directing_data}_{time.time()}"
 
 
 class SceneCameraActionExtension(ComfyExtension):
+    @override
     async def get_node_list(self):
         return [SceneNode, ActingNode, DirectingNode]
+
+
+# --- API Route to receive video uploads ---
+@PromptServer.instance.routes.post("/scene_camera_action/upload_video")
+async def upload_video(request):
+    post = await request.post()
+    video_file = post.get("video")
+
+    if video_file:
+        input_dir = folder_paths.get_input_directory()
+        filename = "3d_directing_record.webm"
+        filepath = os.path.join(input_dir, filename)
+
+        with open(filepath, "wb") as f:
+            f.write(video_file.file.read())
+
+        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
+    return web.json_response({"success": False, "error": "No video file received"})
 
 
 async def comfy_entrypoint():
