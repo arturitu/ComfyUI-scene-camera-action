@@ -1,6 +1,9 @@
 # ComfyUI-scene-camera-action
 
-An interactive 3D scene creation, character acting, and camera directing set of custom nodes for **ComfyUI**. 
+> [!WARNING]
+> This is an early experimental release tested locally and may contain bugs. It serves as an initial proof of concept (PoC) to explore and research 3D-driven video-to-video workflows.
+
+An interactive 3D scene creation, character acting, and camera directing set of custom nodes for **ComfyUI**.
 
 Build your 3D environment, control and record character movements using your keyboard in real time, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage image for video-to-video (such as Seedance 2.0) workflows.
 
