@@ -30,7 +30,7 @@
       <!-- Controls Overlay (Top Right / Bottom Center) -->
       <div class="acting-toolbar">
         <button
-          v-if="!isRecording && !isCounting"
+          v-if="!isRecording && !isCounting && !state.motion_data"
           class="acting-btn rec-trigger"
           title="Start Recording"
           @click="startCountdown"

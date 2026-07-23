@@ -298,10 +298,35 @@ export class ThreeDirecting {
     this.scene.add(this.characterGroup)
   }
 
+  private keyframes: Array<{ id: string; t: number; mode: string }> = []
+  public isPlaying = true
+
+  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string }>): void {
+    this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
+  }
+
+  public getActiveKeyframeMode(time: number): string {
+    if (!this.keyframes || this.keyframes.length === 0) {
+      return this.state.camera_mode || 'Third Person'
+    }
+    const sorted = [...this.keyframes].sort((a, b) => a.t - b.t)
+    let activeMode = sorted[0].mode
+    for (let i = 0; i < sorted.length; i++) {
+      if (time >= sorted[i].t) {
+        activeMode = sorted[i].mode
+      } else {
+        break
+      }
+    }
+    return activeMode
+  }
+
   private updateCharacterMovement(dt: number): void {
     if (!this.characterGroup || this.trajectory.length < 2) return
 
-    this.playbackTime += dt
+    if (this.isPlaying) {
+      this.playbackTime += dt
+    }
 
     const maxDuration = this.trajectory[this.trajectory.length - 1].t || 8.0
 
@@ -346,8 +371,9 @@ export class ThreeDirecting {
 
     const charPos = this.characterPosition
     const rotY = this.characterGroup.rotation.y
+    const activeMode = this.getActiveKeyframeMode(this.playbackTime)
 
-    if (this.state.camera_mode === 'First Person') {
+    if (activeMode === 'First Person') {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
@@ -357,7 +383,7 @@ export class ThreeDirecting {
       const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       this.camera.lookAt(headPos.clone().add(forward))
 
-    } else if (this.state.camera_mode === 'Third Person') {
+    } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
@@ -367,7 +393,7 @@ export class ThreeDirecting {
       this.camera.position.lerp(targetCamPos, 0.1)
       this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
 
-    } else if (this.state.camera_mode === 'Wide') {
+    } else if (activeMode === 'Wide') {
       // Low FOV for telephoto perspective
       if (this.camera.fov !== 28) {
         this.camera.fov = 28
@@ -380,7 +406,7 @@ export class ThreeDirecting {
       this.wideTarget.lerp(targetPos, 0.05)
       this.camera.lookAt(this.wideTarget)
 
-    } else if (this.state.camera_mode === 'Cinematic Drone') {
+    } else if (activeMode === 'Cinematic Drone') {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
@@ -429,6 +455,15 @@ export class ThreeDirecting {
     if (newState.directing_data !== undefined) {
       this.state.directing_data = newState.directing_data
     }
+  }
+
+  public resetPlayback(): void {
+    this.playbackTime = 0
+  }
+
+  public seekToTime(t: number): void {
+    const maxDur = this.getDuration()
+    this.playbackTime = Math.max(0, Math.min(t, maxDur))
   }
 
   public getCurrentTime(): number {

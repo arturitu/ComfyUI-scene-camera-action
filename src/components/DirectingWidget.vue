@@ -4,70 +4,121 @@
       <div class="disabled-title">Directing Canvas Disabled</div>
       <div class="disabled-subtitle">Connect an Acting 3D Node to direct.</div>
     </div>
-    <div v-else class="canvas-wrapper">
+    <div v-else class="canvas-wrapper" @mousedown="onCanvasMouseDown">
       <div class="canvas-aspect-container">
         <SceneCanvas :init-scene="initScene" />
       </div>
 
-      <!-- Recording progress bar -->
-      <div v-if="isRecording" class="recording-overlay">
-        <div class="rec-header">
-          <span class="rec-dot"></span>
-          <span class="rec-text">DIRECTING</span>
-          <span class="rec-timer">{{ recordingElapsed.toFixed(1) }}s</span>
-        </div>
-        <div class="progress-track">
-          <div class="progress-fill-recording"></div>
-        </div>
-      </div>
-
-      <!-- Toolbar (Top Right) -->
-      <div class="directing-toolbar">
+      <!-- Floating Bottom Timeline Bar -->
+      <div class="timeline-bar" @mousedown.stop>
+        <!-- Rewind to Start -->
         <button
-          v-if="!isRecording"
-          class="acting-btn rec-trigger"
-          title="Start recording camera cuts"
-          @click="startRecording"
-        >● Record</button>
-        <button
-          v-else
-          class="acting-btn rec-stop"
-          title="Stop recording"
-          @click="stopRecording"
-        >■ Stop</button>
-
-        <button
-          v-for="mode in cameraModes"
-          :key="mode.id"
-          class="acting-btn cam-btn"
-          :class="{ active: activeCameraMode === mode.id, recording: isRecording && activeCameraMode === mode.id }"
-          @click="setCameraMode(mode.id)"
-          :title="mode.id"
+          class="tl-btn"
+          title="Rewind to start"
+          @click="rewind"
         >
-          {{ mode.label }}
+          ⏮
         </button>
-      </div>
-    </div>
 
-    <!-- Status info overlay (Bottom Left) -->
-    <div class="info-overlay">
-      <template v-if="hasActingData">
-        <div class="title">Directing 3D Node</div>
-        <div v-if="isRecording" class="state-indicator recording">Recording Camera Cuts</div>
-        <div v-else-if="cameraTimeline.length > 0" class="state-indicator playing">
-          {{ cameraTimeline.length }} cut{{ cameraTimeline.length !== 1 ? 's' : '' }} recorded
+        <!-- Play / Pause Toggle -->
+        <button
+          class="tl-btn play-btn"
+          :title="isPlaying ? 'Pause' : 'Play'"
+          @click="togglePlay"
+        >
+          {{ isPlaying ? '⏸' : '▶' }}
+        </button>
+
+        <!-- Add Keyframe Button with Tooltip -->
+        <div class="add-kf-wrapper">
+          <button
+            class="tl-btn add-kf-btn"
+            title="Add cut at current position"
+            @click="addKeyframe"
+          >
+            <span class="diamond-icon">◇</span>
+            <span class="plus-icon">+</span>
+          </button>
+          <div class="add-kf-tooltip">Add cut</div>
         </div>
-        <div v-else class="state-indicator interactive">Playback Loop</div>
-        <div class="hint">Active View: {{ activeCameraMode }}</div>
-      </template>
-      <template v-else>
-        <div class="hint">Waiting for acting link...</div>
-      </template>
-    </div>
 
-    <!-- Time Counter Overlay (Bottom Right) -->
-    <div v-if="hasActingData" class="time-counter-overlay">
-      {{ formattedTime }}
+        <!-- Timeline Track & Scrubber -->
+        <div
+          ref="trackRef"
+          class="timeline-track"
+          @mousedown.stop="onTrackMouseDown"
+        >
+          <!-- Base Track Line -->
+          <div class="track-line"></div>
+
+          <!-- Progress Fill Line -->
+          <div
+            class="track-fill"
+            :style="{ width: progressPercent + '%' }"
+          ></div>
+
+          <!-- Playhead Cursor Line & Handle -->
+          <div
+            class="playhead"
+            :style="{ left: progressPercent + '%' }"
+          >
+            <div class="playhead-line"></div>
+          </div>
+
+          <!-- Keyframe Markers (Diamonds) -->
+          <div
+            v-for="kf in keyframes"
+            :key="kf.id"
+            class="keyframe-marker"
+            :class="{ active: selectedKeyframe?.id === kf.id }"
+            :style="{ left: (kf.t / duration * 100) + '%' }"
+            :title="`${kf.t.toFixed(1)}s: ${kf.mode}`"
+            @mousedown.stop="onKeyframeMouseDown(kf, $event)"
+          >
+            <div class="diamond-marker"></div>
+
+            <!-- Selected Keyframe Popover Context Menu directly attached to marker -->
+            <div
+              v-if="selectedKeyframe?.id === kf.id && !isPlaying"
+              class="keyframe-popover"
+              :class="{
+                'align-left': (kf.t / duration) < 0.2,
+                'align-right': (kf.t / duration) > 0.8
+              }"
+              @mousedown.stop
+            >
+              <div class="popover-header">
+                <span class="popover-title">Cut at {{ kf.t.toFixed(1) }}s</span>
+                <button
+                  v-if="kf.t > 0"
+                  class="popover-delete"
+                  title="Delete cut"
+                  @click.stop="deleteKeyframe(kf)"
+                >
+                  ✕
+                </button>
+              </div>
+              <div class="popover-modes">
+                <button
+                  v-for="mode in cameraModes"
+                  :key="mode.id"
+                  class="mode-pill"
+                  :class="{ active: kf.mode === mode.id }"
+                  @click.stop="changeKeyframeMode(kf, mode.id)"
+                >
+                  {{ mode.label }}
+                </button>
+              </div>
+              <div class="popover-arrow"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formatted Time Display -->
+        <div class="time-display">
+          {{ formattedTime }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -90,6 +141,12 @@ interface CameraMode {
   label: string
 }
 
+interface Keyframe {
+  id: string
+  t: number
+  mode: string
+}
+
 const cameraModes: CameraMode[] = [
   { id: 'Third Person', label: 'TPV' },
   { id: 'First Person', label: 'FPV' },
@@ -103,28 +160,63 @@ const state = reactive<DirectingState>({
   directing_data: props.initialState?.directing_data ?? '',
 })
 
-const activeCameraMode = ref(state.camera_mode)
-const isRecording = ref(false)
-const recordingElapsed = ref(0)
-const cameraTimeline = ref<Array<{ t: number; mode: string }>>(
-  tryParseTimeline(state.directing_data)
-)
+const keyframes = ref<Keyframe[]>(parseKeyframes(state.directing_data))
+const selectedKeyframe = ref<Keyframe | null>(null)
+const isPlaying = ref(true)
+const currentTime = ref(0)
+const duration = ref(7.0)
+const trackRef = ref<HTMLElement | null>(null)
 
 let threeDirecting: ThreeDirecting | null = null
-let checkInterval: any = null
-let recordingInterval: any = null
-let recordingStartTime = 0
+let timeFrameId: number | null = null
+let isDraggingPlayhead = false
+let draggingKeyframe: Keyframe | null = null
 
-function tryParseTimeline(raw: string): Array<{ t: number; mode: string }> {
-  if (!raw || !raw.trim()) return []
+function parseKeyframes(raw: string): Keyframe[] {
+  if (!raw || !raw.trim()) {
+    return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
+  }
   try {
     const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((item: any, idx: number) => ({
+        id: item.id || `kf-${idx}-${Date.now()}`,
+        t: Math.max(0, typeof item.t === 'number' ? item.t : 0),
+        mode: item.mode || 'Third Person',
+      })).sort((a, b) => a.t - b.t)
+    }
   } catch {}
-  return []
+  return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
 }
 
-const hasActingData = computed(() => !!state.acting_data && state.acting_data.trim().length > 0)
+const hasActingData = computed(() => {
+  if (!state.acting_data || !state.acting_data.trim()) return false
+  try {
+    const parsed = JSON.parse(state.acting_data)
+    if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.motion_data)) {
+        return parsed.motion_data.length > 0
+      }
+      if (typeof parsed.motion_data === 'string') {
+        return parsed.motion_data.trim().length > 0
+      }
+    }
+    if (Array.isArray(parsed)) {
+      return parsed.length > 0
+    }
+  } catch {}
+  return false
+})
+
+const progressPercent = computed(() => {
+  if (duration.value <= 0) return 0
+  return Math.min(100, Math.max(0, (currentTime.value / duration.value) * 100))
+})
+
+const formattedTime = computed(() => {
+  const pad = (n: number) => n.toFixed(1).padStart(4, '0')
+  return `${pad(currentTime.value)}s / ${pad(duration.value)}s`
+})
 
 const initScene = (el: HTMLElement) => {
   threeDirecting = new ThreeDirecting({
@@ -136,68 +228,192 @@ const initScene = (el: HTMLElement) => {
       }
     },
   })
+  threeDirecting.setKeyframes(keyframes.value)
 }
 
-const setCameraMode = (mode: string) => {
-  activeCameraMode.value = mode
-  state.camera_mode = mode
+const updateTimeLoop = () => {
+  if (threeDirecting && !isDraggingPlayhead) {
+    currentTime.value = threeDirecting.getCurrentTime()
+    duration.value = threeDirecting.getDuration()
+  }
+  timeFrameId = requestAnimationFrame(updateTimeLoop)
+}
+
+const togglePlay = () => {
+  isPlaying.value = !isPlaying.value
+  if (isPlaying.value) {
+    selectedKeyframe.value = null
+  }
   if (threeDirecting) {
-    threeDirecting.setState({ camera_mode: mode })
-  }
-
-  // While recording, log each cut with timestamp
-  if (isRecording.value) {
-    const t = (performance.now() - recordingStartTime) / 1000
-    cameraTimeline.value.push({ t, mode })
+    threeDirecting.isPlaying = isPlaying.value
   }
 }
 
-const startRecording = () => {
-  cameraTimeline.value = []
-  recordingStartTime = performance.now()
-  recordingElapsed.value = 0
-  isRecording.value = true
-
-  // Push first entry as time=0 with current mode
-  cameraTimeline.value.push({ t: 0, mode: activeCameraMode.value })
-
-  recordingInterval = setInterval(() => {
-    recordingElapsed.value = (performance.now() - recordingStartTime) / 1000
-  }, 100)
+const rewind = () => {
+  if (threeDirecting) {
+    threeDirecting.seekToTime(0)
+  }
+  currentTime.value = 0
 }
 
-const stopRecording = () => {
-  isRecording.value = false
-  if (recordingInterval) {
-    clearInterval(recordingInterval)
-    recordingInterval = null
+const addKeyframe = () => {
+  const curT = Math.round(currentTime.value * 10) / 10
+  const activeMode = threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : 'Third Person'
+
+  // If a keyframe already exists very close, select it & seek
+  const existing = keyframes.value.find(k => Math.abs(k.t - curT) < 0.1)
+  if (existing) {
+    selectKeyframe(existing)
+    return
   }
 
-  const timelineJson = JSON.stringify(cameraTimeline.value)
-  state.directing_data = timelineJson
+  const newKf: Keyframe = {
+    id: `kf-${Date.now()}`,
+    t: curT,
+    mode: activeMode,
+  }
 
+  keyframes.value.push(newKf)
+  keyframes.value.sort((a, b) => a.t - b.t)
+  selectKeyframe(newKf)
+  syncKeyframes()
+}
+
+const selectKeyframe = (kf: Keyframe) => {
+  selectedKeyframe.value = kf
+  // Pause playback so user can inspect the frozen frame at this cut!
+  isPlaying.value = false
+  if (threeDirecting) {
+    threeDirecting.isPlaying = false
+    threeDirecting.seekToTime(kf.t)
+  }
+  currentTime.value = kf.t
+}
+
+const changeKeyframeMode = (kf: Keyframe, mode: string) => {
+  kf.mode = mode
+  syncKeyframes()
+}
+
+const deleteKeyframe = (kf: Keyframe) => {
+  if (kf.t === 0 && keyframes.value.length === 1) return // Keep initial
+  keyframes.value = keyframes.value.filter(k => k.id !== kf.id)
+  if (selectedKeyframe.value?.id === kf.id) {
+    selectedKeyframe.value = null
+  }
+  syncKeyframes()
+}
+
+const syncKeyframes = () => {
+  if (threeDirecting) {
+    threeDirecting.setKeyframes(keyframes.value)
+  }
+  const json = JSON.stringify(keyframes.value)
+  state.directing_data = json
   if (props.onDirectingDataChange) {
-    props.onDirectingDataChange(timelineJson)
+    props.onDirectingDataChange(json)
   }
 }
+
+const onCanvasMouseDown = () => {
+  selectedKeyframe.value = null
+}
+
+// Mouse Scrubbing & Dragging Handlers
+const onTrackMouseDown = (e: MouseEvent) => {
+  isDraggingPlayhead = true
+  selectedKeyframe.value = null
+  updateScrubPosition(e)
+
+  const onMouseMove = (me: MouseEvent) => {
+    if (isDraggingPlayhead) {
+      updateScrubPosition(me)
+    }
+  }
+
+  const onMouseUp = () => {
+    isDraggingPlayhead = false
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
+const updateScrubPosition = (e: MouseEvent) => {
+  if (!trackRef.value) return
+  const rect = trackRef.value.getBoundingClientRect()
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+  const targetTime = pct * duration.value
+  currentTime.value = targetTime
+  if (threeDirecting) {
+    threeDirecting.seekToTime(targetTime)
+  }
+}
+
+const onKeyframeMouseDown = (kf: Keyframe, e: MouseEvent) => {
+  selectKeyframe(kf)
+
+  if (kf.t === 0) return // Don't drag initial kf at t=0
+
+  draggingKeyframe = kf
+
+  const onMouseMove = (me: MouseEvent) => {
+    if (!draggingKeyframe || !trackRef.value) return
+    const rect = trackRef.value.getBoundingClientRect()
+    const pct = Math.max(0, Math.min(1, (me.clientX - rect.left) / rect.width))
+    let newT = Math.round(pct * duration.value * 10) / 10
+    if (newT < 0.1) newT = 0.1
+    draggingKeyframe.t = newT
+    currentTime.value = newT
+    if (threeDirecting) {
+      threeDirecting.seekToTime(newT)
+    }
+    keyframes.value.sort((a, b) => a.t - b.t)
+  }
+
+  const onMouseUp = () => {
+    if (draggingKeyframe) {
+      draggingKeyframe = null
+      syncKeyframes()
+    }
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
+}
+
+onMounted(() => {
+  timeFrameId = requestAnimationFrame(updateTimeLoop)
+})
+
+onUnmounted(() => {
+  if (timeFrameId !== null) {
+    cancelAnimationFrame(timeFrameId)
+    timeFrameId = null
+  }
+  if (threeDirecting) {
+    threeDirecting.dispose()
+    threeDirecting = null
+  }
+})
 
 const setState = (newState: Partial<DirectingState>) => {
   if (newState.hasOwnProperty('acting_data')) {
     state.acting_data = newState.acting_data as string
   }
-  if (newState.hasOwnProperty('camera_mode')) {
-    activeCameraMode.value = newState.camera_mode as string
-    state.camera_mode = newState.camera_mode as string
-  }
   if (newState.hasOwnProperty('directing_data')) {
     state.directing_data = newState.directing_data as string
-    cameraTimeline.value = tryParseTimeline(state.directing_data)
+    keyframes.value = parseKeyframes(state.directing_data)
+    if (threeDirecting) {
+      threeDirecting.setKeyframes(keyframes.value)
+    }
   }
-
   if (threeDirecting) {
     threeDirecting.setState(newState)
-  } else {
-    Object.assign(state, newState)
   }
 }
 
@@ -206,41 +422,7 @@ const cleanup = () => {
     threeDirecting.dispose()
     threeDirecting = null
   }
-  if (recordingInterval) {
-    clearInterval(recordingInterval)
-    recordingInterval = null
-  }
 }
-
-const currentTime = ref(0)
-const totalDuration = ref(7.0)
-let timeFrameId: number | null = null
-
-const updateTimeCounter = () => {
-  if (threeDirecting) {
-    currentTime.value = threeDirecting.getCurrentTime()
-    totalDuration.value = threeDirecting.getDuration()
-  }
-  timeFrameId = requestAnimationFrame(updateTimeCounter)
-}
-
-const formattedTime = computed(() => {
-  const cur = Math.max(0, currentTime.value).toFixed(1)
-  const dur = Math.max(0, totalDuration.value).toFixed(1)
-  return `${cur}s / ${dur}s`
-})
-
-onMounted(() => {
-  timeFrameId = requestAnimationFrame(updateTimeCounter)
-})
-
-onUnmounted(() => {
-  if (timeFrameId !== null) {
-    cancelAnimationFrame(timeFrameId)
-    timeFrameId = null
-  }
-  cleanup()
-})
 
 const setConnectedThreeActing = (threeActing: any) => {
   if (threeDirecting) {
@@ -310,204 +492,300 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   color: #8c8c9e;
 }
 
-/* Recording overlay */
-.recording-overlay {
+/* Floating Timeline Bar (Bottom Center) */
+.timeline-bar {
   position: absolute;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 320px;
-  background: rgba(12, 12, 18, 0.9);
-  border: 1px solid rgba(255, 51, 102, 0.4);
-  border-radius: 6px;
-  padding: 8px 12px;
-  z-index: 25;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-}
-
-.rec-header {
+  width: 92%;
+  max-width: 650px;
+  height: 38px;
+  background: rgba(18, 20, 28, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 10px;
-  font-weight: bold;
-  color: #ff3366;
+  gap: 10px;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  user-select: none;
 }
 
-.rec-dot {
-  width: 8px;
-  height: 8px;
-  background: #ff3366;
-  border-radius: 50%;
-  animation: blink 1s infinite steps(2, start);
-}
-
-@keyframes blink {
-  from { opacity: 1; }
-  to { opacity: 0.2; }
-}
-
-.rec-text {
-  flex-grow: 1;
-  letter-spacing: 1px;
-}
-
-.rec-timer {
-  color: #8c8c9e;
-}
-
-.progress-track {
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-fill-recording {
-  height: 100%;
-  background: #ff3366;
-  width: 100%;
-  animation: progress-pulse 1.5s infinite alternate;
-}
-
-@keyframes progress-pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
-}
-
-/* Toolbar styling matching ActingWidget */
-.directing-toolbar {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+/* Control Buttons */
+.tl-btn {
+  background: transparent;
+  border: none;
+  color: #c0c5d0;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
   display: flex;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.tl-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.play-btn {
+  font-size: 13px;
+}
+
+/* Add Keyframe Button & Tooltip */
+.add-kf-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.add-kf-btn {
+  position: relative;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.diamond-icon {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.plus-icon {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 9px;
+  font-weight: bold;
+  color: #00ffcc;
+}
+
+.add-kf-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-family: monospace;
+}
+
+.add-kf-wrapper:hover .add-kf-tooltip {
+  opacity: 1;
+}
+
+/* Timeline Track Area */
+.timeline-track {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.track-line {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.track-fill {
+  position: absolute;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Playhead Scrubber Cursor */
+.playhead {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.playhead-line {
+  width: 2px;
+  height: 22px;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+  border-radius: 1px;
+}
+
+/* Keyframe Marker Diamonds */
+.keyframe-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: grab;
   z-index: 20;
 }
 
-.acting-btn {
-  background: rgba(12, 12, 18, 0.85);
-  color: #8c8c9e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
+.diamond-marker {
+  width: 9px;
+  height: 9px;
+  background: #4a90e2;
+  border: 1px solid #ffffff;
+  transform: rotate(45deg);
   transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
-.acting-btn:hover {
-  background: #2b2b3b;
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+.keyframe-marker:hover .diamond-marker {
+  scale: 1.25;
+  background: #00ffcc;
+  border-color: #ffffff;
 }
 
-.rec-trigger {
-  color: #ff3366;
-  border-color: rgba(255, 51, 102, 0.2);
+.keyframe-marker.active .diamond-marker {
+  background: #00ffcc;
+  border-color: #ffffff;
+  scale: 1.3;
+  box-shadow: 0 0 8px #00ffcc;
 }
 
-.rec-trigger:hover {
-  background: rgba(255, 51, 102, 0.15);
-  border-color: #ff3366;
-}
-
-.rec-stop {
-  color: #ffffff;
-  background: #ff3366;
-  border-color: #ff3366;
-}
-
-.rec-stop:hover {
-  background: #ff0044;
-}
-
-.cam-btn.active {
-  background: #3d4974;
-  color: #ffffff;
-  border-color: #5d6d9e;
-}
-
-.cam-btn.recording.active {
-  background: #ff3366;
-  color: #ffffff;
-  border-color: #ff3366;
-}
-
-/* Info overlay styling matching Scene/Acting Widget */
-.info-overlay {
+/* Selected Keyframe Popover attached directly to marker */
+.keyframe-popover {
   position: absolute;
-  bottom: 8px;
-  left: 8px;
-  background: rgba(15, 20, 29, 0.85);
-  border: 1px solid rgba(74, 144, 226, 0.4);
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  background: rgba(18, 20, 28, 0.95);
+  border: 1px solid rgba(0, 255, 204, 0.5);
   border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 11px;
-  color: #4a90e2;
-  backdrop-filter: blur(4px);
-  font-family: monospace;
-  z-index: 10;
+  padding: 8px;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  pointer-events: none;
+  gap: 6px;
+  cursor: default;
 }
 
-.title {
-  font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 2px;
+.keyframe-popover.align-left {
+  left: 0;
+  transform: translateX(-10px);
+}
+.keyframe-popover.align-left .popover-arrow {
+  left: 16px;
+  transform: translateX(0) rotate(45deg);
 }
 
-.state-indicator {
+.keyframe-popover.align-right {
+  left: auto;
+  right: 0;
+  transform: translateX(10px);
+}
+.keyframe-popover.align-right .popover-arrow {
+  left: auto;
+  right: 16px;
+  transform: translateX(0) rotate(45deg);
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 10px;
   font-weight: bold;
-  margin: 2px 0;
-  text-transform: uppercase;
+  color: #00ffcc;
+  font-family: monospace;
 }
 
-.state-indicator.playing {
-  color: #00ff66;
-}
-
-.state-indicator.recording {
+.popover-delete {
+  background: transparent;
+  border: none;
   color: #ff3366;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 4px;
 }
 
-.state-indicator.interactive {
-  color: #4a90e2;
+.popover-delete:hover {
+  color: #ff0044;
 }
 
-.hint {
-  margin-top: 2px;
-  font-size: 10px;
-  color: #4a90e2;
-  font-style: italic;
+.popover-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
 }
 
-.time-counter-overlay {
+.mode-pill {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c0c5d0;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-pill:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.mode-pill.active {
+  background: #3d4974;
+  color: #ffffff;
+  border-color: #00ffcc;
+}
+
+.popover-arrow {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(15, 20, 29, 0.85);
-  border: 1px solid rgba(74, 144, 226, 0.4);
-  border-radius: 6px;
-  padding: 5px 9px;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: rgba(18, 20, 28, 0.95);
+  border-right: 1px solid rgba(0, 255, 204, 0.5);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.5);
+}
+
+/* Time Display */
+.time-display {
+  font-family: monospace;
   font-size: 11px;
   font-weight: bold;
-  color: #ffffff;
-  backdrop-filter: blur(4px);
-  font-family: monospace;
-  pointer-events: none;
-  z-index: 10;
+  color: #a0a8b8;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 </style>
