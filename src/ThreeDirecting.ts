@@ -452,13 +452,17 @@ export class ThreeDirecting {
       }
       this.camera.lookAt(this.wideTarget)
 
-    } else if (activeMode === 'Cinematic Drone') {
-      if (this.camera.fov !== 50) {
-        this.camera.fov = 50
+    } else if (activeMode === 'Side') {
+      // Side tracking profile camera with custom 40° FOV
+      if (this.camera.fov !== 40) {
+        this.camera.fov = 40
         this.camera.updateProjectionMatrix()
       }
-      this.camera.position.set(6, 7, 10)
-      this.camera.lookAt(charPos.x, charPos.y + 0.5, charPos.z)
+      // Positioned to the side of the character tracking alongside
+      const sideOffset = new THREE.Vector3(-3.2, 1.4, 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const targetCamPos = charPos.clone().add(sideOffset)
+      this.camera.position.copy(targetCamPos)
+      this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
     }
 
     this.lastCameraMode = activeMode

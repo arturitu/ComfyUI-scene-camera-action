@@ -172,7 +172,7 @@ const cameraModes: CameraMode[] = [
   { id: 'Third Person', label: 'TPV' },
   { id: 'First Person', label: 'FPV' },
   { id: 'Wide', label: 'Wide' },
-  { id: 'Cinematic Drone', label: 'Drone' },
+  { id: 'Side', label: 'Side' },
 ]
 
 const state = reactive<DirectingState>({
