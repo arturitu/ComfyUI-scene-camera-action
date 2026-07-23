@@ -77,7 +77,36 @@ export class ThreeDirecting {
       this.trajectory = []
     }
 
+    this.normalizeTrajectoryOrientation()
     this.playbackTime = 0
+    this.updateCharacterMovement(0)
+    this.updateCamera()
+  }
+
+  private normalizeTrajectoryOrientation(): void {
+    if (this.trajectory.length < 2) return
+
+    let firstMoveIdx = -1
+    for (let i = 1; i < this.trajectory.length; i++) {
+      const dx = this.trajectory[i].px - this.trajectory[0].px
+      const dz = this.trajectory[i].pz - this.trajectory[0].pz
+      if (dx * dx + dz * dz > 0.001 || Math.abs(this.trajectory[i].ry - this.trajectory[0].ry) > 0.001) {
+        firstMoveIdx = i
+        break
+      }
+    }
+
+    if (firstMoveIdx > 0) {
+      const dx = this.trajectory[firstMoveIdx].px - this.trajectory[0].px
+      const dz = this.trajectory[firstMoveIdx].pz - this.trajectory[0].pz
+      let initialRy = this.trajectory[firstMoveIdx].ry
+      if (dx * dx + dz * dz > 0.001) {
+        initialRy = Math.atan2(dx, dz)
+      }
+      for (let k = 0; k < firstMoveIdx; k++) {
+        this.trajectory[k].ry = initialRy
+      }
+    }
   }
 
   private initThreeJS(): void {
@@ -377,6 +406,8 @@ export class ThreeDirecting {
     this.characterGroup.position.copy(this.characterPosition)
   }
 
+  private lastCameraMode: string | null = null
+
   private updateCamera(): void {
     if (!this.characterGroup) return
 
@@ -401,7 +432,8 @@ export class ThreeDirecting {
       }
       const backOffset = new THREE.Vector3(0, 1.8, -3.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(backOffset)
-      this.camera.position.lerp(targetCamPos, 0.1)
+      // Instant hard cut & lock on TPV position without sliding lerp drift
+      this.camera.position.copy(targetCamPos)
       this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
 
     } else if (activeMode === 'Wide') {
@@ -412,9 +444,12 @@ export class ThreeDirecting {
       }
       // Fixed position high up in a corner of the stage
       this.camera.position.set(-11, 7, 11)
-      // Softly / slightly track the character
       const targetPos = new THREE.Vector3(charPos.x * 0.35, charPos.y + 0.4, charPos.z * 0.35)
-      this.wideTarget.lerp(targetPos, 0.05)
+      if (this.lastCameraMode !== 'Wide') {
+        this.wideTarget.copy(targetPos)
+      } else {
+        this.wideTarget.lerp(targetPos, 0.05)
+      }
       this.camera.lookAt(this.wideTarget)
 
     } else if (activeMode === 'Cinematic Drone') {
@@ -425,6 +460,8 @@ export class ThreeDirecting {
       this.camera.position.set(6, 7, 10)
       this.camera.lookAt(charPos.x, charPos.y + 0.5, charPos.z)
     }
+
+    this.lastCameraMode = activeMode
   }
 
   private onResize(): void {
@@ -516,6 +553,8 @@ export class ThreeDirecting {
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
     this.playbackTime = Math.max(0, Math.min(t, maxDur))
+    this.updateCharacterMovement(0)
+    this.updateCamera()
   }
 
   public getCurrentTime(): number {
