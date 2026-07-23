@@ -197,6 +197,69 @@ export class ThreeActing {
           this.scene.add(this.mainLight.target)
         }
       })
+    } else if (this.state.scene_data && (this.state.scene_data.asset_transforms?.length || this.state.scene_data.num_assets)) {
+      // Reconstruct scene environment from scene_data state JSON
+      this.clonedEnvGroup = new THREE.Group()
+      this.scene.add(this.clonedEnvGroup)
+
+      const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
+      this.clonedEnvGroup.add(ambientLight)
+
+      this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
+      this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
+      this.mainLight.castShadow = true
+      this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
+      this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
+      this.mainLight.shadow.bias = config.SHADOW_BIAS
+      this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
+      const d = config.SHADOW_FRUSTUM_SIZE
+      this.mainLight.shadow.camera.left = -d
+      this.mainLight.shadow.camera.right = d
+      this.mainLight.shadow.camera.top = d
+      this.mainLight.shadow.camera.bottom = -d
+      this.scene.add(this.mainLight.target)
+      this.clonedEnvGroup.add(this.mainLight)
+
+      const gridHelper = new THREE.GridHelper(
+        config.GRID_SIZE,
+        config.GRID_DIVISIONS,
+        config.GRID_COLOR_CENTER,
+        config.GRID_COLOR_GRID
+      )
+      gridHelper.position.y = -1.0
+      this.clonedEnvGroup.add(gridHelper)
+
+      const floorGeo = new THREE.PlaneGeometry(100, 100)
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0xdbdbdb,
+        roughness: 1,
+        metalness: 0
+      })
+      const floorMesh = new THREE.Mesh(floorGeo, floorMat)
+      floorMesh.name = 'floor'
+      floorMesh.rotation.x = -Math.PI / 2
+      floorMesh.position.y = -1.002
+      floorMesh.receiveShadow = true
+      this.clonedEnvGroup.add(floorMesh)
+
+      // Reconstruct asset meshes matching ThreeScene materials
+      const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
+      const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
+      const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
+      const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
+
+      const transforms = this.state.scene_data.asset_transforms ?? []
+      transforms.forEach((t) => {
+        const geometry = new THREE.BoxGeometry(1, 1, 1)
+        const mesh = new THREE.Mesh(geometry, materials)
+        mesh.position.set(t.px, t.py, t.pz)
+        mesh.rotation.set(t.rx, t.ry, t.rz)
+        mesh.scale.set(t.sx, t.sy, t.sz)
+        mesh.castShadow = true
+        mesh.receiveShadow = true
+        this.clonedEnvGroup!.add(mesh)
+        this.environmentMeshes.push(mesh)
+      })
     } else {
       // Fallback: Create simple grid and ambient/directional lights if no SceneNode is connected yet
       this.clonedEnvGroup = new THREE.Group()
@@ -236,6 +299,7 @@ export class ThreeActing {
         metalness: 0
       })
       const floorMesh = new THREE.Mesh(floorGeo, floorMat)
+      floorMesh.name = 'floor'
       floorMesh.rotation.x = -Math.PI / 2
       floorMesh.position.y = -1.002
       floorMesh.receiveShadow = true
@@ -299,17 +363,18 @@ export class ThreeActing {
     }
 
     this.characterGroup = new THREE.Group()
+    this.characterGroup.name = 'characterGroup'
 
     // Character body (Capsule/Cylinder)
-    const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.6, 8, 16)
+    const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
     const bodyMat = new THREE.MeshStandardMaterial({
       color: 0xff007f,
       roughness: 0.2,
       metalness: 0.5,
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    // Capsule height = 1.2, bottom sphere Y = 0.3. Set Y position to 0.6 so base starts exactly at Y = 0
-    bodyMesh.position.y = 0.6
+    // Capsule height = 1.7, bottom sphere Y = 0.25. Set Y position to 0.85 so base starts exactly at Y = 0
+    bodyMesh.position.y = 0.85
     bodyMesh.castShadow = true
     bodyMesh.receiveShadow = true
     this.characterGroup.add(bodyMesh)
@@ -466,7 +531,7 @@ export class ThreeActing {
       // Perform BVH Collision Resolution
       if (this.colliderBVH) {
         const radius = 0.3
-        const height = 0.6
+        const height = 0.9
 
         const tempSegment = new THREE.Line3()
         tempSegment.start.copy(this.characterPosition)
@@ -627,10 +692,20 @@ export class ThreeActing {
       this.state.scene_data = { ...newState.scene_data }
       this.buildSceneEnvironment()
     }
+  }
 
-    if (this.onStateChange) {
-      this.onStateChange({ ...this.state })
-    }
+  public getCurrentTime(): number {
+    if (this.isRecording) return this.recordingTime
+    if (this.isPlaying) return this.playbackTime
+    return 0
+  }
+
+  public getDuration(): number {
+    return this.state.duration ?? 7.0
+  }
+
+  public getScene(): THREE.Scene {
+    return this.scene
   }
 
   public dispose(): void {

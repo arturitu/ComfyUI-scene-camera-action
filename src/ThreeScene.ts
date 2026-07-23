@@ -437,10 +437,6 @@ export class ThreeScene {
       this.state.asset_transforms = newState.asset_transforms
       this.updateMesh()
     }
-
-    if (this.onStateChange) {
-      this.onStateChange({ ...this.state })
-    }
   }
 
   public dispose(): void {

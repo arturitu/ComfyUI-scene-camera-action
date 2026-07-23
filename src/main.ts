@@ -1,7 +1,8 @@
 import { createApp, type App as VueApp } from 'vue'
 import SceneWidget from './components/SceneWidget.vue'
 import ActingWidget from './components/ActingWidget.vue'
-import type { SceneState, ActingState, SceneAppExposed, ActingAppExposed } from './types'
+import DirectingWidget from './components/DirectingWidget.vue'
+import type { SceneState, ActingState, DirectingState, SceneAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
 
 const { app } = window.comfyAPI.app
 
@@ -17,6 +18,7 @@ const { app } = window.comfyAPI.app
 const CLEANUP_DELAY_MS = 200
 const SCENE_PROP_KEY = 'sceneNodeState'
 const ACTING_PROP_KEY = 'actingNodeState'
+const DIRECTING_PROP_KEY = 'directingNodeState'
 
 interface SceneNodeInstance {
   container: HTMLElement
@@ -36,8 +38,18 @@ interface ActingNodeInstance {
   cleanupTimer: number | null
 }
 
+interface DirectingNodeInstance {
+  container: HTMLElement
+  vueApp: VueApp
+  exposed: DirectingAppExposed
+  currentNode: ComfyNode
+  widget: DOMWidgetInstance | null
+  cleanupTimer: number | null
+}
+
 const sceneInstances = new WeakMap<ComfyNode, SceneNodeInstance>()
 const actingInstances = new WeakMap<ComfyNode, ActingNodeInstance>()
+const directingInstances = new WeakMap<ComfyNode, DirectingNodeInstance>()
 
 // --- Helpers for SceneNode ---
 function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
@@ -103,6 +115,7 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
       writeStoredSceneProps(live, state)
       app.graph?.setDirtyCanvas(true, true)
       notifyConnectedActingNodes(live)
+      notifyConnectedDirectingNodes(live)
     }
   })
 
@@ -195,6 +208,24 @@ function findConnectedSceneNode(actingNode: ComfyNode): ComfyNode | null {
   return null
 }
 
+function findConnectedActingNode(directingNode: ComfyNode): ComfyNode | null {
+  if (!directingNode.inputs || directingNode.inputs.length === 0) return null
+  const actingInput = directingNode.inputs.find(i => i.name === 'acting')
+  if (!actingInput || actingInput.link == null) return null
+
+  const graph = app.graph
+  if (!graph || !graph.links) return null
+
+  const link = graph.links[actingInput.link]
+  if (!link) return null
+
+  const originNode = graph.getNodeById?.(link.origin_id)
+  if (originNode && (originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'ActingNode')) {
+    return originNode
+  }
+  return null
+}
+
 function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
   const actingInst = actingInstances.get(actingNode)
   if (!actingInst) return
@@ -203,19 +234,59 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
   if (connectedSceneNode) {
     const sceneState = readSceneStateFromNode(connectedSceneNode) as SceneState
     actingInst.exposed.setState({ scene_data: sceneState })
+    writeStoredActingProps(actingNode, { scene_data: sceneState })
 
     const sceneInst = sceneInstances.get(connectedSceneNode)
     const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
     if (threeScene && actingInst.exposed.setConnectedThreeScene) {
       actingInst.exposed.setConnectedThreeScene(threeScene)
     }
+    notifyConnectedDirectingNodes(actingNode)
   } else {
     actingInst.exposed.setState({ scene_data: undefined })
+    writeStoredActingProps(actingNode, { scene_data: undefined })
     if (actingInst.exposed.setConnectedThreeScene) {
       actingInst.exposed.setConnectedThreeScene(null)
     }
+    notifyConnectedDirectingNodes(actingNode)
   }
 }
+
+function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
+  const graph = app.graph
+  if (!graph || !graph.links) return
+
+  for (const linkId in graph.links) {
+    const link = graph.links[linkId]
+    if (link && link.origin_id === originNode.id) {
+      const targetNode = graph.getNodeById?.(link.target_id)
+      if (targetNode && (targetNode.constructor?.comfyClass === 'DirectingNode' || targetNode.type === 'DirectingNode')) {
+        const directingInst = directingInstances.get(targetNode)
+        if (directingInst) {
+          if (originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'ActingNode') {
+            const actingState = readActingStateFromNode(originNode)
+            const actingBlob = JSON.stringify({
+              motion_data: actingState.motion_data ?? '',
+              scene_data: actingState.scene_data ?? {},
+            })
+            directingInst.exposed.setState({ acting_data: actingBlob })
+            writeStoredDirectingProps(targetNode, { acting_data: actingBlob })
+
+            // Pass live ThreeActing scene for cloning (with lights)
+            const actingInst = actingInstances.get(originNode)
+            if (actingInst?.exposed?.getThreeActing) {
+              const threeActing = (actingInst.exposed as any).getThreeActing()
+              if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+                (directingInst.exposed as any).setConnectedThreeActing(threeActing)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 
 function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
   const graph = app.graph
@@ -236,9 +307,11 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
           const actingInst = actingInstances.get(targetNode)
           if (actingInst) {
             actingInst.exposed.setState({ scene_data: sceneState })
+            writeStoredActingProps(targetNode, { scene_data: sceneState })
             if (threeScene && actingInst.exposed.setConnectedThreeScene) {
               actingInst.exposed.setConnectedThreeScene(threeScene)
             }
+            notifyConnectedDirectingNodes(targetNode)
           }
         }
       }
@@ -250,10 +323,12 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
   const speedVal = getWidgetValue(node, 'character_speed', 10.0)
   const durationVal = getWidgetValue(node, 'duration', 7.0)
   const motionDataVal = getWidgetValue(node, 'motion_data', '')
+  const storedProps = readStoredActingProps(node)
   return {
     character_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
+    scene_data: storedProps?.scene_data ?? (undefined as any),
   }
 }
 
@@ -303,6 +378,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       }
 
       app.graph?.setDirtyCanvas(true, true)
+      notifyConnectedDirectingNodes(live)
     }
   })
 
@@ -411,6 +487,177 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
   return widget
 }
+
+// --- Helpers for DirectingNode ---
+function readStoredDirectingProps(node: ComfyNode): Partial<DirectingState> | null {
+  const raw = node.properties?.[DIRECTING_PROP_KEY]
+  if (!raw || typeof raw !== 'object') return null
+  return raw as Partial<DirectingState>
+}
+
+function writeStoredDirectingProps(node: ComfyNode, patch: Partial<DirectingState>): void {
+  if (!node.properties) node.properties = {}
+  const existing = (node.properties[DIRECTING_PROP_KEY] as Partial<DirectingState>) ?? {}
+  node.properties[DIRECTING_PROP_KEY] = { ...existing, ...patch }
+}
+
+function readDirectingStateFromNode(node: ComfyNode): Partial<DirectingState> {
+  const directingDataVal = getWidgetValue(node, 'directing_data', '')
+  const stored = readStoredDirectingProps(node) ?? {}
+  return {
+    camera_mode: stored.camera_mode ?? 'Third Person',
+    directing_data: typeof directingDataVal === 'string' ? directingDataVal : '',
+    acting_data: stored.acting_data ?? '',
+  }
+}
+
+function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
+  const directingInst = directingInstances.get(directingNode)
+  if (!directingInst) return
+
+  const connectedActingNode = findConnectedActingNode(directingNode)
+  if (connectedActingNode) {
+    const actingState = readActingStateFromNode(connectedActingNode)
+    // Build an acting data blob with scene + motion
+    const actingBlob = JSON.stringify({
+      motion_data: actingState.motion_data ?? '',
+      scene_data: actingState.scene_data ?? {},
+    })
+    directingInst.exposed.setState({ acting_data: actingBlob })
+    writeStoredDirectingProps(directingNode, { acting_data: actingBlob })
+
+    // Pass live ThreeActing scene for cloning (with lights)
+    const actingInst = actingInstances.get(connectedActingNode)
+    if (actingInst?.exposed?.getThreeActing) {
+      const threeActing = (actingInst.exposed as any).getThreeActing()
+      if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+        (directingInst.exposed as any).setConnectedThreeActing(threeActing)
+      }
+    }
+  } else {
+    directingInst.exposed.setState({ acting_data: '' })
+    writeStoredDirectingProps(directingNode, { acting_data: '' })
+  }
+}
+
+function createDirectingInstance(node: ComfyNode): DirectingNodeInstance {
+  const container = document.createElement('div')
+  container.id = `directing-widget-${node.id}`
+  container.style.width = '100%'
+  container.style.height = '100%'
+  container.style.minHeight = '350px'
+
+  const instance = {} as DirectingNodeInstance
+  instance.container = container
+  instance.currentNode = node
+  instance.widget = null
+  instance.cleanupTimer = null
+
+  const stored = readDirectingStateFromNode(node)
+
+  const vueApp = createApp(DirectingWidget, {
+    currentNode: node,
+    initialState: {
+      camera_mode: stored.camera_mode ?? 'Third Person',
+      acting_data: stored.acting_data ?? '',
+      directing_data: stored.directing_data ?? '',
+    },
+    onStateChange: (state: DirectingState) => {
+      const live = instance.currentNode
+      writeStoredDirectingProps(live, state)
+      app.graph?.setDirtyCanvas(true, true)
+    },
+    onDirectingDataChange: (directingDataJson: string) => {
+      const live = instance.currentNode
+      // Write directing_data back to the node widget
+      const ddWidget = live.widgets?.find((w: any) => w.name === 'directing_data')
+      if (ddWidget) {
+        ddWidget.value = directingDataJson
+      }
+      writeStoredDirectingProps(live, { directing_data: directingDataJson })
+      app.graph?.setDirtyCanvas(true, true)
+    },
+  })
+
+  const mounted = vueApp.mount(container)
+  instance.vueApp = vueApp
+  instance.exposed = mounted as unknown as DirectingAppExposed
+
+  directingInstances.set(node, instance)
+  return instance
+}
+
+function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
+  let instance = directingInstances.get(node)
+
+  if (instance) {
+    if (instance.cleanupTimer !== null) {
+      clearTimeout(instance.cleanupTimer)
+      instance.cleanupTimer = null
+    }
+    instance.currentNode = node
+  } else {
+    instance = createDirectingInstance(node)
+  }
+
+  // Hide the directing_data widget (it's managed internally)
+  const ddWidget = node.widgets?.find((w: any) => w.name === 'directing_data')
+  if (ddWidget) {
+    ddWidget.type = 'hidden' as any
+    ;(ddWidget as any).computeSize = () => [0, -4]
+  }
+
+  const widget = node.addDOMWidget(
+    'directing_3d_preview',
+    'directing-widget',
+    instance.container,
+    {
+      getMinHeight: () => 370,
+      hideOnZoom: false,
+      serialize: false
+    }
+  )
+
+  instance.widget = widget
+
+  const origOnConnectionsChange = node.onConnectionsChange
+  node.onConnectionsChange = function (slotType, slotIndex, isConnected, link, ioSlot) {
+    origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
+
+    if (slotType === 1) { // INPUT
+      const input = this.inputs?.[slotIndex]
+      if (input && input.name === 'acting' && !isConnected) {
+        const directingInst = directingInstances.get(this)
+        if (directingInst) {
+          directingInst.exposed.setState({ acting_data: '' })
+        }
+        return
+      }
+    }
+    updateDirectingNodeFromLinks(this)
+  }
+
+  const baseOnRemove = widget.onRemove?.bind(widget)
+  widget.onRemove = () => {
+    baseOnRemove?.()
+
+    const current = directingInstances.get(node)
+    if (!current || current.widget !== widget) return
+
+    current.cleanupTimer = window.setTimeout(() => {
+      const still = directingInstances.get(node)
+      if (!still || still.widget !== widget) return
+      still.exposed.cleanup()
+      still.vueApp.unmount()
+      directingInstances.delete(node)
+    }, CLEANUP_DELAY_MS)
+  }
+
+  setTimeout(() => updateDirectingNodeFromLinks(node), 100)
+
+  return widget
+}
+
 
 // --- Extension Registration ---
 app.registerExtension({
@@ -576,6 +823,21 @@ app.registerExtension({
         const instance = actingInstances.get(this)
         if (instance) {
           const state = readActingStateFromNode(this)
+          instance.exposed.setState(state)
+        }
+      }
+    } else if (comfyClass === 'DirectingNode') {
+      const [oldWidth, oldHeight] = node.size
+      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
+      createDirectingNodeWidget(node)
+
+      const origOnConfigure = node.onConfigure
+      node.onConfigure = function (info) {
+        origOnConfigure?.call(this, info)
+
+        const instance = directingInstances.get(this)
+        if (instance) {
+          const state = readDirectingStateFromNode(this)
           instance.exposed.setState(state)
         }
       }

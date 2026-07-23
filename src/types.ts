@@ -53,10 +53,27 @@ export interface ActingAppExposed {
   setConnectedThreeScene: (threeScene: any) => void
 }
 
+export interface DirectingState {
+  camera_mode: string
+  acting_data?: string
+  directing_data?: string
+}
+
+export interface ThreeDirectingOptions {
+  container: HTMLElement
+  initialState?: Partial<DirectingState>
+  onStateChange?: (state: DirectingState) => void
+}
+
+export interface DirectingAppExposed {
+  setState: (state: Partial<DirectingState>) => void
+  cleanup: () => void
+}
+
 export interface CustomNodeInstance {
   container: HTMLElement
   vueApp: VueApp
-  exposed: SceneAppExposed | ActingAppExposed
+  exposed: SceneAppExposed | ActingAppExposed | DirectingAppExposed
   currentNode: ComfyNode
   widget: DOMWidgetInstance | null
   cleanupTimer: number | null

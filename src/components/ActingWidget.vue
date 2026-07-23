@@ -78,11 +78,16 @@
         <div class="hint">Waiting for scene link...</div>
       </template>
     </div>
+
+    <!-- Time Counter Overlay (Bottom Right) -->
+    <div v-if="state.scene_data" class="time-counter-overlay">
+      {{ formattedTime }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, watch, onMounted, onUnmounted } from 'vue'
+import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import SceneCanvas from './SceneCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
 import type { ActingState } from '../types'
@@ -269,81 +274,44 @@ const cleanup = () => {
 }
 
 watch(() => state.scene_data, (newVal) => {
-  if (!newVal) {
-    cleanup()
+  if (threeActing) {
+    threeActing.setState({ scene_data: newVal ?? undefined })
   }
 })
 
+const currentTime = ref(0)
+const totalDuration = ref(props.initialState?.duration ?? 7.0)
+let timeFrameId: number | null = null
+
+const updateTimeCounter = () => {
+  if (threeActing) {
+    currentTime.value = threeActing.getCurrentTime()
+    totalDuration.value = threeActing.getDuration()
+  }
+  timeFrameId = requestAnimationFrame(updateTimeCounter)
+}
+
+const formattedTime = computed(() => {
+  const cur = Math.max(0, currentTime.value).toFixed(1)
+  const dur = Math.max(0, totalDuration.value).toFixed(1)
+  return `${cur}s / ${dur}s`
+})
+
 onMounted(() => {
-  checkInterval = setInterval(() => {
-    const node = props.currentNode
-    if (!node) return
-
-    const sceneInput = node.inputs?.find((i: any) => i.name === 'scene')
-    const hasLink = sceneInput && sceneInput.link != null
-
-    if (!hasLink) {
-      if (state.scene_data) {
-        state.scene_data = null as any
-      }
-    } else {
-      const comfyApp = (window as any).comfyAPI?.app?.app
-      const graph = node.graph || comfyApp?.graph
-      let linkFound = false
-      if (graph && graph.links) {
-        const link = graph.links[sceneInput.link]
-        if (link) {
-          const originNode = graph.getNodeById?.(link.origin_id)
-          if (originNode) {
-            linkFound = true
-            const sceneDataWidget = originNode.widgets?.find((w: any) => w.name === 'scene_data')
-            let connectedState: any = null
-            if (sceneDataWidget && sceneDataWidget.value) {
-              if (typeof sceneDataWidget.value === 'object') {
-                connectedState = sceneDataWidget.value
-              } else if (typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
-                try {
-                  connectedState = JSON.parse(sceneDataWidget.value)
-                } catch (e) {}
-              }
-            }
-
-            if (!connectedState && originNode.properties?.['sceneNodeState']) {
-              connectedState = originNode.properties['sceneNodeState']
-            }
-
-            if (connectedState) {
-              if (!connectedState.asset_transforms) {
-                connectedState.asset_transforms = []
-              }
-
-              if (JSON.stringify(state.scene_data) !== JSON.stringify(connectedState)) {
-                state.scene_data = connectedState
-                if (threeActing) {
-                  threeActing.setState({ scene_data: connectedState })
-                }
-              }
-            }
-          }
-        }
-      }
-      if (!linkFound) {
-        if (state.scene_data) {
-          state.scene_data = null as any
-        }
-      }
-    }
-  }, 200)
+  timeFrameId = requestAnimationFrame(updateTimeCounter)
 })
 
 onUnmounted(() => {
-  if (checkInterval) {
-    clearInterval(checkInterval)
+  if (timeFrameId !== null) {
+    cancelAnimationFrame(timeFrameId)
+    timeFrameId = null
   }
   cleanup()
 })
 
-defineExpose({ setState, cleanup, setConnectedThreeScene })
+const getThreeActing = () => threeActing
+
+defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
 </script>
 
 <style scoped>
@@ -626,5 +594,23 @@ defineExpose({ setState, cleanup, setConnectedThreeScene })
 @keyframes pulse {
   from { transform: scale(0.95); opacity: 0.8; }
   to { transform: scale(1.05); opacity: 1; }
+}
+
+.time-counter-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(20, 16, 25, 0.85);
+  border: 1px solid rgba(255, 0, 127, 0.4);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 10;
+  letter-spacing: 0.5px;
 }
 </style>

@@ -116,7 +116,7 @@ class ActingNode(io.ComfyNode):
             node_id="ActingNode",
             display_name="Acting 3D Node",
             category="SceneCameraAction",
-            is_output_node=True,
+            is_output_node=False,
             description="Receives a 3D scene from SceneNode and hosts interactive character acting.",
             inputs=[
                 SceneIO.Input(
@@ -178,9 +178,93 @@ class ActingNode(io.ComfyNode):
         return io.NodeOutput(acting_json, ui=_ActingUIOutput(acting_dict))
 
 
+class _DirectingUIOutput(_UIOutput):
+    """Sends directing state to the UI frontend."""
+
+    def __init__(self, directing_dict: dict):
+        super().__init__()
+        self.directing_dict = directing_dict
+
+    def as_dict(self) -> dict:
+        return {"directing_state": self.directing_dict}
+
+
+CameraIO = io.Custom("CAMERA")
+
+
+class DirectingNode(io.ComfyNode):
+    """
+    Directing Node
+    Records camera cut timelines on top of acting motion data.
+    Scene is inherited from the connected Acting Data.
+    """
+
+    @classmethod
+    def define_schema(cls):
+        return io.Schema(
+            node_id="DirectingNode",
+            display_name="Directing 3D Node",
+            category="SceneCameraAction",
+            is_output_node=False,
+            description="Records camera cuts on top of acting data. Scene is inherited from ActingNode.",
+            inputs=[
+                ActingIO.Input(
+                    "acting",
+                    display_name="Acting",
+                    tooltip="Acting motion connection from an ActingNode",
+                    optional=True,
+                ),
+                io.String.Input(
+                    "directing_data",
+                    default="",
+                    display_name="Directing Data",
+                    tooltip="Serialized camera cut timeline (managed internally)",
+                ),
+            ],
+            outputs=[
+                CameraIO.Output("camera_data", display_name="Camera Data"),
+            ],
+            hidden=[io.Hidden.unique_id],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        acting: str | dict | None = None,
+        directing_data: str = "",
+    ) -> io.NodeOutput:
+        acting_data = {}
+        if isinstance(acting, str) and acting.strip():
+            try:
+                acting_data = json.loads(acting)
+            except Exception:
+                acting_data = {"raw": acting}
+        elif isinstance(acting, dict):
+            acting_data = acting
+
+        # Scene is embedded inside the acting_data
+        scene_data = acting_data.get("scene_data", {})
+
+        camera_timeline = []
+        if directing_data and directing_data.strip():
+            try:
+                camera_timeline = json.loads(directing_data)
+            except Exception:
+                camera_timeline = []
+
+        directing_dict = {
+            "scene_data": scene_data,
+            "acting_data": acting_data,
+            "directing_data": camera_timeline,
+        }
+
+        directing_json = json.dumps(directing_dict)
+        return io.NodeOutput(directing_json, ui=_DirectingUIOutput(directing_dict))
+
+
 class SceneCameraActionExtension(ComfyExtension):
     async def get_node_list(self):
-        return [SceneNode, ActingNode]
+        return [SceneNode, ActingNode, DirectingNode]
 
 
 async def comfy_entrypoint():
