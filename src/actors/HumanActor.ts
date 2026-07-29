@@ -42,7 +42,7 @@ export class HumanActor extends BaseActor {
     noseMesh.castShadow = true
     this.group.add(noseMesh)
 
-    // 2. Human Collider Wireframe Visualizer
+    // 3. Human Collider Wireframe Visualizer
     const colliderGeo = new THREE.CapsuleGeometry(0.3, 0.9, 8, 16)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0xff00ff,
@@ -65,6 +65,16 @@ export class HumanActor extends BaseActor {
     speedMultiplier: number,
     colliderBVH: any
   ): void {
+    const isW = keysPressed['ArrowUp'] || keysPressed['KeyW']
+    const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']
+    const isA = keysPressed['ArrowLeft'] || keysPressed['KeyA']
+    const isD = keysPressed['ArrowRight'] || keysPressed['KeyD']
+    const isSpace = keysPressed['Space'] || keysPressed[' '] || keysPressed['KeyJ']
+
+    if (isSpace && this.isOnGround) {
+      this.jump()
+    }
+
     const physicsSteps = 5
     const stepDt = dt / physicsSteps
     const speed = speedMultiplier
@@ -72,10 +82,10 @@ export class HumanActor extends BaseActor {
     let moveZ = 0
     let moveX = 0
 
-    if (keysPressed['ArrowUp'] || keysPressed['KeyW']) moveZ -= 1
-    if (keysPressed['ArrowDown'] || keysPressed['KeyS']) moveZ += 1
-    if (keysPressed['ArrowLeft'] || keysPressed['KeyA']) moveX -= 1
-    if (keysPressed['ArrowRight'] || keysPressed['KeyD']) moveX += 1
+    if (isW) moveZ -= 1
+    if (isS) moveZ += 1
+    if (isA) moveX -= 1
+    if (isD) moveX += 1
 
     const dir = new THREE.Vector3(moveX, 0, moveZ)
     if (dir.lengthSq() > 0) {
@@ -87,9 +97,10 @@ export class HumanActor extends BaseActor {
     this.velocity.x = dir.x * speed
     this.velocity.z = dir.z * speed
 
+    let touchGround = false
+
     for (let step = 0; step < physicsSteps; step++) {
       this.velocity.y -= 30 * stepDt
-      const tentativeY = this.position.y
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
@@ -127,37 +138,39 @@ export class HumanActor extends BaseActor {
             if (dist < radius) {
               const depth = radius - dist
               const direction = capsulePoint.sub(triPoint).normalize()
+              if (direction.y > 0.3) {
+                touchGround = true
+              }
               tempSegment.start.addScaledVector(direction, depth)
               tempSegment.end.addScaledVector(direction, depth)
             }
           }
         })
 
-        const resolvedY = tempSegment.start.y - radius
-        const deltaY = resolvedY - tentativeY
-        if (deltaY > 0.001) {
+        this.position.copy(tempSegment.start)
+        this.position.y -= radius
+
+        if (touchGround) {
           if (this.velocity.y <= 0) {
             this.velocity.y = 0
             this.isOnGround = true
           }
-        } else if (deltaY < -0.001) {
-          if (this.velocity.y > 0) {
-            this.velocity.y = 0
-          }
         }
-
-        this.position.copy(tempSegment.start)
-        this.position.y -= radius
-      }
-
-      // ABSOLUTE SAFETY FLOOR CHECK: Never allow sinking below stage ground y = -1.0
-      if (this.position.y < -1.0) {
-        this.position.y = -1.0
-        this.velocity.y = 0
-        this.isOnGround = true
+      } else {
+        if (this.position.y <= -1.0) {
+          this.position.y = -1.0
+          this.velocity.y = 0
+          this.isOnGround = true
+          touchGround = true
+        }
       }
     }
 
+    if (!touchGround && colliderBVH) {
+      this.isOnGround = false
+    }
+
+    // Respawn if falling off stage edge into abyss
     if (this.position.y < -10.0) {
       this.resetToOrigin()
       return

@@ -11,6 +11,9 @@ export class CarActor extends BaseActor {
   private rearRightWheelGroup: THREE.Group | null = null
   private wheelRollingGroup: THREE.Group[] = []
 
+  private pitchAngle: number = 0
+  private rollAngle: number = 0
+
   constructor() {
     super()
     this.rotationY = Math.PI / 2
@@ -28,9 +31,11 @@ export class CarActor extends BaseActor {
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
     this.currentSteerAngle = 0
+    this.pitchAngle = 0
+    this.rollAngle = 0
     this.isOnGround = true
     this.group.position.copy(this.position)
-    this.group.rotation.y = this.rotationY
+    this.group.rotation.set(0, this.rotationY, 0)
   }
 
   public buildMesh(): void {
@@ -116,14 +121,14 @@ export class CarActor extends BaseActor {
 
     // 4. Wheels: Black ExtrudeGeometry Tire (Hollow Ring) + White Cylinder Hub Rim
     const tireShape = new THREE.Shape()
-    tireShape.absarc(0, 0, 0.20, 0, Math.PI * 2, false) // Outer radius: 0.20
+    tireShape.absarc(0, 0, 0.20, 0, Math.PI * 2, false)
 
     const tireHole = new THREE.Path()
-    tireHole.absarc(0, 0, 0.09, 0, Math.PI * 2, true) // Inner hole radius: 0.09
+    tireHole.absarc(0, 0, 0.09, 0, Math.PI * 2, true)
     tireShape.holes.push(tireHole)
 
     const extrudeSettings = {
-      depth: 0.18, // Wider tire width (0.18m)
+      depth: 0.18,
       bevelEnabled: false,
       curveSegments: 16,
     }
@@ -137,7 +142,6 @@ export class CarActor extends BaseActor {
       metalness: 0.1,
     })
 
-    // White hub rim (smaller radius 0.09)
     const hubGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.18, 16)
     const hubMat = new THREE.MeshStandardMaterial({
       color: 0xf1f5f9,
@@ -148,8 +152,8 @@ export class CarActor extends BaseActor {
     this.wheelRollingGroup = []
 
     const createWheelAssembly = () => {
-      const pivotGroup = new THREE.Group() // Handles steering Y rotation
-      const rollingGroup = new THREE.Group() // Handles wheel rolling X rotation
+      const pivotGroup = new THREE.Group()
+      const rollingGroup = new THREE.Group()
 
       const tireMesh = new THREE.Mesh(tireGeo, tireMat)
       tireMesh.rotation.y = Math.PI / 2
@@ -186,11 +190,11 @@ export class CarActor extends BaseActor {
     this.rearRightWheelGroup.position.set(0.52, 0.2, -0.55)
     carGroup.add(this.rearRightWheelGroup)
 
-    // Raise mesh group slightly (+0.08m) so wheels sit cleanly above ground
-    carGroup.position.y = 0.08
+    // Elevate carGroup (+0.22m) so wheels rest cleanly above ground plane
+    carGroup.position.y = 0.22
     this.group.add(carGroup)
 
-    // 5. Car Collider Wireframe Visualizer (Clean vehicle bounding box)
+    // 5. Car Collider Wireframe Visualizer
     const colliderGeo = new THREE.BoxGeometry(1.05, 0.65, 1.85)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
@@ -201,7 +205,7 @@ export class CarActor extends BaseActor {
       opacity: 0.85,
     })
     this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
-    this.colliderWireframe.position.set(0, 0.40, 0)
+    this.colliderWireframe.position.set(0, 0.48, 0)
     this.colliderWireframe.renderOrder = 1000
     this.colliderWireframe.visible = this.showCollider
     this.group.add(this.colliderWireframe)
@@ -217,6 +221,11 @@ export class CarActor extends BaseActor {
     const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']
     const isA = keysPressed['ArrowLeft'] || keysPressed['KeyA']
     const isD = keysPressed['ArrowRight'] || keysPressed['KeyD']
+    const isSpace = keysPressed['Space'] || keysPressed[' ']
+
+    if (isSpace && this.isOnGround) {
+      this.jump()
+    }
 
     const maxForwardSpeed = speedMultiplier * 1.5
     const maxReverseSpeed = speedMultiplier * 0.6
@@ -232,14 +241,11 @@ export class CarActor extends BaseActor {
       }
     } else if (isS) {
       if (this.currentSpeed > 0) {
-        // Fast brake when moving forward
         this.currentSpeed = Math.max(0, this.currentSpeed - brake)
       } else if (this.currentSpeed > -maxReverseSpeed) {
-        // Reverse acceleration
         this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel)
       }
     } else {
-      // Inertia & Friction coasting deceleration when no throttle/brake is pressed
       if (this.currentSpeed > 0) {
         this.currentSpeed = Math.max(0, this.currentSpeed - drag)
       } else if (this.currentSpeed < 0) {
@@ -256,10 +262,9 @@ export class CarActor extends BaseActor {
       const turnDir = this.currentSpeed < 0 ? -1 : 1
       const turnFactor = Math.min(1.0, Math.abs(this.currentSpeed) / 3.0)
       this.rotationY += steerInput * turnDir * 2.2 * turnFactor * dt
-      this.group.rotation.y = this.rotationY
     }
 
-    // 3. Visual Steering Angle for Front Wheels (turns wheels dynamically when A / D are pressed)
+    // 3. Visual Steering Angle for Front Wheels
     let targetSteer = 0
     if (isA) targetSteer += 0.45
     if (isD) targetSteer -= 0.45
@@ -288,9 +293,11 @@ export class CarActor extends BaseActor {
     const physicsSteps = 5
     const stepDt = dt / physicsSteps
 
+    let lastSlopeNormal: THREE.Vector3 | null = null
+    let touchGround = false
+
     for (let step = 0; step < physicsSteps; step++) {
       this.velocity.y -= 30 * stepDt
-      const tentativeY = this.position.y
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
@@ -328,36 +335,59 @@ export class CarActor extends BaseActor {
             if (dist < radius) {
               const depth = radius - dist
               const direction = capsulePoint.sub(triPoint).normalize()
+              if (direction.y > 0.3) {
+                lastSlopeNormal = direction.clone()
+                touchGround = true
+              }
               tempSegment.start.addScaledVector(direction, depth)
               tempSegment.end.addScaledVector(direction, depth)
             }
           }
         })
 
-        const resolvedY = tempSegment.start.y - radius
-        const deltaY = resolvedY - tentativeY
-        if (deltaY > 0.001) {
+        this.position.copy(tempSegment.start)
+        this.position.y -= radius
+
+        if (touchGround) {
           if (this.velocity.y <= 0) {
             this.velocity.y = 0
             this.isOnGround = true
           }
-        } else if (deltaY < -0.001) {
-          if (this.velocity.y > 0) {
-            this.velocity.y = 0
-          }
         }
-
-        this.position.copy(tempSegment.start)
-        this.position.y -= radius
-      }
-
-      // ABSOLUTE SAFETY FLOOR CHECK: Never allow sinking below stage ground y = -1.0
-      if (this.position.y < -1.0) {
-        this.position.y = -1.0
-        this.velocity.y = 0
-        this.isOnGround = true
+      } else {
+        if (this.position.y <= -1.0) {
+          this.position.y = -1.0
+          this.velocity.y = 0
+          this.isOnGround = true
+          touchGround = true
+        }
       }
     }
+
+    if (!touchGround && colliderBVH) {
+      this.isOnGround = false
+    }
+
+    // Dynamic Ramp Pitch & Roll Rotation Alignment based on BVH surface normal
+    let targetPitch = 0
+    let targetRoll = 0
+
+    if (this.isOnGround && lastSlopeNormal) {
+      const forwardVec = new THREE.Vector3(Math.sin(this.rotationY), 0, Math.cos(this.rotationY))
+      const rightVec = new THREE.Vector3(Math.cos(this.rotationY), 0, -Math.sin(this.rotationY))
+
+      const forwardSlope = forwardVec.dot(lastSlopeNormal)
+      const rightSlope = rightVec.dot(lastSlopeNormal)
+
+      targetPitch = Math.asin(Math.max(-0.85, Math.min(0.85, forwardSlope)))
+      targetRoll = -Math.asin(Math.max(-0.85, Math.min(0.85, rightSlope)))
+    }
+
+    this.pitchAngle += (targetPitch - this.pitchAngle) * Math.min(1.0, 12.0 * dt)
+    this.rollAngle += (targetRoll - this.rollAngle) * Math.min(1.0, 12.0 * dt)
+
+    const euler = new THREE.Euler(this.pitchAngle, this.rotationY, this.rollAngle, 'YXZ')
+    this.group.quaternion.setFromEuler(euler)
 
     if (this.position.y < -10.0) {
       this.resetToOrigin()

@@ -24,6 +24,13 @@ export abstract class BaseActor {
     this.group.rotation.y = this.rotationY
   }
 
+  public jump(): void {
+    if (this.isOnGround) {
+      this.velocity.y = 11.0
+      this.isOnGround = false
+    }
+  }
+
   public setDisplayCollider(visible: boolean): void {
     this.showCollider = visible
     if (this.colliderWireframe) {

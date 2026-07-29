@@ -407,7 +407,7 @@ export class ThreeActing {
     // Keyboard listeners when mouse is hovered over canvas (WASD + Arrow keys)
     this.keydownHandler = (e: KeyboardEvent) => {
       if (!this.isHovered) return
-      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)
+      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)
       if (isMovementKey) {
         e.preventDefault()
         e.stopPropagation()
@@ -415,20 +415,16 @@ export class ThreeActing {
         this.keysPressed[e.code] = true
       }
       if (e.code === 'Space') {
-        e.preventDefault()
-        e.stopPropagation()
-        e.stopImmediatePropagation()
         if (e.repeat) return
-        if (this.actorController && this.actorController.isOnGround) {
-          this.actorController.velocity.y = 10.0 // Jump vertical impulse
-          this.actorController.isOnGround = false
+        if (this.actorController) {
+          this.actorController.jump()
         }
       }
     }
 
     this.keyupHandler = (e: KeyboardEvent) => {
-      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)
-      if (this.isHovered && (isMovementKey || e.code === 'Space')) {
+      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)
+      if (this.isHovered && isMovementKey) {
         e.preventDefault()
         e.stopPropagation()
         e.stopImmediatePropagation()
