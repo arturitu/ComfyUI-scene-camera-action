@@ -270,7 +270,11 @@ const togglePlay = () => {
     selectedKeyframe.value = null
   }
   if (threeDirecting) {
-    threeDirecting.isPlaying = isPlaying.value
+    if (isPlaying.value) {
+      threeDirecting.play()
+    } else {
+      threeDirecting.pause()
+    }
   }
 }
 

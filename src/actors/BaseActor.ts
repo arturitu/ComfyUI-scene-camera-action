@@ -51,8 +51,45 @@ export abstract class BaseActor {
     this.position.set(x, y, z)
     this.rotationY = ry
     this.group.position.copy(this.position)
-    this.group.rotation.y = ry
+    this.group.rotation.set(0, ry, 0)
   }
+
+  public getMotionState(t: number): MotionFrame {
+    const euler = new THREE.Euler().setFromQuaternion(this.group.quaternion, 'YXZ')
+    return {
+      t: Number(t.toFixed(3)),
+      px: Number(this.position.x.toFixed(3)),
+      py: Number(this.position.y.toFixed(3)),
+      pz: Number(this.position.z.toFixed(3)),
+      rx: Number(euler.x.toFixed(3)),
+      ry: Number(this.rotationY.toFixed(3)),
+      rz: Number(euler.z.toFixed(3)),
+    }
+  }
+
+  public applyMotionFrame(frame: any, diffY: number = 0): void {
+    if (!frame) return
+
+    const prevX = this.position.x
+    const prevZ = this.position.z
+
+    this.position.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
+    this.rotationY = frame.ry ?? 0
+    const rx = frame.rx ?? 0
+    const rz = frame.rz ?? 0
+
+    const euler = new THREE.Euler(rx, this.rotationY, rz, 'YXZ')
+    this.group.quaternion.setFromEuler(euler)
+    this.group.position.copy(this.position)
+
+    const dx = this.position.x - prevX
+    const dz = this.position.z - prevZ
+    const distMoved = Math.sqrt(dx * dx + dz * dz)
+
+    this.onPlaybackMotion(distMoved, diffY)
+  }
+
+  public onPlaybackMotion(_distMoved: number, _diffY: number): void {}
 
   /**
    * Universal ground raycasting & gravity resolution shared by all actors.

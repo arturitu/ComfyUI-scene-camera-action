@@ -268,11 +268,7 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
         if (directingInst) {
           if (originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'ActingNode') {
             const actingState = readActingStateFromNode(originNode)
-            const actingBlob = JSON.stringify({
-              motion_data: actingState.motion_data ?? '',
-              scene_data: actingState.scene_data ?? {},
-              actor_type: actingState.actor_type ?? 'human',
-            })
+            const actingBlob = actingState.motion_data ?? ''
             directingInst.exposed.setState({ acting_data: actingBlob })
             writeStoredDirectingProps(targetNode, { acting_data: actingBlob })
 
@@ -532,11 +528,7 @@ function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
   const connectedActingNode = findConnectedActingNode(directingNode)
   if (connectedActingNode) {
     const actingState = readActingStateFromNode(connectedActingNode)
-    // Build an acting data blob with scene + motion
-    const actingBlob = JSON.stringify({
-      motion_data: actingState.motion_data ?? '',
-      scene_data: actingState.scene_data ?? {},
-    })
+    const actingBlob = actingState.motion_data ?? ''
     directingInst.exposed.setState({ acting_data: actingBlob })
     writeStoredDirectingProps(directingNode, { acting_data: actingBlob })
 

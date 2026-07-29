@@ -25,6 +25,20 @@ export class CarActor extends BaseActor {
     return 'car'
   }
 
+  public override onPlaybackMotion(distMoved: number, angularVel: number): void {
+    const targetSteer = Math.max(-0.45, Math.min(0.45, angularVel * 0.35))
+    this.currentSteerAngle += (targetSteer - this.currentSteerAngle) * 0.3
+    if (this.frontLeftWheelGroup) this.frontLeftWheelGroup.rotation.y = this.currentSteerAngle
+    if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle
+
+    if (distMoved > 0.001) {
+      const rollDelta = distMoved / 0.20
+      this.wheelRollingGroup.forEach((w) => {
+        w.rotation.x += rollDelta
+      })
+    }
+  }
+
   public override resetToOrigin(): void {
     this.position.set(0, -1.0, 2)
     this.rotationY = 0

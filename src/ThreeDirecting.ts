@@ -3,6 +3,7 @@ import type { DirectingState, ThreeDirectingOptions } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
+import { PlaybackController } from './utils/PlaybackController'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -19,8 +20,7 @@ export class ThreeDirecting {
   private clonedEnvGroup: THREE.Group | null = null
   private connectedThreeActing: any = null
 
-  private playbackTime = 0
-  private trajectory: Array<{ t: number; px: number; py: number; pz: number; ry: number }> = []
+  private playbackController = new PlaybackController()
   private actorPosition = new THREE.Vector3(0, -1.0, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private lastTime = performance.now()
@@ -47,68 +47,68 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
+    if (this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function') {
+      const actorType = this.connectedThreeActing.getActorType()
+      this.buildActor(actorType)
+    }
     this.buildSceneEnvironment()
   }
 
   public loadActingData(actingDataJson: string): void {
+    console.log('[ThreeDirecting] loadActingData called, payload length:', actingDataJson?.length ?? 0)
     if (!actingDataJson || !actingDataJson.trim()) {
-      this.trajectory = []
+      this.playbackController.setTrajectory([])
       return
     }
     try {
       const parsed = JSON.parse(actingDataJson)
-
-      if (Array.isArray(parsed)) {
-        this.trajectory = parsed
-        this.trajectory.sort((a, b) => a.t - b.t)
-      } else if (typeof parsed === 'object') {
-        if (Array.isArray(parsed.motion_data)) {
-          this.trajectory = parsed.motion_data
-          this.trajectory.sort((a, b) => a.t - b.t)
-        } else if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim()) {
-          try {
-            this.trajectory = JSON.parse(parsed.motion_data)
-            this.trajectory.sort((a, b) => a.t - b.t)
-          } catch {
-            this.trajectory = []
-          }
+      if (typeof parsed === 'object' && parsed !== null) {
+        const actorType = parsed.actor_type || parsed.actorType || parsed.char_type
+        console.log('[ThreeDirecting] Parsed actor_type:', actorType)
+        if (actorType) {
+          this.buildActor(actorType)
         }
         if (parsed.scene_data && !this.connectedThreeActing) {
           this.buildSceneFromData(parsed.scene_data)
         }
       }
-    } catch {
-      this.trajectory = []
+    } catch (e) {
+      console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
     }
 
-    this.normalizeTrajectoryOrientation()
-    this.playbackTime = 0
-    this.updateActorMovement(0)
+    this.playbackController.setTrajectory(actingDataJson)
+    this.playbackController.start()
+    console.log('[ThreeDirecting] Loaded frames count:', this.playbackController.getTrajectory().length, 'maxDuration:', this.playbackController.getMaxDuration())
+    if (this.actorController) {
+      this.playbackController.evaluateAt(0, this.actorController)
+      this.actorPosition.copy(this.actorController.position)
+    }
     this.updateCamera()
   }
 
   private normalizeTrajectoryOrientation(): void {
-    if (this.trajectory.length < 2) return
+    const trajectory = this.playbackController.getTrajectory()
+    if (trajectory.length < 2) return
 
     let firstMoveIdx = -1
-    for (let i = 1; i < this.trajectory.length; i++) {
-      const dx = this.trajectory[i].px - this.trajectory[0].px
-      const dz = this.trajectory[i].pz - this.trajectory[0].pz
-      if (dx * dx + dz * dz > 0.001 || Math.abs(this.trajectory[i].ry - this.trajectory[0].ry) > 0.001) {
+    for (let i = 1; i < trajectory.length; i++) {
+      const dx = trajectory[i].px - trajectory[0].px
+      const dz = trajectory[i].pz - trajectory[0].pz
+      if (dx * dx + dz * dz > 0.001 || Math.abs(trajectory[i].ry - trajectory[0].ry) > 0.001) {
         firstMoveIdx = i
         break
       }
     }
 
     if (firstMoveIdx > 0) {
-      const dx = this.trajectory[firstMoveIdx].px - this.trajectory[0].px
-      const dz = this.trajectory[firstMoveIdx].pz - this.trajectory[0].pz
-      let initialRy = this.trajectory[firstMoveIdx].ry
+      const dx = trajectory[firstMoveIdx].px - trajectory[0].px
+      const dz = trajectory[firstMoveIdx].pz - trajectory[0].pz
+      let initialRy = trajectory[firstMoveIdx].ry
       if (dx * dx + dz * dz > 0.001) {
         initialRy = Math.atan2(dx, dz)
       }
       for (let k = 0; k < firstMoveIdx; k++) {
-        this.trajectory[k].ry = initialRy
+        trajectory[k].ry = initialRy
       }
     }
   }
@@ -222,8 +222,17 @@ export class ThreeDirecting {
           setPosition: (x: number, y: number, z: number, ry: number) => {
             this.actorPosition.set(x, y, z)
             inheritedActor!.position.set(x, y, z)
-            inheritedActor!.rotation.y = ry
+            inheritedActor!.rotation.set(0, ry, 0)
           },
+          applyMotionFrame: (frame: any) => {
+            this.actorPosition.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
+            inheritedActor!.position.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
+            const euler = new THREE.Euler(frame.rx ?? 0, frame.ry ?? 0, frame.rz ?? 0, 'YXZ')
+            inheritedActor!.quaternion.setFromEuler(euler)
+          },
+          getMotionState: (t: number) => ({
+            t, px: this.actorPosition.x, py: this.actorPosition.y, pz: this.actorPosition.z, rx: 0, ry: 0, rz: 0
+          }),
           dispose: () => {
             inheritedActor!.traverse((child) => {
               if (child instanceof THREE.Mesh) {
@@ -237,30 +246,34 @@ export class ThreeDirecting {
             })
           }
         } as any
-        this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
-        this.scene.add(this.actorController.group)
+        if (this.actorController) {
+          this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
+          this.scene.add(this.actorController.group)
+        }
       } else {
         this.buildActor()
       }
 
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.DirectionalLight) {
-          this.mainLight = child
-          this.mainLight.castShadow = true
-          this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-          this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-          this.mainLight.shadow.bias = config.SHADOW_BIAS
-          this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-          const d = config.SHADOW_FRUSTUM_SIZE
-          this.mainLight.shadow.camera.left = -d
-          this.mainLight.shadow.camera.right = d
-          this.mainLight.shadow.camera.top = d
-          this.mainLight.shadow.camera.bottom = -d
-          this.scene.add(this.mainLight.target)
-        }
-      })
+      if (this.clonedEnvGroup) {
+        this.clonedEnvGroup.traverse((child) => {
+          if (child instanceof THREE.DirectionalLight) {
+            this.mainLight = child
+            this.mainLight.castShadow = true
+            this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
+            this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
+            this.mainLight.shadow.bias = config.SHADOW_BIAS
+            this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
+            const d = config.SHADOW_FRUSTUM_SIZE
+            this.mainLight.shadow.camera.left = -d
+            this.mainLight.shadow.camera.right = d
+            this.mainLight.shadow.camera.top = d
+            this.mainLight.shadow.camera.bottom = -d
+            this.scene.add(this.mainLight.target)
+          }
+        })
 
-      this.scene.add(this.clonedEnvGroup)
+        this.scene.add(this.clonedEnvGroup)
+      }
     }
 
     if (!hasGrid) {
@@ -404,53 +417,9 @@ export class ThreeDirecting {
   }
 
   private updateActorMovement(dt: number): void {
-    if (!this.actorController || this.trajectory.length < 2) return
-
-    if (this.isPlaying) {
-      this.playbackTime += dt
-    }
-
-    const maxDuration = this.trajectory[this.trajectory.length - 1].t || 8.0
-
-    if (this.playbackTime >= maxDuration) {
-      if (this.isRecordingMode) {
-        this.playbackTime = maxDuration
-        this.isPlaying = false
-      } else {
-        this.playbackTime = this.playbackTime % maxDuration
-      }
-    }
-
-    const t = this.playbackTime
-
-    let idxA = 0
-    for (let i = 0; i < this.trajectory.length; i++) {
-      if (this.trajectory[i].t <= t) idxA = i
-      else break
-    }
-    const idxB = (idxA + 1) % this.trajectory.length
-    const frameA = this.trajectory[idxA]
-    const frameB = this.trajectory[idxB]
-
-    let factor = 0
-    let timeDiff = frameB.t - frameA.t
-    if (timeDiff < 0) {
-      timeDiff = (maxDuration - frameA.t) + frameB.t
-      factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
-    } else {
-      factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
-    }
-
-    const px = frameA.px + (frameB.px - frameA.px) * factor
-    const py = frameA.py + (frameB.py - frameA.py) * factor
-    const pz = frameA.pz + (frameB.pz - frameA.pz) * factor
-
-    let diffY = frameB.ry - frameA.ry
-    diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
-    const ry = frameA.ry + diffY * factor
-
-    this.actorPosition.set(px, py, pz)
-    this.actorController.setPosition(px, py, pz, ry)
+    if (!this.actorController) return
+    this.playbackController.update(dt, this.actorController)
+    this.actorPosition.copy(this.actorController.position)
   }
 
   private lastCameraMode: string | null = null
@@ -460,7 +429,7 @@ export class ThreeDirecting {
 
     const charPos = this.actorPosition
     const rotY = this.actorController.group.rotation.y
-    const activeMode = this.getActiveKeyframeMode(this.playbackTime)
+    const activeMode = this.getActiveKeyframeMode(this.playbackController.getCurrentTime())
 
     if (activeMode === 'First Person') {
       if (this.camera.fov !== 50) {
@@ -619,8 +588,8 @@ export class ThreeDirecting {
       }
 
       // Save current playback time and snap actor to initial frame (t = 0.0s)
-      const prevTime = this.playbackTime
-      this.playbackTime = 0
+      const prevTime = this.playbackController.getCurrentTime()
+      this.playbackController.setCurrentTime(0)
       this.updateActorMovement(0)
 
       // Temporarily disable fog for crisp overview render without fog haze
@@ -645,7 +614,7 @@ export class ThreeDirecting {
       canvas.toBlob((blob) => {
         // Restore scene fog, playback time, actor position, standard camera view, and container resolution
         this.scene.fog = prevFog
-        this.playbackTime = prevTime
+        this.playbackController.setCurrentTime(prevTime)
         this.updateActorMovement(0)
         this.onResize()
         this.renderer.render(this.scene, this.camera)
@@ -658,8 +627,28 @@ export class ThreeDirecting {
     })
   }
 
+  public play(): void {
+    this.playbackController.play()
+  }
+
+  public pause(): void {
+    this.playbackController.pause()
+  }
+
+  public stop(): void {
+    this.playbackController.stop()
+    if (this.actorController) {
+      this.playbackController.evaluateAt(0, this.actorController)
+      this.actorPosition.copy(this.actorController.position)
+    }
+  }
+
+  public getIsPlaying(): boolean {
+    return this.playbackController.getIsPlaying()
+  }
+
   public resetPlayback(): void {
-    this.playbackTime = 0
+    this.stop()
     this.lastCameraMode = null
     this.updateActorMovement(0)
     this.updateCamera()
@@ -667,21 +656,19 @@ export class ThreeDirecting {
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
-    this.playbackTime = Math.max(0, Math.min(t, maxDur))
+    this.playbackController.setCurrentTime(Math.max(0, Math.min(t, maxDur)))
     this.lastCameraMode = null
     this.updateActorMovement(0)
     this.updateCamera()
   }
 
   public getCurrentTime(): number {
-    return this.playbackTime
+    return this.playbackController.getCurrentTime()
   }
 
   public getDuration(): number {
-    if (this.trajectory.length > 0) {
-      return this.trajectory[this.trajectory.length - 1].t || 7.0
-    }
-    return 7.0
+    const maxDuration = this.playbackController.getMaxDuration()
+    return maxDuration > 0 ? maxDuration : 7.0
   }
 
   public dispose(): void {

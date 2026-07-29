@@ -12,6 +12,16 @@ export interface CubeTransform {
   sz: number
 }
 
+export interface MotionFrame {
+  t: number
+  px: number
+  py: number
+  pz: number
+  rx: number
+  ry: number
+  rz: number
+}
+
 export interface SceneState {
   type: string
   num_assets: number

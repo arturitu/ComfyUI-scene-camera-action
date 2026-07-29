@@ -56,8 +56,15 @@
             {{ isPlaying ? 'Pause' : 'Play' }}
           </button>
           <button
+            class="acting-btn stop-btn"
+            title="Stop and Reset Position"
+            @click="stopPlayback"
+          >
+            Stop
+          </button>
+          <button
             class="acting-btn reset-btn"
-            title="Reset to Keyboard Control"
+            title="Clear Recording and Reset to Keyboard"
             @click="resetToInteractive"
           >
             Reset
@@ -207,15 +214,22 @@ const togglePlay = () => {
   if (isPlaying.value) {
     isPlaying.value = false
     if (threeActing) {
-      threeActing.stopPlayback()
+      threeActing.pause()
     }
   } else {
     if (state.motion_data) {
       isPlaying.value = true
       if (threeActing) {
-        threeActing.startPlayback(state.motion_data)
+        threeActing.play()
       }
     }
+  }
+}
+
+const stopPlayback = () => {
+  isPlaying.value = false
+  if (threeActing) {
+    threeActing.stop()
   }
 }
 

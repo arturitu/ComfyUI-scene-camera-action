@@ -6,6 +6,7 @@ import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
+import { PlaybackController } from './utils/PlaybackController'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -28,8 +29,8 @@ export class ThreeActing {
   private isRecording = false
   private isPlaying = false
   private recordingTime = 0
-  private playbackTime = 0
-  private trajectory: Array<{ t: number, px: number, py: number, pz: number, ry: number }> = []
+  private playbackController = new PlaybackController()
+  private trajectory: Array<any> = []
   private onRecordingFinished?: (trajectoryJson: string) => void
 
   // BVH Collision data
@@ -82,10 +83,20 @@ export class ThreeActing {
     this.isPlaying = false
   }
 
+  public getActorType(): 'human' | 'car' {
+    return this.actorController ? this.actorController.getType() : 'human'
+  }
+
   public stopRecording(): string {
     this.isRecording = false
-    const json = JSON.stringify(this.trajectory)
+    const payload = {
+      actor_type: this.getActorType(),
+      motion_data: this.trajectory,
+      scene_data: this.state.scene_data ?? null
+    }
+    const json = JSON.stringify(payload)
     this.state.motion_data = json
+    this.playbackController.setTrajectory(json)
     if (this.onStateChange) {
       this.onStateChange({ ...this.state })
     }
@@ -96,28 +107,35 @@ export class ThreeActing {
     if (trajectoryJson) {
       this.loadTrajectory(trajectoryJson)
     }
-    if (this.trajectory.length > 0) {
-      this.isPlaying = true
-      this.playbackTime = 0
-      this.isRecording = false
-    }
+    this.playbackController.start()
+    this.isPlaying = this.playbackController.getIsPlaying()
+    this.isRecording = false
   }
 
-  public stopPlayback(): void {
+  public play(): void {
+    this.playbackController.play()
+    this.isPlaying = true
+    this.isRecording = false
+  }
+
+  public pause(): void {
+    this.playbackController.pause()
     this.isPlaying = false
   }
 
+  public stop(): void {
+    this.playbackController.stop()
+    this.isPlaying = false
+    this.resetActorPosition()
+  }
+
+  public stopPlayback(): void {
+    this.stop()
+  }
+
   public loadTrajectory(trajectoryJson: string): void {
-    if (trajectoryJson && trajectoryJson.trim()) {
-      try {
-        this.trajectory = JSON.parse(trajectoryJson)
-        this.trajectory.sort((a, b) => a.t - b.t)
-      } catch (e) {
-        this.trajectory = []
-      }
-    } else {
-      this.trajectory = []
-    }
+    this.playbackController.setTrajectory(trajectoryJson)
+    this.trajectory = this.playbackController.getTrajectory()
   }
 
   private initThreeJS(): void {
@@ -452,58 +470,13 @@ export class ThreeActing {
   private updateActorMovement(dt: number): void {
     if (!this.actorController) return
 
-    // 1. Playback Mode
-    if (this.isPlaying) {
-      if (this.trajectory.length === 0) {
-        this.isPlaying = false
-        return
-      }
-
-      this.playbackTime += dt
-      const maxDuration = this.state.duration
-
-      if (this.playbackTime >= maxDuration) {
-        this.playbackTime = this.playbackTime % maxDuration
-      }
-
-      const t = this.playbackTime
-
-      let idxA = 0
-      for (let i = 0; i < this.trajectory.length; i++) {
-        if (this.trajectory[i].t <= t) {
-          idxA = i
-        } else {
-          break
-        }
-      }
-      const idxB = (idxA + 1) % this.trajectory.length
-      const frameA = this.trajectory[idxA]
-      const frameB = this.trajectory[idxB]
-
-      let factor = 0
-      let timeDiff = frameB.t - frameA.t
-      if (timeDiff < 0) {
-        timeDiff = (maxDuration - frameA.t) + frameB.t
-        const elapsedSinceA = t - frameA.t
-        factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
-      } else {
-        const elapsedSinceA = t - frameA.t
-        factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
-      }
-
-      const px = frameA.px + (frameB.px - frameA.px) * factor
-      const py = frameA.py + (frameB.py - frameA.py) * factor
-      const pz = frameA.pz + (frameB.pz - frameA.pz) * factor
-
-      let diffY = frameB.ry - frameA.ry
-      diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
-      const ry = frameA.ry + diffY * factor
-
-      this.actorController.setPosition(px, py, pz, ry)
+    // 1. Playback / Paused Replay Mode (when recorded trajectory is loaded)
+    if (this.playbackController.getTrajectory().length > 0 && !this.isRecording) {
+      this.playbackController.update(dt, this.actorController)
       return
     }
 
-    // 2. Physics & Interactive Controls
+    // 2. Physics & Interactive WASD Controls (Live Mode)
     this.actorController.updatePhysics(
       dt,
       this.keysPressed,
@@ -513,13 +486,7 @@ export class ThreeActing {
 
     // 3. Record coordinates if in recording state
     if (this.isRecording) {
-      this.trajectory.push({
-        t: this.recordingTime,
-        px: this.actorController.position.x,
-        py: this.actorController.position.y,
-        pz: this.actorController.position.z,
-        ry: this.actorController.rotationY
-      })
+      this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
 
       this.recordingTime += dt
 
@@ -645,7 +612,7 @@ export class ThreeActing {
 
   public getCurrentTime(): number {
     if (this.isRecording) return this.recordingTime
-    if (this.isPlaying) return this.playbackTime
+    if (this.isPlaying) return this.playbackController.getCurrentTime()
     return 0
   }
 

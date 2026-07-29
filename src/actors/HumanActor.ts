@@ -11,6 +11,8 @@ export class HumanActor extends BaseActor {
     return 'human'
   }
 
+  public override onPlaybackMotion(_distMoved: number, _diffY: number): void {}
+
   public buildMesh(): void {
     while (this.group.children.length > 0) {
       const child = this.group.children[0]
