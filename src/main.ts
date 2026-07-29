@@ -47,9 +47,35 @@ interface DirectingNodeInstance {
   cleanupTimer: number | null
 }
 
-const sceneInstances = new WeakMap<ComfyNode, SceneNodeInstance>()
+const sceneInstancesByNode = new WeakMap<ComfyNode, SceneNodeInstance>()
+const sceneInstancesById = new Map<string | number, SceneNodeInstance>()
 const actingInstances = new WeakMap<ComfyNode, ActingNodeInstance>()
 const directingInstances = new WeakMap<ComfyNode, DirectingNodeInstance>()
+
+function registerSceneInstance(node: ComfyNode, instance: SceneNodeInstance) {
+  sceneInstancesByNode.set(node, instance)
+  if (node.id !== undefined && node.id !== null && node.id !== -1) {
+    sceneInstancesById.set(node.id, instance)
+    sceneInstancesById.set(String(node.id), instance)
+    sceneInstancesById.set(Number(node.id), instance)
+  }
+}
+
+function getSceneInstance(node: ComfyNode | string | number | null | undefined): SceneNodeInstance | undefined {
+  if (!node) return undefined
+  if (typeof node === 'object') {
+    const fromMap = sceneInstancesByNode.get(node)
+    if (fromMap) return fromMap
+    if (node.id !== undefined && node.id !== null && node.id !== -1) {
+      const fromId = sceneInstancesById.get(node.id) || sceneInstancesById.get(String(node.id)) || sceneInstancesById.get(Number(node.id))
+      if (fromId) return fromId
+    }
+  } else {
+    const fromId = sceneInstancesById.get(node) || sceneInstancesById.get(String(node)) || sceneInstancesById.get(Number(node))
+    if (fromId) return fromId
+  }
+  return undefined
+}
 
 // --- Helpers for SceneNode ---
 function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
@@ -123,7 +149,7 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
   instance.vueApp = vueApp
   instance.exposed = mounted as unknown as SceneAppExposed
 
-  sceneInstances.set(node, instance)
+  registerSceneInstance(node, instance)
   return instance
 }
 
@@ -131,7 +157,7 @@ function bindSceneWidgetCallbacks(node: ComfyNode, exposed: SceneAppExposed): vo
 }
 
 function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
-  let instance = sceneInstances.get(node)
+  let instance = getSceneInstance(node)
 
   if (instance) {
     if (instance.cleanupTimer !== null) {
@@ -139,6 +165,7 @@ function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
       instance.cleanupTimer = null
     }
     instance.currentNode = node
+    registerSceneInstance(node, instance)
     instance.exposed.setState(readSceneStateFromNode(node))
   } else {
     instance = createSceneInstance(node)
@@ -162,15 +189,20 @@ function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
   widget.onRemove = () => {
     baseOnRemove?.()
 
-    const current = sceneInstances.get(node)
+    const current = getSceneInstance(node)
     if (!current || current.widget !== widget) return
 
     current.cleanupTimer = window.setTimeout(() => {
-      const still = sceneInstances.get(node)
+      const still = getSceneInstance(node)
       if (!still || still.widget !== widget) return
       still.exposed.cleanup()
       still.vueApp.unmount()
-      sceneInstances.delete(node)
+      sceneInstancesByNode.delete(node)
+      if (node.id !== undefined && node.id !== null) {
+        sceneInstancesById.delete(node.id)
+        sceneInstancesById.delete(String(node.id))
+        sceneInstancesById.delete(Number(node.id))
+      }
     }, CLEANUP_DELAY_MS)
   }
 
@@ -236,7 +268,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
     actingInst.exposed.setState({ scene_data: sceneState })
     writeStoredActingProps(actingNode, { scene_data: sceneState })
 
-    const sceneInst = sceneInstances.get(connectedSceneNode)
+    const sceneInst = getSceneInstance(connectedSceneNode)
     const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
     if (threeScene && actingInst.exposed.setConnectedThreeScene) {
       actingInst.exposed.setConnectedThreeScene(threeScene)
@@ -294,7 +326,7 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
 
   // Iterate over graph nodes to find connected ActingNodes
   const sceneState = readSceneStateFromNode(sceneNode) as SceneState
-  const sceneInst = sceneInstances.get(sceneNode)
+  const sceneInst = getSceneInstance(sceneNode)
   const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
 
   // Update acting instances that are linked to this sceneNode
@@ -348,7 +380,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const stored = readActingStateFromNode(node)
   const connectedSceneNode = findConnectedSceneNode(node)
   const initialSceneState = connectedSceneNode ? (readSceneStateFromNode(connectedSceneNode) as SceneState) : undefined
-  const sceneInst = connectedSceneNode ? sceneInstances.get(connectedSceneNode) : null
+  const sceneInst = connectedSceneNode ? getSceneInstance(connectedSceneNode) : null
   const connectedThreeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
 
   const vueApp = createApp(ActingWidget, {
@@ -659,11 +691,74 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 }
 
 
+function getComfyClass(node: any): string {
+  const raw = node?.constructor?.comfyClass || node?.comfyClass || node?.type || ''
+  const str = String(raw)
+  if (str.includes('/')) {
+    const parts = str.split('/')
+    return parts[parts.length - 1]
+  }
+  return str
+}
+
+function unwrapPayload(raw: any): any {
+  if (!raw) return raw
+  if (Array.isArray(raw)) {
+    for (const item of raw) {
+      if (item && typeof item === 'object' && !Array.isArray(item)) return item
+      if (typeof item === 'string' && item.trim().startsWith('{')) {
+        try { return JSON.parse(item) } catch (e) {}
+      }
+    }
+    if (raw.length > 0) return raw[0]
+  }
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw) } catch (e) {}
+  }
+  return raw
+}
+
 // --- Extension Registration ---
 app.registerExtension({
   name: 'ComfyUI.SceneCameraAction',
 
+  async onExecuted(message: any) {
+    console.log('[SceneCameraAction] onExecuted received:', message)
+    if (!message) return
+    const nodeId = message.node
+    const node = app.graph?.getNodeById(Number(nodeId)) || app.graph?.getNodeById(nodeId)
+    const instance = getSceneInstance(node) || getSceneInstance(nodeId)
+    console.log('[SceneCameraAction] Found node:', node?.id, 'type:', getComfyClass(node), 'instance found:', !!instance)
+
+    if (message.output) {
+      if (message.output.scene_state) {
+        const rawState = unwrapPayload(message.output.scene_state)
+        console.log('[SceneCameraAction] Updating SceneNode state with unwrapped payload:', rawState)
+        if (instance && instance.exposed) {
+          instance.exposed.setState(rawState)
+        }
+        if (node) writeStoredSceneProps(node, rawState)
+        app.graph?.setDirtyCanvas(true, true)
+      }
+      if (message.output.acting_state) {
+        const actingState = unwrapPayload(message.output.acting_state)
+        const actingInst = actingInstances.get(node)
+        if (actingInst && actingInst.exposed) {
+          actingInst.exposed.setState(actingState)
+        }
+      }
+      if (message.output.directing_state) {
+        const directingState = unwrapPayload(message.output.directing_state)
+        const directingInst = directingInstances.get(node)
+        if (directingInst && directingInst.exposed) {
+          directingInst.exposed.setState(directingState)
+        }
+      }
+    }
+  },
+
   setup() {
+    console.log('[SceneCameraAction] Extension setup initialized')
     if (app.canvas && (app.canvas as any).processMouseWheel) {
       const origWheel = (app.canvas as any).processMouseWheel;
       (app.canvas as any).processMouseWheel = function (this: any, e: WheelEvent) {
@@ -673,13 +768,50 @@ app.registerExtension({
         return origWheel.apply(this, arguments as any);
       };
     }
+
+    try {
+      const api = (window as any).comfyAPI?.api?.api || (window as any).app?.api
+      if (api && api.addEventListener) {
+        api.addEventListener('executed', (event: any) => {
+          const detail = event.detail
+          console.log('[SceneCameraAction] WebSocket executed event detail:', detail)
+          if (detail?.node && detail?.output) {
+            const node = app.graph?.getNodeById(Number(detail.node)) || app.graph?.getNodeById(detail.node)
+            const instance = getSceneInstance(node) || getSceneInstance(detail.node)
+            console.log('[SceneCameraAction] WebSocket executed event for node:', detail.node, 'instance found:', !!instance)
+            if (instance && detail.output.scene_state) {
+              const rawState = unwrapPayload(detail.output.scene_state)
+              console.log('[SceneCameraAction] WebSocket executed event updating 3D scene with unwrapped payload:', rawState)
+              instance.exposed.setState(rawState)
+              if (node) writeStoredSceneProps(node, rawState)
+              app.graph?.setDirtyCanvas(true, true)
+            }
+          }
+        })
+      }
+    } catch (e) { }
+  },
+
+  async beforeRegisterNodeDef(nodeType: any, nodeData: any) {
+    const name = nodeData?.name || ''
+    const cleanName = name.includes('/') ? name.split('/').pop()! : name
+    if (['SceneNode', 'ActingNode', 'DirectingNode'].includes(cleanName)) {
+      nodeType.output_node = true
+    }
   },
 
   nodeCreated(node: ComfyNode) {
-    const comfyClass = node.constructor?.comfyClass
+    const comfyClass = getComfyClass(node)
+    console.log('[SceneCameraAction] nodeCreated for comfyClass:', comfyClass, 'raw type:', (node as any).type)
+
+    if (['SceneNode', 'ActingNode', 'DirectingNode'].includes(comfyClass)) {
+      (node as any).output_node = true
+    }
 
     if (comfyClass === 'SceneNode') {
+      console.log('[SceneCameraAction] Mounting 3D SceneNode Widget for node:', node.id)
       const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
+
       if (sceneDataWidget) {
         sceneDataWidget.type = 'hidden'
       }
@@ -702,7 +834,7 @@ app.registerExtension({
           numAssetsWidgetConf.type = 'hidden'
         }
 
-        const instance = sceneInstances.get(this)
+        const instance = getSceneInstance(this)
         if (instance) {
           const state = readSceneStateFromNode(this)
           instance.exposed.setState(state)

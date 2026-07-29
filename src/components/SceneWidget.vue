@@ -106,10 +106,15 @@ const duplicateAsset = () => {
 }
 
 const setState = (newState: Partial<SceneState>) => {
+  if (newState.asset_transforms) {
+    state.asset_transforms = newState.asset_transforms
+    state.num_assets = newState.asset_transforms.length
+  }
+  if (newState.num_assets !== undefined) {
+    state.num_assets = newState.num_assets
+  }
   if (threeScene) {
     threeScene.setState(newState)
-  } else {
-    Object.assign(state, newState)
   }
 }
 

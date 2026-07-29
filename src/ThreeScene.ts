@@ -484,15 +484,39 @@ export class ThreeScene {
     }
   }
 
+  public fitCameraToScene(): void {
+    if (!this.meshes || this.meshes.length === 0) return
+    const box = new THREE.Box3()
+    this.meshes.forEach(m => box.expandByObject(m))
+    const center = new THREE.Vector3()
+    box.getCenter(center)
+    const size = new THREE.Vector3()
+    box.getSize(size)
+    const maxDim = Math.max(size.x, size.y, size.z)
+    if (maxDim <= 0) return
+
+    const fov = this.camera.fov * (Math.PI / 180)
+    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.4
+    cameraZ = Math.max(cameraZ, 12)
+
+    this.camera.position.set(center.x + cameraZ * 0.4, center.y + cameraZ * 0.5, center.z + cameraZ * 0.8)
+    this.camera.lookAt(center)
+    if (this.controls) {
+      this.controls.target.copy(center)
+      this.controls.update()
+    }
+  }
+
   public setState(newState: Partial<SceneState>): void {
     if (newState.num_assets !== undefined && newState.num_assets !== this.state.num_assets) {
       this.state.num_assets = newState.num_assets
-      this.updateMesh()
     }
     if (newState.asset_transforms !== undefined) {
       this.state.asset_transforms = newState.asset_transforms
-      this.updateMesh()
+      this.state.num_assets = newState.asset_transforms.length
     }
+    this.updateMesh()
+    this.fitCameraToScene()
   }
 
   public dispose(): void {
