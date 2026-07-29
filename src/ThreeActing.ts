@@ -29,6 +29,8 @@ export class ThreeActing {
   private isRecording = false
   private isPlaying = false
   private recordingTime = 0
+  private activeRecordingTargetDuration = 7.0
+  private activeRecordingSpeed = 1.0
   private playbackController = new PlaybackController()
   private trajectory: Array<any> = []
   private onRecordingFinished?: (trajectoryJson: string) => void
@@ -56,18 +58,19 @@ export class ThreeActing {
     this.connectedThreeScene = options.connectedThreeScene ?? null
     this.state = {
       actor_type: options.initialState?.actor_type ?? 'human',
-      actor_speed: options.initialState?.actor_speed ?? 10.0,
-      duration: options.initialState?.duration ?? 7.0,
+      actor_speed: options.initialState?.actor_speed ?? 1.0,
+      duration: options.initialState?.duration ?? 8.0,
       motion_data: options.initialState?.motion_data ?? '',
-      scene_data: options.initialState?.scene_data ?? null as any,
+      scene_data: options.initialState?.scene_data ?? { type: 'custom', num_assets: 0, asset_transforms: [] } as any,
     }
+
+    this.initThreeJS()
+    this.bindEvents()
 
     if (this.state.motion_data) {
       this.loadTrajectory(this.state.motion_data)
     }
 
-    this.initThreeJS()
-    this.bindEvents()
     this.animate()
   }
 
@@ -81,6 +84,8 @@ export class ThreeActing {
     this.isRecording = true
     this.recordingTime = 0
     this.isPlaying = false
+    this.activeRecordingTargetDuration = this.state.duration ?? 7.0
+    this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
   }
 
   public getActorType(): 'human' | 'car' {
@@ -476,11 +481,13 @@ export class ThreeActing {
       return
     }
 
+    const currentSpeed = this.isRecording ? this.activeRecordingSpeed : this.state.actor_speed
+
     // 2. Physics & Interactive WASD Controls (Live Mode)
     this.actorController.updatePhysics(
       dt,
       this.keysPressed,
-      this.state.actor_speed,
+      currentSpeed,
       this.colliderBVH
     )
 
@@ -490,7 +497,7 @@ export class ThreeActing {
 
       this.recordingTime += dt
 
-      if (this.recordingTime >= this.state.duration) {
+      if (this.recordingTime >= this.activeRecordingTargetDuration) {
         const json = this.stopRecording()
         if (this.onRecordingFinished) {
           this.onRecordingFinished(json)
@@ -617,6 +624,12 @@ export class ThreeActing {
   }
 
   public getDuration(): number {
+    if (this.isRecording) {
+      return this.activeRecordingTargetDuration
+    }
+    if (this.playbackController.getTrajectory().length > 0) {
+      return this.playbackController.getMaxDuration() || (this.state.duration ?? 7.0)
+    }
     return this.state.duration ?? 7.0
   }
 
