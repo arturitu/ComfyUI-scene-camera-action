@@ -22,6 +22,8 @@ export class ThreeDirecting {
   private characterPosition = new THREE.Vector3(0, -1.0, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private lastTime = performance.now()
+  private resizeObserver: ResizeObserver | null = null
+  private resizeAnimationFrameId: number | null = null
 
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
@@ -140,13 +142,31 @@ export class ThreeDirecting {
     this.buildSceneEnvironment()
     this.buildCharacter()
 
-    const resizeObserver = new ResizeObserver(() => { this.onResize() })
-    resizeObserver.observe(this.container)
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.resizeAnimationFrameId !== null) {
+        cancelAnimationFrame(this.resizeAnimationFrameId)
+      }
+      this.resizeAnimationFrameId = requestAnimationFrame(() => {
+        this.onResize()
+        this.resizeAnimationFrameId = null
+      })
+    })
+    this.resizeObserver.observe(this.container)
   }
 
   private buildSceneEnvironment(): void {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
+      this.clonedEnvGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose()
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m) => m.dispose())
+          } else {
+            child.material.dispose()
+          }
+        }
+      })
       this.clonedEnvGroup = null
     }
     if (this.gridHelper) {
@@ -229,6 +249,16 @@ export class ThreeDirecting {
   private buildSceneFromData(sceneData: any): void {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
+      this.clonedEnvGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose()
+          if (Array.isArray(child.material)) {
+            child.material.forEach((m) => m.dispose())
+          } else {
+            child.material.dispose()
+          }
+        }
+      })
       this.clonedEnvGroup = null
     }
     if (this.gridHelper) {
@@ -642,6 +672,17 @@ export class ThreeDirecting {
       cancelAnimationFrame(this.animationId)
       this.animationId = null
     }
+
+    if (this.resizeAnimationFrameId !== null) {
+      cancelAnimationFrame(this.resizeAnimationFrameId)
+      this.resizeAnimationFrameId = null
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+
     this.renderer.dispose()
     this.scene.clear()
   }

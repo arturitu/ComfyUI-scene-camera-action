@@ -72,7 +72,7 @@
         <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
         <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
         <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
-        <div class="hint">Use Arrow keys to move character</div>
+        <div class="hint">Use WASD or Arrow keys to move character</div>
       </template>
       <template v-else>
         <div class="hint">Waiting for scene link...</div>

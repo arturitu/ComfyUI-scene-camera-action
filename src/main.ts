@@ -664,6 +664,28 @@ app.registerExtension({
   name: 'ComfyUI.SceneCameraAction',
 
   setup() {
+    window.addEventListener('error', (e: ErrorEvent) => {
+      const msg = e.message || e.error?.message || ''
+      if (typeof msg === 'string' && (
+        msg.includes('ResizeObserver loop completed with undelivered notifications') ||
+        msg.includes('ResizeObserver loop limit exceeded')
+      )) {
+        e.stopImmediatePropagation()
+        e.preventDefault()
+      }
+    }, true)
+
+    window.addEventListener('unhandledrejection', (e: PromiseRejectionEvent) => {
+      const msg = e.reason?.message || String(e.reason || '')
+      if (typeof msg === 'string' && (
+        msg.includes('ResizeObserver loop completed with undelivered notifications') ||
+        msg.includes('ResizeObserver loop limit exceeded')
+      )) {
+        e.stopImmediatePropagation()
+        e.preventDefault()
+      }
+    }, true)
+
     if (app.canvas && (app.canvas as any).processMouseWheel) {
       const origWheel = (app.canvas as any).processMouseWheel;
       (app.canvas as any).processMouseWheel = function (this: any, e: WheelEvent) {

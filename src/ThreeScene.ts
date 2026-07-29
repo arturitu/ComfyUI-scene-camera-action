@@ -23,6 +23,8 @@ export class ThreeScene {
   private pointerDownHandler?: (e: PointerEvent) => void
   private transformMode: 'translate' | 'rotate' | 'scale' | null = null
   private lastTransformMode: 'translate' | 'rotate' | 'scale' = 'translate'
+  private resizeObserver: ResizeObserver | null = null
+  private resizeAnimationFrameId: number | null = null
 
   constructor(options: ThreeSceneOptions) {
     this.container = options.container
@@ -443,10 +445,16 @@ export class ThreeScene {
 
     this.renderer.domElement.addEventListener('pointerdown', this.pointerDownHandler)
 
-    const resizeObserver = new ResizeObserver(() => {
-      this.onResize()
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.resizeAnimationFrameId !== null) {
+        cancelAnimationFrame(this.resizeAnimationFrameId)
+      }
+      this.resizeAnimationFrameId = requestAnimationFrame(() => {
+        this.onResize()
+        this.resizeAnimationFrameId = null
+      })
     })
-    resizeObserver.observe(this.container)
+    this.resizeObserver.observe(this.container)
   }
 
   private onResize(): void {
@@ -499,6 +507,16 @@ export class ThreeScene {
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null
+    }
+
+    if (this.resizeAnimationFrameId !== null) {
+      cancelAnimationFrame(this.resizeAnimationFrameId)
+      this.resizeAnimationFrameId = null
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
     }
 
     if (this.globalWheelHandler) {

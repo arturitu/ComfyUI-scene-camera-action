@@ -235,10 +235,15 @@ class DirectingNode(io.ComfyNode):
         acting: str | dict | None = None,
         directing_data: str = "",
     ) -> io.NodeOutput:
+        node_id = cls.hidden.unique_id
         input_dir = folder_paths.get_input_directory()
 
-        # 1. Load Video
-        video_path = os.path.join(input_dir, "3d_directing_record.webm")
+        # 1. Load Video (Check node-specific file first, then fallback to global)
+        specific_video = f"3d_directing_record_{node_id}.webm"
+        video_path = os.path.join(input_dir, specific_video)
+        if not os.path.exists(video_path):
+            video_path = os.path.join(input_dir, "3d_directing_record.webm")
+
         video_output = None
         if os.path.exists(video_path):
             try:
@@ -253,8 +258,12 @@ class DirectingNode(io.ComfyNode):
                 Types.VideoComponents(images=dummy_images, audio=None, frame_rate=Fraction(24))
             )
 
-        # 2. Load Captured Stage Overview Image
-        image_path = os.path.join(input_dir, "3d_directing_stage.png")
+        # 2. Load Captured Stage Overview Image (Check node-specific file first, then fallback)
+        specific_image = f"3d_directing_stage_{node_id}.png"
+        image_path = os.path.join(input_dir, specific_image)
+        if not os.path.exists(image_path):
+            image_path = os.path.join(input_dir, "3d_directing_stage.png")
+
         image_tensor = None
         if os.path.exists(image_path):
             try:
@@ -306,8 +315,16 @@ class DirectingNode(io.ComfyNode):
         acting=None,
         directing_data: str = "",
     ):
-        import time
-        return f"{acting}_{directing_data}_{time.time()}"
+        node_id = cls.hidden.unique_id
+        input_dir = folder_paths.get_input_directory()
+        mtime = 0.0
+
+        for candidate in [f"3d_directing_record_{node_id}.webm", f"3d_directing_stage_{node_id}.png"]:
+            path = os.path.join(input_dir, candidate)
+            if os.path.exists(path):
+                mtime = max(mtime, os.path.getmtime(path))
+
+        return f"{acting}_{directing_data}_{mtime}"
 
 
 class SceneCameraActionExtension(ComfyExtension):
@@ -321,10 +338,11 @@ class SceneCameraActionExtension(ComfyExtension):
 async def upload_video(request):
     post = await request.post()
     video_file = post.get("video")
+    custom_filename = post.get("filename")
 
     if video_file:
         input_dir = folder_paths.get_input_directory()
-        filename = "3d_directing_record.webm"
+        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_record.webm"
         filepath = os.path.join(input_dir, filename)
 
         with open(filepath, "wb") as f:
@@ -338,10 +356,11 @@ async def upload_video(request):
 async def upload_image(request):
     post = await request.post()
     image_file = post.get("image")
+    custom_filename = post.get("filename")
 
     if image_file:
         input_dir = folder_paths.get_input_directory()
-        filename = "3d_directing_stage.png"
+        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_stage.png"
         filepath = os.path.join(input_dir, filename)
 
         with open(filepath, "wb") as f:

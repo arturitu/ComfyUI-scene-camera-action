@@ -438,9 +438,12 @@ const handleRecordVideo = async () => {
           const stageBlob = await threeDirecting.captureStageSnapshot()
           threeDirecting.setIsRecordingMode(false)
 
+          const nodeId = props.currentNode?.id ?? 'default'
+
           // 1. Upload Video
           const videoFormData = new FormData()
-          videoFormData.append('video', videoBlob, '3d_directing_record.webm')
+          videoFormData.append('video', videoBlob, `3d_directing_record_${nodeId}.webm`)
+          videoFormData.append('filename', `3d_directing_record_${nodeId}.webm`)
 
           await fetch('/scene_camera_action/upload_video', {
             method: 'POST',
@@ -449,7 +452,8 @@ const handleRecordVideo = async () => {
 
           // 2. Upload Captured Stage Overview Image
           const imageFormData = new FormData()
-          imageFormData.append('image', stageBlob, '3d_directing_stage.png')
+          imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
+          imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
 
           await fetch('/scene_camera_action/upload_image', {
             method: 'POST',

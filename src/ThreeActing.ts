@@ -43,6 +43,8 @@ export class ThreeActing {
   private lastTime = performance.now()
   private keydownHandler?: (e: KeyboardEvent) => void
   private keyupHandler?: (e: KeyboardEvent) => void
+  private resizeObserver: ResizeObserver | null = null
+  private resizeAnimationFrameId: number | null = null
 
   constructor(options: ThreeActingOptions) {
     this.container = options.container
@@ -392,36 +394,53 @@ export class ThreeActing {
       this.isHovered = false
     })
 
-    // Keyboard listeners when mouse is hovered over canvas (Arrow keys only for keysPressed)
+    // Keyboard listeners when mouse is hovered over canvas (WASD + Arrow keys)
     this.keydownHandler = (e: KeyboardEvent) => {
       if (!this.isHovered) return
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)
+      if (isMovementKey) {
         e.preventDefault()
+        e.stopPropagation()
+        e.stopImmediatePropagation()
         this.keysPressed[e.code] = true
       }
       if (e.code === 'Space') {
         e.preventDefault()
+        e.stopPropagation()
+        e.stopImmediatePropagation()
         if (e.repeat) return
         if (this.isOnGround) {
-          this.characterVelocity.y = 10.0 // Jump vertical impulse (matching example)
+          this.characterVelocity.y = 10.0 // Jump vertical impulse
           this.isOnGround = false
         }
       }
     }
 
     this.keyupHandler = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(e.code)
+      if (this.isHovered && (isMovementKey || e.code === 'Space')) {
+        e.preventDefault()
+        e.stopPropagation()
+        e.stopImmediatePropagation()
+      }
+      if (isMovementKey) {
         this.keysPressed[e.code] = false
       }
     }
 
-    window.addEventListener('keydown', this.keydownHandler)
-    window.addEventListener('keyup', this.keyupHandler)
+    window.addEventListener('keydown', this.keydownHandler, { capture: true })
+    window.addEventListener('keyup', this.keyupHandler, { capture: true })
 
-    const resizeObserver = new ResizeObserver(() => {
-      this.onResize()
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.resizeAnimationFrameId !== null) {
+        cancelAnimationFrame(this.resizeAnimationFrameId)
+      }
+      this.resizeAnimationFrameId = requestAnimationFrame(() => {
+        this.onResize()
+        this.resizeAnimationFrameId = null
+      })
     })
-    resizeObserver.observe(this.container)
+    this.resizeObserver.observe(this.container)
   }
 
   private updateCharacterMovement(dt: number): void {
@@ -492,10 +511,10 @@ export class ThreeActing {
     let moveZ = 0
     let moveX = 0
 
-    if (this.keysPressed['ArrowUp']) moveZ -= 1
-    if (this.keysPressed['ArrowDown']) moveZ += 1
-    if (this.keysPressed['ArrowLeft']) moveX -= 1
-    if (this.keysPressed['ArrowRight']) moveX += 1
+    if (this.keysPressed['ArrowUp'] || this.keysPressed['KeyW']) moveZ -= 1
+    if (this.keysPressed['ArrowDown'] || this.keysPressed['KeyS']) moveZ += 1
+    if (this.keysPressed['ArrowLeft'] || this.keysPressed['KeyA']) moveX -= 1
+    if (this.keysPressed['ArrowRight'] || this.keysPressed['KeyD']) moveX += 1
 
     let dir = new THREE.Vector3(moveX, 0, moveZ)
     if (dir.lengthSq() > 0) {
@@ -714,11 +733,21 @@ export class ThreeActing {
       this.animationId = null
     }
 
+    if (this.resizeAnimationFrameId !== null) {
+      cancelAnimationFrame(this.resizeAnimationFrameId)
+      this.resizeAnimationFrameId = null
+    }
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect()
+      this.resizeObserver = null
+    }
+
     if (this.keydownHandler) {
-      window.removeEventListener('keydown', this.keydownHandler)
+      window.removeEventListener('keydown', this.keydownHandler, { capture: true })
     }
     if (this.keyupHandler) {
-      window.removeEventListener('keyup', this.keyupHandler)
+      window.removeEventListener('keyup', this.keyupHandler, { capture: true })
     }
 
     this.renderer.dispose()
