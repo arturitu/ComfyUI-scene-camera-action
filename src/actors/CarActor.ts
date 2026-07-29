@@ -16,8 +16,8 @@ export class CarActor extends BaseActor {
 
   constructor() {
     super()
-    this.rotationY = Math.PI / 2
-    this.group.rotation.y = this.rotationY
+    this.rotationY = 0
+    this.group.rotation.y = 0
     this.buildMesh()
   }
 
@@ -27,7 +27,7 @@ export class CarActor extends BaseActor {
 
   public override resetToOrigin(): void {
     this.position.set(0, -1.0, 2)
-    this.rotationY = Math.PI / 2
+    this.rotationY = 0
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
     this.currentSteerAngle = 0
@@ -35,7 +35,7 @@ export class CarActor extends BaseActor {
     this.rollAngle = 0
     this.isOnGround = true
     this.group.position.copy(this.position)
-    this.group.rotation.set(0, this.rotationY, 0)
+    this.group.rotation.set(0, 0, 0)
   }
 
   public buildMesh(): void {
