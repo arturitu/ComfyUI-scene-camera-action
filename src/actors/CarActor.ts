@@ -3,6 +3,13 @@ import { BaseActor } from './BaseActor'
 
 export class CarActor extends BaseActor {
   private currentSpeed: number = 0
+  private currentSteerAngle: number = 0
+
+  private frontLeftWheelGroup: THREE.Group | null = null
+  private frontRightWheelGroup: THREE.Group | null = null
+  private rearLeftWheelGroup: THREE.Group | null = null
+  private rearRightWheelGroup: THREE.Group | null = null
+  private wheelRollingGroup: THREE.Group[] = []
 
   constructor() {
     super()
@@ -20,6 +27,7 @@ export class CarActor extends BaseActor {
     this.rotationY = Math.PI / 2
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
+    this.currentSteerAngle = 0
     this.isOnGround = true
     this.group.position.copy(this.position)
     this.group.rotation.y = this.rotationY
@@ -46,12 +54,12 @@ export class CarActor extends BaseActor {
     bodyMesh.receiveShadow = true
     carGroup.add(bodyMesh)
 
-    // 2. Car Cabin
+    // 2. Car Cabin (Exact same blue color as body)
     const cabinGeo = new THREE.BoxGeometry(0.8, 0.35, 0.9)
     const cabinMat = new THREE.MeshStandardMaterial({
-      color: 0x0f172a,
-      roughness: 0.1,
-      metalness: 0.8,
+      color: 0x0284c7,
+      roughness: 0.3,
+      metalness: 0.6,
     })
     const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat)
     cabinMesh.position.set(0, 0.65, -0.1)
@@ -59,7 +67,7 @@ export class CarActor extends BaseActor {
     cabinMesh.receiveShadow = true
     carGroup.add(cabinMesh)
 
-    // 3. Headlights
+    // 3. Headlights (Yellow, Front +Z)
     const headlightGeo = new THREE.BoxGeometry(0.2, 0.1, 0.05)
     const headlightMat = new THREE.MeshStandardMaterial({
       color: 0xfff066,
@@ -74,28 +82,109 @@ export class CarActor extends BaseActor {
     lightRight.position.set(0.35, 0.35, 0.91)
     carGroup.add(lightRight)
 
-    // 4. Wheels (Raised slightly so wheels sit cleanly above the floor plane)
-    const wheelGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.15, 16)
-    const wheelMat = new THREE.MeshStandardMaterial({
+    // 3b. Brake Lights (Smaller, less emissive, Rear -Z)
+    const brakelightGeo = new THREE.BoxGeometry(0.12, 0.10, 0.03)
+    const brakelightMat = new THREE.MeshStandardMaterial({
+      color: 0xdc2626,
+      emissive: 0xdc2626,
+      emissiveIntensity: 0.2,
+    })
+    const brakeLeft = new THREE.Mesh(brakelightGeo, brakelightMat)
+    brakeLeft.position.set(-0.35, 0.35, -0.91)
+    carGroup.add(brakeLeft)
+
+    const brakeRight = new THREE.Mesh(brakelightGeo, brakelightMat)
+    brakeRight.position.set(0.35, 0.35, -0.91)
+    carGroup.add(brakeRight)
+
+    // 3c. Side Rearview Mirrors (Sticking out sideways on X, thin front-to-back on Z)
+    const mirrorGeo = new THREE.BoxGeometry(0.14, 0.08, 0.05)
+    const mirrorMat = new THREE.MeshStandardMaterial({
+      color: 0xe2e8f0,
+      roughness: 0.2,
+      metalness: 0.6,
+    })
+    const mirrorLeft = new THREE.Mesh(mirrorGeo, mirrorMat)
+    mirrorLeft.position.set(-0.47, 0.65, 0.20)
+    mirrorLeft.castShadow = true
+    carGroup.add(mirrorLeft)
+
+    const mirrorRight = new THREE.Mesh(mirrorGeo, mirrorMat)
+    mirrorRight.position.set(0.47, 0.65, 0.20)
+    mirrorRight.castShadow = true
+    carGroup.add(mirrorRight)
+
+    // 4. Wheels: Black ExtrudeGeometry Tire (Hollow Ring) + White Cylinder Hub Rim
+    const tireShape = new THREE.Shape()
+    tireShape.absarc(0, 0, 0.20, 0, Math.PI * 2, false) // Outer radius: 0.20
+
+    const tireHole = new THREE.Path()
+    tireHole.absarc(0, 0, 0.09, 0, Math.PI * 2, true) // Inner hole radius: 0.09
+    tireShape.holes.push(tireHole)
+
+    const extrudeSettings = {
+      depth: 0.18, // Wider tire width (0.18m)
+      bevelEnabled: false,
+      curveSegments: 16,
+    }
+
+    const tireGeo = new THREE.ExtrudeGeometry(tireShape, extrudeSettings)
+    tireGeo.center()
+
+    const tireMat = new THREE.MeshStandardMaterial({
       color: 0x18181b,
       roughness: 0.8,
-      metalness: 0.2,
+      metalness: 0.1,
     })
 
-    const wheelPositions = [
-      [-0.52, 0.2, 0.55],
-      [0.52, 0.2, 0.55],
-      [-0.52, 0.2, -0.55],
-      [0.52, 0.2, -0.55],
-    ]
-
-    wheelPositions.forEach(([x, y, z]) => {
-      const wheel = new THREE.Mesh(wheelGeo, wheelMat)
-      wheel.rotation.z = Math.PI / 2
-      wheel.position.set(x, y, z)
-      wheel.castShadow = true
-      carGroup.add(wheel)
+    // White hub rim (smaller radius 0.09)
+    const hubGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.18, 16)
+    const hubMat = new THREE.MeshStandardMaterial({
+      color: 0xf1f5f9,
+      roughness: 0.2,
+      metalness: 0.5,
     })
+
+    this.wheelRollingGroup = []
+
+    const createWheelAssembly = () => {
+      const pivotGroup = new THREE.Group() // Handles steering Y rotation
+      const rollingGroup = new THREE.Group() // Handles wheel rolling X rotation
+
+      const tireMesh = new THREE.Mesh(tireGeo, tireMat)
+      tireMesh.rotation.y = Math.PI / 2
+      tireMesh.castShadow = true
+      rollingGroup.add(tireMesh)
+
+      const hubMesh = new THREE.Mesh(hubGeo, hubMat)
+      hubMesh.rotation.z = Math.PI / 2
+      hubMesh.castShadow = true
+      rollingGroup.add(hubMesh)
+
+      pivotGroup.add(rollingGroup)
+      this.wheelRollingGroup.push(rollingGroup)
+      return pivotGroup
+    }
+
+    // Front Left (+x, +z)
+    this.frontLeftWheelGroup = createWheelAssembly()
+    this.frontLeftWheelGroup.position.set(-0.52, 0.2, 0.55)
+    carGroup.add(this.frontLeftWheelGroup)
+
+    // Front Right (-x, +z)
+    this.frontRightWheelGroup = createWheelAssembly()
+    this.frontRightWheelGroup.position.set(0.52, 0.2, 0.55)
+    carGroup.add(this.frontRightWheelGroup)
+
+    // Rear Left (+x, -z)
+    this.rearLeftWheelGroup = createWheelAssembly()
+    this.rearLeftWheelGroup.position.set(-0.52, 0.2, -0.55)
+    carGroup.add(this.rearLeftWheelGroup)
+
+    // Rear Right (-x, -z)
+    this.rearRightWheelGroup = createWheelAssembly()
+    this.rearRightWheelGroup.position.set(0.52, 0.2, -0.55)
+    carGroup.add(this.rearRightWheelGroup)
 
     // Raise mesh group slightly (+0.08m) so wheels sit cleanly above ground
     carGroup.position.y = 0.08
@@ -158,7 +247,7 @@ export class CarActor extends BaseActor {
       }
     }
 
-    // 2. Steering logic (turns only when moving)
+    // 2. Steering logic (turns car orientation when moving)
     let steerInput = 0
     if (isA) steerInput += 1
     if (isD) steerInput -= 1
@@ -170,7 +259,29 @@ export class CarActor extends BaseActor {
       this.group.rotation.y = this.rotationY
     }
 
-    // 3. Movement integration along forward vector
+    // 3. Visual Steering Angle for Front Wheels (turns wheels dynamically when A / D are pressed)
+    let targetSteer = 0
+    if (isA) targetSteer += 0.45
+    if (isD) targetSteer -= 0.45
+
+    this.currentSteerAngle += (targetSteer - this.currentSteerAngle) * Math.min(1.0, 15.0 * dt)
+
+    if (this.frontLeftWheelGroup) {
+      this.frontLeftWheelGroup.rotation.y = this.currentSteerAngle
+    }
+    if (this.frontRightWheelGroup) {
+      this.frontRightWheelGroup.rotation.y = this.currentSteerAngle
+    }
+
+    // Roll all 4 wheels based on current movement speed
+    if (Math.abs(this.currentSpeed) > 0.01) {
+      const rollDelta = (this.currentSpeed * dt) / 0.2
+      this.wheelRollingGroup.forEach((w) => {
+        w.rotation.x += rollDelta
+      })
+    }
+
+    // 4. Movement integration along forward vector
     this.velocity.x = Math.sin(this.rotationY) * this.currentSpeed
     this.velocity.z = Math.cos(this.rotationY) * this.currentSpeed
 
