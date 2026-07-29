@@ -64,8 +64,8 @@ export class CarActor extends BaseActor {
     const bodyGeo = new THREE.BoxGeometry(1.0, 0.4, 1.8)
     const bodyMat = new THREE.MeshStandardMaterial({
       color: 0x0284c7,
-      roughness: 0.3,
-      metalness: 0.6,
+      roughness: 0.4,
+      metalness: 0.1,
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
     bodyMesh.position.y = 0.35
@@ -73,15 +73,31 @@ export class CarActor extends BaseActor {
     bodyMesh.receiveShadow = true
     carGroup.add(bodyMesh)
 
-    // 2. Car Cabin (Exact same blue color as body)
-    const cabinGeo = new THREE.BoxGeometry(0.8, 0.35, 0.9)
+    // 2. Car Cabin (ExtrudeGeometry parallelepiped with slanted windshield at front & steeper window at rear)
+    const cabinShape = new THREE.Shape()
+    cabinShape.moveTo(-0.45, 0.0)   // Aerodynamic front windshield bottom (+Z, yellow lights side)
+    cabinShape.lineTo(-0.12, 0.38)  // Slanted front windshield (~49° angle)
+    cabinShape.lineTo(0.35, 0.38)   // Flat roof top
+    cabinShape.lineTo(0.45, 0.0)   // Steeper rear window angle (~75°, red lights side)
+    cabinShape.closePath()
+
+    const cabinExtrudeSettings: THREE.ExtrudeGeometryOptions = {
+      depth: 0.80,
+      bevelEnabled: true,
+      bevelThickness: 0.02,
+      bevelSize: 0.02,
+      bevelSegments: 2
+    }
+    const cabinGeo = new THREE.ExtrudeGeometry(cabinShape, cabinExtrudeSettings)
+    cabinGeo.rotateY(Math.PI / 2)
+    cabinGeo.translate(-0.40, 0.55, -0.05)
+
     const cabinMat = new THREE.MeshStandardMaterial({
       color: 0x0284c7,
-      roughness: 0.3,
-      metalness: 0.6,
+      roughness: 0.4,
+      metalness: 0.1,
     })
     const cabinMesh = new THREE.Mesh(cabinGeo, cabinMat)
-    cabinMesh.position.set(0, 0.65, -0.1)
     cabinMesh.castShadow = true
     cabinMesh.receiveShadow = true
     carGroup.add(cabinMesh)
@@ -120,8 +136,8 @@ export class CarActor extends BaseActor {
     const mirrorGeo = new THREE.BoxGeometry(0.14, 0.08, 0.05)
     const mirrorMat = new THREE.MeshStandardMaterial({
       color: 0xe2e8f0,
-      roughness: 0.2,
-      metalness: 0.6,
+      roughness: 0.4,
+      metalness: 0.1,
     })
     const mirrorLeft = new THREE.Mesh(mirrorGeo, mirrorMat)
     mirrorLeft.position.set(-0.47, 0.65, 0.20)
@@ -152,15 +168,15 @@ export class CarActor extends BaseActor {
 
     const tireMat = new THREE.MeshStandardMaterial({
       color: 0x18181b,
-      roughness: 0.8,
+      roughness: 0.6,
       metalness: 0.1,
     })
 
     const hubGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.18, 16)
     const hubMat = new THREE.MeshStandardMaterial({
       color: 0xf1f5f9,
-      roughness: 0.2,
-      metalness: 0.5,
+      roughness: 0.4,
+      metalness: 0.1,
     })
 
     this.wheelRollingGroup = []
@@ -208,8 +224,8 @@ export class CarActor extends BaseActor {
     carGroup.position.y = 0.22
     this.group.add(carGroup)
 
-    // 5. Car Collider Wireframe Visualizer
-    const colliderGeo = new THREE.BoxGeometry(1.05, 0.65, 1.85)
+    // 5. Car Collider Wireframe Visualizer (With safety padding margin)
+    const colliderGeo = new THREE.BoxGeometry(1.30, 0.65, 2.10)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       wireframe: true,
@@ -315,52 +331,75 @@ export class CarActor extends BaseActor {
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
-        const radius = 0.35
-        const height = 0.3
+        const radius = 0.38
+        const height = 0.20
 
-        const tempSegment = new THREE.Line3()
-        tempSegment.start.copy(this.position)
-        tempSegment.start.y += radius
+        const forwardX = Math.sin(this.rotationY)
+        const forwardZ = Math.cos(this.rotationY)
+        const rightX = Math.cos(this.rotationY)
+        const rightZ = -Math.sin(this.rotationY)
 
-        tempSegment.end.copy(this.position)
-        tempSegment.end.y += radius + height
+        // 5 local probe offsets: 4 corners (with generous safety margin) + 1 center
+        const localProbes = [
+          { x: -0.38, z: 0.72 },  // Front-Left
+          { x: 0.38, z: 0.72 },   // Front-Right
+          { x: -0.38, z: -0.72 }, // Rear-Left
+          { x: 0.38, z: -0.72 },  // Rear-Right
+          { x: 0.0, z: 0.0 },     // Center
+        ]
 
-        const capsuleBounds = new THREE.Box3()
-        capsuleBounds.min.copy(this.position)
-        capsuleBounds.min.x -= 1.5
-        capsuleBounds.min.z -= 1.5
-        capsuleBounds.min.y -= 1.5
-        capsuleBounds.max.copy(this.position)
-        capsuleBounds.max.x += 1.5
-        capsuleBounds.max.z += 1.5
-        capsuleBounds.max.y += radius + height + radius + 1.5
+        for (const probe of localProbes) {
+          const probePos = this.position.clone().add(
+            new THREE.Vector3(
+              probe.x * rightX + probe.z * forwardX,
+              0,
+              probe.x * rightZ + probe.z * forwardZ
+            )
+          )
 
-        const tempVector = new THREE.Vector3()
-        const tempVector2 = new THREE.Vector3()
+          const tempSegment = new THREE.Line3()
+          tempSegment.start.copy(probePos)
+          tempSegment.start.y += radius
 
-        colliderBVH.shapecast({
-          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(capsuleBounds),
-          intersectsTriangle: (tri: any) => {
-            const triPoint = tempVector
-            const capsulePoint = tempVector2
-            const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
-            const dist = Math.sqrt(distSq)
+          tempSegment.end.copy(probePos)
+          tempSegment.end.y += radius + height
 
-            if (dist < radius) {
-              const depth = radius - dist
-              const direction = capsulePoint.sub(triPoint).normalize()
-              if (direction.y > 0.3) {
-                lastSlopeNormal = direction.clone()
-                touchGround = true
+          const capsuleBounds = new THREE.Box3()
+          capsuleBounds.min.copy(probePos)
+          capsuleBounds.min.x -= 1.5
+          capsuleBounds.min.z -= 1.5
+          capsuleBounds.min.y -= 1.5
+          capsuleBounds.max.copy(probePos)
+          capsuleBounds.max.x += 1.5
+          capsuleBounds.max.z += 1.5
+          capsuleBounds.max.y += radius + height + radius + 1.5
+
+          const tempVector = new THREE.Vector3()
+          const tempVector2 = new THREE.Vector3()
+
+          colliderBVH.shapecast({
+            intersectsBounds: (box: THREE.Box3) => box.intersectsBox(capsuleBounds),
+            intersectsTriangle: (tri: any) => {
+              const triPoint = tempVector
+              const capsulePoint = tempVector2
+              const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
+              const dist = Math.sqrt(distSq)
+
+              if (dist < radius) {
+                const depth = radius - dist
+                const direction = capsulePoint.sub(triPoint).normalize()
+                if (direction.y > 0.3) {
+                  lastSlopeNormal = direction.clone()
+                  touchGround = true
+                }
+                this.position.addScaledVector(direction, depth)
+                if (Math.abs(direction.y) < 0.5) {
+                  this.currentSpeed *= 0.8
+                }
               }
-              tempSegment.start.addScaledVector(direction, depth)
-              tempSegment.end.addScaledVector(direction, depth)
             }
-          }
-        })
-
-        this.position.copy(tempSegment.start)
-        this.position.y -= radius
+          })
+        }
 
         if (touchGround) {
           if (this.velocity.y <= 0) {

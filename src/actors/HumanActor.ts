@@ -23,8 +23,8 @@ export class HumanActor extends BaseActor {
     const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
     const bodyMat = new THREE.MeshStandardMaterial({
       color: 0xff007f,
-      roughness: 0.2,
-      metalness: 0.5,
+      roughness: 0.4,
+      metalness: 0.1,
     })
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
     bodyMesh.position.y = 0.85
@@ -36,7 +36,7 @@ export class HumanActor extends BaseActor {
     const noseGeo = new THREE.BoxGeometry(0.08, 0.08, 0.12)
     const noseMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.2,
+      roughness: 0.4,
       metalness: 0.1,
     })
     const noseMesh = new THREE.Mesh(noseGeo, noseMat)
@@ -45,7 +45,7 @@ export class HumanActor extends BaseActor {
     this.group.add(noseMesh)
 
     // 3. Human Collider Wireframe Visualizer
-    const colliderGeo = new THREE.CapsuleGeometry(0.3, 0.9, 8, 16)
+    const colliderGeo = new THREE.CapsuleGeometry(0.45, 0.9, 8, 16)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0xff00ff,
       wireframe: true,
@@ -106,7 +106,7 @@ export class HumanActor extends BaseActor {
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
-        const radius = 0.3
+        const radius = 0.45
         const height = 0.9
 
         const tempSegment = new THREE.Line3()
