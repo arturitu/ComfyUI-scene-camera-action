@@ -17,6 +17,7 @@ export class HumanActor extends BaseActor {
       this.group.remove(child)
     }
 
+    // 1. Human Body Mesh
     const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
     const bodyMat = new THREE.MeshStandardMaterial({
       color: 0xff007f,
@@ -28,6 +29,34 @@ export class HumanActor extends BaseActor {
     bodyMesh.castShadow = true
     bodyMesh.receiveShadow = true
     this.group.add(bodyMesh)
+
+    // 2. Nose Pointer Box (indicating front direction +Z)
+    const noseGeo = new THREE.BoxGeometry(0.08, 0.08, 0.12)
+    const noseMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.2,
+      metalness: 0.1,
+    })
+    const noseMesh = new THREE.Mesh(noseGeo, noseMat)
+    noseMesh.position.set(0, 1.15, 0.26)
+    noseMesh.castShadow = true
+    this.group.add(noseMesh)
+
+    // 2. Human Collider Wireframe Visualizer
+    const colliderGeo = new THREE.CapsuleGeometry(0.3, 0.9, 8, 16)
+    const colliderMat = new THREE.MeshBasicMaterial({
+      color: 0xff00ff,
+      wireframe: true,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.85,
+    })
+    this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
+    this.colliderWireframe.position.y = 0.75
+    this.colliderWireframe.renderOrder = 1000
+    this.colliderWireframe.visible = this.showCollider
+    this.group.add(this.colliderWireframe)
   }
 
   public updatePhysics(
@@ -63,15 +92,6 @@ export class HumanActor extends BaseActor {
       const tentativeY = this.position.y
       this.position.addScaledVector(this.velocity, stepDt)
 
-      if (this.position.y < -1.0) {
-        this.position.y = -1.0
-        this.velocity.y = 0
-        this.isOnGround = true
-      }
-
-      this.position.x = Math.max(-24, Math.min(24, this.position.x))
-      this.position.z = Math.max(-24, Math.min(24, this.position.z))
-
       if (colliderBVH) {
         const radius = 0.3
         const height = 0.9
@@ -85,12 +105,13 @@ export class HumanActor extends BaseActor {
 
         const capsuleBounds = new THREE.Box3()
         capsuleBounds.min.copy(this.position)
-        capsuleBounds.min.x -= radius
-        capsuleBounds.min.z -= radius
+        capsuleBounds.min.x -= 1.0
+        capsuleBounds.min.z -= 1.0
+        capsuleBounds.min.y -= 1.5
         capsuleBounds.max.copy(this.position)
-        capsuleBounds.max.x += radius
-        capsuleBounds.max.z += radius
-        capsuleBounds.max.y += radius + height + radius
+        capsuleBounds.max.x += 1.0
+        capsuleBounds.max.z += 1.0
+        capsuleBounds.max.y += radius + height + radius + 1.5
 
         const tempVector = new THREE.Vector3()
         const tempVector2 = new THREE.Vector3()
@@ -128,6 +149,18 @@ export class HumanActor extends BaseActor {
         this.position.copy(tempSegment.start)
         this.position.y -= radius
       }
+
+      // ABSOLUTE SAFETY FLOOR CHECK: Never allow sinking below stage ground y = -1.0
+      if (this.position.y < -1.0) {
+        this.position.y = -1.0
+        this.velocity.y = 0
+        this.isOnGround = true
+      }
+    }
+
+    if (this.position.y < -10.0) {
+      this.resetToOrigin()
+      return
     }
 
     this.group.position.copy(this.position)

@@ -2,13 +2,27 @@ import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
 
 export class CarActor extends BaseActor {
+  private currentSpeed: number = 0
+
   constructor() {
     super()
+    this.rotationY = Math.PI / 2
+    this.group.rotation.y = this.rotationY
     this.buildMesh()
   }
 
   public getType(): 'car' {
     return 'car'
+  }
+
+  public override resetToOrigin(): void {
+    this.position.set(0, -1.0, 2)
+    this.rotationY = Math.PI / 2
+    this.velocity.set(0, 0, 0)
+    this.currentSpeed = 0
+    this.isOnGround = true
+    this.group.position.copy(this.position)
+    this.group.rotation.y = this.rotationY
   }
 
   public buildMesh(): void {
@@ -60,7 +74,7 @@ export class CarActor extends BaseActor {
     lightRight.position.set(0.35, 0.35, 0.91)
     carGroup.add(lightRight)
 
-    // 4. Wheels
+    // 4. Wheels (Raised slightly so wheels sit cleanly above the floor plane)
     const wheelGeo = new THREE.CylinderGeometry(0.2, 0.2, 0.15, 16)
     const wheelMat = new THREE.MeshStandardMaterial({
       color: 0x18181b,
@@ -83,7 +97,25 @@ export class CarActor extends BaseActor {
       carGroup.add(wheel)
     })
 
+    // Raise mesh group slightly (+0.08m) so wheels sit cleanly above ground
+    carGroup.position.y = 0.08
     this.group.add(carGroup)
+
+    // 5. Car Collider Wireframe Visualizer (Clean vehicle bounding box)
+    const colliderGeo = new THREE.BoxGeometry(1.05, 0.65, 1.85)
+    const colliderMat = new THREE.MeshBasicMaterial({
+      color: 0x00ffff,
+      wireframe: true,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      opacity: 0.85,
+    })
+    this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
+    this.colliderWireframe.position.set(0, 0.40, 0)
+    this.colliderWireframe.renderOrder = 1000
+    this.colliderWireframe.visible = this.showCollider
+    this.group.add(this.colliderWireframe)
   }
 
   public updatePhysics(
@@ -92,63 +124,133 @@ export class CarActor extends BaseActor {
     speedMultiplier: number,
     colliderBVH: any
   ): void {
-    let forwardSpeed = 0
-    if (keysPressed['ArrowUp'] || keysPressed['KeyW']) {
-      forwardSpeed = speedMultiplier * 1.2
-    } else if (keysPressed['ArrowDown'] || keysPressed['KeyS']) {
-      forwardSpeed = -speedMultiplier * 0.6
+    const isW = keysPressed['ArrowUp'] || keysPressed['KeyW']
+    const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']
+    const isA = keysPressed['ArrowLeft'] || keysPressed['KeyA']
+    const isD = keysPressed['ArrowRight'] || keysPressed['KeyD']
+
+    const maxForwardSpeed = speedMultiplier * 1.5
+    const maxReverseSpeed = speedMultiplier * 0.6
+
+    const accel = 18.0 * dt
+    const brake = 30.0 * dt
+    const drag = 8.0 * dt
+
+    // 1. Acceleration / Braking / Reversing / Inertia logic
+    if (isW) {
+      if (this.currentSpeed < maxForwardSpeed) {
+        this.currentSpeed = Math.min(maxForwardSpeed, this.currentSpeed + accel)
+      }
+    } else if (isS) {
+      if (this.currentSpeed > 0) {
+        // Fast brake when moving forward
+        this.currentSpeed = Math.max(0, this.currentSpeed - brake)
+      } else if (this.currentSpeed > -maxReverseSpeed) {
+        // Reverse acceleration
+        this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel)
+      }
+    } else {
+      // Inertia & Friction coasting deceleration when no throttle/brake is pressed
+      if (this.currentSpeed > 0) {
+        this.currentSpeed = Math.max(0, this.currentSpeed - drag)
+      } else if (this.currentSpeed < 0) {
+        this.currentSpeed = Math.min(0, this.currentSpeed + drag)
+      }
     }
 
+    // 2. Steering logic (turns only when moving)
     let steerInput = 0
-    if (keysPressed['ArrowLeft'] || keysPressed['KeyA']) steerInput += 1
-    if (keysPressed['ArrowRight'] || keysPressed['KeyD']) steerInput -= 1
+    if (isA) steerInput += 1
+    if (isD) steerInput -= 1
 
-    if (steerInput !== 0) {
-      const turnDir = forwardSpeed < 0 ? -1 : 1
-      this.rotationY += steerInput * turnDir * 2.5 * dt
+    if (steerInput !== 0 && Math.abs(this.currentSpeed) > 0.05) {
+      const turnDir = this.currentSpeed < 0 ? -1 : 1
+      const turnFactor = Math.min(1.0, Math.abs(this.currentSpeed) / 3.0)
+      this.rotationY += steerInput * turnDir * 2.2 * turnFactor * dt
       this.group.rotation.y = this.rotationY
     }
 
-    if (forwardSpeed !== 0) {
-      this.velocity.x = Math.sin(this.rotationY) * forwardSpeed
-      this.velocity.z = Math.cos(this.rotationY) * forwardSpeed
-      this.velocity.y = 0
+    // 3. Movement integration along forward vector
+    this.velocity.x = Math.sin(this.rotationY) * this.currentSpeed
+    this.velocity.z = Math.cos(this.rotationY) * this.currentSpeed
 
-      this.position.addScaledVector(this.velocity, dt)
-    } else {
-      this.velocity.set(0, 0, 0)
-    }
+    const physicsSteps = 5
+    const stepDt = dt / physicsSteps
 
-    this.position.y = -1.0
-    this.position.x = Math.max(-24, Math.min(24, this.position.x))
-    this.position.z = Math.max(-24, Math.min(24, this.position.z))
+    for (let step = 0; step < physicsSteps; step++) {
+      this.velocity.y -= 30 * stepDt
+      const tentativeY = this.position.y
+      this.position.addScaledVector(this.velocity, stepDt)
 
-    if (colliderBVH && forwardSpeed !== 0) {
-      const tempVector = new THREE.Vector3()
-      const carBox = new THREE.Box3().setFromObject(this.group)
-      colliderBVH.shapecast({
-        intersectsBounds: (box: THREE.Box3) => box.intersectsBox(carBox),
-        intersectsTriangle: (tri: any) => {
-          const triNormal = tempVector
-          tri.getNormal(triNormal)
-          if (triNormal.y > 0.5) return
+      if (colliderBVH) {
+        const radius = 0.35
+        const height = 0.3
 
-          const triPoint = new THREE.Vector3()
-          tri.closestPointToPoint(this.position, triPoint)
-          const flatPos = new THREE.Vector2(this.position.x, this.position.z)
-          const flatTri = new THREE.Vector2(triPoint.x, triPoint.z)
-          const distSq = flatPos.distanceToSquared(flatTri)
-          
-          if (distSq < 0.64) {
+        const tempSegment = new THREE.Line3()
+        tempSegment.start.copy(this.position)
+        tempSegment.start.y += radius
+
+        tempSegment.end.copy(this.position)
+        tempSegment.end.y += radius + height
+
+        const capsuleBounds = new THREE.Box3()
+        capsuleBounds.min.copy(this.position)
+        capsuleBounds.min.x -= 1.5
+        capsuleBounds.min.z -= 1.5
+        capsuleBounds.min.y -= 1.5
+        capsuleBounds.max.copy(this.position)
+        capsuleBounds.max.x += 1.5
+        capsuleBounds.max.z += 1.5
+        capsuleBounds.max.y += radius + height + radius + 1.5
+
+        const tempVector = new THREE.Vector3()
+        const tempVector2 = new THREE.Vector3()
+
+        colliderBVH.shapecast({
+          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(capsuleBounds),
+          intersectsTriangle: (tri: any) => {
+            const triPoint = tempVector
+            const capsulePoint = tempVector2
+            const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
             const dist = Math.sqrt(distSq)
-            if (dist > 0.001) {
-              const push = flatPos.sub(flatTri).normalize().multiplyScalar((0.8 - dist) * 0.5)
-              this.position.x += push.x
-              this.position.z += push.y
+
+            if (dist < radius) {
+              const depth = radius - dist
+              const direction = capsulePoint.sub(triPoint).normalize()
+              tempSegment.start.addScaledVector(direction, depth)
+              tempSegment.end.addScaledVector(direction, depth)
             }
           }
+        })
+
+        const resolvedY = tempSegment.start.y - radius
+        const deltaY = resolvedY - tentativeY
+        if (deltaY > 0.001) {
+          if (this.velocity.y <= 0) {
+            this.velocity.y = 0
+            this.isOnGround = true
+          }
+        } else if (deltaY < -0.001) {
+          if (this.velocity.y > 0) {
+            this.velocity.y = 0
+          }
         }
-      })
+
+        this.position.copy(tempSegment.start)
+        this.position.y -= radius
+      }
+
+      // ABSOLUTE SAFETY FLOOR CHECK: Never allow sinking below stage ground y = -1.0
+      if (this.position.y < -1.0) {
+        this.position.y = -1.0
+        this.velocity.y = 0
+        this.isOnGround = true
+      }
+    }
+
+    if (this.position.y < -10.0) {
+      this.resetToOrigin()
+      return
     }
 
     this.group.position.copy(this.position)

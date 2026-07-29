@@ -1,10 +1,11 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
-import { MeshBVH, MeshBVHHelper } from 'three-mesh-bvh'
+import { MeshBVH, BVHHelper } from 'three-mesh-bvh'
 import type { ActingState, ThreeActingOptions, CubeTransform, SceneState } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
+import { DebugPanel } from './utils/DebugPanel'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -22,6 +23,7 @@ export class ThreeActing {
   private isHovered = false
   private connectedThreeScene: any = null
   private clonedEnvGroup: THREE.Group | null = null
+  private debugPanel: DebugPanel | null = null
 
   private isRecording = false
   private isPlaying = false
@@ -32,10 +34,11 @@ export class ThreeActing {
 
   // BVH Collision data
   private colliderBVH: MeshBVH | null = null
-  private bvhHelper: MeshBVHHelper | null = null
+  private bvhHelper: BVHHelper | null = null
   private colliderVisualizer: THREE.Mesh | null = null
   private displayBVH = false
   private displayCollider = false
+  private displayActorCollider = false
 
   // Actor movement & physics control state
   private keysPressed: Record<string, boolean> = {}
@@ -148,6 +151,10 @@ export class ThreeActing {
     // Build environment and actor
     this.buildSceneEnvironment()
     this.buildActor(this.state.actor_type)
+
+    // Initialize Debug Panel with lil-gui
+    this.debugPanel = new DebugPanel(this.container)
+    this.debugPanel.attachThreeActing(this)
   }
 
   private buildSceneEnvironment(): void {
@@ -327,29 +334,47 @@ export class ThreeActing {
     if (geometries.length > 0) {
       const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
       this.colliderBVH = new MeshBVH(mergedGeom)
+      ;(mergedGeom as any).boundsTree = this.colliderBVH
 
-      // Create collider visualizer
+      // Create collider visualizer (Green Wireframe Mesh of stage geometry)
       if (this.colliderVisualizer) {
         this.scene.remove(this.colliderVisualizer)
         this.colliderVisualizer.geometry.dispose()
       }
       const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
+        color: 0x00ff44,
         wireframe: true,
         transparent: true,
-        opacity: 0.3,
+        opacity: 0.6,
+        depthTest: false,
         depthWrite: false
       }))
+      colliderMesh.renderOrder = 998
       this.colliderVisualizer = colliderMesh
       this.colliderVisualizer.visible = this.displayCollider
       this.scene.add(this.colliderVisualizer)
 
-      // Create BVH Helper visualizer
+      // Create BVH Helper visualizer (Yellow Bounding Boxes of BVH tree nodes)
       if (this.bvhHelper) {
         this.scene.remove(this.bvhHelper)
       }
-      this.bvhHelper = new MeshBVHHelper(colliderMesh)
+      this.bvhHelper = new BVHHelper(colliderMesh, 10)
+      if ((this.bvhHelper as any).color?.set) {
+        ;(this.bvhHelper as any).color.set(0xffff00)
+      }
       this.bvhHelper.visible = this.displayBVH
+      this.bvhHelper.renderOrder = 999
+      this.bvhHelper.traverse((child: THREE.Object3D) => {
+        if (child instanceof THREE.LineSegments && child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          mats.forEach((m) => {
+            m.depthTest = false
+            m.depthWrite = false
+            m.transparent = true
+          })
+        }
+      })
+      this.bvhHelper.update()
       this.scene.add(this.bvhHelper)
 
       // Clean up cloned geometries
@@ -366,6 +391,7 @@ export class ThreeActing {
       this.actorController.dispose()
     }
     this.actorController = ActorFactory.create(charType)
+    this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
   }
 
@@ -517,10 +543,38 @@ export class ThreeActing {
     }
   }
 
+  public getDisplayCollider(): boolean {
+    return this.displayCollider
+  }
+
+  public setDisplayActorCollider(val: boolean): void {
+    this.displayActorCollider = val
+    if (this.actorController) {
+      this.actorController.setDisplayCollider(val)
+    }
+  }
+
+  public getDisplayActorCollider(): boolean {
+    return this.displayActorCollider
+  }
+
   public setDisplayBVH(val: boolean): void {
     this.displayBVH = val
     if (this.bvhHelper) {
       this.bvhHelper.visible = val
+      if (val) {
+        this.bvhHelper.update()
+      }
+    }
+  }
+
+  public getDisplayBVH(): boolean {
+    return this.displayBVH
+  }
+
+  public resetActorPosition(): void {
+    if (this.actorController) {
+      this.actorController.resetToOrigin()
     }
   }
 
@@ -628,6 +682,11 @@ export class ThreeActing {
     }
     if (this.keyupHandler) {
       window.removeEventListener('keyup', this.keyupHandler, { capture: true })
+    }
+
+    if (this.debugPanel) {
+      this.debugPanel.dispose()
+      this.debugPanel = null
     }
 
     this.renderer.dispose()

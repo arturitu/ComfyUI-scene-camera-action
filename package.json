@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "lil-gui": "^0.21.0",
     "three": "^0.170.0",
     "three-mesh-bvh": "^0.9.13",
     "vue": "^3.5.13"
