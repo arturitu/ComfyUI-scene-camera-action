@@ -1,6 +1,6 @@
 """
 ComfyUI Scene Camera Action Nodes
-Custom nodes for 3D scene setup and character acting within ComfyUI.
+Custom nodes for 3D scene setup and actor acting within ComfyUI.
 """
 
 from __future__ import annotations
@@ -123,7 +123,7 @@ class SceneNode(io.ComfyNode):
 class ActingNode(io.ComfyNode):
     """
     Acting Node
-    Receives scene data from a SceneNode and hosts interactive character acting.
+    Receives scene data from a SceneNode and hosts interactive actor acting.
     """
 
     @classmethod
@@ -133,7 +133,7 @@ class ActingNode(io.ComfyNode):
             display_name="Acting 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
-            description="Receives a 3D scene from SceneNode and hosts interactive character acting.",
+            description="Receives a 3D scene from SceneNode and hosts interactive actor acting.",
             inputs=[
                 SceneIO.Input(
                     "scene",
@@ -141,11 +141,18 @@ class ActingNode(io.ComfyNode):
                     tooltip="Scene data connection from a SceneNode",
                     optional=True,
                 ),
+                io.Combo.Input(
+                    "actor_type",
+                    options=["human", "car"],
+                    default="human",
+                    display_name="Actor Type",
+                    tooltip="Select between Human (capsule physics) and Car (vehicle physics with inertia)",
+                ),
                 io.Float.Input(
-                    "character_speed",
+                    "actor_speed",
                     default=10.0, min=1.0, max=20.0, step=1.0,
-                    display_name="Character Speed",
-                    tooltip="Movement speed of the 3D character",
+                    display_name="Actor Speed",
+                    tooltip="Movement speed of the 3D actor",
                 ),
                 io.Float.Input(
                     "duration",
@@ -157,7 +164,7 @@ class ActingNode(io.ComfyNode):
                     "motion_data",
                     default="",
                     display_name="Motion Data",
-                    tooltip="Serialized JSON recording of character acting (hidden)",
+                    tooltip="Serialized JSON recording of actor acting (hidden)",
                 ),
             ],
             outputs=[
@@ -170,7 +177,8 @@ class ActingNode(io.ComfyNode):
     def execute(
         cls,
         scene: str | dict | None = None,
-        character_speed: float = 10.0,
+        actor_type: str = "human",
+        actor_speed: float = 10.0,
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
@@ -185,7 +193,8 @@ class ActingNode(io.ComfyNode):
 
         acting_dict = {
             "scene_data": scene_data,
-            "character_speed": character_speed,
+            "actor_type": actor_type,
+            "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,
         }

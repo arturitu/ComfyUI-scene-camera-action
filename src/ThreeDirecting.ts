@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import type { DirectingState, ThreeDirectingOptions } from './types'
 import * as config from './threeConfig'
+import { BaseActor } from './actors/BaseActor'
+import { ActorFactory } from './actors/ActorFactory'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -10,7 +12,7 @@ export class ThreeDirecting {
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
-  private characterGroup: THREE.Group | null = null
+  private actorController: BaseActor | null = null
   private mainLight!: THREE.DirectionalLight
   private gridHelper: THREE.GridHelper | null = null
   private animationId: number | null = null
@@ -19,7 +21,7 @@ export class ThreeDirecting {
 
   private playbackTime = 0
   private trajectory: Array<{ t: number; px: number; py: number; pz: number; ry: number }> = []
-  private characterPosition = new THREE.Vector3(0, -1.0, 2)
+  private actorPosition = new THREE.Vector3(0, -1.0, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
@@ -81,7 +83,7 @@ export class ThreeDirecting {
 
     this.normalizeTrajectoryOrientation()
     this.playbackTime = 0
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
   }
 
@@ -140,7 +142,7 @@ export class ThreeDirecting {
     canvas.style.height = '100%'
 
     this.buildSceneEnvironment()
-    this.buildCharacter()
+    this.buildActor()
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -181,7 +183,7 @@ export class ThreeDirecting {
       const sourceScene = this.connectedThreeActing.getScene() as THREE.Scene
       this.clonedEnvGroup = new THREE.Group()
 
-      let inheritedCharacter: THREE.Group | null = null
+      let inheritedActor: THREE.Group | null = null
 
       for (const child of sourceScene.children) {
         if (
@@ -194,8 +196,8 @@ export class ThreeDirecting {
           hasGrid = true
         }
 
-        if (child.name === 'characterGroup') {
-          inheritedCharacter = child.clone(true) as THREE.Group
+        if (child.name === 'actorGroup' || child.name === 'characterGroup') {
+          inheritedActor = child.clone(true) as THREE.Group
           continue
         }
 
@@ -203,15 +205,42 @@ export class ThreeDirecting {
         this.clonedEnvGroup!.add(clone)
       }
 
-      if (inheritedCharacter) {
-        if (this.characterGroup) {
-          this.scene.remove(this.characterGroup)
+      if (inheritedActor) {
+        if (this.actorController) {
+          this.scene.remove(this.actorController.group)
+          this.actorController.dispose()
         }
-        this.characterGroup = inheritedCharacter
-        this.characterGroup.position.copy(this.characterPosition)
-        this.scene.add(this.characterGroup)
+        this.actorController = {
+          group: inheritedActor,
+          position: this.actorPosition,
+          rotationY: 0,
+          velocity: new THREE.Vector3(),
+          isOnGround: true,
+          buildMesh: () => {},
+          updatePhysics: () => {},
+          getType: () => 'human',
+          setPosition: (x: number, y: number, z: number, ry: number) => {
+            this.actorPosition.set(x, y, z)
+            inheritedActor!.position.set(x, y, z)
+            inheritedActor!.rotation.y = ry
+          },
+          dispose: () => {
+            inheritedActor!.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                child.geometry.dispose()
+                if (Array.isArray(child.material)) {
+                  child.material.forEach((m) => m.dispose())
+                } else {
+                  child.material.dispose()
+                }
+              }
+            })
+          }
+        } as any
+        this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
+        this.scene.add(this.actorController.group)
       } else {
-        this.buildCharacter()
+        this.buildActor()
       }
 
       this.clonedEnvGroup.traverse((child) => {
@@ -328,33 +357,21 @@ export class ThreeDirecting {
     this.gridHelper.position.y = -1.0
     this.scene.add(this.gridHelper)
 
-    // Ensure character exists when building from JSON
-    if (!this.characterGroup) {
-      this.buildCharacter()
+    // Ensure actor exists when building from JSON
+    if (!this.actorController) {
+      this.buildActor()
     }
   }
 
-  private buildCharacter(): void {
-    if (this.characterGroup) {
-      this.scene.remove(this.characterGroup)
+  private buildActor(type?: string): void {
+    const charType = type ?? 'human'
+    if (this.actorController) {
+      this.scene.remove(this.actorController.group)
+      this.actorController.dispose()
     }
-
-    this.characterGroup = new THREE.Group()
-
-    const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0xff007f,
-      roughness: 0.2,
-      metalness: 0.5,
-    })
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    bodyMesh.position.y = 0.85
-    bodyMesh.castShadow = true
-    bodyMesh.receiveShadow = true
-    this.characterGroup.add(bodyMesh)
-
-    this.characterGroup.position.copy(this.characterPosition)
-    this.scene.add(this.characterGroup)
+    this.actorController = ActorFactory.create(charType)
+    this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
+    this.scene.add(this.actorController.group)
   }
 
   private keyframes: Array<{ id: string; t: number; mode: string }> = []
@@ -386,8 +403,8 @@ export class ThreeDirecting {
     this.isRecordingMode = active
   }
 
-  private updateCharacterMovement(dt: number): void {
-    if (!this.characterGroup || this.trajectory.length < 2) return
+  private updateActorMovement(dt: number): void {
+    if (!this.actorController || this.trajectory.length < 2) return
 
     if (this.isPlaying) {
       this.playbackTime += dt
@@ -424,25 +441,25 @@ export class ThreeDirecting {
       factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
     }
 
-    this.characterPosition.set(
-      frameA.px + (frameB.px - frameA.px) * factor,
-      frameA.py + (frameB.py - frameA.py) * factor,
-      frameA.pz + (frameB.pz - frameA.pz) * factor
-    )
+    const px = frameA.px + (frameB.px - frameA.px) * factor
+    const py = frameA.py + (frameB.py - frameA.py) * factor
+    const pz = frameA.pz + (frameB.pz - frameA.pz) * factor
 
     let diffY = frameB.ry - frameA.ry
     diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
-    this.characterGroup.rotation.y = frameA.ry + diffY * factor
-    this.characterGroup.position.copy(this.characterPosition)
+    const ry = frameA.ry + diffY * factor
+
+    this.actorPosition.set(px, py, pz)
+    this.actorController.setPosition(px, py, pz, ry)
   }
 
   private lastCameraMode: string | null = null
 
   private updateCamera(): void {
-    if (!this.characterGroup) return
+    if (!this.actorController) return
 
-    const charPos = this.characterPosition
-    const rotY = this.characterGroup.rotation.y
+    const charPos = this.actorPosition
+    const rotY = this.actorController.group.rotation.y
     const activeMode = this.getActiveKeyframeMode(this.playbackTime)
 
     if (activeMode === 'First Person') {
@@ -488,7 +505,7 @@ export class ThreeDirecting {
         this.camera.fov = 40
         this.camera.updateProjectionMatrix()
       }
-      // Positioned to the side of the character tracking alongside
+      // Positioned to the side of the actor tracking alongside
       const sideOffset = new THREE.Vector3(-3.2, 1.4, 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(sideOffset)
       this.camera.position.copy(targetCamPos)
@@ -514,12 +531,12 @@ export class ThreeDirecting {
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.updateCharacterMovement(dt)
+    this.updateActorMovement(dt)
     this.updateCamera()
 
-    if (this.characterGroup && this.mainLight) {
-      this.mainLight.position.copy(this.characterPosition).add(config.MAIN_LIGHT_OFFSET)
-      this.mainLight.target.position.copy(this.characterPosition)
+    if (this.actorController && this.mainLight) {
+      this.mainLight.position.copy(this.actorPosition).add(config.MAIN_LIGHT_OFFSET)
+      this.mainLight.target.position.copy(this.actorPosition)
       this.mainLight.target.updateMatrixWorld()
     }
 
@@ -552,7 +569,7 @@ export class ThreeDirecting {
     this.camera.aspect = targetWidth / targetHeight
     this.camera.updateProjectionMatrix()
 
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
 
     const canvas = this.renderer.domElement
@@ -601,10 +618,10 @@ export class ThreeDirecting {
         return
       }
 
-      // Save current playback time and snap character to initial frame (t = 0.0s)
+      // Save current playback time and snap actor to initial frame (t = 0.0s)
       const prevTime = this.playbackTime
       this.playbackTime = 0
-      this.updateCharacterMovement(0)
+      this.updateActorMovement(0)
 
       // Temporarily disable fog for crisp overview render without fog haze
       const prevFog = this.scene.fog
@@ -626,10 +643,10 @@ export class ThreeDirecting {
 
       const canvas = this.renderer.domElement
       canvas.toBlob((blob) => {
-        // Restore scene fog, playback time, character position, standard camera view, and container resolution
+        // Restore scene fog, playback time, actor position, standard camera view, and container resolution
         this.scene.fog = prevFog
         this.playbackTime = prevTime
-        this.updateCharacterMovement(0)
+        this.updateActorMovement(0)
         this.onResize()
         this.renderer.render(this.scene, this.camera)
         if (blob) {
@@ -644,7 +661,7 @@ export class ThreeDirecting {
   public resetPlayback(): void {
     this.playbackTime = 0
     this.lastCameraMode = null
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
   }
 
@@ -652,7 +669,7 @@ export class ThreeDirecting {
     const maxDur = this.getDuration()
     this.playbackTime = Math.max(0, Math.min(t, maxDur))
     this.lastCameraMode = null
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
   }
 

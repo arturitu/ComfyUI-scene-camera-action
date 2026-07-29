@@ -3,6 +3,8 @@ import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { MeshBVH, MeshBVHHelper } from 'three-mesh-bvh'
 import type { ActingState, ThreeActingOptions, CubeTransform, SceneState } from './types'
 import * as config from './threeConfig'
+import { BaseActor } from './actors/BaseActor'
+import { ActorFactory } from './actors/ActorFactory'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -13,7 +15,7 @@ export class ThreeActing {
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
   private environmentMeshes: THREE.Mesh[] = []
-  private characterGroup: THREE.Group | null = null
+  private actorController!: BaseActor
   private gridHelper: THREE.GridHelper | null = null
   private mainLight!: THREE.DirectionalLight
   private animationId: number | null = null
@@ -35,11 +37,8 @@ export class ThreeActing {
   private displayBVH = false
   private displayCollider = false
 
-  // Character movement & physics control state
+  // Actor movement & physics control state
   private keysPressed: Record<string, boolean> = {}
-  private characterPosition = new THREE.Vector3(0, -1.0, 2)
-  private characterVelocity = new THREE.Vector3(0, 0, 0)
-  private isOnGround = true
   private lastTime = performance.now()
   private keydownHandler?: (e: KeyboardEvent) => void
   private keyupHandler?: (e: KeyboardEvent) => void
@@ -52,7 +51,8 @@ export class ThreeActing {
     this.onRecordingFinished = options.onRecordingFinished
     this.connectedThreeScene = options.connectedThreeScene ?? null
     this.state = {
-      character_speed: options.initialState?.character_speed ?? 10.0,
+      actor_type: options.initialState?.actor_type ?? 'human',
+      actor_speed: options.initialState?.actor_speed ?? 10.0,
       duration: options.initialState?.duration ?? 7.0,
       motion_data: options.initialState?.motion_data ?? '',
       scene_data: options.initialState?.scene_data ?? null as any,
@@ -145,9 +145,9 @@ export class ThreeActing {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
-    // Build environment and character
+    // Build environment and actor
     this.buildSceneEnvironment()
-    this.buildCharacter()
+    this.buildActor(this.state.actor_type)
   }
 
   private buildSceneEnvironment(): void {
@@ -189,7 +189,7 @@ export class ThreeActing {
       // Traverse cloned group to identify main light and asset meshes
       this.clonedEnvGroup.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          // Skip the mesh named 'floor' so we don't treat it as a box collider for character physics
+          // Skip the mesh named 'floor' so we don't treat it as a box collider for actor physics
           if (child.name !== 'floor') {
             this.environmentMeshes.push(child)
           }
@@ -359,30 +359,14 @@ export class ThreeActing {
     }
   }
 
-  private buildCharacter(): void {
-    if (this.characterGroup) {
-      this.scene.remove(this.characterGroup)
+  private buildActor(type?: 'human' | 'car'): void {
+    const charType = type ?? this.state.actor_type ?? 'human'
+    if (this.actorController) {
+      this.scene.remove(this.actorController.group)
+      this.actorController.dispose()
     }
-
-    this.characterGroup = new THREE.Group()
-    this.characterGroup.name = 'characterGroup'
-
-    // Character body (Capsule/Cylinder)
-    const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0xff007f,
-      roughness: 0.2,
-      metalness: 0.5,
-    })
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    // Capsule height = 1.7, bottom sphere Y = 0.25. Set Y position to 0.85 so base starts exactly at Y = 0
-    bodyMesh.position.y = 0.85
-    bodyMesh.castShadow = true
-    bodyMesh.receiveShadow = true
-    this.characterGroup.add(bodyMesh)
-
-    this.characterGroup.position.copy(this.characterPosition)
-    this.scene.add(this.characterGroup)
+    this.actorController = ActorFactory.create(charType)
+    this.scene.add(this.actorController.group)
   }
 
   private bindEvents(): void {
@@ -409,9 +393,9 @@ export class ThreeActing {
         e.stopPropagation()
         e.stopImmediatePropagation()
         if (e.repeat) return
-        if (this.isOnGround) {
-          this.characterVelocity.y = 10.0 // Jump vertical impulse
-          this.isOnGround = false
+        if (this.actorController && this.actorController.isOnGround) {
+          this.actorController.velocity.y = 10.0 // Jump vertical impulse
+          this.actorController.isOnGround = false
         }
       }
     }
@@ -443,8 +427,8 @@ export class ThreeActing {
     this.resizeObserver.observe(this.container)
   }
 
-  private updateCharacterMovement(dt: number): void {
-    if (!this.characterGroup) return
+  private updateActorMovement(dt: number): void {
+    if (!this.actorController) return
 
     // 1. Playback Mode
     if (this.isPlaying) {
@@ -456,14 +440,12 @@ export class ThreeActing {
       this.playbackTime += dt
       const maxDuration = this.state.duration
 
-      // Loop playback at duration boundary
       if (this.playbackTime >= maxDuration) {
         this.playbackTime = this.playbackTime % maxDuration
       }
 
       const t = this.playbackTime
 
-      // Find frame interval
       let idxA = 0
       for (let i = 0; i < this.trajectory.length; i++) {
         if (this.trajectory[i].t <= t) {
@@ -479,7 +461,6 @@ export class ThreeActing {
       let factor = 0
       let timeDiff = frameB.t - frameA.t
       if (timeDiff < 0) {
-        // Loops around at end
         timeDiff = (maxDuration - frameA.t) + frameB.t
         const elapsedSinceA = t - frameA.t
         factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
@@ -488,138 +469,34 @@ export class ThreeActing {
         factor = timeDiff > 0 ? elapsedSinceA / timeDiff : 0
       }
 
-      // Linear interpolate position
-      this.characterPosition.set(
-        frameA.px + (frameB.px - frameA.px) * factor,
-        frameA.py + (frameB.py - frameA.py) * factor,
-        frameA.pz + (frameB.pz - frameA.pz) * factor
-      )
+      const px = frameA.px + (frameB.px - frameA.px) * factor
+      const py = frameA.py + (frameB.py - frameA.py) * factor
+      const pz = frameA.pz + (frameB.pz - frameA.pz) * factor
 
-      // Shortest angle rotation interpolation
       let diffY = frameB.ry - frameA.ry
       diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
-      this.characterGroup.rotation.y = frameA.ry + diffY * factor
-      this.characterGroup.position.copy(this.characterPosition)
+      const ry = frameA.ry + diffY * factor
+
+      this.actorController.setPosition(px, py, pz, ry)
       return
     }
 
-    const physicsSteps = 5
-    const stepDt = dt / physicsSteps
-    const speed = this.state.character_speed
-
-    // 2. Determine horizontal intent from key presses
-    let moveZ = 0
-    let moveX = 0
-
-    if (this.keysPressed['ArrowUp'] || this.keysPressed['KeyW']) moveZ -= 1
-    if (this.keysPressed['ArrowDown'] || this.keysPressed['KeyS']) moveZ += 1
-    if (this.keysPressed['ArrowLeft'] || this.keysPressed['KeyA']) moveX -= 1
-    if (this.keysPressed['ArrowRight'] || this.keysPressed['KeyD']) moveX += 1
-
-    let dir = new THREE.Vector3(moveX, 0, moveZ)
-    if (dir.lengthSq() > 0) {
-      dir.normalize()
-      const targetAngle = Math.atan2(dir.x, dir.z)
-      this.characterGroup.rotation.y = targetAngle
-    }
-
-    // Apply horizontal velocity
-    this.characterVelocity.x = dir.x * speed
-    this.characterVelocity.z = dir.z * speed
-
-    // Run physics simulation and collision resolution in multiple substeps
-    for (let step = 0; step < physicsSteps; step++) {
-      // Apply gravity
-      this.characterVelocity.y -= 30 * stepDt
-
-      // Apply tentative position update
-      const tentativeY = this.characterPosition.y
-      this.characterPosition.addScaledVector(this.characterVelocity, stepDt)
-
-      // Force floor lock constraint: character can never fall below y=-1.0 (failsafe)
-      if (this.characterPosition.y < -1.0) {
-        this.characterPosition.y = -1.0
-        this.characterVelocity.y = 0
-        this.isOnGround = true
-      }
-
-      // Limit boundaries of characterPosition
-      this.characterPosition.x = Math.max(-24, Math.min(24, this.characterPosition.x))
-      this.characterPosition.z = Math.max(-24, Math.min(24, this.characterPosition.z))
-
-      // Perform BVH Collision Resolution
-      if (this.colliderBVH) {
-        const radius = 0.3
-        const height = 0.9
-
-        const tempSegment = new THREE.Line3()
-        tempSegment.start.copy(this.characterPosition)
-        tempSegment.start.y += radius
-
-        tempSegment.end.copy(this.characterPosition)
-        tempSegment.end.y += radius + height
-
-        const capsuleBounds = new THREE.Box3()
-        capsuleBounds.min.copy(this.characterPosition)
-        capsuleBounds.min.x -= radius
-        capsuleBounds.min.z -= radius
-        capsuleBounds.max.copy(this.characterPosition)
-        capsuleBounds.max.x += radius
-        capsuleBounds.max.z += radius
-        capsuleBounds.max.y += radius + height + radius
-
-        const tempVector = new THREE.Vector3()
-        const tempVector2 = new THREE.Vector3()
-
-        // Resolve intersections
-        this.colliderBVH.shapecast({
-          intersectsBounds: box => box.intersectsBox(capsuleBounds),
-          intersectsTriangle: (tri) => {
-            const triPoint = tempVector
-            const capsulePoint = tempVector2
-            const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
-            const dist = Math.sqrt(distSq)
-
-            if (dist < radius) {
-              const depth = radius - dist
-              const direction = capsulePoint.sub(triPoint).normalize()
-
-              tempSegment.start.addScaledVector(direction, depth)
-              tempSegment.end.addScaledVector(direction, depth)
-            }
-          }
-        })
-
-        // Check if Y collision pushed us upwards or downwards
-        const resolvedY = tempSegment.start.y - radius
-        const deltaY = resolvedY - tentativeY
-        if (deltaY > 0.001) {
-          if (this.characterVelocity.y <= 0) {
-            this.characterVelocity.y = 0
-            this.isOnGround = true
-          }
-        } else if (deltaY < -0.001) {
-          if (this.characterVelocity.y > 0) {
-            this.characterVelocity.y = 0
-          }
-        }
-
-        this.characterPosition.copy(tempSegment.start)
-        this.characterPosition.y -= radius
-      }
-    }
-
-    // Set characterGroup position
-    this.characterGroup.position.copy(this.characterPosition)
+    // 2. Physics & Interactive Controls
+    this.actorController.updatePhysics(
+      dt,
+      this.keysPressed,
+      this.state.actor_speed,
+      this.colliderBVH
+    )
 
     // 3. Record coordinates if in recording state
     if (this.isRecording) {
       this.trajectory.push({
         t: this.recordingTime,
-        px: this.characterPosition.x,
-        py: this.characterPosition.y,
-        pz: this.characterPosition.z,
-        ry: this.characterGroup.rotation.y
+        px: this.actorController.position.x,
+        py: this.actorController.position.y,
+        pz: this.actorController.position.z,
+        ry: this.actorController.rotationY
       })
 
       this.recordingTime += dt
@@ -660,30 +537,29 @@ export class ThreeActing {
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
 
-    // Calculate real frame delta time (independent of frame rate / monitor refresh rate)
     const time = performance.now()
-    const dt = Math.min((time - this.lastTime) / 1000, 0.1) // Cap at 0.1s to prevent lag glitches
+    const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.updateCharacterMovement(dt)
+    this.updateActorMovement(dt)
 
-    // Camera following character
-    if (this.characterGroup) {
+    // Camera following actor
+    if (this.actorController) {
+      const pos = this.actorController.position
       this.camera.position.set(
-        this.characterPosition.x,
-        this.characterPosition.y + 4,
-        this.characterPosition.z + 8
+        pos.x,
+        pos.y + 4,
+        pos.z + 8
       )
       this.camera.lookAt(
-        this.characterPosition.x,
-        this.characterPosition.y + 0.5,
-        this.characterPosition.z
+        pos.x,
+        pos.y + 0.5,
+        pos.z
       )
 
-      // Update main directional light to follow the character for high-quality shadows
       if (this.mainLight) {
-        this.mainLight.position.copy(this.characterPosition).add(config.MAIN_LIGHT_OFFSET)
-        this.mainLight.target.position.copy(this.characterPosition)
+        this.mainLight.position.copy(pos).add(config.MAIN_LIGHT_OFFSET)
+        this.mainLight.target.position.copy(pos)
         this.mainLight.target.updateMatrixWorld()
       }
     }
@@ -697,8 +573,12 @@ export class ThreeActing {
   }
 
   public setState(newState: Partial<ActingState>): void {
-    if (newState.character_speed !== undefined) {
-      this.state.character_speed = newState.character_speed
+    if (newState.actor_type !== undefined && newState.actor_type !== this.state.actor_type) {
+      this.state.actor_type = newState.actor_type
+      this.buildActor(newState.actor_type)
+    }
+    if (newState.actor_speed !== undefined) {
+      this.state.actor_speed = newState.actor_speed
     }
     if (newState.duration !== undefined) {
       this.state.duration = newState.duration

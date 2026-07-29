@@ -3,9 +3,9 @@
 > [!WARNING]
 > This is an early experimental release tested locally and may contain bugs. It serves as an initial proof of concept (PoC) to explore and research 3D-driven video-to-video workflows.
 
-An interactive 3D scene creation, character acting, and camera directing set of custom nodes for **ComfyUI**.
+An interactive 3D scene creation, actor acting, and camera directing set of custom nodes for **ComfyUI**.
 
-Build your 3D environment, control and record character movements using your keyboard in real time, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage image for video-to-video (such as Seedance 2.0) workflows.
+Build your 3D environment, control and record actor movements using your keyboard in real time, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage image for video-to-video (such as Seedance 2.0) workflows.
 
 ![Preview](img.png)
 
@@ -21,18 +21,18 @@ Build your 3D environment by placing, editing, duplicating, and transforming 3D 
 - **Output**: Sends `Scene Data` downstream to the Acting node.
 
 ### 2. Acting 3D Node
-Control your character in real time and record movement trajectories:
-- **Keyboard Control**: Drive the character capsule across the stage using Arrow keys.
-- **Motion Recording**: Play and record character locomotion trajectories over a customizable duration (e.g. 7 seconds).
+Control your actor in real time and record movement trajectories:
+- **Keyboard Control**: Drive the actor (human capsule or vehicle model) across the stage using WASD or Arrow keys.
+- **Motion Recording**: Play and record actor locomotion trajectories over a customizable duration (e.g. 7 seconds).
 - **Output**: Combines scene geometry and recorded motion into `Acting Data` for the Directing node.
 
 ### 3. Directing 3D Node
 Compose your sequence with live multi-camera cuts:
 - **Multi-Camera Modes**: Cut seamlessly between:
-  - **TPV (Third-Person View)**: Follows behind the character.
-  - **FPV (First-Person View)**: Immersive POV from character head height.
+  - **TPV (Third-Person View)**: Follows behind the actor.
+  - **FPV (First-Person View)**: Immersive POV from actor head height.
   - **Wide**: Static overview camera framing the action.
-  - **Side**: Tracking side-profile camera following the character.
+  - **Side**: Tracking side-profile camera following the actor.
 - **Timeline Keyframing**: Add and adjust camera cuts along the playback timeline.
 - **Outputs**:
   - **`Captured Video` (`VIDEO`)**: 720p HD recorded video of the directed camera sequence.

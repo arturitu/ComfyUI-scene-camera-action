@@ -19,7 +19,8 @@ export interface SceneState {
 }
 
 export interface ActingState {
-  character_speed: number
+  actor_type?: 'human' | 'car'
+  actor_speed: number
   duration: number
   motion_data?: string
   scene_data: SceneState
