@@ -22,10 +22,28 @@ export interface MotionFrame {
   rz: number
 }
 
+export interface SceneBlockNode {
+  id: string
+  type: 'block'
+  name?: string
+  transform: CubeTransform
+}
+
+export interface SceneGroupNode {
+  id: string
+  type: 'group'
+  name?: string
+  transform: CubeTransform
+  children: SceneNode[]
+}
+
+export type SceneNode = SceneBlockNode | SceneGroupNode
+
 export interface SceneState {
   type: string
   num_assets: number
   asset_transforms?: CubeTransform[]
+  nodes?: SceneNode[]
 }
 
 export interface ActingState {
@@ -42,6 +60,7 @@ export interface ThreeSceneOptions {
   onStateChange?: (state: SceneState) => void
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   onSelectionChange?: (hasSelection: boolean) => void
+  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
 }
 
 export interface ThreeActingOptions {

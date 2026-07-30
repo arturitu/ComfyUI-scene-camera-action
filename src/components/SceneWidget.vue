@@ -16,13 +16,24 @@
           ⤢
         </button>
       </div>
-      <!-- Asset Add/Duplicate/Delete Toolbar (Right Side) -->
+      <!-- Asset Add/Duplicate/Group/Ungroup/Delete Toolbar (Right Side) -->
       <div class="canvas-edit-toolbar right">
         <button class="edit-btn add-btn" title="Add asset" @click.stop="addAsset">
           ＋
         </button>
         <button class="edit-btn duplicate-btn" title="Duplicate selected asset" @click.stop="duplicateAsset" :disabled="!hasSelection">
           ❐
+        </button>
+        <button class="edit-btn group-btn" title="Group selected assets (Cmd+G)" @click.stop="groupSelected" :disabled="!canGroup">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1.5 2A.5.5 0 0 0 1 2.5v4a.5.5 0 0 0 .5.5h4A.5.5 0 0 0 6 6.5v-4A.5.5 0 0 0 5.5 2h-4zm.5 4V3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4V3h3v3h-3zM1.5 9.5a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3z"/>
+          </svg>
+        </button>
+        <button class="edit-btn ungroup-btn" title="Ungroup selected group (Cmd+Shift+G)" @click.stop="ungroupSelected" :disabled="!canUngroup">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM9 10.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+            <path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 2" d="M6.5 6.5l3 3"/>
+          </svg>
         </button>
         <button class="edit-btn delete-btn" title="Delete selected asset" @click.stop="deleteAsset" :disabled="!hasSelection">
           ✕
@@ -50,10 +61,13 @@ const state = reactive<SceneState>({
   type: 'cube_scene',
   num_assets: props.initialState?.num_assets ?? 1,
   asset_transforms: props.initialState?.asset_transforms ?? [],
+  nodes: props.initialState?.nodes ?? [],
 })
 
 const activeMode = ref<'translate' | 'rotate' | 'scale' | null>('translate')
 const hasSelection = ref(false)
+const canGroup = ref(false)
+const canUngroup = ref(false)
 let threeScene: ThreeScene | null = null
 
 const initScene = (container: HTMLElement) => {
@@ -71,6 +85,11 @@ const initScene = (container: HTMLElement) => {
     },
     onSelectionChange: (selected) => {
       hasSelection.value = selected
+    },
+    onSelectionInfoChange: (info) => {
+      hasSelection.value = info.selectedCount > 0
+      canGroup.value = info.canGroup
+      canUngroup.value = info.canUngroup
     }
   })
   threeScene.setTransformMode(activeMode.value)
@@ -102,6 +121,18 @@ const deleteAsset = () => {
 const duplicateAsset = () => {
   if (threeScene) {
     threeScene.duplicateSelectedAsset()
+  }
+}
+
+const groupSelected = () => {
+  if (threeScene) {
+    threeScene.groupSelected()
+  }
+}
+
+const ungroupSelected = () => {
+  if (threeScene) {
+    threeScene.ungroupSelected()
   }
 }
 
