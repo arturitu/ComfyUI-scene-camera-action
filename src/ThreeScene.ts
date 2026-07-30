@@ -21,7 +21,11 @@ export class ThreeScene {
   private isHovered = false
   private globalWheelHandler?: (e: WheelEvent) => void
   private pointerDownHandler?: (e: PointerEvent) => void
-  private transformMode: 'translate' | 'rotate' | 'scale' | null = null
+  private pointerUpHandler?: (e: PointerEvent) => void
+  private windowPointerDownHandler?: (e: PointerEvent) => void
+  private pointerDownPos: { x: number; y: number } | null = null
+  private selectedMesh: THREE.Mesh | null = null
+  private transformMode: 'translate' | 'rotate' | 'scale' | null = 'translate'
   private lastTransformMode: 'translate' | 'rotate' | 'scale' = 'translate'
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
@@ -265,13 +269,18 @@ export class ThreeScene {
     // Select the new asset automatically
     const newMesh = this.meshes[this.meshes.length - 1]
     if (newMesh) {
+      const modeToUse = this.transformMode ?? this.lastTransformMode
       if (!this.transformMode) {
-        this.setTransformMode('translate')
+        this.setTransformMode(modeToUse)
         if (this.onTransformModeChange) {
-          this.onTransformModeChange('translate')
+          this.onTransformModeChange(modeToUse)
         }
       }
+      this.selectedMesh = newMesh
       this.transformControls.attach(newMesh)
+      if (this.onSelectionChange) {
+        this.onSelectionChange(true)
+      }
     }
 
     if (this.onStateChange) {
@@ -290,6 +299,7 @@ export class ThreeScene {
       this.state.asset_transforms.splice(index, 1)
       this.state.num_assets = this.state.asset_transforms.length
 
+      this.selectedMesh = null
       this.transformControls.detach()
       if (this.onSelectionChange) {
         this.onSelectionChange(false)
@@ -300,12 +310,14 @@ export class ThreeScene {
       const prevIndex = index - 1
       if (prevIndex >= 0 && this.meshes[prevIndex]) {
         const prevMesh = this.meshes[prevIndex]
+        const modeToUse = this.transformMode ?? this.lastTransformMode
         if (!this.transformMode) {
-          this.setTransformMode('translate')
+          this.setTransformMode(modeToUse)
           if (this.onTransformModeChange) {
-            this.onTransformModeChange('translate')
+            this.onTransformModeChange(modeToUse)
           }
         }
+        this.selectedMesh = prevMesh
         this.transformControls.attach(prevMesh)
         if (this.onSelectionChange) {
           this.onSelectionChange(true)
@@ -348,12 +360,14 @@ export class ThreeScene {
     // Auto-select the duplicated asset
     const newMesh = this.meshes[this.meshes.length - 1]
     if (newMesh) {
+      const modeToUse = this.transformMode ?? this.lastTransformMode
       if (!this.transformMode) {
-        this.setTransformMode('translate')
+        this.setTransformMode(modeToUse)
         if (this.onTransformModeChange) {
-          this.onTransformModeChange('translate')
+          this.onTransformModeChange(modeToUse)
         }
       }
+      this.selectedMesh = newMesh
       this.transformControls.attach(newMesh)
       if (this.onSelectionChange) {
         this.onSelectionChange(true)
@@ -401,6 +415,20 @@ export class ThreeScene {
 
     this.pointerDownHandler = (event: PointerEvent) => {
       if (event.button !== 0) return // Left clicks only
+      this.pointerDownPos = { x: event.clientX, y: event.clientY }
+    }
+
+    this.pointerUpHandler = (event: PointerEvent) => {
+      if (event.button !== 0 || !this.pointerDownPos) return // Left clicks only
+
+      const dx = event.clientX - this.pointerDownPos.x
+      const dy = event.clientY - this.pointerDownPos.y
+      this.pointerDownPos = null
+
+      const dist = Math.hypot(dx, dy)
+
+      // If pointer moved more than 15px, user was dragging/orbiting camera, not clicking
+      if (dist > 15) return
 
       const rect = this.renderer.domElement.getBoundingClientRect()
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
@@ -408,34 +436,47 @@ export class ThreeScene {
 
       raycaster.setFromCamera(mouse, this.camera)
 
-      // Check gizmo intersection FIRST — if the user is interacting with
-      // gizmo handles, do NOT re-run mesh selection to avoid switching assets
+      // Check gizmo intersection FIRST — if the user clicked on visible gizmo handles,
+      // keep current selection and do not switch or deselect assets
       if (this.transformControls.object) {
-        const gizmoIntersects = raycaster.intersectObjects(
+        const rawGizmoIntersects = raycaster.intersectObjects(
           this.transformControls.getHelper().children, true
         )
-        if (gizmoIntersects.length > 0) {
-          return // User is clicking on the gizmo, don't change selection
+        const activeAxis = (this.transformControls as any).axis
+        const visibleGizmoIntersects = rawGizmoIntersects.filter((hit) => {
+          let curr: THREE.Object3D | null = hit.object
+          while (curr && curr !== this.transformControls.getHelper()) {
+            if (!curr.visible) return false
+            curr = curr.parent
+          }
+          const name = hit.object.name
+          return (name && name !== '' && name !== 'helper') || activeAxis !== null
+        })
+        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some(h => ['X','Y','Z','XY','YZ','XZ','E','R','S','XYZE'].includes(h.object.name)))) {
+          return // User clicked on a visible gizmo handle
         }
       }
 
       const intersects = raycaster.intersectObjects(this.meshes)
 
       if (intersects.length > 0) {
-        const clickedMesh = intersects[0].object
+        const clickedMesh = intersects[0].object as THREE.Mesh
+        const modeToUse = this.transformMode ?? this.lastTransformMode
+        this.selectedMesh = clickedMesh
         if (!this.transformMode) {
-          // Restore the last active transform mode
-          this.setTransformMode(this.lastTransformMode)
+          this.setTransformMode(modeToUse)
           if (this.onTransformModeChange) {
-            this.onTransformModeChange(this.lastTransformMode)
+            this.onTransformModeChange(modeToUse)
           }
+        } else {
+          this.transformControls.attach(clickedMesh)
         }
-        this.transformControls.attach(clickedMesh)
         if (this.onSelectionChange) {
           this.onSelectionChange(true)
         }
       } else {
         // Clicked empty space — deselect
+        this.selectedMesh = null
         this.transformControls.detach()
         if (this.onSelectionChange) {
           this.onSelectionChange(false)
@@ -443,7 +484,23 @@ export class ThreeScene {
       }
     }
 
+    this.windowPointerDownHandler = (event: PointerEvent) => {
+      if (event.button !== 0) return
+      // If clicking outside container and an asset is selected, deselect it
+      if (this.container && !this.container.contains(event.target as Node)) {
+        if (this.transformControls && this.transformControls.object) {
+          this.selectedMesh = null
+          this.transformControls.detach()
+          if (this.onSelectionChange) {
+            this.onSelectionChange(false)
+          }
+        }
+      }
+    }
+
     this.renderer.domElement.addEventListener('pointerdown', this.pointerDownHandler)
+    this.renderer.domElement.addEventListener('pointerup', this.pointerUpHandler)
+    window.addEventListener('pointerdown', this.windowPointerDownHandler)
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -483,11 +540,14 @@ export class ThreeScene {
     if (this.transformControls) {
       if (mode) {
         this.transformControls.setMode(mode)
+        if (this.selectedMesh) {
+          this.transformControls.attach(this.selectedMesh)
+          if (this.onSelectionChange) {
+            this.onSelectionChange(true)
+          }
+        }
       } else {
         this.transformControls.detach()
-        if (this.onSelectionChange) {
-          this.onSelectionChange(false)
-        }
       }
     }
   }
@@ -525,6 +585,12 @@ export class ThreeScene {
 
     if (this.pointerDownHandler) {
       this.renderer.domElement.removeEventListener('pointerdown', this.pointerDownHandler)
+    }
+    if (this.pointerUpHandler) {
+      this.renderer.domElement.removeEventListener('pointerup', this.pointerUpHandler)
+    }
+    if (this.windowPointerDownHandler) {
+      window.removeEventListener('pointerdown', this.windowPointerDownHandler)
     }
 
     if (this.controls) {

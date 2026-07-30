@@ -6,25 +6,25 @@
       </div>
       <!-- Edit Mode Toolbar (Left Side) -->
       <div class="canvas-edit-toolbar left">
-        <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click="setMode('translate')">
+        <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click.stop="setMode('translate')">
           ✛
         </button>
-        <button class="edit-btn" :class="{ 'active': activeMode === 'rotate' }" title="Rotate object" @click="setMode('rotate')">
+        <button class="edit-btn" :class="{ 'active': activeMode === 'rotate' }" title="Rotate object" @click.stop="setMode('rotate')">
           ↺
         </button>
-        <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click="setMode('scale')">
+        <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click.stop="setMode('scale')">
           ⤢
         </button>
       </div>
       <!-- Asset Add/Duplicate/Delete Toolbar (Right Side) -->
       <div class="canvas-edit-toolbar right">
-        <button class="edit-btn add-btn" title="Add asset" @click="addAsset">
+        <button class="edit-btn add-btn" title="Add asset" @click.stop="addAsset">
           ＋
         </button>
-        <button class="edit-btn duplicate-btn" title="Duplicate selected asset" @click="duplicateAsset" :disabled="!hasSelection">
+        <button class="edit-btn duplicate-btn" title="Duplicate selected asset" @click.stop="duplicateAsset" :disabled="!hasSelection">
           ❐
         </button>
-        <button class="edit-btn delete-btn" title="Delete selected asset" @click="deleteAsset" :disabled="!hasSelection">
+        <button class="edit-btn delete-btn" title="Delete selected asset" @click.stop="deleteAsset" :disabled="!hasSelection">
           ✕
         </button>
       </div>
@@ -52,7 +52,7 @@ const state = reactive<SceneState>({
   asset_transforms: props.initialState?.asset_transforms ?? [],
 })
 
-const activeMode = ref<'translate' | 'rotate' | 'scale' | null>(null)
+const activeMode = ref<'translate' | 'rotate' | 'scale' | null>('translate')
 const hasSelection = ref(false)
 let threeScene: ThreeScene | null = null
 
