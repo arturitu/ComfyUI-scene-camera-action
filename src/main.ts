@@ -518,6 +518,7 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
     const charType = String(v) === 'car' ? 'car' : 'human'
     exposed.setState({ actor_type: charType })
     writeStoredActingProps(node, { actor_type: charType })
+    notifyConnectedDirectingNodes(node)
   })
 
   wire('actor_speed', v => {

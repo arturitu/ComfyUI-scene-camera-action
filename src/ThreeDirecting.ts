@@ -57,31 +57,32 @@ export class ThreeDirecting {
 
   public loadActingData(actingDataJson: string): void {
     console.log('[ThreeDirecting] loadActingData called, payload length:', actingDataJson?.length ?? 0)
-    if (!actingDataJson || !actingDataJson.trim()) {
-      this.playbackController.setTrajectory([])
-      return
-    }
-    try {
-      const parsed = JSON.parse(actingDataJson)
-      if (typeof parsed === 'object' && parsed !== null) {
-        const actorType = parsed.actor_type || parsed.actorType || parsed.char_type
-        console.log('[ThreeDirecting] Parsed actor_type:', actorType)
-        if (actorType) {
-          this.buildActor(actorType)
+    let parsedActorType: string | undefined
+    if (actingDataJson && actingDataJson.trim()) {
+      try {
+        const parsed = JSON.parse(actingDataJson)
+        if (typeof parsed === 'object' && parsed !== null) {
+          parsedActorType = parsed.actor_type || parsed.actorType || parsed.char_type
+          console.log('[ThreeDirecting] Parsed actor_type:', parsedActorType)
+          if (parsed.scene_data && !this.connectedThreeActing) {
+            this.buildSceneFromData(parsed.scene_data)
+          }
         }
-        if (parsed.scene_data && !this.connectedThreeActing) {
-          this.buildSceneFromData(parsed.scene_data)
-        }
+      } catch (e) {
+        console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
       }
-    } catch (e) {
-      console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
+      this.playbackController.setTrajectory(actingDataJson)
+      this.playbackController.start()
+    } else {
+      this.playbackController.setTrajectory([])
     }
 
-    this.playbackController.setTrajectory(actingDataJson)
-    this.playbackController.start()
-    console.log('[ThreeDirecting] Loaded frames count:', this.playbackController.getTrajectory().length, 'maxDuration:', this.playbackController.getMaxDuration())
+    this.buildActor(parsedActorType)
+
     if (this.actorController) {
-      this.playbackController.evaluateAt(0, this.actorController)
+      if (this.playbackController.getTrajectory().length > 0) {
+        this.playbackController.evaluateAt(0, this.actorController)
+      }
       this.actorPosition.copy(this.actorController.position)
     }
     this.updateCamera()
@@ -380,12 +381,21 @@ export class ThreeDirecting {
   }
 
   private buildActor(type?: string): void {
-    const charType = type ?? 'human'
+    let charType = type
+    if (!charType && this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function') {
+      charType = this.connectedThreeActing.getActorType()
+    }
+    if (!charType) {
+      charType = 'human'
+    }
+    if (this.actorController && (this.actorController as any).getType?.() === charType) {
+      return
+    }
     if (this.actorController) {
       this.scene.remove(this.actorController.group)
       this.actorController.dispose()
     }
-    this.actorController = ActorFactory.create(charType)
+    this.actorController = ActorFactory.create(charType as 'human' | 'car')
     this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
     this.scene.add(this.actorController.group)
   }
