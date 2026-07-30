@@ -50,8 +50,7 @@ export class ThreeScene {
 
     this.state = {
       type: 'cube_scene',
-      num_assets: options.initialState?.num_assets ?? 1,
-      asset_transforms: options.initialState?.asset_transforms ?? [],
+      num_assets: options.initialState?.num_assets ?? 0,
       nodes: options.initialState?.nodes ?? [],
     }
 
@@ -229,10 +228,6 @@ export class ThreeScene {
   }
 
   public addNewAsset(): void {
-    if (!this.state.asset_transforms) {
-      this.state.asset_transforms = []
-    }
-
     const px = Number((Math.random() * 4 - 2).toFixed(3))
     const pz = Number((Math.random() * 4 - 2).toFixed(3))
 
@@ -549,15 +544,9 @@ export class ThreeScene {
   public setState(newState: Partial<SceneState>): void {
     if (newState.nodes !== undefined) {
       this.state.nodes = newState.nodes
-      this.state.asset_transforms = []
-      this.updateMesh()
-    } else if (newState.asset_transforms !== undefined) {
-      this.state.asset_transforms = newState.asset_transforms
-      this.state.nodes = []
       this.updateMesh()
     } else {
       this.state.nodes = []
-      this.state.asset_transforms = []
       this.updateMesh()
     }
     if (newState.num_assets !== undefined) {

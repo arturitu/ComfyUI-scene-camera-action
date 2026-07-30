@@ -7,6 +7,7 @@ import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
+import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -61,7 +62,7 @@ export class ThreeActing {
       actor_speed: options.initialState?.actor_speed ?? 1.0,
       duration: options.initialState?.duration ?? 8.0,
       motion_data: options.initialState?.motion_data ?? '',
-      scene_data: options.initialState?.scene_data ?? { type: 'custom', num_assets: 0, asset_transforms: [] } as any,
+      scene_data: options.initialState?.scene_data ?? { type: 'cube_scene', num_assets: 0, nodes: [] } as any,
     }
 
     this.initThreeJS()
@@ -229,7 +230,7 @@ export class ThreeActing {
           this.scene.add(this.mainLight.target)
         }
       })
-    } else if (this.state.scene_data && (this.state.scene_data.asset_transforms?.length || this.state.scene_data.num_assets)) {
+    } else if (this.state.scene_data && (this.state.scene_data.nodes?.length || this.state.scene_data.num_assets)) {
       // Reconstruct scene environment from scene_data state JSON
       this.clonedEnvGroup = new THREE.Group()
       this.scene.add(this.clonedEnvGroup)
@@ -274,17 +275,20 @@ export class ThreeActing {
       floorMesh.receiveShadow = true
       this.clonedEnvGroup.add(floorMesh)
 
-      const transforms = this.state.scene_data.asset_transforms ?? []
-      transforms.forEach((t) => {
-        const geometry = new THREE.BoxGeometry(1, 1, 1)
-        const mesh = new THREE.Mesh(geometry, config.createBlockMaterial())
-        mesh.position.set(t.px, t.py, t.pz)
-        mesh.rotation.set(t.rx, t.ry, t.rz)
-        mesh.scale.set(t.sx, t.sy, t.sz)
-        mesh.castShadow = true
-        mesh.receiveShadow = true
-        this.clonedEnvGroup!.add(mesh)
-        this.environmentMeshes.push(mesh)
+      const nodes = this.state.scene_data.nodes ?? []
+      const hierarchyManager = new SceneHierarchyManager()
+      nodes.forEach((nodeData) => {
+        const obj = hierarchyManager.buildNodeFromData(nodeData)
+        this.clonedEnvGroup!.add(obj)
+        if (obj instanceof THREE.Mesh) {
+          this.environmentMeshes.push(obj)
+        } else {
+          obj.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              this.environmentMeshes.push(child)
+            }
+          })
+        }
       })
     } else {
       // Fallback: Create simple grid and ambient/directional lights if no SceneNode is connected yet

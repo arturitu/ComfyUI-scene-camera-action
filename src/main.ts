@@ -151,7 +151,7 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   if (linkedScene) {
     try {
       const parsed = JSON.parse(linkedScene)
-      if (parsed && typeof parsed === 'object' && (parsed.nodes || parsed.asset_transforms)) {
+      if (parsed && typeof parsed === 'object' && parsed.nodes) {
         return parsed
       }
     } catch (e) { }
@@ -168,7 +168,6 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   return {
     type: 'cube_scene',
     num_assets: stored?.num_assets ?? 0,
-    asset_transforms: stored?.asset_transforms ?? [],
     nodes: stored?.nodes ?? [],
   }
 }

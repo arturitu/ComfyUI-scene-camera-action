@@ -73,28 +73,6 @@ export class SceneHierarchyManager {
         const obj = this.buildNodeFromData(nodeData)
         scene.add(obj)
       })
-    } else {
-      if (!state.asset_transforms) {
-        state.asset_transforms = []
-      }
-      state.asset_transforms.forEach((t, i) => {
-        if (t.sx === 1.0 && t.sy === 1.0 && t.sz === 1.0) {
-          if (i === 0) {
-            t.sx = 0.8; t.sz = 0.8; t.sy = 2.0
-          } else {
-            const seed1 = Math.sin(i * 12.9898) * 43758.5453
-            const seed2 = Math.sin(i * 78.233) * 43758.5453
-            const rand1 = seed1 - Math.floor(seed1)
-            const rand2 = seed2 - Math.floor(seed2)
-            t.sx = 0.6 + rand1 * 0.4
-            t.sz = 0.6 + rand2 * 0.4
-            t.sy = 1.0 + rand1 * 1.5
-          }
-        }
-        const mesh = this.createBlockMesh(t)
-        scene.add(mesh)
-        this.meshes.push(mesh)
-      })
     }
 
     this.syncState(scene, state, transformControlsHelper, null)
@@ -155,7 +133,6 @@ export class SceneHierarchyManager {
     onStateChange?: (state: SceneState) => void
   ): void {
     const nodes: SceneNode[] = []
-    const legacyTransforms: CubeTransform[] = []
 
     scene.children.forEach(child => {
       const node = this.serializeObjectToNode(child, transformControlsHelper, multiSelectionPivot)
@@ -164,26 +141,9 @@ export class SceneHierarchyManager {
       }
     })
 
-    this.meshes.forEach(mesh => {
-      const worldPos = new THREE.Vector3()
-      const worldQuat = new THREE.Quaternion()
-      const worldScale = new THREE.Vector3()
-      mesh.getWorldPosition(worldPos)
-      mesh.getWorldQuaternion(worldQuat)
-      mesh.getWorldScale(worldScale)
-      const euler = new THREE.Euler().setFromQuaternion(worldQuat)
-
-      legacyTransforms.push({
-        px: worldPos.x, py: worldPos.y, pz: worldPos.z,
-        rx: euler.x, ry: euler.y, rz: euler.z,
-        sx: worldScale.x, sy: worldScale.y, sz: worldScale.z
-      })
-    })
-
     const totalBlocks = nodes.reduce((sum, n) => sum + this.countBlocks(n), 0)
 
     state.nodes = nodes
-    state.asset_transforms = legacyTransforms
     state.num_assets = totalBlocks
 
     if (onStateChange) {

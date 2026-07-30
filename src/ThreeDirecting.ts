@@ -4,6 +4,7 @@ import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { PlaybackController } from './utils/PlaybackController'
+import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -342,16 +343,11 @@ export class ThreeDirecting {
     floorMesh.receiveShadow = true
     this.clonedEnvGroup.add(floorMesh)
 
-    const transforms: any[] = sceneData.asset_transforms ?? []
-    transforms.forEach((t: any) => {
-      const geo = new THREE.BoxGeometry(1, 1, 1)
-      const mesh = new THREE.Mesh(geo, config.createBlockMaterial())
-      mesh.position.set(t.px ?? 0, t.py ?? 0, t.pz ?? 0)
-      mesh.rotation.set(t.rx ?? 0, t.ry ?? 0, t.rz ?? 0)
-      mesh.scale.set(t.sx ?? 1, t.sy ?? 1, t.sz ?? 1)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-      this.clonedEnvGroup!.add(mesh)
+    const nodes: any[] = sceneData.nodes ?? []
+    const hierarchyManager = new SceneHierarchyManager()
+    nodes.forEach((nodeData: any) => {
+      const obj = hierarchyManager.buildNodeFromData(nodeData)
+      this.clonedEnvGroup!.add(obj)
     })
 
     this.scene.add(this.clonedEnvGroup)

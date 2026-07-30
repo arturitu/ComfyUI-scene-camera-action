@@ -101,7 +101,6 @@ const props = defineProps<{
 const state = reactive<SceneState>({
   type: 'cube_scene',
   num_assets: props.initialState?.num_assets ?? 0,
-  asset_transforms: props.initialState?.asset_transforms ?? [],
   nodes: props.initialState?.nodes ?? [],
   selectedPreset: props.initialState?.selectedPreset || props.initialPreset || '__NEW__',
 })
@@ -123,8 +122,7 @@ const normalizeStateString = (s: any): string => {
   return JSON.stringify({
     type: s.type || 'cube_scene',
     num_assets: s.num_assets ?? (s.nodes?.length || 0),
-    nodes: s.nodes || [],
-    asset_transforms: s.asset_transforms || []
+    nodes: s.nodes || []
   })
 }
 
@@ -148,7 +146,7 @@ const fetchPresetList = async () => {
             if (pRes.ok) {
               const origData = await pRes.json()
               originalPresetState = origData
-              if (props.initialState && (props.initialState.nodes?.length || props.initialState.asset_transforms?.length)) {
+              if (props.initialState && props.initialState.nodes?.length) {
                 isDirty.value = isStateDifferent(props.initialState, originalPresetState)
               } else {
                 setState(origData)

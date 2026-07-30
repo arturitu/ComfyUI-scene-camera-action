@@ -42,7 +42,6 @@ export type SceneNode = SceneBlockNode | SceneGroupNode
 export interface SceneState {
   type: string
   num_assets: number
-  asset_transforms?: CubeTransform[]
   nodes?: SceneNode[]
   selectedPreset?: string
 }
