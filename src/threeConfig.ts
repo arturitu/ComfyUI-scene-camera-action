@@ -54,6 +54,7 @@ export const EDGE_OPACITY = 0.30
 export const GROUND_Y = 0.0
 export const GRID_Y = 0.0
 export const FLOOR_Y = -0.002
+export const DEFAULT_ACTOR_ROTATION_Y = Math.PI / 2 // 90 degrees in radians (facing Right)
 
 // Floor Material Config
 export const FLOOR_COLOR = 0xdbdbdb

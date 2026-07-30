@@ -12,7 +12,7 @@ export abstract class BaseActor {
   public group: THREE.Group
   public position: THREE.Vector3 = new THREE.Vector3(0, config.GROUND_Y, 2)
   public velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
-  public rotationY: number = 0
+  public rotationY: number = config.DEFAULT_ACTOR_ROTATION_Y
   public isOnGround: boolean = true
   public colliderWireframe: THREE.Object3D | null = null
   public showCollider: boolean = false
@@ -21,11 +21,12 @@ export abstract class BaseActor {
     this.group = new THREE.Group()
     this.group.name = 'actorGroup'
     this.group.position.copy(this.position)
+    this.group.rotation.y = this.rotationY
   }
 
   public resetToOrigin(): void {
     this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = 0
+    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
     this.velocity.set(0, 0, 0)
     this.isOnGround = true
     this.group.position.copy(this.position)

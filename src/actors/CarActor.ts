@@ -51,8 +51,8 @@ export class CarActor extends BaseActor {
 
   constructor() {
     super()
-    this.rotationY = 0
-    this.group.rotation.y = 0
+    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
+    this.group.rotation.y = this.rotationY
     this.buildMesh()
   }
 
@@ -102,7 +102,8 @@ export class CarActor extends BaseActor {
 
   public override resetToOrigin(): void {
     this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = 0
+    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
+    this.group.rotation.y = this.rotationY
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
     this.prevSpeed = 0
