@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import type { SceneState, SceneNode, CubeTransform } from '../types'
-import { createBlockMaterial } from '../threeConfig'
+import * as config from '../threeConfig'
 
 export class SceneHierarchyManager {
   private meshes: THREE.Mesh[] = []
@@ -11,13 +11,24 @@ export class SceneHierarchyManager {
 
   public createBlockMesh(transform: CubeTransform): THREE.Mesh {
     const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const mesh = new THREE.Mesh(geometry, createBlockMaterial())
+    const mesh = new THREE.Mesh(geometry, config.createBlockMaterial())
 
     mesh.position.set(transform.px, transform.py, transform.pz)
     mesh.rotation.set(transform.rx, transform.ry, transform.rz)
     mesh.scale.set(transform.sx, transform.sy, transform.sz)
     mesh.castShadow = true
     mesh.receiveShadow = true
+
+    // Add subtle edge outlines for crisp shape definitions
+    const edgesGeo = new THREE.EdgesGeometry(geometry)
+    const edgeMat = new THREE.LineBasicMaterial({
+      color: config.EDGE_COLOR,
+      transparent: true,
+      opacity: config.EDGE_OPACITY,
+    })
+    const lineEdges = new THREE.LineSegments(edgesGeo, edgeMat)
+    lineEdges.name = '__edge_outline__'
+    mesh.add(lineEdges)
 
     return mesh
   }

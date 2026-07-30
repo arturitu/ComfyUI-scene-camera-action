@@ -238,6 +238,18 @@ export class ThreeActing {
       const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
       this.clonedEnvGroup.add(ambientLight)
 
+      const hemiLight = new THREE.HemisphereLight(
+        config.HEMI_SKY_COLOR,
+        config.HEMI_GROUND_COLOR,
+        config.HEMI_LIGHT_INTENSITY
+      )
+      hemiLight.position.set(0, 50, 0)
+      this.clonedEnvGroup.add(hemiLight)
+
+      const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
+      fillLight.position.copy(config.FILL_LIGHT_POSITION)
+      this.clonedEnvGroup.add(fillLight)
+
       this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
       this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
       this.mainLight.castShadow = true
@@ -343,6 +355,11 @@ export class ThreeActing {
     const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
     floorBox.translate(0, -0.05, 0)
     geometries.push(floorBox)
+
+    // Ensure all world matrices across group hierarchy are fully updated before extracting BVH geometries
+    if (this.clonedEnvGroup) {
+      this.clonedEnvGroup.updateMatrixWorld(true)
+    }
 
     // Add all asset meshes geometries transformed to their world positions
     this.environmentMeshes.forEach((mesh) => {

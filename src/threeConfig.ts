@@ -36,10 +36,19 @@ export const SHADOW_BIAS = -0.0001
 export const SHADOW_NORMAL_BIAS = 0.015
 export const SHADOW_FRUSTUM_SIZE = 15 // Covers 30x30m around the target
 
+// Hemisphere Light Config
+export const HEMI_SKY_COLOR = 0xffffff
+export const HEMI_GROUND_COLOR = 0x666677
+export const HEMI_LIGHT_INTENSITY = 0.5
+
 // Fill Light Config
-export const FILL_LIGHT_COLOR = 0x3d4974
-export const FILL_LIGHT_INTENSITY = 0.3
-export const FILL_LIGHT_POSITION = new THREE.Vector3(-5, 3, -5)
+export const FILL_LIGHT_COLOR = 0x8fa2c4
+export const FILL_LIGHT_INTENSITY = 0.45
+export const FILL_LIGHT_POSITION = new THREE.Vector3(-15, 20, -15)
+
+// Edge Outline Config
+export const EDGE_COLOR = 0xffffff
+export const EDGE_OPACITY = 0.30
 
 // Ground and Floor Height Config
 export const GROUND_Y = 0.0

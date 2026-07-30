@@ -1,1159 +1,1712 @@
 {
   "type": "cube_scene",
-  "num_assets": 54,
+  "num_assets": 92,
   "nodes": [
     {
-      "id": "group_track_straight_main",
+      "id": "grp_main_straight",
       "type": "group",
-      "name": "Main Straight",
+      "name": "Main Straight Track Limits",
       "transform": {
-        "px": 0,
-        "py": 0,
-        "pz": 0,
+        "px": 6.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "road_main_straight",
-          "type": "block",
-          "name": "Road Surface",
-          "transform": {
-            "px": 0,
-            "py": 0.05,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 6,
-            "sy": 0.1,
-            "sz": 30
-          }
-        },
-        {
-          "id": "barrier_main_left",
-          "type": "block",
-          "name": "Left Barrier",
-          "transform": {
-            "px": -3.3,
-            "py": 0.4,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.3,
-            "sy": 0.8,
-            "sz": 30
-          }
-        },
-        {
-          "id": "barrier_main_right",
-          "type": "block",
-          "name": "Right Barrier",
-          "transform": {
-            "px": 3.3,
-            "py": 0.4,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.3,
-            "sy": 0.8,
-            "sz": 30
-          }
-        }
-      ]
-    },
-    {
-      "id": "group_track_back_straight",
-      "type": "group",
-      "name": "Back Straight",
-      "transform": {
-        "px": -16,
-        "py": 0,
-        "pz": 0,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "road_back_straight",
-          "type": "block",
-          "name": "Road Surface",
-          "transform": {
-            "px": 0,
-            "py": 0.05,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 6,
-            "sy": 0.1,
-            "sz": 30
-          }
-        },
-        {
-          "id": "barrier_back_left",
-          "type": "block",
-          "name": "Left Barrier",
-          "transform": {
-            "px": -3.3,
-            "py": 0.4,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.3,
-            "sy": 0.8,
-            "sz": 30
-          }
-        },
-        {
-          "id": "barrier_back_right",
-          "type": "block",
-          "name": "Right Barrier",
-          "transform": {
-            "px": 3.3,
-            "py": 0.4,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.3,
-            "sy": 0.8,
-            "sz": 30
-          }
-        }
-      ]
-    },
-    {
-      "id": "group_turn_north",
-      "type": "group",
-      "name": "North Turn",
-      "transform": {
-        "px": -8,
-        "py": 0,
-        "pz": -15,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "road_turn_north",
-          "type": "block",
-          "name": "Turn Road",
-          "transform": {
-            "px": 0,
-            "py": 0.05,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 22,
-            "sy": 0.1,
-            "sz": 6
-          }
-        },
-        {
-          "id": "barrier_turn_north_outer",
+          "id": "b_main_outer",
           "type": "block",
           "name": "Outer Barrier",
           "transform": {
-            "px": 0,
+            "px": 2.5,
             "py": 0.4,
-            "pz": -3.3,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 22,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 0.3
+            "sz": 20.0
           }
         },
         {
-          "id": "barrier_turn_north_inner",
+          "id": "b_main_inner",
           "type": "block",
           "name": "Inner Barrier",
           "transform": {
-            "px": 0,
+            "px": -2.5,
             "py": 0.4,
-            "pz": 3.3,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 22,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 0.3
+            "sz": 20.0
+          }
+        },
+        {
+          "id": "k_main_outer",
+          "type": "block",
+          "name": "Outer Kerb",
+          "transform": {
+            "px": 2.2,
+            "py": 0.05,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 0.1,
+            "sz": 20.0
+          }
+        },
+        {
+          "id": "k_main_inner",
+          "type": "block",
+          "name": "Inner Kerb",
+          "transform": {
+            "px": -2.2,
+            "py": 0.05,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 0.1,
+            "sz": 20.0
           }
         }
       ]
     },
     {
-      "id": "group_turn_south",
+      "id": "grp_back_straight",
       "type": "group",
-      "name": "South Turn",
+      "name": "Back Straight Track Limits",
       "transform": {
-        "px": -8,
-        "py": 0,
-        "pz": 15,
+        "px": -6.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "road_turn_south",
-          "type": "block",
-          "name": "Turn Road",
-          "transform": {
-            "px": 0,
-            "py": 0.05,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 22,
-            "sy": 0.1,
-            "sz": 6
-          }
-        },
-        {
-          "id": "barrier_turn_south_outer",
+          "id": "b_back_outer",
           "type": "block",
           "name": "Outer Barrier",
           "transform": {
-            "px": 0,
+            "px": -2.5,
             "py": 0.4,
-            "pz": 3.3,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 22,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 0.3
+            "sz": 20.0
           }
         },
         {
-          "id": "barrier_turn_south_inner",
+          "id": "b_back_inner",
           "type": "block",
           "name": "Inner Barrier",
           "transform": {
-            "px": 0,
+            "px": 2.5,
             "py": 0.4,
-            "pz": -3.3,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 22,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 0.3
-          }
-        }
-      ]
-    },
-    {
-      "id": "group_ramp_1",
-      "type": "group",
-      "name": "Ramp North",
-      "transform": {
-        "px": 0,
-        "py": 0,
-        "pz": -8,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "ramp_1_slope",
-          "type": "block",
-          "name": "Ramp Slope",
-          "transform": {
-            "px": 0,
-            "py": 0.6,
-            "pz": 0,
-            "rx": -0.25,
-            "ry": 0,
-            "rz": 0,
-            "sx": 5,
-            "sy": 0.15,
-            "sz": 5
+            "sz": 20.0
           }
         },
         {
-          "id": "ramp_1_support_left",
+          "id": "k_back_outer",
           "type": "block",
-          "name": "Left Support",
+          "name": "Outer Kerb",
           "transform": {
             "px": -2.2,
-            "py": 0.4,
-            "pz": 0,
-            "rx": -0.25,
+            "py": 0.05,
+            "pz": 0.0,
+            "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 0.2,
-            "sy": 0.8,
-            "sz": 5
+            "sx": 0.4,
+            "sy": 0.1,
+            "sz": 20.0
           }
         },
         {
-          "id": "ramp_1_support_right",
+          "id": "k_back_inner",
           "type": "block",
-          "name": "Right Support",
+          "name": "Inner Kerb",
           "transform": {
             "px": 2.2,
-            "py": 0.4,
-            "pz": 0,
-            "rx": -0.25,
+            "py": 0.05,
+            "pz": 0.0,
+            "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 0.2,
-            "sy": 0.8,
-            "sz": 5
+            "sx": 0.4,
+            "sy": 0.1,
+            "sz": 20.0
           }
         }
       ]
     },
     {
-      "id": "group_ramp_2",
+      "id": "grp_north_curve",
       "type": "group",
-      "name": "Ramp South",
+      "name": "North Hairpin Curve",
       "transform": {
-        "px": 0,
-        "py": 0,
-        "pz": 8,
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "ramp_2_slope",
+          "id": "b_north_out_0",
           "type": "block",
-          "name": "Ramp Slope",
+          "name": "Outer Wall 1",
           "transform": {
-            "px": 0,
-            "py": 0.6,
-            "pz": 0,
-            "rx": 0.25,
-            "ry": 0,
+            "px": 8.5,
+            "py": 0.4,
+            "pz": -10.0,
+            "rx": 0,
+            "ry": -3.142,
             "rz": 0,
-            "sx": 5,
-            "sy": 0.15,
-            "sz": 5
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
           }
         },
         {
-          "id": "ramp_2_support_left",
+          "id": "b_north_in_0",
           "type": "block",
-          "name": "Left Support",
+          "name": "Inner Wall 1",
           "transform": {
-            "px": -2.2,
+            "px": 3.5,
             "py": 0.4,
-            "pz": 0,
-            "rx": 0.25,
-            "ry": 0,
+            "pz": -10.0,
+            "rx": 0,
+            "ry": -3.142,
             "rz": 0,
-            "sx": 0.2,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 5
+            "sz": 1.155
           }
         },
         {
-          "id": "ramp_2_support_right",
+          "id": "b_north_out_1",
           "type": "block",
-          "name": "Right Support",
+          "name": "Outer Wall 2",
           "transform": {
-            "px": 2.2,
+            "px": 8.084,
             "py": 0.4,
-            "pz": 0,
-            "rx": 0.25,
-            "ry": 0,
+            "pz": -12.627,
+            "rx": 0,
+            "ry": -2.827,
             "rz": 0,
-            "sx": 0.2,
+            "sx": 0.3,
             "sy": 0.8,
-            "sz": 5
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_1",
+          "type": "block",
+          "name": "Inner Wall 2",
+          "transform": {
+            "px": 3.329,
+            "py": 0.4,
+            "pz": -11.082,
+            "rx": 0,
+            "ry": -2.827,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_2",
+          "type": "block",
+          "name": "Outer Wall 3",
+          "transform": {
+            "px": 6.877,
+            "py": 0.4,
+            "pz": -14.996,
+            "rx": 0,
+            "ry": -2.513,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_2",
+          "type": "block",
+          "name": "Inner Wall 3",
+          "transform": {
+            "px": 2.832,
+            "py": 0.4,
+            "pz": -12.057,
+            "rx": 0,
+            "ry": -2.513,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_3",
+          "type": "block",
+          "name": "Outer Wall 4",
+          "transform": {
+            "px": 4.996,
+            "py": 0.4,
+            "pz": -16.877,
+            "rx": 0,
+            "ry": -2.199,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_3",
+          "type": "block",
+          "name": "Inner Wall 4",
+          "transform": {
+            "px": 2.057,
+            "py": 0.4,
+            "pz": -12.832,
+            "rx": 0,
+            "ry": -2.199,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_4",
+          "type": "block",
+          "name": "Outer Wall 5",
+          "transform": {
+            "px": 2.627,
+            "py": 0.4,
+            "pz": -18.084,
+            "rx": 0,
+            "ry": -1.885,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_4",
+          "type": "block",
+          "name": "Inner Wall 5",
+          "transform": {
+            "px": 1.082,
+            "py": 0.4,
+            "pz": -13.329,
+            "rx": 0,
+            "ry": -1.885,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_5",
+          "type": "block",
+          "name": "Outer Wall 6",
+          "transform": {
+            "px": 0.0,
+            "py": 0.4,
+            "pz": -18.5,
+            "rx": 0,
+            "ry": -1.571,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_5",
+          "type": "block",
+          "name": "Inner Wall 6",
+          "transform": {
+            "px": 0.0,
+            "py": 0.4,
+            "pz": -13.5,
+            "rx": 0,
+            "ry": -1.571,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_6",
+          "type": "block",
+          "name": "Outer Wall 7",
+          "transform": {
+            "px": -2.627,
+            "py": 0.4,
+            "pz": -18.084,
+            "rx": 0,
+            "ry": -1.257,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_6",
+          "type": "block",
+          "name": "Inner Wall 7",
+          "transform": {
+            "px": -1.082,
+            "py": 0.4,
+            "pz": -13.329,
+            "rx": 0,
+            "ry": -1.257,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_7",
+          "type": "block",
+          "name": "Outer Wall 8",
+          "transform": {
+            "px": -4.996,
+            "py": 0.4,
+            "pz": -16.877,
+            "rx": 0,
+            "ry": -0.942,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_7",
+          "type": "block",
+          "name": "Inner Wall 8",
+          "transform": {
+            "px": -2.057,
+            "py": 0.4,
+            "pz": -12.832,
+            "rx": 0,
+            "ry": -0.942,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_8",
+          "type": "block",
+          "name": "Outer Wall 9",
+          "transform": {
+            "px": -6.877,
+            "py": 0.4,
+            "pz": -14.996,
+            "rx": 0,
+            "ry": -0.628,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_8",
+          "type": "block",
+          "name": "Inner Wall 9",
+          "transform": {
+            "px": -2.832,
+            "py": 0.4,
+            "pz": -12.057,
+            "rx": 0,
+            "ry": -0.628,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_9",
+          "type": "block",
+          "name": "Outer Wall 10",
+          "transform": {
+            "px": -8.084,
+            "py": 0.4,
+            "pz": -12.627,
+            "rx": 0,
+            "ry": -0.314,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_9",
+          "type": "block",
+          "name": "Inner Wall 10",
+          "transform": {
+            "px": -3.329,
+            "py": 0.4,
+            "pz": -11.082,
+            "rx": 0,
+            "ry": -0.314,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_north_out_10",
+          "type": "block",
+          "name": "Outer Wall 11",
+          "transform": {
+            "px": -8.5,
+            "py": 0.4,
+            "pz": -10.0,
+            "rx": 0,
+            "ry": -0.0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_north_in_10",
+          "type": "block",
+          "name": "Inner Wall 11",
+          "transform": {
+            "px": -3.5,
+            "py": 0.4,
+            "pz": -10.0,
+            "rx": 0,
+            "ry": -0.0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "tire_north_0",
+          "type": "block",
+          "name": "Apex Tire Stack 1",
+          "transform": {
+            "px": 4.177,
+            "py": 0.4,
+            "pz": -18.197,
+            "rx": 0,
+            "ry": -2.042,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "tire_north_1",
+          "type": "block",
+          "name": "Apex Tire Stack 2",
+          "transform": {
+            "px": 2.905,
+            "py": 0.4,
+            "pz": -18.729,
+            "rx": 0,
+            "ry": -1.892,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "tire_north_2",
+          "type": "block",
+          "name": "Apex Tire Stack 3",
+          "transform": {
+            "px": 1.568,
+            "py": 0.4,
+            "pz": -19.065,
+            "rx": 0,
+            "ry": -1.742,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
           }
         }
       ]
     },
     {
-      "id": "group_ramp_back",
+      "id": "grp_south_curve",
       "type": "group",
-      "name": "Ramp Back Straight",
+      "name": "South Hairpin Curve",
       "transform": {
-        "px": -16,
-        "py": 0,
-        "pz": 3,
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "ramp_back_slope",
+          "id": "b_south_out_0",
           "type": "block",
-          "name": "Ramp Slope",
+          "name": "Outer Wall 1",
           "transform": {
-            "px": 0,
-            "py": 0.8,
-            "pz": 0,
-            "rx": 0.2,
-            "ry": 0,
+            "px": 8.5,
+            "py": 0.4,
+            "pz": 10.0,
+            "rx": 0,
+            "ry": -0.0,
             "rz": 0,
-            "sx": 5,
-            "sy": 0.15,
-            "sz": 6
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
           }
         },
         {
-          "id": "ramp_back_support_left",
+          "id": "b_south_in_0",
           "type": "block",
-          "name": "Left Support",
+          "name": "Inner Wall 1",
           "transform": {
-            "px": -2.2,
+            "px": 3.5,
+            "py": 0.4,
+            "pz": 10.0,
+            "rx": 0,
+            "ry": -0.0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_1",
+          "type": "block",
+          "name": "Outer Wall 2",
+          "transform": {
+            "px": 8.084,
+            "py": 0.4,
+            "pz": 12.627,
+            "rx": 0,
+            "ry": -0.314,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_1",
+          "type": "block",
+          "name": "Inner Wall 2",
+          "transform": {
+            "px": 3.329,
+            "py": 0.4,
+            "pz": 11.082,
+            "rx": 0,
+            "ry": -0.314,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_2",
+          "type": "block",
+          "name": "Outer Wall 3",
+          "transform": {
+            "px": 6.877,
+            "py": 0.4,
+            "pz": 14.996,
+            "rx": 0,
+            "ry": -0.628,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_2",
+          "type": "block",
+          "name": "Inner Wall 3",
+          "transform": {
+            "px": 2.832,
+            "py": 0.4,
+            "pz": 12.057,
+            "rx": 0,
+            "ry": -0.628,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_3",
+          "type": "block",
+          "name": "Outer Wall 4",
+          "transform": {
+            "px": 4.996,
+            "py": 0.4,
+            "pz": 16.877,
+            "rx": 0,
+            "ry": -0.942,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_3",
+          "type": "block",
+          "name": "Inner Wall 4",
+          "transform": {
+            "px": 2.057,
+            "py": 0.4,
+            "pz": 12.832,
+            "rx": 0,
+            "ry": -0.942,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_4",
+          "type": "block",
+          "name": "Outer Wall 5",
+          "transform": {
+            "px": 2.627,
+            "py": 0.4,
+            "pz": 18.084,
+            "rx": 0,
+            "ry": -1.257,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_4",
+          "type": "block",
+          "name": "Inner Wall 5",
+          "transform": {
+            "px": 1.082,
+            "py": 0.4,
+            "pz": 13.329,
+            "rx": 0,
+            "ry": -1.257,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_5",
+          "type": "block",
+          "name": "Outer Wall 6",
+          "transform": {
+            "px": 0.0,
+            "py": 0.4,
+            "pz": 18.5,
+            "rx": 0,
+            "ry": -1.571,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_5",
+          "type": "block",
+          "name": "Inner Wall 6",
+          "transform": {
+            "px": 0.0,
+            "py": 0.4,
+            "pz": 13.5,
+            "rx": 0,
+            "ry": -1.571,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_6",
+          "type": "block",
+          "name": "Outer Wall 7",
+          "transform": {
+            "px": -2.627,
+            "py": 0.4,
+            "pz": 18.084,
+            "rx": 0,
+            "ry": -1.885,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_6",
+          "type": "block",
+          "name": "Inner Wall 7",
+          "transform": {
+            "px": -1.082,
+            "py": 0.4,
+            "pz": 13.329,
+            "rx": 0,
+            "ry": -1.885,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_7",
+          "type": "block",
+          "name": "Outer Wall 8",
+          "transform": {
+            "px": -4.996,
+            "py": 0.4,
+            "pz": 16.877,
+            "rx": 0,
+            "ry": -2.199,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_7",
+          "type": "block",
+          "name": "Inner Wall 8",
+          "transform": {
+            "px": -2.057,
+            "py": 0.4,
+            "pz": 12.832,
+            "rx": 0,
+            "ry": -2.199,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_8",
+          "type": "block",
+          "name": "Outer Wall 9",
+          "transform": {
+            "px": -6.877,
+            "py": 0.4,
+            "pz": 14.996,
+            "rx": 0,
+            "ry": -2.513,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_8",
+          "type": "block",
+          "name": "Inner Wall 9",
+          "transform": {
+            "px": -2.832,
+            "py": 0.4,
+            "pz": 12.057,
+            "rx": 0,
+            "ry": -2.513,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_9",
+          "type": "block",
+          "name": "Outer Wall 10",
+          "transform": {
+            "px": -8.084,
+            "py": 0.4,
+            "pz": 12.627,
+            "rx": 0,
+            "ry": -2.827,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_9",
+          "type": "block",
+          "name": "Inner Wall 10",
+          "transform": {
+            "px": -3.329,
+            "py": 0.4,
+            "pz": 11.082,
+            "rx": 0,
+            "ry": -2.827,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "b_south_out_10",
+          "type": "block",
+          "name": "Outer Wall 11",
+          "transform": {
+            "px": -8.5,
+            "py": 0.4,
+            "pz": 10.0,
+            "rx": 0,
+            "ry": -3.142,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 2.804
+          }
+        },
+        {
+          "id": "b_south_in_10",
+          "type": "block",
+          "name": "Inner Wall 11",
+          "transform": {
+            "px": -3.5,
+            "py": 0.4,
+            "pz": 10.0,
+            "rx": 0,
+            "ry": -3.142,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 1.155
+          }
+        },
+        {
+          "id": "tire_south_0",
+          "type": "block",
+          "name": "Apex Tire Stack 1",
+          "transform": {
+            "px": 4.177,
+            "py": 0.4,
+            "pz": 18.197,
+            "rx": 0,
+            "ry": -1.1,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "tire_south_1",
+          "type": "block",
+          "name": "Apex Tire Stack 2",
+          "transform": {
+            "px": 2.905,
+            "py": 0.4,
+            "pz": 18.729,
+            "rx": 0,
+            "ry": -1.25,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "tire_south_2",
+          "type": "block",
+          "name": "Apex Tire Stack 3",
+          "transform": {
+            "px": 1.568,
+            "py": 0.4,
+            "pz": 19.065,
+            "rx": 0,
+            "ry": -1.4,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.8,
+            "sz": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_ramp_main",
+      "type": "group",
+      "name": "Main Straight Jump Ramp",
+      "transform": {
+        "px": 6.0,
+        "py": 0.0,
+        "pz": 2.0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "ramp1_wedge",
+          "type": "block",
+          "name": "Launch Incline",
+          "transform": {
+            "px": 0.0,
             "py": 0.5,
-            "pz": 0,
-            "rx": 0.2,
+            "pz": 0.0,
+            "rx": -0.22,
             "ry": 0,
             "rz": 0,
-            "sx": 0.2,
-            "sy": 1,
-            "sz": 6
+            "sx": 4.2,
+            "sy": 0.15,
+            "sz": 5.0
           }
         },
         {
-          "id": "ramp_back_support_right",
+          "id": "ramp1_rail_l",
           "type": "block",
-          "name": "Right Support",
+          "name": "Left Safety Rail",
           "transform": {
-            "px": 2.2,
-            "py": 0.5,
-            "pz": 0,
-            "rx": 0.2,
+            "px": -2.25,
+            "py": 0.55,
+            "pz": 0.0,
+            "rx": -0.22,
             "ry": 0,
             "rz": 0,
             "sx": 0.2,
-            "sy": 1,
-            "sz": 6
+            "sy": 0.7,
+            "sz": 5.0
+          }
+        },
+        {
+          "id": "ramp1_rail_r",
+          "type": "block",
+          "name": "Right Safety Rail",
+          "transform": {
+            "px": 2.25,
+            "py": 0.55,
+            "pz": 0.0,
+            "rx": -0.22,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.7,
+            "sz": 5.0
           }
         }
       ]
     },
     {
-      "id": "group_start_finish",
+      "id": "grp_ramp_back",
       "type": "group",
-      "name": "Start Finish Line",
+      "name": "Back Straight Speed Ramp",
       "transform": {
-        "px": 0,
-        "py": 0,
-        "pz": 13,
+        "px": -6.0,
+        "py": 0.0,
+        "pz": -2.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "start_pillar_left",
+          "id": "ramp2_wedge",
+          "type": "block",
+          "name": "Launch Incline",
+          "transform": {
+            "px": 0.0,
+            "py": 0.65,
+            "pz": 0.0,
+            "rx": 0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.2,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "ramp2_rail_l",
+          "type": "block",
+          "name": "Left Safety Rail",
+          "transform": {
+            "px": -2.25,
+            "py": 0.7,
+            "pz": 0.0,
+            "rx": 0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.7,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "ramp2_rail_r",
+          "type": "block",
+          "name": "Right Safety Rail",
+          "transform": {
+            "px": 2.25,
+            "py": 0.7,
+            "pz": 0.0,
+            "rx": 0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.7,
+            "sz": 4.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_chicane",
+      "type": "group",
+      "name": "Back Straight Chicane",
+      "transform": {
+        "px": -6.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "chicane_curb_left",
+          "type": "block",
+          "name": "Left Chicane Curb",
+          "transform": {
+            "px": -1.5,
+            "py": 0.2,
+            "pz": -5.0,
+            "rx": 0,
+            "ry": 0.2,
+            "rz": 0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "chicane_curb_right",
+          "type": "block",
+          "name": "Right Chicane Curb",
+          "transform": {
+            "px": 1.5,
+            "py": 0.2,
+            "pz": -2.0,
+            "rx": 0,
+            "ry": -0.2,
+            "rz": 0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 2.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_start_finish",
+      "type": "group",
+      "name": "Start Finish Line Gantry",
+      "transform": {
+        "px": 6.0,
+        "py": 0.0,
+        "pz": 8.0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "gantry_pillar_l",
           "type": "block",
           "name": "Left Pillar",
           "transform": {
-            "px": -3,
+            "px": -3.2,
             "py": 2.5,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.4,
-            "sy": 5,
+            "sy": 5.0,
             "sz": 0.4
           }
         },
         {
-          "id": "start_pillar_right",
+          "id": "gantry_pillar_r",
           "type": "block",
           "name": "Right Pillar",
           "transform": {
-            "px": 3,
+            "px": 3.2,
             "py": 2.5,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.4,
-            "sy": 5,
+            "sy": 5.0,
             "sz": 0.4
           }
         },
         {
-          "id": "start_banner",
+          "id": "gantry_top_beam",
           "type": "block",
-          "name": "Banner Beam",
+          "name": "Overhead Beam",
           "transform": {
-            "px": 0,
+            "px": 0.0,
             "py": 5.2,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 6.4,
+            "sx": 6.8,
             "sy": 0.6,
             "sz": 0.5
+          }
+        },
+        {
+          "id": "gantry_clock",
+          "type": "block",
+          "name": "Timing Display",
+          "transform": {
+            "px": 0.0,
+            "py": 4.6,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.0,
+            "sy": 0.7,
+            "sz": 0.2
           }
         }
       ]
     },
     {
-      "id": "group_grandstand",
+      "id": "grp_grandstand",
       "type": "group",
-      "name": "Grandstand",
+      "name": "Main Grandstand",
       "transform": {
-        "px": 6,
-        "py": 0,
-        "pz": 5,
+        "px": 12.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
           "id": "stand_tier_1",
           "type": "block",
-          "name": "Tier 1",
+          "name": "Seating Tier 1",
           "transform": {
-            "px": 0,
-            "py": 0.5,
-            "pz": 0,
+            "px": 0.0,
+            "py": 0.4,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 3,
-            "sy": 1,
-            "sz": 10
+            "sx": 2.5,
+            "sy": 0.8,
+            "sz": 14.0
           }
         },
         {
           "id": "stand_tier_2",
           "type": "block",
-          "name": "Tier 2",
+          "name": "Seating Tier 2",
           "transform": {
-            "px": 1.2,
-            "py": 1.25,
-            "pz": 0,
+            "px": 1.5,
+            "py": 1.1,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 2,
-            "sy": 2.5,
-            "sz": 10
+            "sx": 2.5,
+            "sy": 2.2,
+            "sz": 14.0
           }
         },
         {
           "id": "stand_tier_3",
           "type": "block",
-          "name": "Tier 3",
+          "name": "Seating Tier 3",
           "transform": {
-            "px": 2.2,
-            "py": 2,
-            "pz": 0,
+            "px": 3.0,
+            "py": 1.8,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 1.5,
-            "sy": 4,
-            "sz": 10
+            "sx": 2.5,
+            "sy": 3.6,
+            "sz": 14.0
           }
         },
         {
           "id": "stand_roof",
           "type": "block",
-          "name": "Roof",
+          "name": "Cantilever Roof",
           "transform": {
-            "px": 1,
-            "py": 4.3,
-            "pz": 0,
+            "px": 1.0,
+            "py": 4.2,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
-            "rz": 0.1,
-            "sx": 5,
+            "rz": 0.12,
+            "sx": 7.0,
             "sy": 0.15,
-            "sz": 11
+            "sz": 15.0
+          }
+        },
+        {
+          "id": "stand_pillar_back_l",
+          "type": "block",
+          "name": "Back Column L",
+          "transform": {
+            "px": 4.0,
+            "py": 2.0,
+            "pz": -6.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 4.0,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "stand_pillar_back_r",
+          "type": "block",
+          "name": "Back Column R",
+          "transform": {
+            "px": 4.0,
+            "py": 2.0,
+            "pz": 6.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 4.0,
+            "sz": 0.4
           }
         }
       ]
     },
     {
-      "id": "group_pit_lane",
+      "id": "grp_pit_lane",
       "type": "group",
-      "name": "Pit Lane Building",
+      "name": "Pit Lane & Garages",
       "transform": {
-        "px": 5.5,
-        "py": 0,
-        "pz": -6,
+        "px": -13.0,
+        "py": 0.0,
+        "pz": 0.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "pit_body",
+          "id": "pit_wall_sep",
           "type": "block",
-          "name": "Building Body",
+          "name": "Pit Lane Wall",
           "transform": {
-            "px": 0,
-            "py": 1.5,
-            "pz": 0,
+            "px": 4.0,
+            "py": 0.4,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 3,
-            "sy": 3,
-            "sz": 8
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 16.0
           }
         },
         {
-          "id": "pit_roof",
+          "id": "pit_building_main",
           "type": "block",
-          "name": "Roof Overhang",
+          "name": "Garage Main Structure",
           "transform": {
-            "px": -0.5,
-            "py": 3.15,
-            "pz": 0,
+            "px": -2.0,
+            "py": 1.75,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 4.5,
-            "sy": 0.3,
-            "sz": 9
+            "sy": 3.5,
+            "sz": 14.0
           }
         },
         {
-          "id": "pit_door_1",
+          "id": "pit_roof_canopy",
+          "type": "block",
+          "name": "Canopy Overhang",
+          "transform": {
+            "px": -0.5,
+            "py": 3.6,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6.0,
+            "sy": 0.2,
+            "sz": 15.0
+          }
+        },
+        {
+          "id": "garage_door_1",
           "type": "block",
           "name": "Garage Door 1",
           "transform": {
-            "px": -1.5,
+            "px": 0.2,
             "py": 1.1,
-            "pz": -2.5,
+            "pz": -4.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.1,
             "sy": 2.2,
-            "sz": 2
+            "sz": 2.8
           }
         },
         {
-          "id": "pit_door_2",
+          "id": "garage_door_2",
           "type": "block",
           "name": "Garage Door 2",
           "transform": {
-            "px": -1.5,
+            "px": 0.2,
             "py": 1.1,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.1,
             "sy": 2.2,
-            "sz": 2
+            "sz": 2.8
           }
         },
         {
-          "id": "pit_door_3",
+          "id": "garage_door_3",
           "type": "block",
           "name": "Garage Door 3",
           "transform": {
-            "px": -1.5,
+            "px": 0.2,
             "py": 1.1,
-            "pz": 2.5,
+            "pz": 4.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.1,
             "sy": 2.2,
-            "sz": 2
+            "sz": 2.8
           }
         }
       ]
     },
     {
-      "id": "group_tire_wall_1",
+      "id": "grp_control_tower",
       "type": "group",
-      "name": "Tire Wall North Turn",
+      "name": "Race Control Tower",
       "transform": {
-        "px": -2,
-        "py": 0,
-        "pz": -13.5,
+        "px": 12.0,
+        "py": 0.0,
+        "pz": 10.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "tire_stack_n1",
+          "id": "tower_base",
           "type": "block",
-          "name": "Tire Stack 1",
+          "name": "Tower Shaft",
           "transform": {
-            "px": 0,
-            "py": 0.35,
-            "pz": 0,
+            "px": 0.0,
+            "py": 3.0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        },
-        {
-          "id": "tire_stack_n2",
-          "type": "block",
-          "name": "Tire Stack 2",
-          "transform": {
-            "px": 1.2,
-            "py": 0.35,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        },
-        {
-          "id": "tire_stack_n3",
-          "type": "block",
-          "name": "Tire Stack 3",
-          "transform": {
-            "px": 2.4,
-            "py": 0.35,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        }
-      ]
-    },
-    {
-      "id": "group_tire_wall_2",
-      "type": "group",
-      "name": "Tire Wall South Turn",
-      "transform": {
-        "px": -14,
-        "py": 0,
-        "pz": 13.5,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "tire_stack_s1",
-          "type": "block",
-          "name": "Tire Stack 1",
-          "transform": {
-            "px": 0,
-            "py": 0.35,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        },
-        {
-          "id": "tire_stack_s2",
-          "type": "block",
-          "name": "Tire Stack 2",
-          "transform": {
-            "px": 1.2,
-            "py": 0.35,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        },
-        {
-          "id": "tire_stack_s3",
-          "type": "block",
-          "name": "Tire Stack 3",
-          "transform": {
-            "px": 2.4,
-            "py": 0.35,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1,
-            "sy": 0.7,
-            "sz": 1
-          }
-        }
-      ]
-    },
-    {
-      "id": "cone_1",
-      "type": "block",
-      "name": "Traffic Cone 1",
-      "transform": {
-        "px": -1.5,
-        "py": 0.25,
-        "pz": -4,
-        "rx": 0,
-        "ry": 0.3,
-        "rz": 0,
-        "sx": 0.3,
-        "sy": 0.5,
-        "sz": 0.3
-      }
-    },
-    {
-      "id": "cone_2",
-      "type": "block",
-      "name": "Traffic Cone 2",
-      "transform": {
-        "px": 1.5,
-        "py": 0.25,
-        "pz": -4,
-        "rx": 0,
-        "ry": 0.6,
-        "rz": 0,
-        "sx": 0.3,
-        "sy": 0.5,
-        "sz": 0.3
-      }
-    },
-    {
-      "id": "cone_3",
-      "type": "block",
-      "name": "Traffic Cone 3",
-      "transform": {
-        "px": -1.5,
-        "py": 0.25,
-        "pz": 4,
-        "rx": 0,
-        "ry": 0.1,
-        "rz": 0,
-        "sx": 0.3,
-        "sy": 0.5,
-        "sz": 0.3
-      }
-    },
-    {
-      "id": "cone_4",
-      "type": "block",
-      "name": "Traffic Cone 4",
-      "transform": {
-        "px": 1.5,
-        "py": 0.25,
-        "pz": 4,
-        "rx": 0,
-        "ry": 0.8,
-        "rz": 0,
-        "sx": 0.3,
-        "sy": 0.5,
-        "sz": 0.3
-      }
-    },
-    {
-      "id": "group_control_tower",
-      "type": "group",
-      "name": "Control Tower",
-      "transform": {
-        "px": 8,
-        "py": 0,
-        "pz": 13,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "tower_body",
-          "type": "block",
-          "name": "Tower Body",
-          "transform": {
-            "px": 0,
-            "py": 3,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 2.5,
-            "sy": 6,
-            "sz": 2.5
+            "sx": 3.0,
+            "sy": 6.0,
+            "sz": 3.0
           }
         },
         {
           "id": "tower_cabin",
           "type": "block",
-          "name": "Observation Cabin",
+          "name": "Control Glass Cabin",
           "transform": {
-            "px": 0,
-            "py": 6.5,
-            "pz": 0,
+            "px": 0.0,
+            "py": 6.75,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 3.5,
+            "sx": 4.2,
             "sy": 1.5,
-            "sz": 3.5
+            "sz": 4.2
           }
         },
         {
           "id": "tower_roof",
           "type": "block",
-          "name": "Tower Roof",
+          "name": "Cabin Roof",
           "transform": {
-            "px": 0,
-            "py": 7.5,
-            "pz": 0,
+            "px": 0.0,
+            "py": 7.6,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 4,
-            "sy": 0.15,
-            "sz": 4
+            "sx": 4.6,
+            "sy": 0.2,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "tower_antenna",
+          "type": "block",
+          "name": "Communications Mast",
+          "transform": {
+            "px": 0.0,
+            "py": 8.7,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2.0,
+            "sz": 0.15
           }
         }
       ]
     },
     {
-      "id": "group_chicane",
+      "id": "grp_ad_board_1",
       "type": "group",
-      "name": "Chicane Obstacles",
+      "name": "Sponsor Billboard Main",
       "transform": {
-        "px": -16,
-        "py": 0,
-        "pz": -5,
+        "px": 9.5,
+        "py": 0.0,
+        "pz": -4.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "chicane_block_left",
+          "id": "ad1_post_l",
           "type": "block",
-          "name": "Chicane Left",
+          "name": "Post L",
           "transform": {
             "px": -1.8,
-            "py": 0.3,
-            "pz": 0,
+            "py": 1.0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 1.5,
-            "sy": 0.6,
-            "sz": 2
+            "sx": 0.15,
+            "sy": 2.0,
+            "sz": 0.15
           }
         },
         {
-          "id": "chicane_block_right",
+          "id": "ad1_post_r",
           "type": "block",
-          "name": "Chicane Right",
+          "name": "Post R",
           "transform": {
             "px": 1.8,
-            "py": 0.3,
-            "pz": 2.5,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 1.5,
-            "sy": 0.6,
-            "sz": 2
-          }
-        }
-      ]
-    },
-    {
-      "id": "group_advertising_board_1",
-      "type": "group",
-      "name": "Ad Board Main Straight",
-      "transform": {
-        "px": -4,
-        "py": 0,
-        "pz": 2,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "ad_post_1",
-          "type": "block",
-          "name": "Post Left",
-          "transform": {
-            "px": -2,
-            "py": 1,
-            "pz": 0,
+            "py": 1.0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.15,
-            "sy": 2,
+            "sy": 2.0,
             "sz": 0.15
           }
         },
         {
-          "id": "ad_post_2",
+          "id": "ad1_board",
           "type": "block",
-          "name": "Post Right",
+          "name": "Sponsor Board",
           "transform": {
-            "px": 2,
-            "py": 1,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.15,
-            "sy": 2,
-            "sz": 0.15
-          }
-        },
-        {
-          "id": "ad_panel_1",
-          "type": "block",
-          "name": "Ad Panel",
-          "transform": {
-            "px": 0,
+            "px": 0.0,
             "py": 1.5,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 4.2,
-            "sy": 1.2,
+            "sx": 3.8,
+            "sy": 1.0,
             "sz": 0.08
           }
         }
       ]
     },
     {
-      "id": "group_advertising_board_2",
+      "id": "grp_ad_board_2",
       "type": "group",
-      "name": "Ad Board Back Straight",
+      "name": "Sponsor Billboard Back",
       "transform": {
-        "px": -12,
-        "py": 0,
-        "pz": -3,
+        "px": -9.5,
+        "py": 0.0,
+        "pz": 4.0,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
       },
       "children": [
         {
-          "id": "ad_post_3",
+          "id": "ad2_post_l",
           "type": "block",
-          "name": "Post Left",
+          "name": "Post L",
           "transform": {
-            "px": -2,
-            "py": 1,
-            "pz": 0,
+            "px": -1.8,
+            "py": 1.0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.15,
-            "sy": 2,
+            "sy": 2.0,
             "sz": 0.15
           }
         },
         {
-          "id": "ad_post_4",
+          "id": "ad2_post_r",
           "type": "block",
-          "name": "Post Right",
+          "name": "Post R",
           "transform": {
-            "px": 2,
-            "py": 1,
-            "pz": 0,
+            "px": 1.8,
+            "py": 1.0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 0.15,
-            "sy": 2,
+            "sy": 2.0,
             "sz": 0.15
           }
         },
         {
-          "id": "ad_panel_2",
+          "id": "ad2_board",
           "type": "block",
-          "name": "Ad Panel",
+          "name": "Sponsor Board",
           "transform": {
-            "px": 0,
+            "px": 0.0,
             "py": 1.5,
-            "pz": 0,
+            "pz": 0.0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 4.2,
-            "sy": 1.2,
+            "sx": 3.8,
+            "sy": 1.0,
             "sz": 0.08
           }
         }
       ]
     }
-  ],
-  "selectedPreset": "race_track.json"
+  ]
 }

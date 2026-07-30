@@ -88,9 +88,17 @@ export class ThreeScene {
     canvas.style.height = '100%'
     canvas.style.cursor = 'grab'
 
-    // Lighting
+    // Lighting Setup
     const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
     this.scene.add(ambientLight)
+
+    const hemiLight = new THREE.HemisphereLight(
+      config.HEMI_SKY_COLOR,
+      config.HEMI_GROUND_COLOR,
+      config.HEMI_LIGHT_INTENSITY
+    )
+    hemiLight.position.set(0, 50, 0)
+    this.scene.add(hemiLight)
 
     const mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
     mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
