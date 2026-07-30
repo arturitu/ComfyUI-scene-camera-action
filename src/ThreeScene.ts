@@ -30,6 +30,7 @@ export class ThreeScene {
   private pointerUpHandler?: (e: PointerEvent) => void
   private windowPointerDownHandler?: (e: PointerEvent) => void
   private keydownHandler?: (e: KeyboardEvent) => void
+  private keyupHandler?: (e: KeyboardEvent) => void
 
   private pointerDownPos: { x: number; y: number } | null = null
   private transformMode: 'translate' | 'rotate' | 'scale' | null = 'translate'
@@ -139,7 +140,16 @@ export class ThreeScene {
     this.transformControls.addEventListener('change', () => this.renderer.render(this.scene, this.camera))
     this.transformControls.addEventListener('dragging-changed', (event: any) => {
       this.controls.enabled = !event.value
+
+      if (event.value && (window.event as KeyboardEvent)?.shiftKey) {
+        this.enableSnapping()
+      }
+
       this.selectionManager.onDraggingChanged(event.value)
+
+      if (!event.value && !(window.event as KeyboardEvent)?.shiftKey) {
+        this.disableSnapping()
+      }
     })
 
     this.transformControls.addEventListener('objectChange', () => {
@@ -298,6 +308,22 @@ export class ThreeScene {
     this.syncStateAndNotify()
   }
 
+  private enableSnapping(): void {
+    if (this.transformControls) {
+      this.transformControls.setTranslationSnap(0.5)
+      this.transformControls.setRotationSnap(THREE.MathUtils.degToRad(22.5))
+      this.transformControls.setScaleSnap(0.5)
+    }
+  }
+
+  private disableSnapping(): void {
+    if (this.transformControls) {
+      this.transformControls.setTranslationSnap(null)
+      this.transformControls.setRotationSnap(null)
+      this.transformControls.setScaleSnap(null)
+    }
+  }
+
   private bindEvents(): void {
     const canvas = this.renderer.domElement
 
@@ -429,6 +455,9 @@ export class ThreeScene {
     }
 
     this.keydownHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        this.enableSnapping()
+      }
       const isCmdOrCtrl = event.metaKey || event.ctrlKey
       if (isCmdOrCtrl && !event.shiftKey && event.key.toLowerCase() === 'g') {
         event.preventDefault()
@@ -451,10 +480,17 @@ export class ThreeScene {
       }
     }
 
+    this.keyupHandler = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') {
+        this.disableSnapping()
+      }
+    }
+
     this.renderer.domElement.addEventListener('pointerdown', this.pointerDownHandler)
     this.renderer.domElement.addEventListener('pointerup', this.pointerUpHandler)
     window.addEventListener('pointerdown', this.windowPointerDownHandler)
     window.addEventListener('keydown', this.keydownHandler, { capture: true })
+    window.addEventListener('keyup', this.keyupHandler, { capture: true })
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -548,6 +584,9 @@ export class ThreeScene {
     }
     if (this.keydownHandler) {
       window.removeEventListener('keydown', this.keydownHandler, { capture: true })
+    }
+    if (this.keyupHandler) {
+      window.removeEventListener('keyup', this.keyupHandler, { capture: true })
     }
 
     if (this.controls) {
