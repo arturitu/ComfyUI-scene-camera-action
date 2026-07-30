@@ -69,17 +69,12 @@ class SceneNode(io.ComfyNode):
             is_output_node=False,
             description="Configures a 3D scene environment with multiple assets.",
             inputs=[
-                io.Int.Input(
-                    "num_assets",
-                    default=1, min=1, max=12, step=1,
-                    display_name="Number of Assets",
-                    tooltip="Number of 3D assets to render in the scene",
-                ),
                 io.String.Input(
                     "scene_data",
                     default="",
                     display_name="Scene Data",
-                    tooltip="Serialized JSON data of the scene configurations (hidden)",
+                    tooltip="Serialized JSON data of the scene configurations",
+                    optional=True,
                 ),
             ],
             outputs=[
@@ -91,7 +86,6 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        num_assets: int,
         scene_data: str = "",
     ) -> io.NodeOutput:
         scene_dict = {}
@@ -104,7 +98,7 @@ class SceneNode(io.ComfyNode):
         if not scene_dict:
             scene_dict = {
                 "type": "cube_scene",
-                "num_assets": num_assets,
+                "num_assets": 1,
                 "asset_transforms": [],
             }
 
@@ -114,10 +108,9 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def fingerprint_inputs(
         cls,
-        num_assets: int,
         scene_data: str = "",
     ):
-        return f"{num_assets}_{scene_data}"
+        return f"{scene_data}"
 
 
 class ActingNode(io.ComfyNode):
@@ -165,6 +158,7 @@ class ActingNode(io.ComfyNode):
                     default="",
                     display_name="Motion Data",
                     tooltip="Serialized JSON recording of actor acting (hidden)",
+                    optional=True,
                 ),
             ],
             outputs=[
@@ -229,6 +223,7 @@ class DirectingNode(io.ComfyNode):
                     default="",
                     display_name="Directing Data",
                     tooltip="Serialized camera cut timeline (managed internally)",
+                    optional=True,
                 ),
             ],
             outputs=[

@@ -51,6 +51,22 @@ const sceneInstances = new WeakMap<ComfyNode, SceneNodeInstance>()
 const actingInstances = new WeakMap<ComfyNode, ActingNodeInstance>()
 const directingInstances = new WeakMap<ComfyNode, DirectingNodeInstance>()
 
+function hideNodeWidget(node: ComfyNode, name: string): void {
+  const w = node.widgets?.find((w: any) => w.name === name)
+  if (w) {
+    w.type = 'hidden' as any
+    ;(w as any).computeSize = () => [0, -4]
+    ;(w as any).draw = () => {}
+  }
+}
+
+function removeNodeInput(node: ComfyNode, name: string): void {
+  const idx = node.inputs?.findIndex((i: any) => i.name === name)
+  if (idx !== -1 && idx !== undefined && typeof (node as any).removeInput === 'function') {
+    (node as any).removeInput(idx)
+  }
+}
+
 // --- Helpers for SceneNode ---
 function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
   const widget = node.widgets?.find(w => w.name === name)
@@ -327,7 +343,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
   const motionDataVal = getWidgetValue(node, 'motion_data', '')
   const storedProps = readStoredActingProps(node)
   return {
-    actor_type: typeVal === 'car' ? 'car' : 'human',
+    actor_type: (typeVal as string) === 'car' ? 'car' : 'human',
     actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
@@ -707,15 +723,8 @@ app.registerExtension({
     const comfyClass = node.constructor?.comfyClass
 
     if (comfyClass === 'SceneNode') {
-      const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
-      if (sceneDataWidget) {
-        sceneDataWidget.type = 'hidden'
-      }
-
-      const numAssetsWidget = node.widgets?.find(w => w.name === 'num_assets')
-      if (numAssetsWidget) {
-        numAssetsWidget.type = 'hidden'
-      }
+      hideNodeWidget(node, 'scene_data')
+      hideNodeWidget(node, 'num_assets')
 
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
@@ -725,10 +734,8 @@ app.registerExtension({
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
-        const numAssetsWidgetConf = this.widgets?.find(w => w.name === 'num_assets')
-        if (numAssetsWidgetConf) {
-          numAssetsWidgetConf.type = 'hidden'
-        }
+        hideNodeWidget(this, 'scene_data')
+        hideNodeWidget(this, 'num_assets')
 
         const instance = sceneInstances.get(this)
         if (instance) {
@@ -737,16 +744,8 @@ app.registerExtension({
         }
       }
     } else if (comfyClass === 'ActingNode') {
-      const motionDataWidget = node.widgets?.find(w => w.name === 'motion_data')
-      if (motionDataWidget) {
-        motionDataWidget.type = 'hidden'
-      }
-
-      // Hide the motion_data input slot from the left side of the node
-      const motionInputIdx = node.inputs?.findIndex(i => i.name === 'motion_data')
-      if (motionInputIdx !== -1 && motionInputIdx !== undefined) {
-        node.removeInput(motionInputIdx)
-      }
+      hideNodeWidget(node, 'motion_data')
+      removeNodeInput(node, 'motion_data')
 
       // Revert speed widget to render as number with step 1.0
       const speedWidget = node.widgets?.find(w => w.name === 'actor_speed')
@@ -799,11 +798,8 @@ app.registerExtension({
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
-        // Hide the motion_data input slot on configure load
-        const motionInputIdxConf = this.inputs?.findIndex(i => i.name === 'motion_data')
-        if (motionInputIdxConf !== -1 && motionInputIdxConf !== undefined) {
-          this.removeInput(motionInputIdxConf)
-        }
+        hideNodeWidget(this, 'motion_data')
+        removeNodeInput(this, 'motion_data')
 
         // Reinforce speed limits and number type on configure load
         const speedWidgetConf = this.widgets?.find(w => w.name === 'actor_speed')
@@ -855,6 +851,9 @@ app.registerExtension({
         }
       }
     } else if (comfyClass === 'DirectingNode') {
+      hideNodeWidget(node, 'directing_data')
+      removeNodeInput(node, 'directing_data')
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createDirectingNodeWidget(node)
@@ -862,6 +861,9 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
+
+        hideNodeWidget(this, 'directing_data')
+        removeNodeInput(this, 'directing_data')
 
         const instance = directingInstances.get(this)
         if (instance) {

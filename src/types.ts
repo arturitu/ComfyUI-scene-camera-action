@@ -81,6 +81,7 @@ export interface ActingAppExposed {
   setState: (state: Partial<ActingState>) => void
   cleanup: () => void
   setConnectedThreeScene: (threeScene: any) => void
+  getThreeActing?: () => any
 }
 
 export interface DirectingState {
@@ -98,6 +99,7 @@ export interface ThreeDirectingOptions {
 export interface DirectingAppExposed {
   setState: (state: Partial<DirectingState>) => void
   cleanup: () => void
+  setConnectedThreeActing?: (threeActing: any) => void
 }
 
 export interface CustomNodeInstance {
