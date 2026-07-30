@@ -1,0 +1,1755 @@
+{
+  "type": "cube_scene",
+  "num_assets": 54,
+  "asset_transforms": [
+    {
+      "px": 0,
+      "py": 0.05,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 6,
+      "sy": 0.1,
+      "sz": 30
+    },
+    {
+      "px": -3.3,
+      "py": 0.4,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.8,
+      "sz": 30
+    },
+    {
+      "px": 3.3,
+      "py": 0.4,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.8,
+      "sz": 30
+    },
+    {
+      "px": -16,
+      "py": 0.05,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 6,
+      "sy": 0.1,
+      "sz": 30
+    },
+    {
+      "px": -19.3,
+      "py": 0.4,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.8,
+      "sz": 30
+    },
+    {
+      "px": -12.7,
+      "py": 0.4,
+      "pz": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.8,
+      "sz": 30
+    },
+    {
+      "px": -8,
+      "py": 0.05,
+      "pz": -15,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.1,
+      "sz": 6
+    },
+    {
+      "px": -8,
+      "py": 0.4,
+      "pz": -18.3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.8,
+      "sz": 0.3
+    },
+    {
+      "px": -8,
+      "py": 0.4,
+      "pz": -11.7,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.8,
+      "sz": 0.3
+    },
+    {
+      "px": -8,
+      "py": 0.05,
+      "pz": 15,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.1,
+      "sz": 6
+    },
+    {
+      "px": -8,
+      "py": 0.4,
+      "pz": 18.3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.8,
+      "sz": 0.3
+    },
+    {
+      "px": -8,
+      "py": 0.4,
+      "pz": 11.7,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 22,
+      "sy": 0.8,
+      "sz": 0.3
+    },
+    {
+      "px": 0,
+      "py": 0.6,
+      "pz": -8,
+      "rx": -0.25,
+      "ry": 0,
+      "rz": 0,
+      "sx": 5,
+      "sy": 0.15,
+      "sz": 5
+    },
+    {
+      "px": -2.2,
+      "py": 0.4,
+      "pz": -8,
+      "rx": -0.25000000000000006,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 0.8,
+      "sz": 5
+    },
+    {
+      "px": 2.2,
+      "py": 0.4,
+      "pz": -8,
+      "rx": -0.25000000000000006,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 0.8,
+      "sz": 5
+    },
+    {
+      "px": 0,
+      "py": 0.6,
+      "pz": 8,
+      "rx": 0.25,
+      "ry": 0,
+      "rz": 0,
+      "sx": 5,
+      "sy": 0.15,
+      "sz": 5
+    },
+    {
+      "px": -2.2,
+      "py": 0.4,
+      "pz": 8,
+      "rx": 0.25000000000000006,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 0.8,
+      "sz": 5
+    },
+    {
+      "px": 2.2,
+      "py": 0.4,
+      "pz": 8,
+      "rx": 0.25000000000000006,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 0.8,
+      "sz": 5
+    },
+    {
+      "px": -16,
+      "py": 0.8,
+      "pz": 3,
+      "rx": 0.20000000000000004,
+      "ry": 0,
+      "rz": 0,
+      "sx": 5,
+      "sy": 0.15,
+      "sz": 6
+    },
+    {
+      "px": -18.2,
+      "py": 0.5,
+      "pz": 3,
+      "rx": 0.20000000000000004,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 1,
+      "sz": 6
+    },
+    {
+      "px": -13.8,
+      "py": 0.5,
+      "pz": 3,
+      "rx": 0.20000000000000004,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.2,
+      "sy": 1,
+      "sz": 6
+    },
+    {
+      "px": -3,
+      "py": 2.5,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.4,
+      "sy": 5,
+      "sz": 0.4
+    },
+    {
+      "px": 3,
+      "py": 2.5,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.4,
+      "sy": 5,
+      "sz": 0.4
+    },
+    {
+      "px": 0,
+      "py": 5.2,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 6.4,
+      "sy": 0.6,
+      "sz": 0.5
+    },
+    {
+      "px": 6,
+      "py": 0.5,
+      "pz": 5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 3,
+      "sy": 1,
+      "sz": 10
+    },
+    {
+      "px": 7.2,
+      "py": 1.25,
+      "pz": 5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 2,
+      "sy": 2.5,
+      "sz": 10
+    },
+    {
+      "px": 8.2,
+      "py": 2,
+      "pz": 5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1.5,
+      "sy": 4,
+      "sz": 10
+    },
+    {
+      "px": 7,
+      "py": 4.3,
+      "pz": 5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0.09999999999999998,
+      "sx": 5,
+      "sy": 0.15,
+      "sz": 11
+    },
+    {
+      "px": 5.5,
+      "py": 1.5,
+      "pz": -6,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 3,
+      "sy": 3,
+      "sz": 8
+    },
+    {
+      "px": 5,
+      "py": 3.15,
+      "pz": -6,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 4.5,
+      "sy": 0.3,
+      "sz": 9
+    },
+    {
+      "px": 4,
+      "py": 1.1,
+      "pz": -8.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.1,
+      "sy": 2.2,
+      "sz": 2
+    },
+    {
+      "px": 4,
+      "py": 1.1,
+      "pz": -6,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.1,
+      "sy": 2.2,
+      "sz": 2
+    },
+    {
+      "px": 4,
+      "py": 1.1,
+      "pz": -3.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.1,
+      "sy": 2.2,
+      "sz": 2
+    },
+    {
+      "px": -2,
+      "py": 0.35,
+      "pz": -13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": -0.8,
+      "py": 0.35,
+      "pz": -13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": 0.3999999999999999,
+      "py": 0.35,
+      "pz": -13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": -14,
+      "py": 0.35,
+      "pz": 13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": -12.8,
+      "py": 0.35,
+      "pz": 13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": -11.6,
+      "py": 0.35,
+      "pz": 13.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 0.7,
+      "sz": 1
+    },
+    {
+      "px": -1.5,
+      "py": 0.25,
+      "pz": -4,
+      "rx": 0,
+      "ry": 0.3,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.5,
+      "sz": 0.3
+    },
+    {
+      "px": 1.5,
+      "py": 0.25,
+      "pz": -4,
+      "rx": 0,
+      "ry": 0.5999999999999999,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.5,
+      "sz": 0.3
+    },
+    {
+      "px": -1.5,
+      "py": 0.25,
+      "pz": 4,
+      "rx": 0,
+      "ry": 0.09999999999999999,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.5,
+      "sz": 0.3
+    },
+    {
+      "px": 1.5,
+      "py": 0.25,
+      "pz": 4,
+      "rx": 0,
+      "ry": 0.8,
+      "rz": 0,
+      "sx": 0.3,
+      "sy": 0.5,
+      "sz": 0.3
+    },
+    {
+      "px": 8,
+      "py": 3,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 2.5,
+      "sy": 6,
+      "sz": 2.5
+    },
+    {
+      "px": 8,
+      "py": 6.5,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 3.5,
+      "sy": 1.5,
+      "sz": 3.5
+    },
+    {
+      "px": 8,
+      "py": 7.5,
+      "pz": 13,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 4,
+      "sy": 0.15,
+      "sz": 4
+    },
+    {
+      "px": -17.8,
+      "py": 0.3,
+      "pz": -5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1.5,
+      "sy": 0.6,
+      "sz": 2
+    },
+    {
+      "px": -14.2,
+      "py": 0.3,
+      "pz": -2.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1.5,
+      "sy": 0.6,
+      "sz": 2
+    },
+    {
+      "px": -6,
+      "py": 1,
+      "pz": 2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.15,
+      "sy": 2,
+      "sz": 0.15
+    },
+    {
+      "px": -2,
+      "py": 1,
+      "pz": 2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.15,
+      "sy": 2,
+      "sz": 0.15
+    },
+    {
+      "px": -4,
+      "py": 1.5,
+      "pz": 2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 4.2,
+      "sy": 1.2,
+      "sz": 0.08
+    },
+    {
+      "px": -14,
+      "py": 1,
+      "pz": -3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.15,
+      "sy": 2,
+      "sz": 0.15
+    },
+    {
+      "px": -10,
+      "py": 1,
+      "pz": -3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 0.15,
+      "sy": 2,
+      "sz": 0.15
+    },
+    {
+      "px": -12,
+      "py": 1.5,
+      "pz": -3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 4.2,
+      "sy": 1.2,
+      "sz": 0.08
+    }
+  ],
+  "nodes": [
+    {
+      "id": "group_track_straight_main",
+      "type": "group",
+      "name": "Main Straight",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "road_main_straight",
+          "type": "block",
+          "name": "Road Surface",
+          "transform": {
+            "px": 0,
+            "py": 0.05,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.1,
+            "sz": 30
+          }
+        },
+        {
+          "id": "barrier_main_left",
+          "type": "block",
+          "name": "Left Barrier",
+          "transform": {
+            "px": -3.3,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 30
+          }
+        },
+        {
+          "id": "barrier_main_right",
+          "type": "block",
+          "name": "Right Barrier",
+          "transform": {
+            "px": 3.3,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_track_back_straight",
+      "type": "group",
+      "name": "Back Straight",
+      "transform": {
+        "px": -16,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "road_back_straight",
+          "type": "block",
+          "name": "Road Surface",
+          "transform": {
+            "px": 0,
+            "py": 0.05,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.1,
+            "sz": 30
+          }
+        },
+        {
+          "id": "barrier_back_left",
+          "type": "block",
+          "name": "Left Barrier",
+          "transform": {
+            "px": -3.3,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 30
+          }
+        },
+        {
+          "id": "barrier_back_right",
+          "type": "block",
+          "name": "Right Barrier",
+          "transform": {
+            "px": 3.3,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.8,
+            "sz": 30
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_turn_north",
+      "type": "group",
+      "name": "North Turn",
+      "transform": {
+        "px": -8,
+        "py": 0,
+        "pz": -15,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "road_turn_north",
+          "type": "block",
+          "name": "Turn Road",
+          "transform": {
+            "px": 0,
+            "py": 0.05,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.1,
+            "sz": 6
+          }
+        },
+        {
+          "id": "barrier_turn_north_outer",
+          "type": "block",
+          "name": "Outer Barrier",
+          "transform": {
+            "px": 0,
+            "py": 0.4,
+            "pz": -3.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.8,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "barrier_turn_north_inner",
+          "type": "block",
+          "name": "Inner Barrier",
+          "transform": {
+            "px": 0,
+            "py": 0.4,
+            "pz": 3.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.8,
+            "sz": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_turn_south",
+      "type": "group",
+      "name": "South Turn",
+      "transform": {
+        "px": -8,
+        "py": 0,
+        "pz": 15,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "road_turn_south",
+          "type": "block",
+          "name": "Turn Road",
+          "transform": {
+            "px": 0,
+            "py": 0.05,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.1,
+            "sz": 6
+          }
+        },
+        {
+          "id": "barrier_turn_south_outer",
+          "type": "block",
+          "name": "Outer Barrier",
+          "transform": {
+            "px": 0,
+            "py": 0.4,
+            "pz": 3.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.8,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "barrier_turn_south_inner",
+          "type": "block",
+          "name": "Inner Barrier",
+          "transform": {
+            "px": 0,
+            "py": 0.4,
+            "pz": -3.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.8,
+            "sz": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_ramp_1",
+      "type": "group",
+      "name": "Ramp North",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": -8,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ramp_1_slope",
+          "type": "block",
+          "name": "Ramp Slope",
+          "transform": {
+            "px": 0,
+            "py": 0.6,
+            "pz": 0,
+            "rx": -0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5,
+            "sy": 0.15,
+            "sz": 5
+          }
+        },
+        {
+          "id": "ramp_1_support_left",
+          "type": "block",
+          "name": "Left Support",
+          "transform": {
+            "px": -2.2,
+            "py": 0.4,
+            "pz": 0,
+            "rx": -0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.8,
+            "sz": 5
+          }
+        },
+        {
+          "id": "ramp_1_support_right",
+          "type": "block",
+          "name": "Right Support",
+          "transform": {
+            "px": 2.2,
+            "py": 0.4,
+            "pz": 0,
+            "rx": -0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.8,
+            "sz": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_ramp_2",
+      "type": "group",
+      "name": "Ramp South",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 8,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ramp_2_slope",
+          "type": "block",
+          "name": "Ramp Slope",
+          "transform": {
+            "px": 0,
+            "py": 0.6,
+            "pz": 0,
+            "rx": 0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5,
+            "sy": 0.15,
+            "sz": 5
+          }
+        },
+        {
+          "id": "ramp_2_support_left",
+          "type": "block",
+          "name": "Left Support",
+          "transform": {
+            "px": -2.2,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.8,
+            "sz": 5
+          }
+        },
+        {
+          "id": "ramp_2_support_right",
+          "type": "block",
+          "name": "Right Support",
+          "transform": {
+            "px": 2.2,
+            "py": 0.4,
+            "pz": 0,
+            "rx": 0.25,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.8,
+            "sz": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_ramp_back",
+      "type": "group",
+      "name": "Ramp Back Straight",
+      "transform": {
+        "px": -16,
+        "py": 0,
+        "pz": 3,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ramp_back_slope",
+          "type": "block",
+          "name": "Ramp Slope",
+          "transform": {
+            "px": 0,
+            "py": 0.8,
+            "pz": 0,
+            "rx": 0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5,
+            "sy": 0.15,
+            "sz": 6
+          }
+        },
+        {
+          "id": "ramp_back_support_left",
+          "type": "block",
+          "name": "Left Support",
+          "transform": {
+            "px": -2.2,
+            "py": 0.5,
+            "pz": 0,
+            "rx": 0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 1,
+            "sz": 6
+          }
+        },
+        {
+          "id": "ramp_back_support_right",
+          "type": "block",
+          "name": "Right Support",
+          "transform": {
+            "px": 2.2,
+            "py": 0.5,
+            "pz": 0,
+            "rx": 0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 1,
+            "sz": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_start_finish",
+      "type": "group",
+      "name": "Start Finish Line",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 13,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "start_pillar_left",
+          "type": "block",
+          "name": "Left Pillar",
+          "transform": {
+            "px": -3,
+            "py": 2.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 5,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "start_pillar_right",
+          "type": "block",
+          "name": "Right Pillar",
+          "transform": {
+            "px": 3,
+            "py": 2.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 5,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "start_banner",
+          "type": "block",
+          "name": "Banner Beam",
+          "transform": {
+            "px": 0,
+            "py": 5.2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6.4,
+            "sy": 0.6,
+            "sz": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_grandstand",
+      "type": "group",
+      "name": "Grandstand",
+      "transform": {
+        "px": 6,
+        "py": 0,
+        "pz": 5,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "stand_tier_1",
+          "type": "block",
+          "name": "Tier 1",
+          "transform": {
+            "px": 0,
+            "py": 0.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3,
+            "sy": 1,
+            "sz": 10
+          }
+        },
+        {
+          "id": "stand_tier_2",
+          "type": "block",
+          "name": "Tier 2",
+          "transform": {
+            "px": 1.2,
+            "py": 1.25,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 2.5,
+            "sz": 10
+          }
+        },
+        {
+          "id": "stand_tier_3",
+          "type": "block",
+          "name": "Tier 3",
+          "transform": {
+            "px": 2.2,
+            "py": 2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.5,
+            "sy": 4,
+            "sz": 10
+          }
+        },
+        {
+          "id": "stand_roof",
+          "type": "block",
+          "name": "Roof",
+          "transform": {
+            "px": 1,
+            "py": 4.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.1,
+            "sx": 5,
+            "sy": 0.15,
+            "sz": 11
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_pit_lane",
+      "type": "group",
+      "name": "Pit Lane Building",
+      "transform": {
+        "px": 5.5,
+        "py": 0,
+        "pz": -6,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "pit_body",
+          "type": "block",
+          "name": "Building Body",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3,
+            "sy": 3,
+            "sz": 8
+          }
+        },
+        {
+          "id": "pit_roof",
+          "type": "block",
+          "name": "Roof Overhang",
+          "transform": {
+            "px": -0.5,
+            "py": 3.15,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.5,
+            "sy": 0.3,
+            "sz": 9
+          }
+        },
+        {
+          "id": "pit_door_1",
+          "type": "block",
+          "name": "Garage Door 1",
+          "transform": {
+            "px": -1.5,
+            "py": 1.1,
+            "pz": -2.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.2,
+            "sz": 2
+          }
+        },
+        {
+          "id": "pit_door_2",
+          "type": "block",
+          "name": "Garage Door 2",
+          "transform": {
+            "px": -1.5,
+            "py": 1.1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.2,
+            "sz": 2
+          }
+        },
+        {
+          "id": "pit_door_3",
+          "type": "block",
+          "name": "Garage Door 3",
+          "transform": {
+            "px": -1.5,
+            "py": 1.1,
+            "pz": 2.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.2,
+            "sz": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_tire_wall_1",
+      "type": "group",
+      "name": "Tire Wall North Turn",
+      "transform": {
+        "px": -2,
+        "py": 0,
+        "pz": -13.5,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "tire_stack_n1",
+          "type": "block",
+          "name": "Tire Stack 1",
+          "transform": {
+            "px": 0,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        },
+        {
+          "id": "tire_stack_n2",
+          "type": "block",
+          "name": "Tire Stack 2",
+          "transform": {
+            "px": 1.2,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        },
+        {
+          "id": "tire_stack_n3",
+          "type": "block",
+          "name": "Tire Stack 3",
+          "transform": {
+            "px": 2.4,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_tire_wall_2",
+      "type": "group",
+      "name": "Tire Wall South Turn",
+      "transform": {
+        "px": -14,
+        "py": 0,
+        "pz": 13.5,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "tire_stack_s1",
+          "type": "block",
+          "name": "Tire Stack 1",
+          "transform": {
+            "px": 0,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        },
+        {
+          "id": "tire_stack_s2",
+          "type": "block",
+          "name": "Tire Stack 2",
+          "transform": {
+            "px": 1.2,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        },
+        {
+          "id": "tire_stack_s3",
+          "type": "block",
+          "name": "Tire Stack 3",
+          "transform": {
+            "px": 2.4,
+            "py": 0.35,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "cone_1",
+      "type": "block",
+      "name": "Traffic Cone 1",
+      "transform": {
+        "px": -1.5,
+        "py": 0.25,
+        "pz": -4,
+        "rx": 0,
+        "ry": 0.3,
+        "rz": 0,
+        "sx": 0.3,
+        "sy": 0.5,
+        "sz": 0.3
+      }
+    },
+    {
+      "id": "cone_2",
+      "type": "block",
+      "name": "Traffic Cone 2",
+      "transform": {
+        "px": 1.5,
+        "py": 0.25,
+        "pz": -4,
+        "rx": 0,
+        "ry": 0.6,
+        "rz": 0,
+        "sx": 0.3,
+        "sy": 0.5,
+        "sz": 0.3
+      }
+    },
+    {
+      "id": "cone_3",
+      "type": "block",
+      "name": "Traffic Cone 3",
+      "transform": {
+        "px": -1.5,
+        "py": 0.25,
+        "pz": 4,
+        "rx": 0,
+        "ry": 0.1,
+        "rz": 0,
+        "sx": 0.3,
+        "sy": 0.5,
+        "sz": 0.3
+      }
+    },
+    {
+      "id": "cone_4",
+      "type": "block",
+      "name": "Traffic Cone 4",
+      "transform": {
+        "px": 1.5,
+        "py": 0.25,
+        "pz": 4,
+        "rx": 0,
+        "ry": 0.8,
+        "rz": 0,
+        "sx": 0.3,
+        "sy": 0.5,
+        "sz": 0.3
+      }
+    },
+    {
+      "id": "group_control_tower",
+      "type": "group",
+      "name": "Control Tower",
+      "transform": {
+        "px": 8,
+        "py": 0,
+        "pz": 13,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "tower_body",
+          "type": "block",
+          "name": "Tower Body",
+          "transform": {
+            "px": 0,
+            "py": 3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.5,
+            "sy": 6,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "tower_cabin",
+          "type": "block",
+          "name": "Observation Cabin",
+          "transform": {
+            "px": 0,
+            "py": 6.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 1.5,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "tower_roof",
+          "type": "block",
+          "name": "Tower Roof",
+          "transform": {
+            "px": 0,
+            "py": 7.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4,
+            "sy": 0.15,
+            "sz": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_chicane",
+      "type": "group",
+      "name": "Chicane Obstacles",
+      "transform": {
+        "px": -16,
+        "py": 0,
+        "pz": -5,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "chicane_block_left",
+          "type": "block",
+          "name": "Chicane Left",
+          "transform": {
+            "px": -1.8,
+            "py": 0.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.5,
+            "sy": 0.6,
+            "sz": 2
+          }
+        },
+        {
+          "id": "chicane_block_right",
+          "type": "block",
+          "name": "Chicane Right",
+          "transform": {
+            "px": 1.8,
+            "py": 0.3,
+            "pz": 2.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.5,
+            "sy": 0.6,
+            "sz": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_advertising_board_1",
+      "type": "group",
+      "name": "Ad Board Main Straight",
+      "transform": {
+        "px": -4,
+        "py": 0,
+        "pz": 2,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ad_post_1",
+          "type": "block",
+          "name": "Post Left",
+          "transform": {
+            "px": -2,
+            "py": 1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "ad_post_2",
+          "type": "block",
+          "name": "Post Right",
+          "transform": {
+            "px": 2,
+            "py": 1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "ad_panel_1",
+          "type": "block",
+          "name": "Ad Panel",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.2,
+            "sy": 1.2,
+            "sz": 0.08
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_advertising_board_2",
+      "type": "group",
+      "name": "Ad Board Back Straight",
+      "transform": {
+        "px": -12,
+        "py": 0,
+        "pz": -3,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ad_post_3",
+          "type": "block",
+          "name": "Post Left",
+          "transform": {
+            "px": -2,
+            "py": 1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "ad_post_4",
+          "type": "block",
+          "name": "Post Right",
+          "transform": {
+            "px": 2,
+            "py": 1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "ad_panel_2",
+          "type": "block",
+          "name": "Ad Panel",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.2,
+            "sy": 1.2,
+            "sz": 0.08
+          }
+        }
+      ]
+    }
+  ],
+  "selectedPreset": "race_track.json"
+}

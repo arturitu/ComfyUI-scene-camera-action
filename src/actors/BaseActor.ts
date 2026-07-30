@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { MotionFrame } from '../types'
+import * as config from '../threeConfig'
 
 // Static scratch instances to avoid per-frame GC allocations
 const _tempEuler = new THREE.Euler()
@@ -9,7 +10,7 @@ const _tempHitPoint = new THREE.Vector3()
 
 export abstract class BaseActor {
   public group: THREE.Group
-  public position: THREE.Vector3 = new THREE.Vector3(0, -1.0, 2)
+  public position: THREE.Vector3 = new THREE.Vector3(0, config.GROUND_Y, 2)
   public velocity: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
   public rotationY: number = 0
   public isOnGround: boolean = true
@@ -23,7 +24,7 @@ export abstract class BaseActor {
   }
 
   public resetToOrigin(): void {
-    this.position.set(0, -1.0, 2)
+    this.position.set(0, config.GROUND_Y, 2)
     this.rotationY = 0
     this.velocity.set(0, 0, 0)
     this.isOnGround = true
@@ -80,7 +81,7 @@ export abstract class BaseActor {
     const prevX = this.position.x
     const prevZ = this.position.z
 
-    this.position.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
+    this.position.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
     this.rotationY = frame.ry ?? 0
     const rx = frame.rx ?? 0
     const rz = frame.rz ?? 0
@@ -139,7 +140,7 @@ export abstract class BaseActor {
       }
     } else {
       if (Math.abs(this.position.x) <= 50.0 && Math.abs(this.position.z) <= 50.0) {
-        targetGroundY = -1.0
+        targetGroundY = config.GROUND_Y
       }
     }
 

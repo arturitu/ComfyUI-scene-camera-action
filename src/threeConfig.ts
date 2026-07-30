@@ -41,6 +41,11 @@ export const FILL_LIGHT_COLOR = 0x3d4974
 export const FILL_LIGHT_INTENSITY = 0.3
 export const FILL_LIGHT_POSITION = new THREE.Vector3(-5, 3, -5)
 
+// Ground and Floor Height Config
+export const GROUND_Y = 0.0
+export const GRID_Y = 0.0
+export const FLOOR_Y = -0.002
+
 // Floor Material Config
 export const FLOOR_COLOR = 0xdbdbdb
 export const FLOOR_ROUGHNESS = 1.0

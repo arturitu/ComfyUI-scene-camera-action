@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
+import * as config from '../threeConfig'
 
 // Module-level static scratch objects to eliminate Garbage Collection allocations per frame
 const _tempDir = new THREE.Vector3()
@@ -149,8 +150,8 @@ export class HumanActor extends BaseActor {
           this.isOnGround = true
         }
       } else {
-        if (this.position.y <= -1.0) {
-          this.position.y = -1.0
+        if (this.position.y <= config.GROUND_Y) {
+          this.position.y = config.GROUND_Y
           this.velocity.y = 0
           this.isOnGround = true
           touchGround = true

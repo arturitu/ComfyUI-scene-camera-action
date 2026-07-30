@@ -121,7 +121,7 @@ export class ThreeScene {
       config.GRID_COLOR_CENTER,
       config.GRID_COLOR_GRID
     )
-    gridHelper.position.y = -1.0
+    gridHelper.position.y = config.GRID_Y
     this.scene.add(gridHelper)
 
     // Floor plane
@@ -134,7 +134,7 @@ export class ThreeScene {
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = -1.002
+    floorMesh.position.y = config.FLOOR_Y
     floorMesh.receiveShadow = true
     this.scene.add(floorMesh)
 
@@ -233,15 +233,15 @@ export class ThreeScene {
       this.state.asset_transforms = []
     }
 
-    const px = Math.random() * 4 - 2
-    const pz = Math.random() * 4 - 2
-    const py = 0.0
+    const px = Number((Math.random() * 4 - 2).toFixed(3))
+    const pz = Number((Math.random() * 4 - 2).toFixed(3))
 
     const rand1 = Math.random()
     const rand2 = Math.random()
-    const sx = 0.6 + rand1 * 0.4
-    const sz = 0.6 + rand2 * 0.4
-    const sy = 1.0 + rand1 * 1.5
+    const sx = Number((0.6 + rand1 * 0.4).toFixed(3))
+    const sz = Number((0.6 + rand2 * 0.4).toFixed(3))
+    const sy = Number((1.0 + rand1 * 1.5).toFixed(3))
+    const py = Number((sy / 2.0).toFixed(3))
 
     const newTransform: CubeTransform = { px, py, pz, rx: 0, ry: 0, rz: 0, sx, sy, sz }
     const newMesh = this.hierarchyManager.createBlockMesh(newTransform)

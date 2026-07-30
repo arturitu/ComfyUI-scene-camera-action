@@ -258,7 +258,7 @@ export class ThreeActing {
         config.GRID_COLOR_CENTER,
         config.GRID_COLOR_GRID
       )
-      gridHelper.position.y = -1.0
+      gridHelper.position.y = config.GRID_Y
       this.clonedEnvGroup.add(gridHelper)
 
       const floorGeo = new THREE.PlaneGeometry(100, 100)
@@ -270,7 +270,7 @@ export class ThreeActing {
       const floorMesh = new THREE.Mesh(floorGeo, floorMat)
       floorMesh.name = 'floor'
       floorMesh.rotation.x = -Math.PI / 2
-      floorMesh.position.y = -1.002
+      floorMesh.position.y = config.FLOOR_Y
       floorMesh.receiveShadow = true
       this.clonedEnvGroup.add(floorMesh)
 
@@ -315,7 +315,7 @@ export class ThreeActing {
         config.GRID_COLOR_CENTER,
         config.GRID_COLOR_GRID
       )
-      gridHelper.position.y = -1.0
+      gridHelper.position.y = config.GRID_Y
       this.clonedEnvGroup.add(gridHelper)
 
       const floorGeo = new THREE.PlaneGeometry(100, 100)
@@ -327,7 +327,7 @@ export class ThreeActing {
       const floorMesh = new THREE.Mesh(floorGeo, floorMat)
       floorMesh.name = 'floor'
       floorMesh.rotation.x = -Math.PI / 2
-      floorMesh.position.y = -1.002
+      floorMesh.position.y = config.FLOOR_Y
       floorMesh.receiveShadow = true
       this.clonedEnvGroup.add(floorMesh)
     }
@@ -335,9 +335,9 @@ export class ThreeActing {
     // 2. Build BVH Collision Tree
     const geometries: THREE.BufferGeometry[] = []
 
-    // Add floor box geometry to match vertex layout of boxes (centered at -1.05 height, thin box)
+    // Add floor box geometry to match vertex layout of boxes (centered at -0.05 height, thin box top at Y=0)
     const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
-    floorBox.translate(0, -1.05, 0)
+    floorBox.translate(0, -0.05, 0)
     geometries.push(floorBox)
 
     // Add all asset meshes geometries transformed to their world positions

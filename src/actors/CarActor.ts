@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
+import * as config from '../threeConfig'
 
 const SLOPE_CONFIG = {
   maxRayDistance: 3.0,
@@ -100,7 +101,7 @@ export class CarActor extends BaseActor {
   }
 
   public override resetToOrigin(): void {
-    this.position.set(0, -1.0, 2)
+    this.position.set(0, config.GROUND_Y, 2)
     this.rotationY = 0
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
@@ -420,8 +421,8 @@ export class CarActor extends BaseActor {
           this.isOnGround = true
         }
       } else {
-        if (this.position.y <= -1.0) {
-          this.position.y = -1.0
+        if (this.position.y <= config.GROUND_Y) {
+          this.position.y = config.GROUND_Y
           this.velocity.y = 0
           this.isOnGround = true
           touchGround = true

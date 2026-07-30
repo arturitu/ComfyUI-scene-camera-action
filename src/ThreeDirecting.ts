@@ -21,7 +21,7 @@ export class ThreeDirecting {
   private connectedThreeActing: any = null
 
   private playbackController = new PlaybackController()
-  private actorPosition = new THREE.Vector3(0, -1.0, 2)
+  private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
@@ -225,8 +225,8 @@ export class ThreeDirecting {
             inheritedActor!.rotation.set(0, ry, 0)
           },
           applyMotionFrame: (frame: any) => {
-            this.actorPosition.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
-            inheritedActor!.position.set(frame.px ?? 0, frame.py ?? -1.0, frame.pz ?? 0)
+            this.actorPosition.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
+            inheritedActor!.position.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
             const euler = new THREE.Euler(frame.rx ?? 0, frame.ry ?? 0, frame.rz ?? 0, 'YXZ')
             inheritedActor!.quaternion.setFromEuler(euler)
           },
@@ -283,7 +283,7 @@ export class ThreeDirecting {
         config.GRID_COLOR_CENTER,
         config.GRID_COLOR_GRID
       )
-      this.gridHelper.position.y = -1.0
+      this.gridHelper.position.y = config.GRID_Y
       this.scene.add(this.gridHelper)
     }
   }
@@ -338,7 +338,7 @@ export class ThreeDirecting {
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = -1.002
+    floorMesh.position.y = config.FLOOR_Y
     floorMesh.receiveShadow = true
     this.clonedEnvGroup.add(floorMesh)
 
@@ -362,7 +362,7 @@ export class ThreeDirecting {
       config.GRID_COLOR_CENTER,
       config.GRID_COLOR_GRID
     )
-    this.gridHelper.position.y = -1.0
+    this.gridHelper.position.y = config.GRID_Y
     this.scene.add(this.gridHelper)
 
     // Ensure actor exists when building from JSON
