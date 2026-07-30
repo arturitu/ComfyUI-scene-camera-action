@@ -29,8 +29,6 @@ export class ThreeScene {
   private pointerDownHandler?: (e: PointerEvent) => void
   private pointerUpHandler?: (e: PointerEvent) => void
   private windowPointerDownHandler?: (e: PointerEvent) => void
-  private keydownHandler?: (e: KeyboardEvent) => void
-  private keyupHandler?: (e: KeyboardEvent) => void
 
   private pointerDownPos: { x: number; y: number } | null = null
   private transformMode: 'translate' | 'rotate' | 'scale' | null = 'translate'
@@ -81,12 +79,17 @@ export class ThreeScene {
     this.container.appendChild(this.renderer.domElement)
 
     const canvas = this.renderer.domElement
+    canvas.tabIndex = 0
+    canvas.style.outline = 'none'
     canvas.style.position = 'absolute'
     canvas.style.top = '0'
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
     canvas.style.cursor = 'grab'
+
+    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
+    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
 
     // Lighting Setup
     const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
@@ -225,6 +228,24 @@ export class ThreeScene {
       this.updateSelectionUI()
       this.syncStateAndNotify()
     }
+  }
+
+  public selectAll(): void {
+    const topLevelObjects: THREE.Object3D[] = []
+    this.scene.children.forEach((child) => {
+      if (
+        child.name !== 'floor' &&
+        !(child instanceof THREE.GridHelper) &&
+        child !== this.transformControls.getHelper() &&
+        child !== this.selectionManager.getMultiSelectionPivot() &&
+        !(child instanceof THREE.Light) &&
+        child.name !== '__edge_outline__'
+      ) {
+        topLevelObjects.push(child)
+      }
+    })
+    this.selectionManager.setSelectedObjects(topLevelObjects)
+    this.updateSelectionUI()
   }
 
   public ungroupSelected(): void {
@@ -461,43 +482,9 @@ export class ThreeScene {
       }
     }
 
-    this.keydownHandler = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
-        this.enableSnapping()
-      }
-      const isCmdOrCtrl = event.metaKey || event.ctrlKey
-      if (isCmdOrCtrl && !event.shiftKey && event.key.toLowerCase() === 'g') {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-        this.groupSelected()
-      } else if (isCmdOrCtrl && event.shiftKey && event.key.toLowerCase() === 'g') {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
-        this.ungroupSelected()
-      } else if (event.key === 'Delete' || event.key === 'Backspace') {
-        const activeEl = document.activeElement
-        if (!activeEl || activeEl.tagName === 'BODY' || this.container.contains(activeEl)) {
-          event.preventDefault()
-          event.stopPropagation()
-          event.stopImmediatePropagation()
-          this.deleteSelectedAsset()
-        }
-      }
-    }
-
-    this.keyupHandler = (event: KeyboardEvent) => {
-      if (event.key === 'Shift') {
-        this.disableSnapping()
-      }
-    }
-
     this.renderer.domElement.addEventListener('pointerdown', this.pointerDownHandler)
     this.renderer.domElement.addEventListener('pointerup', this.pointerUpHandler)
     window.addEventListener('pointerdown', this.windowPointerDownHandler)
-    window.addEventListener('keydown', this.keydownHandler, { capture: true })
-    window.addEventListener('keyup', this.keyupHandler, { capture: true })
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -590,12 +577,6 @@ export class ThreeScene {
     }
     if (this.windowPointerDownHandler) {
       window.removeEventListener('pointerdown', this.windowPointerDownHandler)
-    }
-    if (this.keydownHandler) {
-      window.removeEventListener('keydown', this.keydownHandler, { capture: true })
-    }
-    if (this.keyupHandler) {
-      window.removeEventListener('keyup', this.keyupHandler, { capture: true })
     }
 
     if (this.controls) {

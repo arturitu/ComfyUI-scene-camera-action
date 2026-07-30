@@ -2,6 +2,10 @@ import * as THREE from 'three'
 import type { SceneState, SceneNode, CubeTransform } from '../types'
 import * as config from '../threeConfig'
 
+function r2(val: number): number {
+  return Math.round((val + Number.EPSILON) * 100) / 100
+}
+
 export class SceneHierarchyManager {
   private meshes: THREE.Mesh[] = []
 
@@ -101,9 +105,9 @@ export class SceneHierarchyManager {
         type: 'block',
         name: mesh.name || 'Block',
         transform: {
-          px: mesh.position.x, py: mesh.position.y, pz: mesh.position.z,
-          rx: mesh.rotation.x, ry: mesh.rotation.y, rz: mesh.rotation.z,
-          sx: mesh.scale.x, sy: mesh.scale.y, sz: mesh.scale.z
+          px: r2(mesh.position.x), py: r2(mesh.position.y), pz: r2(mesh.position.z),
+          rx: r2(mesh.rotation.x), ry: r2(mesh.rotation.y), rz: r2(mesh.rotation.z),
+          sx: r2(mesh.scale.x), sy: r2(mesh.scale.y), sz: r2(mesh.scale.z)
         }
       }
     } else if (obj.type === 'Group' && obj !== transformControlsHelper && obj !== multiSelectionPivot) {
@@ -118,9 +122,9 @@ export class SceneHierarchyManager {
         type: 'group',
         name: group.name || 'Group',
         transform: {
-          px: group.position.x, py: group.position.y, pz: group.position.z,
-          rx: group.rotation.x, ry: group.rotation.y, rz: group.rotation.z,
-          sx: group.scale.x, sy: group.scale.y, sz: group.scale.z
+          px: r2(group.position.x), py: r2(group.position.y), pz: r2(group.position.z),
+          rx: r2(group.rotation.x), ry: r2(group.rotation.y), rz: r2(group.rotation.z),
+          sx: r2(group.scale.x), sy: r2(group.scale.y), sz: r2(group.scale.z)
         },
         children: childrenNodes
       }

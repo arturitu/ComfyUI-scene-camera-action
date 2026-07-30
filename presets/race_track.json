@@ -1,6 +1,6 @@
 {
   "type": "cube_scene",
-  "num_assets": 92,
+  "num_assets": 89,
   "nodes": [
     {
       "id": "grp_main_straight",
@@ -191,11 +191,11 @@
             "py": 0.4,
             "pz": -10,
             "rx": 0,
-            "ry": -3.142,
+            "ry": -3.14,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -207,11 +207,11 @@
             "py": 0.4,
             "pz": -10,
             "rx": 0,
-            "ry": -3.142,
+            "ry": -3.14,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -219,15 +219,15 @@
           "type": "block",
           "name": "Outer Wall 2",
           "transform": {
-            "px": 8.084,
+            "px": 8.08,
             "py": 0.4,
-            "pz": -12.627,
+            "pz": -12.63,
             "rx": 0,
-            "ry": -2.827,
+            "ry": -2.83,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -235,15 +235,15 @@
           "type": "block",
           "name": "Inner Wall 2",
           "transform": {
-            "px": 3.329,
+            "px": 3.33,
             "py": 0.4,
-            "pz": -11.082,
+            "pz": -11.08,
             "rx": 0,
-            "ry": -2.827,
+            "ry": -2.83,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -251,15 +251,15 @@
           "type": "block",
           "name": "Outer Wall 3",
           "transform": {
-            "px": 6.877,
+            "px": 6.88,
             "py": 0.4,
-            "pz": -14.996,
+            "pz": -15.0,
             "rx": 0,
-            "ry": -2.513,
+            "ry": -2.51,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -267,15 +267,15 @@
           "type": "block",
           "name": "Inner Wall 3",
           "transform": {
-            "px": 2.832,
+            "px": 2.83,
             "py": 0.4,
-            "pz": -12.057,
+            "pz": -12.06,
             "rx": 0,
-            "ry": -2.513,
+            "ry": -2.51,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -283,15 +283,15 @@
           "type": "block",
           "name": "Outer Wall 4",
           "transform": {
-            "px": 4.996,
+            "px": 5.0,
             "py": 0.4,
-            "pz": -16.877,
+            "pz": -16.88,
             "rx": 0,
-            "ry": -2.199,
+            "ry": -2.2,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -299,15 +299,15 @@
           "type": "block",
           "name": "Inner Wall 4",
           "transform": {
-            "px": 2.057,
+            "px": 2.06,
             "py": 0.4,
-            "pz": -12.832,
+            "pz": -12.83,
             "rx": 0,
-            "ry": -2.199,
+            "ry": -2.2,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -315,15 +315,15 @@
           "type": "block",
           "name": "Outer Wall 5",
           "transform": {
-            "px": 2.627,
+            "px": 2.63,
             "py": 0.4,
-            "pz": -18.084,
+            "pz": -18.08,
             "rx": 0,
-            "ry": -1.885,
+            "ry": -1.89,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -331,15 +331,15 @@
           "type": "block",
           "name": "Inner Wall 5",
           "transform": {
-            "px": 1.082,
+            "px": 1.08,
             "py": 0.4,
-            "pz": -13.329,
+            "pz": -13.33,
             "rx": 0,
-            "ry": -1.885,
+            "ry": -1.89,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -351,11 +351,11 @@
             "py": 0.4,
             "pz": -18.5,
             "rx": 0,
-            "ry": -1.571,
+            "ry": -1.57,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -367,11 +367,11 @@
             "py": 0.4,
             "pz": -13.5,
             "rx": 0,
-            "ry": -1.571,
+            "ry": -1.57,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -379,15 +379,15 @@
           "type": "block",
           "name": "Outer Wall 7",
           "transform": {
-            "px": -2.627,
+            "px": -2.63,
             "py": 0.4,
-            "pz": -18.084,
+            "pz": -18.08,
             "rx": 0,
-            "ry": -1.257,
+            "ry": -1.26,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -395,15 +395,15 @@
           "type": "block",
           "name": "Inner Wall 7",
           "transform": {
-            "px": -1.082,
+            "px": -1.08,
             "py": 0.4,
-            "pz": -13.329,
+            "pz": -13.33,
             "rx": 0,
-            "ry": -1.257,
+            "ry": -1.26,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -411,15 +411,15 @@
           "type": "block",
           "name": "Outer Wall 8",
           "transform": {
-            "px": -4.996,
+            "px": -5.0,
             "py": 0.4,
-            "pz": -16.877,
+            "pz": -16.88,
             "rx": 0,
-            "ry": -0.942,
+            "ry": -0.94,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -427,15 +427,15 @@
           "type": "block",
           "name": "Inner Wall 8",
           "transform": {
-            "px": -2.057,
+            "px": -2.06,
             "py": 0.4,
-            "pz": -12.832,
+            "pz": -12.83,
             "rx": 0,
-            "ry": -0.942,
+            "ry": -0.94,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -443,15 +443,15 @@
           "type": "block",
           "name": "Outer Wall 9",
           "transform": {
-            "px": -6.877,
+            "px": -6.88,
             "py": 0.4,
-            "pz": -14.996,
+            "pz": -15.0,
             "rx": 0,
-            "ry": -0.628,
+            "ry": -0.63,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -459,15 +459,15 @@
           "type": "block",
           "name": "Inner Wall 9",
           "transform": {
-            "px": -2.832,
+            "px": -2.83,
             "py": 0.4,
-            "pz": -12.057,
+            "pz": -12.06,
             "rx": 0,
-            "ry": -0.628,
+            "ry": -0.63,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -475,15 +475,15 @@
           "type": "block",
           "name": "Outer Wall 10",
           "transform": {
-            "px": -8.084,
+            "px": -8.08,
             "py": 0.4,
-            "pz": -12.627,
+            "pz": -12.63,
             "rx": 0,
-            "ry": -0.314,
+            "ry": -0.31,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -491,15 +491,15 @@
           "type": "block",
           "name": "Inner Wall 10",
           "transform": {
-            "px": -3.329,
+            "px": -3.33,
             "py": 0.4,
-            "pz": -11.082,
+            "pz": -11.08,
             "rx": 0,
-            "ry": -0.314,
+            "ry": -0.31,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -515,7 +515,7 @@
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -531,7 +531,7 @@
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -539,11 +539,11 @@
           "type": "block",
           "name": "Apex Tire Stack 1",
           "transform": {
-            "px": 4.177,
+            "px": 4.18,
             "py": 0.4,
-            "pz": -18.197,
+            "pz": -18.2,
             "rx": 0,
-            "ry": -2.042,
+            "ry": -2.04,
             "rz": 0,
             "sx": 0.8,
             "sy": 0.8,
@@ -555,11 +555,11 @@
           "type": "block",
           "name": "Apex Tire Stack 2",
           "transform": {
-            "px": 2.905,
+            "px": 2.9,
             "py": 0.4,
-            "pz": -18.729,
+            "pz": -18.73,
             "rx": 0,
-            "ry": -1.892,
+            "ry": -1.89,
             "rz": 0,
             "sx": 0.8,
             "sy": 0.8,
@@ -571,11 +571,11 @@
           "type": "block",
           "name": "Apex Tire Stack 3",
           "transform": {
-            "px": 1.568,
+            "px": 1.57,
             "py": 0.4,
-            "pz": -19.065,
+            "pz": -19.07,
             "rx": 0,
-            "ry": -1.742,
+            "ry": -1.74,
             "rz": 0,
             "sx": 0.8,
             "sy": 0.8,
@@ -613,7 +613,7 @@
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -629,7 +629,7 @@
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -637,15 +637,15 @@
           "type": "block",
           "name": "Outer Wall 2",
           "transform": {
-            "px": 8.084,
+            "px": 8.08,
             "py": 0.4,
-            "pz": 12.627,
+            "pz": 12.63,
             "rx": 0,
-            "ry": -0.314,
+            "ry": -0.31,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -653,15 +653,15 @@
           "type": "block",
           "name": "Inner Wall 2",
           "transform": {
-            "px": 3.329,
+            "px": 3.33,
             "py": 0.4,
-            "pz": 11.082,
+            "pz": 11.08,
             "rx": 0,
-            "ry": -0.314,
+            "ry": -0.31,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -669,15 +669,15 @@
           "type": "block",
           "name": "Outer Wall 3",
           "transform": {
-            "px": 6.877,
+            "px": 6.88,
             "py": 0.4,
-            "pz": 14.996,
+            "pz": 15.0,
             "rx": 0,
-            "ry": -0.628,
+            "ry": -0.63,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -685,15 +685,15 @@
           "type": "block",
           "name": "Inner Wall 3",
           "transform": {
-            "px": 2.832,
+            "px": 2.83,
             "py": 0.4,
-            "pz": 12.057,
+            "pz": 12.06,
             "rx": 0,
-            "ry": -0.628,
+            "ry": -0.63,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -701,15 +701,15 @@
           "type": "block",
           "name": "Outer Wall 4",
           "transform": {
-            "px": 4.996,
+            "px": 5.0,
             "py": 0.4,
-            "pz": 16.877,
+            "pz": 16.88,
             "rx": 0,
-            "ry": -0.942,
+            "ry": -0.94,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -717,15 +717,15 @@
           "type": "block",
           "name": "Inner Wall 4",
           "transform": {
-            "px": 2.057,
+            "px": 2.06,
             "py": 0.4,
-            "pz": 12.832,
+            "pz": 12.83,
             "rx": 0,
-            "ry": -0.942,
+            "ry": -0.94,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -733,15 +733,15 @@
           "type": "block",
           "name": "Outer Wall 5",
           "transform": {
-            "px": 2.627,
+            "px": 2.63,
             "py": 0.4,
-            "pz": 18.084,
+            "pz": 18.08,
             "rx": 0,
-            "ry": -1.257,
+            "ry": -1.26,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -749,15 +749,15 @@
           "type": "block",
           "name": "Inner Wall 5",
           "transform": {
-            "px": 1.082,
+            "px": 1.08,
             "py": 0.4,
-            "pz": 13.329,
+            "pz": 13.33,
             "rx": 0,
-            "ry": -1.257,
+            "ry": -1.26,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -769,11 +769,11 @@
             "py": 0.4,
             "pz": 18.5,
             "rx": 0,
-            "ry": -1.571,
+            "ry": -1.57,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -785,11 +785,11 @@
             "py": 0.4,
             "pz": 13.5,
             "rx": 0,
-            "ry": -1.571,
+            "ry": -1.57,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -797,15 +797,15 @@
           "type": "block",
           "name": "Outer Wall 7",
           "transform": {
-            "px": -2.627,
+            "px": -2.63,
             "py": 0.4,
-            "pz": 18.084,
+            "pz": 18.08,
             "rx": 0,
-            "ry": -1.885,
+            "ry": -1.89,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -813,15 +813,15 @@
           "type": "block",
           "name": "Inner Wall 7",
           "transform": {
-            "px": -1.082,
+            "px": -1.08,
             "py": 0.4,
-            "pz": 13.329,
+            "pz": 13.33,
             "rx": 0,
-            "ry": -1.885,
+            "ry": -1.89,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -829,15 +829,15 @@
           "type": "block",
           "name": "Outer Wall 8",
           "transform": {
-            "px": -4.996,
+            "px": -5.0,
             "py": 0.4,
-            "pz": 16.877,
+            "pz": 16.88,
             "rx": 0,
-            "ry": -2.199,
+            "ry": -2.2,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -845,15 +845,15 @@
           "type": "block",
           "name": "Inner Wall 8",
           "transform": {
-            "px": -2.057,
+            "px": -2.06,
             "py": 0.4,
-            "pz": 12.832,
+            "pz": 12.83,
             "rx": 0,
-            "ry": -2.199,
+            "ry": -2.2,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -861,15 +861,15 @@
           "type": "block",
           "name": "Outer Wall 9",
           "transform": {
-            "px": -6.877,
+            "px": -6.88,
             "py": 0.4,
-            "pz": 14.996,
+            "pz": 15.0,
             "rx": 0,
-            "ry": -2.513,
+            "ry": -2.51,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -877,15 +877,15 @@
           "type": "block",
           "name": "Inner Wall 9",
           "transform": {
-            "px": -2.832,
+            "px": -2.83,
             "py": 0.4,
-            "pz": 12.057,
+            "pz": 12.06,
             "rx": 0,
-            "ry": -2.513,
+            "ry": -2.51,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -893,15 +893,15 @@
           "type": "block",
           "name": "Outer Wall 10",
           "transform": {
-            "px": -8.084,
+            "px": -8.08,
             "py": 0.4,
-            "pz": 12.627,
+            "pz": 12.63,
             "rx": 0,
-            "ry": -2.827,
+            "ry": -2.83,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -909,15 +909,15 @@
           "type": "block",
           "name": "Inner Wall 10",
           "transform": {
-            "px": -3.329,
+            "px": -3.33,
             "py": 0.4,
-            "pz": 11.082,
+            "pz": 11.08,
             "rx": 0,
-            "ry": -2.827,
+            "ry": -2.83,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -929,11 +929,11 @@
             "py": 0.4,
             "pz": 10,
             "rx": 0,
-            "ry": -3.142,
+            "ry": -3.14,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 2.804
+            "sz": 2.8
           }
         },
         {
@@ -945,11 +945,11 @@
             "py": 0.4,
             "pz": 10,
             "rx": 0,
-            "ry": -3.142,
+            "ry": -3.14,
             "rz": 0,
             "sx": 0.3,
             "sy": 0.8,
-            "sz": 1.155
+            "sz": 1.16
           }
         },
         {
@@ -957,9 +957,9 @@
           "type": "block",
           "name": "Apex Tire Stack 1",
           "transform": {
-            "px": 4.177,
+            "px": 4.18,
             "py": 0.4,
-            "pz": 18.197,
+            "pz": 18.2,
             "rx": 0,
             "ry": -1.1,
             "rz": 0,
@@ -973,9 +973,9 @@
           "type": "block",
           "name": "Apex Tire Stack 2",
           "transform": {
-            "px": 2.905,
+            "px": 2.9,
             "py": 0.4,
-            "pz": 18.729,
+            "pz": 18.73,
             "rx": 0,
             "ry": -1.25,
             "rz": 0,
@@ -989,9 +989,9 @@
           "type": "block",
           "name": "Apex Tire Stack 3",
           "transform": {
-            "px": 1.568,
+            "px": 1.57,
             "py": 0.4,
-            "pz": 19.065,
+            "pz": 19.07,
             "rx": 0,
             "ry": -1.4,
             "rz": 0,
@@ -1075,7 +1075,7 @@
       "transform": {
         "px": -6,
         "py": 0,
-        "pz": -1.4978930637771999,
+        "pz": -1.5,
         "rx": 0,
         "ry": 0,
         "rz": 0,
@@ -1271,7 +1271,7 @@
       "type": "group",
       "name": "Main Grandstand",
       "transform": {
-        "px": 12,
+        "px": 11.69,
         "py": 0,
         "pz": 0,
         "rx": 0,
@@ -1381,120 +1381,6 @@
       ]
     },
     {
-      "id": "grp_pit_lane",
-      "type": "group",
-      "name": "Pit Lane & Garages",
-      "transform": {
-        "px": -13,
-        "py": 0,
-        "pz": 0,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "pit_wall_sep",
-          "type": "block",
-          "name": "Pit Lane Wall",
-          "transform": {
-            "px": 4,
-            "py": 0.4,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.3,
-            "sy": 0.8,
-            "sz": 16
-          }
-        },
-        {
-          "id": "pit_building_main",
-          "type": "block",
-          "name": "Garage Main Structure",
-          "transform": {
-            "px": -2,
-            "py": 1.75,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 4.5,
-            "sy": 3.5,
-            "sz": 14
-          }
-        },
-        {
-          "id": "pit_roof_canopy",
-          "type": "block",
-          "name": "Canopy Overhang",
-          "transform": {
-            "px": -0.5,
-            "py": 3.6,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 6,
-            "sy": 0.2,
-            "sz": 15
-          }
-        },
-        {
-          "id": "garage_door_1",
-          "type": "block",
-          "name": "Garage Door 1",
-          "transform": {
-            "px": 0.2,
-            "py": 1.1,
-            "pz": -4,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.1,
-            "sy": 2.2,
-            "sz": 2.8
-          }
-        },
-        {
-          "id": "garage_door_2",
-          "type": "block",
-          "name": "Garage Door 2",
-          "transform": {
-            "px": 0.2,
-            "py": 1.1,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.1,
-            "sy": 2.2,
-            "sz": 2.8
-          }
-        },
-        {
-          "id": "garage_door_3",
-          "type": "block",
-          "name": "Garage Door 3",
-          "transform": {
-            "px": 0.2,
-            "py": 1.1,
-            "pz": 4,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.1,
-            "sy": 2.2,
-            "sz": 2.8
-          }
-        }
-      ]
-    },
-    {
       "id": "grp_control_tower",
       "type": "group",
       "name": "Race Control Tower",
@@ -1577,136 +1463,166 @@
       ]
     },
     {
-      "id": "grp_ad_board_1",
-      "type": "group",
-      "name": "Sponsor Billboard Main",
+      "id": "ad2_board",
+      "type": "block",
+      "name": "Sponsor Board",
       "transform": {
-        "px": 9.5,
-        "py": 0,
-        "pz": -4,
-        "rx": 0,
-        "ry": 0,
-        "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
-      },
-      "children": [
-        {
-          "id": "ad1_post_l",
-          "type": "block",
-          "name": "Post L",
-          "transform": {
-            "px": -1.8,
-            "py": 1,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.15,
-            "sy": 2,
-            "sz": 0.15
-          }
-        },
-        {
-          "id": "ad1_post_r",
-          "type": "block",
-          "name": "Post R",
-          "transform": {
-            "px": 1.8,
-            "py": 1,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.15,
-            "sy": 2,
-            "sz": 0.15
-          }
-        },
-        {
-          "id": "ad1_board",
-          "type": "block",
-          "name": "Sponsor Board",
-          "transform": {
-            "px": 0,
-            "py": 1.5,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 3.8,
-            "sy": 1,
-            "sz": 0.08
-          }
-        }
-      ]
-    },
-    {
-      "id": "grp_ad_board_2",
-      "type": "group",
-      "name": "Sponsor Billboard Back",
-      "transform": {
-        "px": -9.5,
-        "py": 0,
+        "px": -5.91,
+        "py": 2.95,
         "pz": 4,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
+        "sx": 5.17,
         "sy": 1,
+        "sz": 0.08
+      }
+    },
+    {
+      "id": "1d5cd8ed-74bd-4639-af03-db3c6c75a050",
+      "type": "group",
+      "name": "Group_cwy5o",
+      "transform": {
+        "px": -5.99,
+        "py": 2.08,
+        "pz": 4,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1.03,
+        "sy": 1.4,
         "sz": 1
       },
       "children": [
-        {
-          "id": "ad2_post_l",
-          "type": "block",
-          "name": "Post L",
-          "transform": {
-            "px": -1.8,
-            "py": 1,
-            "pz": 0,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
-            "sx": 0.15,
-            "sy": 2,
-            "sz": 0.15
-          }
-        },
         {
           "id": "ad2_post_r",
           "type": "block",
           "name": "Post R",
           "transform": {
-            "px": 1.8,
-            "py": 1,
+            "px": 2.45,
+            "py": 0,
             "pz": 0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 0.15,
+            "sx": 0.2,
             "sy": 2,
             "sz": 0.15
           }
         },
         {
-          "id": "ad2_board",
+          "id": "ad2_post_l",
           "type": "block",
-          "name": "Sponsor Board",
+          "name": "Post L",
           "transform": {
-            "px": 0,
-            "py": 1.5,
+            "px": -2.45,
+            "py": 0,
             "pz": 0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 3.8,
-            "sy": 1,
-            "sz": 0.08
+            "sx": 0.2,
+            "sy": 2,
+            "sz": 0.15
           }
         }
       ]
+    },
+    {
+      "id": "pit_wall_sep",
+      "type": "block",
+      "name": "Pit Lane Wall",
+      "transform": {
+        "px": -8.57,
+        "py": 0.4,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.3,
+        "sy": 0.8,
+        "sz": 16
+      }
+    },
+    {
+      "id": "pit_building_main",
+      "type": "block",
+      "name": "Garage Main Structure",
+      "transform": {
+        "px": -14.63,
+        "py": 1.75,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 4.5,
+        "sy": 3.5,
+        "sz": 14
+      }
+    },
+    {
+      "id": "pit_roof_canopy",
+      "type": "block",
+      "name": "Canopy Overhang",
+      "transform": {
+        "px": -13.8,
+        "py": 3.6,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 6,
+        "sy": 0.2,
+        "sz": 15
+      }
+    },
+    {
+      "id": "garage_door_1",
+      "type": "block",
+      "name": "Garage Door 1",
+      "transform": {
+        "px": -12.37,
+        "py": 1.1,
+        "pz": -4,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.1,
+        "sy": 2.2,
+        "sz": 2.8
+      }
+    },
+    {
+      "id": "garage_door_2",
+      "type": "block",
+      "name": "Garage Door 2",
+      "transform": {
+        "px": -12.37,
+        "py": 1.1,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.1,
+        "sy": 2.2,
+        "sz": 2.8
+      }
+    },
+    {
+      "id": "garage_door_3",
+      "type": "block",
+      "name": "Garage Door 3",
+      "transform": {
+        "px": -12.37,
+        "py": 1.1,
+        "pz": 4,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.1,
+        "sy": 2.2,
+        "sz": 2.8
+      }
     }
   ],
   "selectedPreset": "race_track.json"
