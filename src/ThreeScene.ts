@@ -549,12 +549,18 @@ export class ThreeScene {
   public setState(newState: Partial<SceneState>): void {
     if (newState.nodes !== undefined) {
       this.state.nodes = newState.nodes
+      this.state.asset_transforms = []
       this.updateMesh()
     } else if (newState.asset_transforms !== undefined) {
       this.state.asset_transforms = newState.asset_transforms
+      this.state.nodes = []
+      this.updateMesh()
+    } else {
+      this.state.nodes = []
+      this.state.asset_transforms = []
       this.updateMesh()
     }
-    if (newState.num_assets !== undefined && newState.num_assets !== this.state.num_assets) {
+    if (newState.num_assets !== undefined) {
       this.state.num_assets = newState.num_assets
     }
   }

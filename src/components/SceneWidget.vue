@@ -1,5 +1,30 @@
 <template>
   <div class="three-container">
+    <!-- Preset Top Control Bar -->
+    <div class="preset-control-bar">
+      <div class="preset-selector-group">
+        <span class="preset-label">SCENE:</span>
+        <select class="preset-select" :value="selectedPreset" @change="onPresetSelectChange">
+          <option value="__NEW__">+ New Scene...</option>
+          <option v-if="selectedPreset && selectedPreset !== '__NEW__' && !presetFiles.includes(selectedPreset)" :value="selectedPreset">
+            {{ selectedPreset }}
+          </option>
+          <option v-for="file in presetFiles" :key="file" :value="file">
+            {{ file }}
+          </option>
+        </select>
+        <span v-if="isDirty" class="dirty-badge" title="Unsaved modifications">Modified</span>
+      </div>
+      <div class="preset-actions">
+        <button class="preset-btn save-btn" title="Save scene to JSON preset" @click.stop="saveCurrentPreset">
+          Save
+        </button>
+        <button class="preset-btn reset-btn" title="Reset to last saved state" :disabled="!isDirty" @click.stop="resetCurrentPreset">
+          Reset
+        </button>
+      </div>
+    </div>
+
     <div class="canvas-wrapper">
       <div class="canvas-aspect-container">
         <SceneCanvas :init-scene="initScene" />
@@ -43,41 +68,229 @@
     <div class="info-overlay">
       <div>Assets: {{ state.num_assets }}</div>
     </div>
+
+    <!-- Unsaved Changes Warning Modal -->
+    <div v-if="showConfirmModal" class="confirm-modal-backdrop" @click.self="cancelSwitch">
+      <div class="confirm-modal">
+        <h3>Unsaved Changes</h3>
+        <p>You have unsaved modifications in the current scene. What would you like to do before switching?</p>
+        <div class="modal-buttons">
+          <button class="modal-btn save" @click="confirmSaveAndSwitch">Save & Switch</button>
+          <button class="modal-btn discard" @click="confirmDiscardAndSwitch">Discard Changes</button>
+          <button class="modal-btn cancel" @click="cancelSwitch">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import SceneCanvas from './SceneCanvas.vue'
 import { ThreeScene } from '../ThreeScene'
 import type { SceneState } from '../types'
 
 const props = defineProps<{
   initialState?: Partial<SceneState>
+  initialPreset?: string
   onStateChange?: (state: SceneState) => void
+  onPresetSaved?: (filename: string) => void
+  onPresetChanged?: (filename: string) => void
 }>()
 
 const state = reactive<SceneState>({
   type: 'cube_scene',
-  num_assets: props.initialState?.num_assets ?? 1,
+  num_assets: props.initialState?.num_assets ?? 0,
   asset_transforms: props.initialState?.asset_transforms ?? [],
   nodes: props.initialState?.nodes ?? [],
+  selectedPreset: props.initialState?.selectedPreset || props.initialPreset || '__NEW__',
 })
 
 const activeMode = ref<'translate' | 'rotate' | 'scale' | null>('translate')
 const hasSelection = ref(false)
 const canGroup = ref(false)
 const canUngroup = ref(false)
+const isDirty = ref(false)
+const presetFiles = ref<string[]>([])
+const selectedPreset = ref<string>(state.selectedPreset || '__NEW__')
+const pendingPresetTarget = ref<string | null>(null)
+const showConfirmModal = ref(false)
 let threeScene: ThreeScene | null = null
+let originalPresetState: Partial<SceneState> | null = null
+
+const normalizeStateString = (s: any): string => {
+  if (!s || typeof s !== 'object') return ''
+  return JSON.stringify({
+    type: s.type || 'cube_scene',
+    num_assets: s.num_assets ?? (s.nodes?.length || 0),
+    nodes: s.nodes || [],
+    asset_transforms: s.asset_transforms || []
+  })
+}
+
+const isStateDifferent = (current: any, original: any): boolean => {
+  if (!original) return false
+  return normalizeStateString(current) !== normalizeStateString(original)
+}
+
+const fetchPresetList = async () => {
+  try {
+    const res = await fetch('/scene_camera_action/list_presets')
+    if (res.ok) {
+      const data = await res.json()
+      if (Array.isArray(data.files)) {
+        presetFiles.value = data.files.filter((f: string) => f !== 'None')
+        const targetPreset = state.selectedPreset && state.selectedPreset !== '__NEW__' ? state.selectedPreset : null
+        if (targetPreset && presetFiles.value.includes(targetPreset)) {
+          selectedPreset.value = targetPreset
+          try {
+            const pRes = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(targetPreset)}`)
+            if (pRes.ok) {
+              const origData = await pRes.json()
+              originalPresetState = origData
+              if (props.initialState && (props.initialState.nodes?.length || props.initialState.asset_transforms?.length)) {
+                isDirty.value = isStateDifferent(props.initialState, originalPresetState)
+              } else {
+                setState(origData)
+                isDirty.value = false
+              }
+            }
+          } catch (e) {
+            console.error('Error fetching initial preset data:', e)
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error fetching preset list:', e)
+  }
+}
+
+onMounted(() => {
+  fetchPresetList()
+})
+
+const loadPresetFile = async (filename: string) => {
+  if (filename === '__NEW__') {
+    const emptyState: SceneState = { type: 'cube_scene', num_assets: 0, nodes: [], selectedPreset: '__NEW__' }
+    originalPresetState = emptyState
+    setState(emptyState)
+    selectedPreset.value = '__NEW__'
+    state.selectedPreset = '__NEW__'
+    isDirty.value = false
+    props.onPresetChanged?.('__NEW__')
+    if (props.onStateChange) props.onStateChange(state)
+    return
+  }
+
+  try {
+    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
+    if (res.ok) {
+      const data = await res.json()
+      originalPresetState = data
+      data.selectedPreset = filename
+      setState(data)
+      selectedPreset.value = filename
+      state.selectedPreset = filename
+      isDirty.value = false
+      props.onPresetChanged?.(filename)
+      if (props.onStateChange) props.onStateChange(state)
+    }
+  } catch (e) {
+    console.error('Error loading preset:', e)
+  }
+}
+
+const onPresetSelectChange = (e: Event) => {
+  const targetEl = e.target as HTMLSelectElement
+  const newTarget = targetEl.value
+
+  if (isDirty.value) {
+    targetEl.value = selectedPreset.value
+    pendingPresetTarget.value = newTarget
+    showConfirmModal.value = true
+  } else {
+    selectedPreset.value = newTarget
+    state.selectedPreset = newTarget
+    loadPresetFile(newTarget)
+  }
+}
+
+const confirmSaveAndSwitch = async () => {
+  showConfirmModal.value = false
+  await saveCurrentPreset()
+  if (pendingPresetTarget.value) {
+    const target = pendingPresetTarget.value
+    pendingPresetTarget.value = null
+    await loadPresetFile(target)
+  }
+}
+
+const confirmDiscardAndSwitch = async () => {
+  showConfirmModal.value = false
+  isDirty.value = false
+  if (pendingPresetTarget.value) {
+    const target = pendingPresetTarget.value
+    pendingPresetTarget.value = null
+    await loadPresetFile(target)
+  }
+}
+
+const cancelSwitch = () => {
+  showConfirmModal.value = false
+  pendingPresetTarget.value = null
+}
+
+const saveCurrentPreset = async () => {
+  let targetFile = selectedPreset.value
+  if (!targetFile || targetFile === 'None' || targetFile === '__NEW__') {
+    const name = prompt('Name for the scene JSON preset file:', 'new_scene.json')
+    if (!name) return
+    targetFile = name.endsWith('.json') ? name : `${name}.json`
+  }
+
+  try {
+    const res = await fetch('/scene_camera_action/save_preset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: targetFile,
+        scene_data: state,
+      })
+    })
+    if (res.ok) {
+      originalPresetState = JSON.parse(JSON.stringify(state))
+      isDirty.value = false
+      selectedPreset.value = targetFile
+      state.selectedPreset = targetFile
+      await fetchPresetList()
+      if (props.onPresetSaved) {
+        props.onPresetSaved(targetFile)
+      }
+      if (props.onStateChange) {
+        props.onStateChange(state)
+      }
+    }
+  } catch (e) {
+    console.error('Error saving preset:', e)
+  }
+}
+
+const resetCurrentPreset = () => {
+  if (selectedPreset.value) {
+    loadPresetFile(selectedPreset.value)
+  }
+}
 
 const initScene = (container: HTMLElement) => {
   threeScene = new ThreeScene({
     container,
     initialState: state,
     onStateChange: (updatedState) => {
-      Object.assign(state, updatedState)
+      Object.assign(state, updatedState, { selectedPreset: selectedPreset.value })
+      isDirty.value = isStateDifferent(updatedState, originalPresetState)
       if (props.onStateChange) {
-        props.onStateChange(updatedState)
+        props.onStateChange(state)
       }
     },
     onTransformModeChange: (mode) => {
@@ -137,11 +350,16 @@ const ungroupSelected = () => {
 }
 
 const setState = (newState: Partial<SceneState>) => {
+  if (newState.selectedPreset) {
+    selectedPreset.value = newState.selectedPreset
+    state.selectedPreset = newState.selectedPreset
+  }
   if (threeScene) {
     threeScene.setState(newState)
   } else {
     Object.assign(state, newState)
   }
+  isDirty.value = isStateDifferent(state, originalPresetState)
 }
 
 const cleanup = () => {
@@ -155,7 +373,7 @@ const getThreeScene = () => {
   return threeScene
 }
 
-defineExpose({ setState, cleanup, getThreeScene })
+defineExpose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetList })
 </script>
 
 <style scoped>
@@ -167,11 +385,102 @@ defineExpose({ setState, cleanup, getThreeScene })
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(74, 144, 226, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.preset-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(12, 16, 24, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 30;
+  gap: 10px;
+}
+
+.preset-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.preset-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c8c9e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preset-select {
+  background: #181d28;
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.preset-select:hover {
+  border-color: #4a90e2;
+}
+
+.dirty-badge {
+  font-size: 11px;
+  color: #ff9900;
+  font-weight: bold;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.preset-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.preset-btn {
+  background: #252b3b;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover:not(:disabled) {
+  background: #3d4974;
+  border-color: #4a90e2;
+}
+
+.preset-btn.save-btn {
+  background: #1a4d36;
+  border-color: #00ff66;
+  color: #00ff66;
+}
+
+.preset-btn.save-btn:hover {
+  background: #236849;
+}
+
+.preset-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .canvas-wrapper {
   width: 100%;
-  height: 100%;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -281,9 +590,70 @@ defineExpose({ setState, cleanup, getThreeScene })
   gap: 2px;
 }
 
-.title {
-  font-weight: bold;
+.confirm-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm-modal {
+  background: #181d28;
+  border: 1px solid #4a90e2;
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-width: 320px;
   color: #ffffff;
-  margin-bottom: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-modal h3 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #ff9900;
+}
+
+.confirm-modal p {
+  margin: 0 0 16px 0;
+  font-size: 12px;
+  color: #cccccc;
+  line-height: 1.4;
+}
+
+.modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.modal-btn.save {
+  background: #1a4d36;
+  color: #00ff66;
+  border-color: #00ff66;
+}
+
+.modal-btn.discard {
+  background: #4a1f28;
+  color: #ff3366;
+  border-color: #ff3366;
+}
+
+.modal-btn.cancel {
+  background: #252b3b;
+  color: #aaaaaa;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 </style>

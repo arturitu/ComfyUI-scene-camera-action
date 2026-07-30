@@ -68,6 +68,61 @@ function removeNodeInput(node: ComfyNode, name: string): void {
 }
 
 // --- Helpers for SceneNode ---
+async function updateSceneNodeFromPreset(node: ComfyNode, filename: string): Promise<void> {
+  if (!filename || filename === 'None') return
+
+  try {
+    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
+    if (res.ok) {
+      const data = await res.json()
+      const instance = sceneInstances.get(node)
+      if (instance) {
+        instance.exposed.setState(data)
+      } else {
+        writeStoredSceneProps(node, data)
+      }
+      notifyConnectedActingNodes(node)
+      notifyConnectedDirectingNodes(node)
+    }
+  } catch (e) {
+    console.error('[SceneNode] Failed to load preset:', e)
+  }
+}
+
+function getLinkedInputValue(node: ComfyNode, inputName: string): string | null {
+  if (!node.inputs || node.inputs.length === 0) return null
+  const input = node.inputs.find((i: any) => i.name === inputName)
+  if (!input || input.link == null) return null
+
+  const graph = app.graph as any
+  if (!graph || !graph.links) return null
+
+  const link = graph.links[input.link]
+  if (!link) return null
+
+  const originNode = graph.getNodeById?.(link.origin_id)
+  if (!originNode) return null
+
+  if (originNode.constructor?.comfyClass === 'SceneNode' || originNode.type === 'SceneNode') {
+    const state = readSceneStateFromNode(originNode)
+    if (state) return JSON.stringify(state)
+  }
+
+  if (originNode.widgets && originNode.widgets.length > 0) {
+    for (const w of originNode.widgets) {
+      if (typeof w.value === 'string' && w.value.trim().startsWith('{')) {
+        return w.value.trim()
+      }
+    }
+    const firstVal = originNode.widgets[0]?.value
+    if (typeof firstVal === 'string' && firstVal.trim()) {
+      return firstVal.trim()
+    }
+  }
+
+  return null
+}
+
 function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
   const widget = node.widgets?.find(w => w.name === name)
   return widget ? (widget.value as T) : defaultValue
@@ -92,6 +147,16 @@ function writeStoredSceneProps(node: ComfyNode, patch: Partial<SceneState>): voi
 }
 
 function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
+  const linkedScene = getLinkedInputValue(node, 'scene') || getLinkedInputValue(node, 'scene_data')
+  if (linkedScene) {
+    try {
+      const parsed = JSON.parse(linkedScene)
+      if (parsed && typeof parsed === 'object' && (parsed.nodes || parsed.asset_transforms)) {
+        return parsed
+      }
+    } catch (e) { }
+  }
+
   const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
   if (sceneDataWidget && sceneDataWidget.value && typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
     try {
@@ -102,12 +167,10 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   const stored = readStoredSceneProps(node)
   return {
     type: 'cube_scene',
-    num_assets: stored?.num_assets ?? 1,
+    num_assets: stored?.num_assets ?? 0,
     asset_transforms: stored?.asset_transforms ?? [],
+    nodes: stored?.nodes ?? [],
   }
-}
-
-function syncSceneWidgetsFromState(node: ComfyNode, state: Partial<SceneState>): void {
 }
 
 function createSceneInstance(node: ComfyNode): SceneNodeInstance {
@@ -123,15 +186,27 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
   instance.widget = null
   instance.cleanupTimer = null
 
+  const storedPreset = node.properties?.['selectedPreset'] as string | undefined
+
   const vueApp = createApp(SceneWidget, {
     initialState: readSceneStateFromNode(node),
+    initialPreset: storedPreset,
     onStateChange: (state: SceneState) => {
       const live = instance.currentNode
-      syncSceneWidgetsFromState(live, state)
       writeStoredSceneProps(live, state)
       app.graph?.setDirtyCanvas(true, true)
       notifyConnectedActingNodes(live)
       notifyConnectedDirectingNodes(live)
+    },
+    onPresetSaved: (filename: string) => {
+      const live = instance.currentNode
+      if (!live.properties) live.properties = {}
+      live.properties['selectedPreset'] = filename
+    },
+    onPresetChanged: (filename: string) => {
+      const live = instance.currentNode
+      if (!live.properties) live.properties = {}
+      live.properties['selectedPreset'] = filename
     }
   })
 
@@ -143,7 +218,13 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
   return instance
 }
 
-function bindSceneWidgetCallbacks(node: ComfyNode, exposed: SceneAppExposed): void {
+function updateSceneNodeFromLinks(node: ComfyNode): void {
+  const instance = sceneInstances.get(node)
+  if (!instance) return
+  const state = readSceneStateFromNode(node)
+  instance.exposed.setState(state)
+  notifyConnectedActingNodes(node)
+  notifyConnectedDirectingNodes(node)
 }
 
 function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
@@ -172,7 +253,16 @@ function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
   )
 
   instance.widget = widget
-  bindSceneWidgetCallbacks(node, instance.exposed)
+
+  const origOnConnectionsChange = node.onConnectionsChange
+  node.onConnectionsChange = function (slotType, slotIndex, isConnected, link, ioSlot) {
+    origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
+    if (slotType === 1) { // INPUT
+      setTimeout(() => updateSceneNodeFromLinks(this), 50)
+    }
+  }
+
+  setTimeout(() => updateSceneNodeFromLinks(node), 100)
 
   const baseOnRemove = widget.onRemove?.bind(widget)
   widget.onRemove = () => {
@@ -727,8 +817,28 @@ app.registerExtension({
       hideNodeWidget(node, 'num_assets')
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
+      node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)])
       createSceneNodeWidget(node)
+
+      const sceneFileWidget = node.widgets?.find(w => w.name === 'scene_file')
+      if (sceneFileWidget) {
+        const origCb = sceneFileWidget.callback
+        sceneFileWidget.callback = function (value: any) {
+          origCb?.call(this, value)
+          updateSceneNodeFromPreset(node, String(value))
+        }
+      }
+
+      const origOnExecuted = node.onExecuted
+      node.onExecuted = function (message: any) {
+        origOnExecuted?.call(this, message)
+        if (message?.scene_state) {
+          const instance = sceneInstances.get(this)
+          if (instance) {
+            instance.exposed.setState(message.scene_state)
+          }
+        }
+      }
 
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
@@ -793,6 +903,17 @@ app.registerExtension({
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createActingNodeWidget(node)
+
+      const origActingOnExecuted = node.onExecuted
+      node.onExecuted = function (message: any) {
+        origActingOnExecuted?.call(this, message)
+        if (message?.acting_state) {
+          const instance = actingInstances.get(this)
+          if (instance) {
+            instance.exposed.setState(message.acting_state)
+          }
+        }
+      }
 
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {

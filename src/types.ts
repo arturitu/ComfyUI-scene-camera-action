@@ -44,6 +44,7 @@ export interface SceneState {
   num_assets: number
   asset_transforms?: CubeTransform[]
   nodes?: SceneNode[]
+  selectedPreset?: string
 }
 
 export interface ActingState {
