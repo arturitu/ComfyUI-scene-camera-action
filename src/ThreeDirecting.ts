@@ -122,7 +122,7 @@ export class ThreeDirecting {
     this.scene.background = bgColor
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
-    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100)
+    this.camera = new THREE.PerspectiveCamera(50, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 

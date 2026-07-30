@@ -69,7 +69,7 @@ export class ThreeScene {
     this.scene.background = bgColor
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+    this.camera = new THREE.PerspectiveCamera(config.CAMERA_FOV, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
@@ -167,8 +167,8 @@ export class ThreeScene {
     this.controls.enableDamping = true
     this.controls.dampingFactor = 0.05
     this.controls.screenSpacePanning = false
-    this.controls.minDistance = 1.5
-    this.controls.maxDistance = 20.0
+    this.controls.minDistance = config.CAMERA_MIN_DISTANCE
+    this.controls.maxDistance = config.CAMERA_MAX_DISTANCE
     this.controls.maxPolarAngle = Math.PI / 2 - 0.05
     this.controls.zoomToCursor = true
   }

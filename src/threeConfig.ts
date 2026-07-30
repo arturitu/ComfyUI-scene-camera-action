@@ -2,10 +2,17 @@ import * as THREE from 'three'
 
 export const BACKGROUND_COLOR = 0xd3d3d7
 
+// Camera Config
+export const CAMERA_FOV = 45
+export const CAMERA_NEAR = 0.1
+export const CAMERA_FAR = 500
+export const CAMERA_MIN_DISTANCE = 1.5
+export const CAMERA_MAX_DISTANCE = 250.0
+
 // Fog Config
 export const FOG_COLOR = BACKGROUND_COLOR
-export const FOG_NEAR = 5
-export const FOG_FAR = 40
+export const FOG_NEAR = 35
+export const FOG_FAR = 85
 
 // Grid Helper Config
 export const GRID_SIZE = 100
