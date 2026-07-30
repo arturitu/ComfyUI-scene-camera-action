@@ -1,4 +1,11 @@
 import * as THREE from 'three'
+import type { MotionFrame } from '../types'
+
+// Static scratch instances to avoid per-frame GC allocations
+const _tempEuler = new THREE.Euler()
+const _tempRay = new THREE.Ray()
+const _tempNormal = new THREE.Vector3()
+const _tempHitPoint = new THREE.Vector3()
 
 export abstract class BaseActor {
   public group: THREE.Group
@@ -55,15 +62,15 @@ export abstract class BaseActor {
   }
 
   public getMotionState(t: number): MotionFrame {
-    const euler = new THREE.Euler().setFromQuaternion(this.group.quaternion, 'YXZ')
+    _tempEuler.setFromQuaternion(this.group.quaternion, 'YXZ')
     return {
       t: Number(t.toFixed(3)),
-      px: Number(this.position.x.toFixed(3)),
-      py: Number(this.position.y.toFixed(3)),
-      pz: Number(this.position.z.toFixed(3)),
-      rx: Number(euler.x.toFixed(3)),
+      px: Number(this.group.position.x.toFixed(3)),
+      py: Number(this.group.position.y.toFixed(3)),
+      pz: Number(this.group.position.z.toFixed(3)),
+      rx: Number(_tempEuler.x.toFixed(3)),
       ry: Number(this.rotationY.toFixed(3)),
-      rz: Number(euler.z.toFixed(3)),
+      rz: Number(_tempEuler.z.toFixed(3)),
     }
   }
 
@@ -78,8 +85,8 @@ export abstract class BaseActor {
     const rx = frame.rx ?? 0
     const rz = frame.rz ?? 0
 
-    const euler = new THREE.Euler(rx, this.rotationY, rz, 'YXZ')
-    this.group.quaternion.setFromEuler(euler)
+    _tempEuler.set(rx, this.rotationY, rz, 'YXZ')
+    this.group.quaternion.setFromEuler(_tempEuler)
     this.group.position.copy(this.position)
 
     const dx = this.position.x - prevX
@@ -99,29 +106,25 @@ export abstract class BaseActor {
     let targetGroundY: number | null = null
 
     if (colliderBVH) {
-      const ray = new THREE.Ray(
-        new THREE.Vector3(this.position.x, this.position.y + 50.0, this.position.z),
-        new THREE.Vector3(0, -1, 0)
-      )
-      const tempNormal = new THREE.Vector3()
-      const hitPoint = new THREE.Vector3()
+      _tempRay.origin.set(this.position.x, this.position.y + 50.0, this.position.z)
+      _tempRay.direction.set(0, -1, 0)
 
       let highestBelow: number | null = null
       let lowestAbove: number | null = null
 
       colliderBVH.shapecast({
-        intersectsBounds: (box: THREE.Box3) => ray.intersectsBox(box),
+        intersectsBounds: (box: THREE.Box3) => _tempRay.intersectsBox(box),
         intersectsTriangle: (tri: any) => {
-          tri.getNormal(tempNormal)
-          if (tempNormal.y > 0.3) {
-            if (ray.intersectTriangle(tri.a, tri.b, tri.c, false, hitPoint)) {
-              if (hitPoint.y <= this.position.y + 1.2) {
-                if (highestBelow === null || hitPoint.y > highestBelow) {
-                  highestBelow = hitPoint.y
+          tri.getNormal(_tempNormal)
+          if (_tempNormal.y > 0.3) {
+            if (_tempRay.intersectTriangle(tri.a, tri.b, tri.c, false, _tempHitPoint)) {
+              if (_tempHitPoint.y <= this.position.y + 1.2) {
+                if (highestBelow === null || _tempHitPoint.y > highestBelow) {
+                  highestBelow = _tempHitPoint.y
                 }
               } else {
-                if (lowestAbove === null || hitPoint.y < lowestAbove) {
-                  lowestAbove = hitPoint.y
+                if (lowestAbove === null || _tempHitPoint.y < lowestAbove) {
+                  lowestAbove = _tempHitPoint.y
                 }
               }
             }
@@ -132,11 +135,9 @@ export abstract class BaseActor {
       if (highestBelow !== null) {
         targetGroundY = highestBelow
       } else if (lowestAbove !== null) {
-        // Submerged inside/below a block: auto-pop up to the surface above!
         targetGroundY = lowestAbove
       }
     } else {
-      // Default stage floor when no custom scene BVH is loaded
       if (Math.abs(this.position.x) <= 50.0 && Math.abs(this.position.z) <= 50.0) {
         targetGroundY = -1.0
       }
@@ -144,12 +145,10 @@ export abstract class BaseActor {
 
     if (targetGroundY !== null) {
       if (this.position.y <= targetGroundY + 0.1) {
-        // Landed or submerged inside floor: auto-pop onto surface
         this.position.y = targetGroundY
         this.velocity.y = 0
         this.isOnGround = true
       } else {
-        // Falling in mid-air towards targetGroundY
         this.velocity.y -= 30.0 * dt
         this.position.y += this.velocity.y * dt
         if (this.position.y <= targetGroundY) {
@@ -161,7 +160,6 @@ export abstract class BaseActor {
         }
       }
     } else {
-      // Open void (no floor directly under footprint): apply gravity
       this.velocity.y -= 30.0 * dt
       this.position.y += this.velocity.y * dt
       this.isOnGround = false

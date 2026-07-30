@@ -1,6 +1,13 @@
 import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
 
+// Module-level static scratch objects to eliminate Garbage Collection allocations per frame
+const _tempDir = new THREE.Vector3()
+const _tempVecA = new THREE.Vector3()
+const _tempVecB = new THREE.Vector3()
+const _tempSegment = new THREE.Line3()
+const _tempCapsuleBounds = new THREE.Box3()
+
 export class HumanActor extends BaseActor {
   constructor() {
     super()
@@ -15,8 +22,7 @@ export class HumanActor extends BaseActor {
 
   public buildMesh(): void {
     while (this.group.children.length > 0) {
-      const child = this.group.children[0]
-      this.group.remove(child)
+      this.group.remove(this.group.children[0])
     }
 
     // 1. Human Body Mesh
@@ -32,7 +38,7 @@ export class HumanActor extends BaseActor {
     bodyMesh.receiveShadow = true
     this.group.add(bodyMesh)
 
-    // 2. Nose Pointer Box (indicating front direction +Z)
+    // 2. Nose Pointer Box (front indicator +Z)
     const noseGeo = new THREE.BoxGeometry(0.08, 0.08, 0.12)
     const noseMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
@@ -89,15 +95,15 @@ export class HumanActor extends BaseActor {
     if (isA) moveX -= 1
     if (isD) moveX += 1
 
-    const dir = new THREE.Vector3(moveX, 0, moveZ)
-    if (dir.lengthSq() > 0) {
-      dir.normalize()
-      this.rotationY = Math.atan2(dir.x, dir.z)
+    _tempDir.set(moveX, 0, moveZ)
+    if (_tempDir.lengthSq() > 0) {
+      _tempDir.normalize()
+      this.rotationY = Math.atan2(_tempDir.x, _tempDir.z)
       this.group.rotation.y = this.rotationY
     }
 
-    this.velocity.x = dir.x * speed
-    this.velocity.z = dir.z * speed
+    this.velocity.x = _tempDir.x * speed
+    this.velocity.z = _tempDir.z * speed
 
     let touchGround = false
 
@@ -109,54 +115,38 @@ export class HumanActor extends BaseActor {
         const radius = 0.45
         const height = 0.9
 
-        const tempSegment = new THREE.Line3()
-        tempSegment.start.copy(this.position)
-        tempSegment.start.y += radius
+        _tempSegment.start.copy(this.position)
+        _tempSegment.start.y += radius
+        _tempSegment.end.copy(this.position)
+        _tempSegment.end.y += radius + height
 
-        tempSegment.end.copy(this.position)
-        tempSegment.end.y += radius + height
-
-        const capsuleBounds = new THREE.Box3()
-        capsuleBounds.min.copy(this.position)
-        capsuleBounds.min.x -= 1.0
-        capsuleBounds.min.z -= 1.0
-        capsuleBounds.min.y -= 1.5
-        capsuleBounds.max.copy(this.position)
-        capsuleBounds.max.x += 1.0
-        capsuleBounds.max.z += 1.0
-        capsuleBounds.max.y += radius + height + radius + 1.5
-
-        const tempVector = new THREE.Vector3()
-        const tempVector2 = new THREE.Vector3()
+        _tempCapsuleBounds.min.set(this.position.x - 1.0, this.position.y - 1.5, this.position.z - 1.0)
+        _tempCapsuleBounds.max.set(this.position.x + 1.0, this.position.y + radius + height + radius + 1.5, this.position.z + 1.0)
 
         colliderBVH.shapecast({
-          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(capsuleBounds),
+          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
           intersectsTriangle: (tri: any) => {
-            const triPoint = tempVector
-            const capsulePoint = tempVector2
-            const distSq = tri.closestPointToSegment(tempSegment, triPoint, capsulePoint)
+            const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
             const dist = Math.sqrt(distSq)
 
             if (dist < radius) {
               const depth = radius - dist
-              const direction = capsulePoint.sub(triPoint).normalize()
+              const direction = _tempVecB.sub(_tempVecA).normalize()
               if (direction.y > 0.3) {
                 touchGround = true
               }
-              tempSegment.start.addScaledVector(direction, depth)
-              tempSegment.end.addScaledVector(direction, depth)
+              _tempSegment.start.addScaledVector(direction, depth)
+              _tempSegment.end.addScaledVector(direction, depth)
             }
           }
         })
 
-        this.position.copy(tempSegment.start)
+        this.position.copy(_tempSegment.start)
         this.position.y -= radius
 
-        if (touchGround) {
-          if (this.velocity.y <= 0) {
-            this.velocity.y = 0
-            this.isOnGround = true
-          }
+        if (touchGround && this.velocity.y <= 0) {
+          this.velocity.y = 0
+          this.isOnGround = true
         }
       } else {
         if (this.position.y <= -1.0) {
@@ -172,7 +162,6 @@ export class HumanActor extends BaseActor {
       this.isOnGround = false
     }
 
-    // Respawn if falling off stage edge into abyss
     if (this.position.y < -10.0) {
       this.resetToOrigin()
       return
