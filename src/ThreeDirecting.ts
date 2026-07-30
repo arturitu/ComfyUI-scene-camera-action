@@ -331,9 +331,9 @@ export class ThreeDirecting {
 
     const floorGeo = new THREE.PlaneGeometry(100, 100)
     const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xdbdbdb,
-      roughness: 1,
-      metalness: 0
+      color: config.FLOOR_COLOR,
+      roughness: config.FLOOR_ROUGHNESS,
+      metalness: config.FLOOR_METALNESS
     })
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
@@ -342,15 +342,10 @@ export class ThreeDirecting {
     floorMesh.receiveShadow = true
     this.clonedEnvGroup.add(floorMesh)
 
-    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
     const transforms: any[] = sceneData.asset_transforms ?? []
     transforms.forEach((t: any) => {
       const geo = new THREE.BoxGeometry(1, 1, 1)
-      const mesh = new THREE.Mesh(geo, materials)
+      const mesh = new THREE.Mesh(geo, config.createBlockMaterial())
       mesh.position.set(t.px ?? 0, t.py ?? 0, t.pz ?? 0)
       mesh.rotation.set(t.rx ?? 0, t.ry ?? 0, t.rz ?? 0)
       mesh.scale.set(t.sx ?? 1, t.sy ?? 1, t.sz ?? 1)

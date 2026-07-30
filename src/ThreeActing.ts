@@ -263,9 +263,9 @@ export class ThreeActing {
 
       const floorGeo = new THREE.PlaneGeometry(100, 100)
       const floorMat = new THREE.MeshStandardMaterial({
-        color: 0xdbdbdb,
-        roughness: 1,
-        metalness: 0
+        color: config.FLOOR_COLOR,
+        roughness: config.FLOOR_ROUGHNESS,
+        metalness: config.FLOOR_METALNESS
       })
       const floorMesh = new THREE.Mesh(floorGeo, floorMat)
       floorMesh.name = 'floor'
@@ -274,16 +274,10 @@ export class ThreeActing {
       floorMesh.receiveShadow = true
       this.clonedEnvGroup.add(floorMesh)
 
-      // Reconstruct asset meshes matching ThreeScene materials
-      const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-      const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-      const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-      const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
       const transforms = this.state.scene_data.asset_transforms ?? []
       transforms.forEach((t) => {
         const geometry = new THREE.BoxGeometry(1, 1, 1)
-        const mesh = new THREE.Mesh(geometry, materials)
+        const mesh = new THREE.Mesh(geometry, config.createBlockMaterial())
         mesh.position.set(t.px, t.py, t.pz)
         mesh.rotation.set(t.rx, t.ry, t.rz)
         mesh.scale.set(t.sx, t.sy, t.sz)
@@ -326,9 +320,9 @@ export class ThreeActing {
 
       const floorGeo = new THREE.PlaneGeometry(100, 100)
       const floorMat = new THREE.MeshStandardMaterial({
-        color: 0xdbdbdb,
-        roughness: 1,
-        metalness: 0
+        color: config.FLOOR_COLOR,
+        roughness: config.FLOOR_ROUGHNESS,
+        metalness: config.FLOOR_METALNESS
       })
       const floorMesh = new THREE.Mesh(floorGeo, floorMat)
       floorMesh.name = 'floor'

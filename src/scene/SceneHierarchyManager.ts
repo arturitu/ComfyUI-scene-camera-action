@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import type { SceneState, SceneNode, CubeTransform } from '../types'
+import { createBlockMaterial } from '../threeConfig'
 
 export class SceneHierarchyManager {
   private meshes: THREE.Mesh[] = []
@@ -9,13 +10,8 @@ export class SceneHierarchyManager {
   }
 
   public createBlockMesh(transform: CubeTransform): THREE.Mesh {
-    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
     const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const mesh = new THREE.Mesh(geometry, materials)
+    const mesh = new THREE.Mesh(geometry, createBlockMaterial())
 
     mesh.position.set(transform.px, transform.py, transform.pz)
     mesh.rotation.set(transform.rx, transform.ry, transform.rz)

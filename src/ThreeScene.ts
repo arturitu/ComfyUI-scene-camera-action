@@ -126,7 +126,11 @@ export class ThreeScene {
 
     // Floor plane
     const floorGeo = new THREE.PlaneGeometry(100, 100)
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0xdbdbdb, roughness: 1, metalness: 0 })
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: config.FLOOR_COLOR,
+      roughness: config.FLOOR_ROUGHNESS,
+      metalness: config.FLOOR_METALNESS
+    })
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
@@ -517,6 +521,8 @@ export class ThreeScene {
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
     if (this.controls) {
+      this.controls.target.x = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.x))
+      this.controls.target.z = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.z))
       this.controls.update()
     }
     this.selectionManager.updateBoxHelpers()

@@ -1,24 +1,24 @@
 import * as THREE from 'three'
 
-export const BACKGROUND_COLOR = 0xd3d3d7
+export const BACKGROUND_COLOR = 0xaaaaaa
 
 // Camera Config
 export const CAMERA_FOV = 45
 export const CAMERA_NEAR = 0.1
-export const CAMERA_FAR = 500
+export const CAMERA_FAR = 200
 export const CAMERA_MIN_DISTANCE = 1.5
-export const CAMERA_MAX_DISTANCE = 250.0
+export const CAMERA_MAX_DISTANCE = 70.0
+export const MAX_PAN = 30.0
 
 // Fog Config
-export const FOG_COLOR = BACKGROUND_COLOR
-export const FOG_NEAR = 35
-export const FOG_FAR = 85
+export const FOG_NEAR = 1
+export const FOG_FAR = 180
 
 // Grid Helper Config
 export const GRID_SIZE = 100
-export const GRID_DIVISIONS = 100
+export const GRID_DIVISIONS = 50
 export const GRID_COLOR_CENTER = 0x66666f
-export const GRID_COLOR_GRID = 0xc5c5cb
+export const GRID_COLOR_GRID = 0xa5a5ab
 
 // Ambient Light Config
 export const AMBIENT_LIGHT_COLOR = 0xffffff
@@ -40,3 +40,21 @@ export const SHADOW_FRUSTUM_SIZE = 15 // Covers 30x30m around the target
 export const FILL_LIGHT_COLOR = 0x3d4974
 export const FILL_LIGHT_INTENSITY = 0.3
 export const FILL_LIGHT_POSITION = new THREE.Vector3(-5, 3, -5)
+
+// Floor Material Config
+export const FLOOR_COLOR = 0xdbdbdb
+export const FLOOR_ROUGHNESS = 1.0
+export const FLOOR_METALNESS = 0.0
+
+// Block Material Config
+export const BLOCK_COLOR = 0xc9c9c9
+export const BLOCK_ROUGHNESS = 0.6
+export const BLOCK_METALNESS = 0.0
+
+export function createBlockMaterial(): THREE.MeshStandardMaterial {
+  return new THREE.MeshStandardMaterial({
+    color: BLOCK_COLOR,
+    roughness: BLOCK_ROUGHNESS,
+    metalness: BLOCK_METALNESS,
+  })
+}
