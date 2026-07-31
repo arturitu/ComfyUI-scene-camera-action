@@ -421,6 +421,9 @@ export class ThreeDirecting {
 
   public startRecording(fps: number = 30): void {
     this.lastCameraMode = null
+    this.playbackController.setCurrentTime(0)
+    this.playbackController.play()
+    this.isPlaying = true
 
     // Enforce fixed 720p (1280x720) WebGL rendering resolution independent of container canvas size
     const targetWidth = 1280
@@ -478,35 +481,28 @@ export class ThreeDirecting {
         return
       }
 
-      // Save current playback time and snap actor to initial frame (t = 0.0s)
+      // Save current playback time and snap actor & camera to initial frame (t = 0.0s)
       const prevTime = this.playbackController.getCurrentTime()
       this.playbackController.setCurrentTime(0)
       this.updateActorMovement(0)
+      this.updateCamera()
 
-      // Temporarily disable fog for crisp overview render without fog haze
-      const prevFog = this.scene.fog
-      this.scene.fog = null
-
-      // Enforce fixed 720p (1280x720) resolution for stage overview snapshot
+      // Enforce fixed 720p (1280x720) resolution for stage snapshot
       const targetWidth = 1280
       const targetHeight = 720
       this.renderer.setSize(targetWidth, targetHeight, false)
+      this.camera.aspect = targetWidth / targetHeight
+      this.camera.updateProjectionMatrix()
 
-      // Dedicated stage camera with lower FOV (15°) for telephoto stage overview
-      const stageCamera = new THREE.PerspectiveCamera(15, targetWidth / targetHeight, 0.1, 200)
-      stageCamera.position.set(-26, 22, 26)
-      stageCamera.lookAt(0, 0, 0)
-      stageCamera.updateProjectionMatrix()
-
-      // Render stage overview frame at initial frame (t = 0.0s)
-      this.renderer.render(this.scene, stageCamera)
+      // Render initial frame (t = 0.0s) using directed camera
+      this.renderer.render(this.scene, this.camera)
 
       const canvas = this.renderer.domElement
       canvas.toBlob((blob) => {
-        // Restore scene fog, playback time, actor position, standard camera view, and container resolution
-        this.scene.fog = prevFog
+        // Restore playback time, actor position, standard camera view, and container resolution
         this.playbackController.setCurrentTime(prevTime)
         this.updateActorMovement(0)
+        this.updateCamera()
         this.onResize()
         this.renderer.render(this.scene, this.camera)
         if (blob) {

@@ -862,7 +862,7 @@ app.registerExtension({
       const origOnExecuted = node.onExecuted
       node.onExecuted = function (message: any) {
         origOnExecuted?.call(this, message)
-        if (message?.scene_state) {
+        if (message?.scene_state && Array.isArray(message.scene_state.nodes) && message.scene_state.nodes.length > 0) {
           const instance = sceneInstances.get(this)
           if (instance) {
             instance.exposed.setState(message.scene_state)
