@@ -56,8 +56,15 @@
             {{ isPlaying ? 'Pause' : 'Play' }}
           </button>
           <button
+            class="acting-btn stop-btn"
+            title="Stop and Reset Position"
+            @click="stopPlayback"
+          >
+            Stop
+          </button>
+          <button
             class="acting-btn reset-btn"
-            title="Reset to Keyboard Control"
+            title="Clear Recording and Reset to Keyboard"
             @click="resetToInteractive"
           >
             Reset
@@ -72,7 +79,7 @@
         <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
         <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
         <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
-        <div class="hint">Use WASD or Arrow keys to move character</div>
+        <div class="hint">Use WASD or Arrow keys to move actor</div>
       </template>
       <template v-else>
         <div class="hint">Waiting for scene link...</div>
@@ -99,7 +106,8 @@ const props = defineProps<{
 }>()
 
 const state = reactive<ActingState>({
-  character_speed: props.initialState?.character_speed ?? 10.0,
+  actor_type: props.initialState?.actor_type ?? 'human',
+  actor_speed: props.initialState?.actor_speed ?? 10.0,
   duration: props.initialState?.duration ?? 7.0,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
@@ -206,15 +214,22 @@ const togglePlay = () => {
   if (isPlaying.value) {
     isPlaying.value = false
     if (threeActing) {
-      threeActing.stopPlayback()
+      threeActing.pause()
     }
   } else {
     if (state.motion_data) {
       isPlaying.value = true
       if (threeActing) {
-        threeActing.startPlayback(state.motion_data)
+        threeActing.play()
       }
     }
+  }
+}
+
+const stopPlayback = () => {
+  isPlaying.value = false
+  if (threeActing) {
+    threeActing.stop()
   }
 }
 
@@ -235,8 +250,11 @@ const setState = (newState: Partial<ActingState>) => {
   if (newState.hasOwnProperty('scene_data')) {
     state.scene_data = newState.scene_data as any
   }
-  if (newState.hasOwnProperty('character_speed')) {
-    state.character_speed = newState.character_speed as number
+  if (newState.hasOwnProperty('actor_type')) {
+    state.actor_type = newState.actor_type as any
+  }
+  if (newState.hasOwnProperty('actor_speed')) {
+    state.actor_speed = newState.actor_speed as number
   }
   if (newState.hasOwnProperty('duration')) {
     state.duration = newState.duration as number

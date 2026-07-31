@@ -1,0 +1,915 @@
+{
+  "type": "cube_scene",
+  "num_assets": 50,
+  "nodes": [
+    {
+      "id": "grp_start_zone",
+      "type": "group",
+      "name": "Space Launch Gate",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "start_pad",
+          "type": "block",
+          "name": "Launch Pad Floor",
+          "transform": {
+            "px": 0,
+            "py": 0.1,
+            "pz": -25,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8,
+            "sy": 0.2,
+            "sz": 8
+          }
+        },
+        {
+          "id": "arch_p1",
+          "type": "block",
+          "name": "Portal Left Pillar",
+          "transform": {
+            "px": -3.6,
+            "py": 2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "arch_p2",
+          "type": "block",
+          "name": "Portal Right Pillar",
+          "transform": {
+            "px": 3.6,
+            "py": 2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "arch_top",
+          "type": "block",
+          "name": "Portal Crossbeam",
+          "transform": {
+            "px": 0,
+            "py": 4.2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8,
+            "sy": 0.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "arch_ring",
+          "type": "block",
+          "name": "Portal Energy Crest",
+          "transform": {
+            "px": 0,
+            "py": 4.7,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4,
+            "sy": 0.6,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "start_banner",
+          "type": "block",
+          "name": "Start Banner Crossbar",
+          "transform": {
+            "px": 0,
+            "py": 3.2,
+            "pz": -24,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_mega_ramp",
+      "type": "group",
+      "name": "Mega Kicker Ramp",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ramp_main",
+          "type": "block",
+          "name": "Launch Ramp Deck",
+          "transform": {
+            "px": 0,
+            "py": 1.4,
+            "pz": -15,
+            "rx": -0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 12.2
+          }
+        },
+        {
+          "id": "ramp_curb_l",
+          "type": "block",
+          "name": "Ramp Left Curb",
+          "transform": {
+            "px": -2.9,
+            "py": 1.6,
+            "pz": -15,
+            "rx": -0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.5,
+            "sz": 12.2
+          }
+        },
+        {
+          "id": "ramp_curb_r",
+          "type": "block",
+          "name": "Ramp Right Curb",
+          "transform": {
+            "px": 2.9,
+            "py": 1.6,
+            "pz": -15,
+            "rx": -0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.5,
+            "sz": 12.2
+          }
+        },
+        {
+          "id": "ramp_supp_low_l",
+          "type": "block",
+          "name": "Low Support Pillar L",
+          "transform": {
+            "px": -2.6,
+            "py": 0.4,
+            "pz": -19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.8,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "ramp_supp_low_r",
+          "type": "block",
+          "name": "Low Support Pillar R",
+          "transform": {
+            "px": 2.6,
+            "py": 0.4,
+            "pz": -19,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.8,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "ramp_supp_mid_l",
+          "type": "block",
+          "name": "Mid Support Pillar L",
+          "transform": {
+            "px": -2.6,
+            "py": 0.9,
+            "pz": -14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 1.8,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "ramp_supp_mid_r",
+          "type": "block",
+          "name": "Mid Support Pillar R",
+          "transform": {
+            "px": 2.6,
+            "py": 0.9,
+            "pz": -14,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 1.8,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "ramp_supp_high_l",
+          "type": "block",
+          "name": "High Support Pillar L",
+          "transform": {
+            "px": -2.6,
+            "py": 1.3,
+            "pz": -9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 2.6,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "ramp_supp_high_r",
+          "type": "block",
+          "name": "High Support Pillar R",
+          "transform": {
+            "px": 2.6,
+            "py": 1.3,
+            "pz": -9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 2.6,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "kicker_lip",
+          "type": "block",
+          "name": "Launch Kicker Lip",
+          "transform": {
+            "px": 0,
+            "py": 2.9,
+            "pz": -7.8,
+            "rx": -0.42,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 2.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_landing_zone",
+      "type": "group",
+      "name": "Floating Landing Island",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "land_deck",
+          "type": "block",
+          "name": "Floating Landing Deck",
+          "transform": {
+            "px": 0,
+            "py": 3.2,
+            "pz": 3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 7,
+            "sy": 0.4,
+            "sz": 10
+          }
+        },
+        {
+          "id": "land_receiver",
+          "type": "block",
+          "name": "Landing Receiver Slope",
+          "transform": {
+            "px": 0,
+            "py": 2.7,
+            "pz": -3.2,
+            "rx": 0.3,
+            "ry": 0,
+            "rz": 0,
+            "sx": 7,
+            "sy": 0.3,
+            "sz": 3
+          }
+        },
+        {
+          "id": "land_pillar_core",
+          "type": "block",
+          "name": "Levitation Tower Shaft",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": 3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.2,
+            "sy": 3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "land_pillar_ring",
+          "type": "block",
+          "name": "Levitation Ring Support",
+          "transform": {
+            "px": 0,
+            "py": 2.9,
+            "pz": 3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.6,
+            "sy": 0.4,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "wallride_berm_l",
+          "type": "block",
+          "name": "Wallride Banked Berm",
+          "transform": {
+            "px": 3.8,
+            "py": 4.4,
+            "pz": 3,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.45,
+            "sx": 0.3,
+            "sy": 3,
+            "sz": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_halfpipe",
+      "type": "group",
+      "name": "Space Skate Halfpipe & Funbox",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "pipe_deck",
+          "type": "block",
+          "name": "Halfpipe Center Transition",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12,
+            "sy": 0.4,
+            "sz": 9
+          }
+        },
+        {
+          "id": "pipe_support",
+          "type": "block",
+          "name": "Halfpipe Ground Support",
+          "transform": {
+            "px": 0,
+            "py": 0.65,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 10,
+            "sy": 1.3,
+            "sz": 7
+          }
+        },
+        {
+          "id": "pipe_wall_l",
+          "type": "block",
+          "name": "Halfpipe Left Wall",
+          "transform": {
+            "px": -5.8,
+            "py": 3,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.35,
+            "sx": 0.4,
+            "sy": 3,
+            "sz": 9
+          }
+        },
+        {
+          "id": "pipe_wall_r",
+          "type": "block",
+          "name": "Halfpipe Right Wall",
+          "transform": {
+            "px": 5.8,
+            "py": 3,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.35,
+            "sx": 0.4,
+            "sy": 3,
+            "sz": 9
+          }
+        },
+        {
+          "id": "funbox_top",
+          "type": "block",
+          "name": "Skate Funbox Flat Top",
+          "transform": {
+            "px": 0,
+            "py": 2.1,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3,
+            "sy": 0.8,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "funbox_kicker_in",
+          "type": "block",
+          "name": "Funbox Entry Kicker",
+          "transform": {
+            "px": 0,
+            "py": 1.9,
+            "pz": 12,
+            "rx": -0.35,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3,
+            "sy": 0.2,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "funbox_kicker_out",
+          "type": "block",
+          "name": "Funbox Exit Kicker",
+          "transform": {
+            "px": 0,
+            "py": 1.9,
+            "pz": 17,
+            "rx": 0.35,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3,
+            "sy": 0.2,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "grind_rail",
+          "type": "block",
+          "name": "Funbox Grind Rail",
+          "transform": {
+            "px": 0,
+            "py": 2.6,
+            "pz": 14.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 0.2,
+            "sz": 3.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_high_orbit_steps",
+      "type": "group",
+      "name": "High Orbit Step-Up Ramps & Finish Gate",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "step1_ramp",
+          "type": "block",
+          "name": "Step-Up Ramp 1",
+          "transform": {
+            "px": 0,
+            "py": 2.05,
+            "pz": 20,
+            "rx": -0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "step1_shaft",
+          "type": "block",
+          "name": "Step 1 Support Shaft",
+          "transform": {
+            "px": 0,
+            "py": 1.2,
+            "pz": 22.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.8,
+            "sy": 2.4,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "step1_deck",
+          "type": "block",
+          "name": "Step 1 Platform Deck",
+          "transform": {
+            "px": 0,
+            "py": 2.6,
+            "pz": 22.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.4,
+            "sz": 4
+          }
+        },
+        {
+          "id": "step2_ramp",
+          "type": "block",
+          "name": "Step-Up Ramp 2",
+          "transform": {
+            "px": 0,
+            "py": 3.3,
+            "pz": 25.2,
+            "rx": -0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "step2_shaft",
+          "type": "block",
+          "name": "Step 2 Support Shaft",
+          "transform": {
+            "px": 0,
+            "py": 1.9,
+            "pz": 27.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.8,
+            "sy": 3.8,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "step2_deck",
+          "type": "block",
+          "name": "Step 2 Platform Deck",
+          "transform": {
+            "px": 0,
+            "py": 4,
+            "pz": 27.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.4,
+            "sz": 4
+          }
+        },
+        {
+          "id": "step3_ramp",
+          "type": "block",
+          "name": "Final Step-Up Ramp 3",
+          "transform": {
+            "px": 0,
+            "py": 4.75,
+            "pz": 30.2,
+            "rx": -0.28,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.3,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "step3_shaft",
+          "type": "block",
+          "name": "Finish Tower Central Shaft",
+          "transform": {
+            "px": 0,
+            "py": 2.6,
+            "pz": 34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.5,
+            "sy": 5.2,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "step3_deck",
+          "type": "block",
+          "name": "High Orbit Finish Deck",
+          "transform": {
+            "px": 0,
+            "py": 5.5,
+            "pz": 34,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8,
+            "sy": 0.5,
+            "sz": 7
+          }
+        },
+        {
+          "id": "finish_p1",
+          "type": "block",
+          "name": "Finish Gate Left Pillar",
+          "transform": {
+            "px": -3.2,
+            "py": 8.2,
+            "pz": 35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "finish_p2",
+          "type": "block",
+          "name": "Finish Gate Right Pillar",
+          "transform": {
+            "px": 3.2,
+            "py": 8.2,
+            "pz": 35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "finish_top",
+          "type": "block",
+          "name": "Finish Gate Crossbeam",
+          "transform": {
+            "px": 0,
+            "py": 10.5,
+            "pz": 35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 7.2,
+            "sy": 0.6,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "finish_core",
+          "type": "block",
+          "name": "Warp Gate Crystal Core",
+          "transform": {
+            "px": 0,
+            "py": 9,
+            "pz": 35,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 2,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "grp_space_scenery",
+      "type": "group",
+      "name": "Space Adventure Props & Satellites",
+      "transform": {
+        "px": 0.33,
+        "py": 0,
+        "pz": 1.72,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "antenna_base",
+          "type": "block",
+          "name": "Radio Array Ground Base",
+          "transform": {
+            "px": -10,
+            "py": 0.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 0.6,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "antenna_mast",
+          "type": "block",
+          "name": "Radio Mast Shaft",
+          "transform": {
+            "px": -10,
+            "py": 3.6,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 6,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "antenna_dish",
+          "type": "block",
+          "name": "Radio Dish Reflector",
+          "transform": {
+            "px": -10,
+            "py": 6.8,
+            "pz": 0,
+            "rx": -0.5,
+            "ry": 0.4,
+            "rz": 0,
+            "sx": 2,
+            "sy": 0.3,
+            "sz": 2
+          }
+        },
+        {
+          "id": "sat_base",
+          "type": "block",
+          "name": "Satellite Ground Base",
+          "transform": {
+            "px": 10,
+            "py": 0.3,
+            "pz": -12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 0.6,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "sat_mast",
+          "type": "block",
+          "name": "Satellite Mast Shaft",
+          "transform": {
+            "px": 10,
+            "py": 3.1,
+            "pz": -12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 5,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "sat_wings",
+          "type": "block",
+          "name": "Satellite Solar Wings",
+          "transform": {
+            "px": 10,
+            "py": 5.7,
+            "pz": -12,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.5,
+            "sy": 0.1,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "cryst_1",
+          "type": "block",
+          "name": "Floating Energy Crystal Alpha",
+          "transform": {
+            "px": -8,
+            "py": 3.5,
+            "pz": -14,
+            "rx": 0,
+            "ry": 0.78,
+            "rz": 0,
+            "sx": 1.4,
+            "sy": 3,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "cryst_2",
+          "type": "block",
+          "name": "Floating Energy Crystal Beta",
+          "transform": {
+            "px": 8,
+            "py": 6.5,
+            "pz": 22,
+            "rx": 0,
+            "ry": 0.78,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 4,
+            "sz": 1.6
+          }
+        }
+      ]
+    }
+  ],
+  "selectedPreset": "space_platform_track.json"
+}

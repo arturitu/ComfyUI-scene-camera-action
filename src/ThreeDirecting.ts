@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import type { DirectingState, ThreeDirectingOptions } from './types'
 import * as config from './threeConfig'
+import { BaseActor } from './actors/BaseActor'
+import { ActorFactory } from './actors/ActorFactory'
+import { PlaybackController } from './utils/PlaybackController'
+import { StageEnvironment } from './scene/StageEnvironment'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -10,16 +14,13 @@ export class ThreeDirecting {
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
-  private characterGroup: THREE.Group | null = null
-  private mainLight!: THREE.DirectionalLight
-  private gridHelper: THREE.GridHelper | null = null
+  private actorController: BaseActor | null = null
   private animationId: number | null = null
   private clonedEnvGroup: THREE.Group | null = null
   private connectedThreeActing: any = null
 
-  private playbackTime = 0
-  private trajectory: Array<{ t: number; px: number; py: number; pz: number; ry: number }> = []
-  private characterPosition = new THREE.Vector3(0, -1.0, 2)
+  private playbackController = new PlaybackController()
+  private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
@@ -45,68 +46,68 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
+    const actorType = (this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function')
+      ? this.connectedThreeActing.getActorType()
+      : (this.connectedThreeActing && typeof this.connectedThreeActing.getState === 'function')
+        ? this.connectedThreeActing.getState()?.actor_type
+        : undefined
+    this.buildActor(actorType)
     this.buildSceneEnvironment()
   }
 
   public loadActingData(actingDataJson: string): void {
-    if (!actingDataJson || !actingDataJson.trim()) {
-      this.trajectory = []
-      return
-    }
-    try {
-      const parsed = JSON.parse(actingDataJson)
-
-      if (Array.isArray(parsed)) {
-        this.trajectory = parsed
-        this.trajectory.sort((a, b) => a.t - b.t)
-      } else if (typeof parsed === 'object') {
-        if (Array.isArray(parsed.motion_data)) {
-          this.trajectory = parsed.motion_data
-          this.trajectory.sort((a, b) => a.t - b.t)
-        } else if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim()) {
-          try {
-            this.trajectory = JSON.parse(parsed.motion_data)
-            this.trajectory.sort((a, b) => a.t - b.t)
-          } catch {
-            this.trajectory = []
+    let parsedActorType: string | undefined
+    if (actingDataJson && actingDataJson.trim()) {
+      try {
+        const parsed = JSON.parse(actingDataJson)
+        if (typeof parsed === 'object' && parsed !== null) {
+          parsedActorType = parsed.actor_type || parsed.actorType || parsed.char_type
+          if (parsed.scene_data && !this.connectedThreeActing) {
+            this.buildSceneFromData(parsed.scene_data)
           }
         }
-        if (parsed.scene_data && !this.connectedThreeActing) {
-          this.buildSceneFromData(parsed.scene_data)
-        }
+      } catch (e) {
+        console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
       }
-    } catch {
-      this.trajectory = []
+      this.playbackController.setTrajectory(actingDataJson)
+      this.playbackController.start()
     }
 
-    this.normalizeTrajectoryOrientation()
-    this.playbackTime = 0
-    this.updateCharacterMovement(0)
+    this.buildSceneEnvironment()
+    this.buildActor(parsedActorType)
+
+    if (this.actorController) {
+      if (this.playbackController.getTrajectory().length > 0) {
+        this.playbackController.evaluateAt(0, this.actorController)
+      }
+      this.actorPosition.copy(this.actorController.position)
+    }
     this.updateCamera()
   }
 
   private normalizeTrajectoryOrientation(): void {
-    if (this.trajectory.length < 2) return
+    const trajectory = this.playbackController.getTrajectory()
+    if (trajectory.length < 2) return
 
     let firstMoveIdx = -1
-    for (let i = 1; i < this.trajectory.length; i++) {
-      const dx = this.trajectory[i].px - this.trajectory[0].px
-      const dz = this.trajectory[i].pz - this.trajectory[0].pz
-      if (dx * dx + dz * dz > 0.001 || Math.abs(this.trajectory[i].ry - this.trajectory[0].ry) > 0.001) {
+    for (let i = 1; i < trajectory.length; i++) {
+      const dx = trajectory[i].px - trajectory[0].px
+      const dz = trajectory[i].pz - trajectory[0].pz
+      if (dx * dx + dz * dz > 0.001 || Math.abs(trajectory[i].ry - trajectory[0].ry) > 0.001) {
         firstMoveIdx = i
         break
       }
     }
 
     if (firstMoveIdx > 0) {
-      const dx = this.trajectory[firstMoveIdx].px - this.trajectory[0].px
-      const dz = this.trajectory[firstMoveIdx].pz - this.trajectory[0].pz
-      let initialRy = this.trajectory[firstMoveIdx].ry
+      const dx = trajectory[firstMoveIdx].px - trajectory[0].px
+      const dz = trajectory[firstMoveIdx].pz - trajectory[0].pz
+      let initialRy = trajectory[firstMoveIdx].ry
       if (dx * dx + dz * dz > 0.001) {
         initialRy = Math.atan2(dx, dz)
       }
       for (let k = 0; k < firstMoveIdx; k++) {
-        this.trajectory[k].ry = initialRy
+        trajectory[k].ry = initialRy
       }
     }
   }
@@ -120,7 +121,7 @@ export class ThreeDirecting {
     this.scene.background = bgColor
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
-    this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100)
+    this.camera = new THREE.PerspectiveCamera(50, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
@@ -139,8 +140,12 @@ export class ThreeDirecting {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
+    // Setup Stage Environment (Lights, Floor, Grid)
+    const stageEnv = new StageEnvironment()
+    const stageSetup = stageEnv.initStage(this.scene)
+
     this.buildSceneEnvironment()
-    this.buildCharacter()
+    this.buildActor()
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -152,6 +157,26 @@ export class ThreeDirecting {
       })
     })
     this.resizeObserver.observe(this.container)
+  }
+
+  public getSceneData(): any {
+    let actingPayload: any = this.state.acting_data
+    if (typeof actingPayload === 'string') {
+      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
+    }
+    if (actingPayload?.scene_data) {
+      return actingPayload.scene_data
+    }
+    if (this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getSceneData === 'function') {
+        return this.connectedThreeActing.getSceneData()
+      }
+      if (typeof this.connectedThreeActing.getState === 'function') {
+        const actingState = this.connectedThreeActing.getState()
+        if (actingState?.scene_data) return actingState.scene_data
+      }
+    }
+    return undefined
   }
 
   private buildSceneEnvironment(): void {
@@ -169,192 +194,60 @@ export class ThreeDirecting {
       })
       this.clonedEnvGroup = null
     }
-    if (this.gridHelper) {
-      this.scene.remove(this.gridHelper)
-      this.gridHelper = null
-    }
-    this.mainLight = null as any
 
-    let hasGrid = false
+    this.clonedEnvGroup = new THREE.Group()
+    this.scene.add(this.clonedEnvGroup)
 
-    if (this.connectedThreeActing && typeof this.connectedThreeActing.getScene === 'function') {
-      const sourceScene = this.connectedThreeActing.getScene() as THREE.Scene
-      this.clonedEnvGroup = new THREE.Group()
+    const sceneData = this.getSceneData()
 
-      let inheritedCharacter: THREE.Group | null = null
+    const stageEnv = new StageEnvironment()
+    stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
 
-      for (const child of sourceScene.children) {
-        if (
-          child instanceof THREE.Camera ||
-          child.name.includes('TransformControls') ||
-          child.name.includes('Helper')
-        ) continue
-
-        if (child instanceof THREE.GridHelper) {
-          hasGrid = true
-        }
-
-        if (child.name === 'characterGroup') {
-          inheritedCharacter = child.clone(true) as THREE.Group
-          continue
-        }
-
-        const clone = child.clone(true)
-        this.clonedEnvGroup!.add(clone)
-      }
-
-      if (inheritedCharacter) {
-        if (this.characterGroup) {
-          this.scene.remove(this.characterGroup)
-        }
-        this.characterGroup = inheritedCharacter
-        this.characterGroup.position.copy(this.characterPosition)
-        this.scene.add(this.characterGroup)
-      } else {
-        this.buildCharacter()
-      }
-
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.DirectionalLight) {
-          this.mainLight = child
-          this.mainLight.castShadow = true
-          this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-          this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-          this.mainLight.shadow.bias = config.SHADOW_BIAS
-          this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-          const d = config.SHADOW_FRUSTUM_SIZE
-          this.mainLight.shadow.camera.left = -d
-          this.mainLight.shadow.camera.right = d
-          this.mainLight.shadow.camera.top = d
-          this.mainLight.shadow.camera.bottom = -d
-          this.scene.add(this.mainLight.target)
-        }
-      })
-
-      this.scene.add(this.clonedEnvGroup)
-    }
-
-    if (!hasGrid) {
-      this.gridHelper = new THREE.GridHelper(
-        config.GRID_SIZE,
-        config.GRID_DIVISIONS,
-        config.GRID_COLOR_CENTER,
-        config.GRID_COLOR_GRID
-      )
-      this.gridHelper.position.y = -1.0
-      this.scene.add(this.gridHelper)
-    }
+    this.buildActor()
   }
 
   private buildSceneFromData(sceneData: any): void {
-    if (this.clonedEnvGroup) {
-      this.scene.remove(this.clonedEnvGroup)
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose()
-          if (Array.isArray(child.material)) {
-            child.material.forEach((m) => m.dispose())
-          } else {
-            child.material.dispose()
-          }
-        }
-      })
-      this.clonedEnvGroup = null
+    let actingPayload: any = this.state.acting_data
+    if (typeof actingPayload === 'string') {
+      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
     }
-    if (this.gridHelper) {
-      this.scene.remove(this.gridHelper)
-      this.gridHelper = null
+    if (!actingPayload || typeof actingPayload !== 'object') {
+      actingPayload = {}
     }
-    this.mainLight = null as any
-
-    this.clonedEnvGroup = new THREE.Group()
-
-    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-    this.clonedEnvGroup.add(ambientLight)
-
-    this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-    this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-    this.mainLight.castShadow = true
-    this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-    this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-    this.mainLight.shadow.bias = config.SHADOW_BIAS
-    this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-    const d = config.SHADOW_FRUSTUM_SIZE
-    this.mainLight.shadow.camera.left = -d
-    this.mainLight.shadow.camera.right = d
-    this.mainLight.shadow.camera.top = d
-    this.mainLight.shadow.camera.bottom = -d
-    this.scene.add(this.mainLight.target)
-    this.clonedEnvGroup.add(this.mainLight)
-
-    const floorGeo = new THREE.PlaneGeometry(100, 100)
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xdbdbdb,
-      roughness: 1,
-      metalness: 0
-    })
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-    floorMesh.name = 'floor'
-    floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = -1.002
-    floorMesh.receiveShadow = true
-    this.clonedEnvGroup.add(floorMesh)
-
-    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
-    const transforms: any[] = sceneData.asset_transforms ?? []
-    transforms.forEach((t: any) => {
-      const geo = new THREE.BoxGeometry(1, 1, 1)
-      const mesh = new THREE.Mesh(geo, materials)
-      mesh.position.set(t.px ?? 0, t.py ?? 0, t.pz ?? 0)
-      mesh.rotation.set(t.rx ?? 0, t.ry ?? 0, t.rz ?? 0)
-      mesh.scale.set(t.sx ?? 1, t.sy ?? 1, t.sz ?? 1)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-      this.clonedEnvGroup!.add(mesh)
-    })
-
-    this.scene.add(this.clonedEnvGroup)
-
-    this.gridHelper = new THREE.GridHelper(
-      config.GRID_SIZE,
-      config.GRID_DIVISIONS,
-      config.GRID_COLOR_CENTER,
-      config.GRID_COLOR_GRID
-    )
-    this.gridHelper.position.y = -1.0
-    this.scene.add(this.gridHelper)
-
-    // Ensure character exists when building from JSON
-    if (!this.characterGroup) {
-      this.buildCharacter()
-    }
+    actingPayload.scene_data = sceneData
+    this.state.acting_data = actingPayload
+    this.buildSceneEnvironment()
   }
 
-  private buildCharacter(): void {
-    if (this.characterGroup) {
-      this.scene.remove(this.characterGroup)
+  private buildActor(type?: string): void {
+    let charType = type
+    if (!charType) {
+      let actingPayload: any = this.state.acting_data
+      if (typeof actingPayload === 'string') {
+        try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
+      }
+      charType = actingPayload?.actor_type || actingPayload?.actorType || actingPayload?.char_type
     }
-
-    this.characterGroup = new THREE.Group()
-
-    const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0xff007f,
-      roughness: 0.2,
-      metalness: 0.5,
-    })
-    const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    bodyMesh.position.y = 0.85
-    bodyMesh.castShadow = true
-    bodyMesh.receiveShadow = true
-    this.characterGroup.add(bodyMesh)
-
-    this.characterGroup.position.copy(this.characterPosition)
-    this.scene.add(this.characterGroup)
+    if (!charType && this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getActorType === 'function') {
+        charType = this.connectedThreeActing.getActorType()
+      } else if (typeof this.connectedThreeActing.getState === 'function') {
+        charType = this.connectedThreeActing.getState()?.actor_type
+      }
+    }
+    if (!charType) {
+      charType = 'car'
+    }
+    if (this.actorController && (this.actorController as any).getType?.() === charType) {
+      return
+    }
+    if (this.actorController) {
+      this.scene.remove(this.actorController.group)
+      this.actorController.dispose()
+    }
+    this.actorController = ActorFactory.create(charType as 'human' | 'car')
+    this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
+    this.scene.add(this.actorController.group)
   }
 
   private keyframes: Array<{ id: string; t: number; mode: string }> = []
@@ -386,74 +279,36 @@ export class ThreeDirecting {
     this.isRecordingMode = active
   }
 
-  private updateCharacterMovement(dt: number): void {
-    if (!this.characterGroup || this.trajectory.length < 2) return
-
-    if (this.isPlaying) {
-      this.playbackTime += dt
-    }
-
-    const maxDuration = this.trajectory[this.trajectory.length - 1].t || 8.0
-
-    if (this.playbackTime >= maxDuration) {
-      if (this.isRecordingMode) {
-        this.playbackTime = maxDuration
-        this.isPlaying = false
-      } else {
-        this.playbackTime = this.playbackTime % maxDuration
-      }
-    }
-
-    const t = this.playbackTime
-
-    let idxA = 0
-    for (let i = 0; i < this.trajectory.length; i++) {
-      if (this.trajectory[i].t <= t) idxA = i
-      else break
-    }
-    const idxB = (idxA + 1) % this.trajectory.length
-    const frameA = this.trajectory[idxA]
-    const frameB = this.trajectory[idxB]
-
-    let factor = 0
-    let timeDiff = frameB.t - frameA.t
-    if (timeDiff < 0) {
-      timeDiff = (maxDuration - frameA.t) + frameB.t
-      factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
-    } else {
-      factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
-    }
-
-    this.characterPosition.set(
-      frameA.px + (frameB.px - frameA.px) * factor,
-      frameA.py + (frameB.py - frameA.py) * factor,
-      frameA.pz + (frameB.pz - frameA.pz) * factor
-    )
-
-    let diffY = frameB.ry - frameA.ry
-    diffY = Math.atan2(Math.sin(diffY), Math.cos(diffY))
-    this.characterGroup.rotation.y = frameA.ry + diffY * factor
-    this.characterGroup.position.copy(this.characterPosition)
+  private updateActorMovement(dt: number): void {
+    if (!this.actorController) return
+    this.playbackController.update(dt, this.actorController)
+    this.actorPosition.copy(this.actorController.position)
   }
 
   private lastCameraMode: string | null = null
 
   private updateCamera(): void {
-    if (!this.characterGroup) return
+    if (!this.actorController) return
 
-    const charPos = this.characterPosition
-    const rotY = this.characterGroup.rotation.y
-    const activeMode = this.getActiveKeyframeMode(this.playbackTime)
+    const charPos = this.actorPosition
+    const rotY = this.actorController.group.rotation.y
+    const activeMode = this.getActiveKeyframeMode(this.playbackController.getCurrentTime())
 
-    if (activeMode === 'First Person') {
+    const isFPV = activeMode === 'First Person'
+    this.actorController.setMeshVisibleForFPV(isFPV)
+
+    if (isFPV) {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const headPos = new THREE.Vector3(charPos.x, charPos.y + 1.1, charPos.z)
-      this.camera.position.copy(headPos)
-      const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
-      this.camera.lookAt(headPos.clone().add(forward))
+      const localOffset = this.actorController.getFPVOffset()
+      const worldOffset = localOffset.clone().applyQuaternion(this.actorController.group.quaternion)
+      const fpvCamPos = charPos.clone().add(worldOffset)
+      this.camera.position.copy(fpvCamPos)
+
+      const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
+      this.camera.lookAt(fpvCamPos.clone().add(forward))
 
     } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {
@@ -467,20 +322,46 @@ export class ThreeDirecting {
       this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
 
     } else if (activeMode === 'Wide') {
-      // Low FOV for telephoto perspective
-      if (this.camera.fov !== 28) {
-        this.camera.fov = 28
+      const fov = 35
+      if (this.camera.fov !== fov) {
+        this.camera.fov = fov
         this.camera.updateProjectionMatrix()
       }
-      // Fixed position high up in a corner of the stage
-      this.camera.position.set(-11, 7, 11)
-      const targetPos = new THREE.Vector3(charPos.x * 0.35, charPos.y + 0.4, charPos.z * 0.35)
-      if (this.lastCameraMode !== 'Wide') {
-        this.wideTarget.copy(targetPos)
-      } else {
-        this.wideTarget.lerp(targetPos, 0.05)
+
+      // Calculate bounding box of active stage environment
+      const bbox = new THREE.Box3()
+      if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
+        bbox.setFromObject(this.clonedEnvGroup)
       }
-      this.camera.lookAt(this.wideTarget)
+
+      let center = charPos.clone()
+      let size = new THREE.Vector3(12, 6, 12)
+
+      if (!bbox.isEmpty()) {
+        const bboxCenter = new THREE.Vector3()
+        const bboxSize = new THREE.Vector3()
+        bbox.getCenter(bboxCenter)
+        bbox.getSize(bboxSize)
+
+        // Blend stage center with actor position (70% scene center, 30% actor position)
+        center.copy(bboxCenter).lerp(charPos, 0.3)
+        size.copy(bboxSize)
+      }
+
+      const maxSpan = Math.max(size.x, size.z, 10.0)
+      const dist = Math.max(12.0, (maxSpan / 2.0) / Math.tan((fov * Math.PI / 180) / 2.0) * 0.75)
+
+      // Cinematic elevated corner angle offset relative to scene bounds
+      const idealCamPos = center.clone().add(new THREE.Vector3(-dist * 0.7, dist * 0.5, dist * 0.7))
+
+      if (this.lastCameraMode !== 'Wide') {
+        this.wideTarget.copy(center)
+        this.camera.position.copy(idealCamPos)
+      } else {
+        this.wideTarget.lerp(center, 0.05)
+        this.camera.position.lerp(idealCamPos, 0.05)
+      }
+      this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
       // Side tracking profile camera with custom 40° FOV
@@ -488,7 +369,7 @@ export class ThreeDirecting {
         this.camera.fov = 40
         this.camera.updateProjectionMatrix()
       }
-      // Positioned to the side of the character tracking alongside
+      // Positioned to the side of the actor tracking alongside
       const sideOffset = new THREE.Vector3(-3.2, 1.4, 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(sideOffset)
       this.camera.position.copy(targetCamPos)
@@ -514,14 +395,8 @@ export class ThreeDirecting {
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.updateCharacterMovement(dt)
+    this.updateActorMovement(dt)
     this.updateCamera()
-
-    if (this.characterGroup && this.mainLight) {
-      this.mainLight.position.copy(this.characterPosition).add(config.MAIN_LIGHT_OFFSET)
-      this.mainLight.target.position.copy(this.characterPosition)
-      this.mainLight.target.updateMatrixWorld()
-    }
 
     this.renderer.render(this.scene, this.camera)
   }
@@ -544,6 +419,9 @@ export class ThreeDirecting {
 
   public startRecording(fps: number = 30): void {
     this.lastCameraMode = null
+    this.playbackController.setCurrentTime(0)
+    this.playbackController.play()
+    this.isPlaying = true
 
     // Enforce fixed 720p (1280x720) WebGL rendering resolution independent of container canvas size
     const targetWidth = 1280
@@ -552,7 +430,7 @@ export class ThreeDirecting {
     this.camera.aspect = targetWidth / targetHeight
     this.camera.updateProjectionMatrix()
 
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
 
     const canvas = this.renderer.domElement
@@ -601,35 +479,28 @@ export class ThreeDirecting {
         return
       }
 
-      // Save current playback time and snap character to initial frame (t = 0.0s)
-      const prevTime = this.playbackTime
-      this.playbackTime = 0
-      this.updateCharacterMovement(0)
+      // Save current playback time and snap actor & camera to initial frame (t = 0.0s)
+      const prevTime = this.playbackController.getCurrentTime()
+      this.playbackController.setCurrentTime(0)
+      this.updateActorMovement(0)
+      this.updateCamera()
 
-      // Temporarily disable fog for crisp overview render without fog haze
-      const prevFog = this.scene.fog
-      this.scene.fog = null
-
-      // Enforce fixed 720p (1280x720) resolution for stage overview snapshot
+      // Enforce fixed 720p (1280x720) resolution for stage snapshot
       const targetWidth = 1280
       const targetHeight = 720
       this.renderer.setSize(targetWidth, targetHeight, false)
+      this.camera.aspect = targetWidth / targetHeight
+      this.camera.updateProjectionMatrix()
 
-      // Dedicated stage camera with lower FOV (15°) for telephoto stage overview
-      const stageCamera = new THREE.PerspectiveCamera(15, targetWidth / targetHeight, 0.1, 200)
-      stageCamera.position.set(-26, 22, 26)
-      stageCamera.lookAt(0, 0, 0)
-      stageCamera.updateProjectionMatrix()
-
-      // Render stage overview frame at initial frame (t = 0.0s)
-      this.renderer.render(this.scene, stageCamera)
+      // Render initial frame (t = 0.0s) using directed camera
+      this.renderer.render(this.scene, this.camera)
 
       const canvas = this.renderer.domElement
       canvas.toBlob((blob) => {
-        // Restore scene fog, playback time, character position, standard camera view, and container resolution
-        this.scene.fog = prevFog
-        this.playbackTime = prevTime
-        this.updateCharacterMovement(0)
+        // Restore playback time, actor position, standard camera view, and container resolution
+        this.playbackController.setCurrentTime(prevTime)
+        this.updateActorMovement(0)
+        this.updateCamera()
         this.onResize()
         this.renderer.render(this.scene, this.camera)
         if (blob) {
@@ -641,30 +512,48 @@ export class ThreeDirecting {
     })
   }
 
+  public play(): void {
+    this.playbackController.play()
+  }
+
+  public pause(): void {
+    this.playbackController.pause()
+  }
+
+  public stop(): void {
+    this.playbackController.stop()
+    if (this.actorController) {
+      this.playbackController.evaluateAt(0, this.actorController)
+      this.actorPosition.copy(this.actorController.position)
+    }
+  }
+
+  public getIsPlaying(): boolean {
+    return this.playbackController.getIsPlaying()
+  }
+
   public resetPlayback(): void {
-    this.playbackTime = 0
+    this.stop()
     this.lastCameraMode = null
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
   }
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
-    this.playbackTime = Math.max(0, Math.min(t, maxDur))
+    this.playbackController.setCurrentTime(Math.max(0, Math.min(t, maxDur)))
     this.lastCameraMode = null
-    this.updateCharacterMovement(0)
+    this.updateActorMovement(0)
     this.updateCamera()
   }
 
   public getCurrentTime(): number {
-    return this.playbackTime
+    return this.playbackController.getCurrentTime()
   }
 
   public getDuration(): number {
-    if (this.trajectory.length > 0) {
-      return this.trajectory[this.trajectory.length - 1].t || 7.0
-    }
-    return 7.0
+    const maxDuration = this.playbackController.getMaxDuration()
+    return maxDuration > 0 ? maxDuration : 7.0
   }
 
   public dispose(): void {
@@ -685,5 +574,13 @@ export class ThreeDirecting {
 
     this.renderer.dispose()
     this.scene.clear()
+  }
+
+  public getState(): DirectingState {
+    return this.state
+  }
+
+  public getScene(): THREE.Scene {
+    return this.scene
   }
 }

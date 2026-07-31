@@ -12,14 +12,43 @@ export interface CubeTransform {
   sz: number
 }
 
+export interface MotionFrame {
+  t: number
+  px: number
+  py: number
+  pz: number
+  rx: number
+  ry: number
+  rz: number
+}
+
+export interface SceneBlockNode {
+  id: string
+  type: 'block'
+  name?: string
+  transform: CubeTransform
+}
+
+export interface SceneGroupNode {
+  id: string
+  type: 'group'
+  name?: string
+  transform: CubeTransform
+  children: SceneNode[]
+}
+
+export type SceneNode = SceneBlockNode | SceneGroupNode
+
 export interface SceneState {
   type: string
   num_assets: number
-  asset_transforms?: CubeTransform[]
+  nodes?: SceneNode[]
+  selectedPreset?: string
 }
 
 export interface ActingState {
-  character_speed: number
+  actor_type?: 'human' | 'car'
+  actor_speed: number
   duration: number
   motion_data?: string
   scene_data: SceneState
@@ -31,6 +60,7 @@ export interface ThreeSceneOptions {
   onStateChange?: (state: SceneState) => void
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   onSelectionChange?: (hasSelection: boolean) => void
+  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
 }
 
 export interface ThreeActingOptions {
@@ -51,6 +81,7 @@ export interface ActingAppExposed {
   setState: (state: Partial<ActingState>) => void
   cleanup: () => void
   setConnectedThreeScene: (threeScene: any) => void
+  getThreeActing?: () => any
 }
 
 export interface DirectingState {
@@ -68,6 +99,7 @@ export interface ThreeDirectingOptions {
 export interface DirectingAppExposed {
   setState: (state: Partial<DirectingState>) => void
   cleanup: () => void
+  setConnectedThreeActing?: (threeActing: any) => void
 }
 
 export interface CustomNodeInstance {

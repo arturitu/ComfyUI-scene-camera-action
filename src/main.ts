@@ -51,7 +51,78 @@ const sceneInstances = new WeakMap<ComfyNode, SceneNodeInstance>()
 const actingInstances = new WeakMap<ComfyNode, ActingNodeInstance>()
 const directingInstances = new WeakMap<ComfyNode, DirectingNodeInstance>()
 
+function hideNodeWidget(node: ComfyNode, name: string): void {
+  const w = node.widgets?.find((w: any) => w.name === name)
+  if (w) {
+    w.type = 'hidden' as any
+    ;(w as any).computeSize = () => [0, -4]
+    ;(w as any).draw = () => {}
+  }
+}
+
+function removeNodeInput(node: ComfyNode, name: string): void {
+  const idx = node.inputs?.findIndex((i: any) => i.name === name)
+  if (idx !== -1 && idx !== undefined && typeof (node as any).removeInput === 'function') {
+    (node as any).removeInput(idx)
+  }
+}
+
 // --- Helpers for SceneNode ---
+async function updateSceneNodeFromPreset(node: ComfyNode, filename: string): Promise<void> {
+  if (!filename || filename === 'None') return
+
+  try {
+    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
+    if (res.ok) {
+      const data = await res.json()
+      const instance = sceneInstances.get(node)
+      if (instance) {
+        instance.exposed.setState(data)
+      } else {
+        writeStoredSceneProps(node, data)
+      }
+      notifyConnectedActingNodes(node)
+      notifyConnectedDirectingNodes(node)
+    }
+  } catch (e) {
+    console.error('[SceneNode] Failed to load preset:', e)
+  }
+}
+
+function getLinkedInputValue(node: ComfyNode, inputName: string): string | null {
+  if (!node.inputs || node.inputs.length === 0) return null
+  const input = node.inputs.find((i: any) => i.name === inputName)
+  if (!input || input.link == null) return null
+
+  const graph = app.graph as any
+  if (!graph || !graph.links) return null
+
+  const link = graph.links[input.link]
+  if (!link) return null
+
+  const originNode = graph.getNodeById?.(link.origin_id)
+  if (!originNode) return null
+
+  if (originNode.constructor?.comfyClass === 'SceneNode' || originNode.type === 'SceneNode') {
+    const state = readSceneStateFromNode(originNode)
+    if (state) return JSON.stringify(state)
+  }
+
+  if (originNode.widgets && originNode.widgets.length > 0) {
+    for (const w of originNode.widgets) {
+      if (typeof w.value === 'string' && w.value.trim().startsWith('{')) {
+        return w.value.trim()
+      }
+    }
+    const firstVal = originNode.widgets[0]?.value
+    if (typeof firstVal === 'string' && firstVal.trim()) {
+      return firstVal.trim()
+    }
+  }
+
+  return null
+}
+
 function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
   const widget = node.widgets?.find(w => w.name === name)
   return widget ? (widget.value as T) : defaultValue
@@ -76,6 +147,16 @@ function writeStoredSceneProps(node: ComfyNode, patch: Partial<SceneState>): voi
 }
 
 function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
+  const linkedScene = getLinkedInputValue(node, 'scene') || getLinkedInputValue(node, 'scene_data')
+  if (linkedScene) {
+    try {
+      const parsed = JSON.parse(linkedScene)
+      if (parsed && typeof parsed === 'object' && parsed.nodes) {
+        return parsed
+      }
+    } catch (e) { }
+  }
+
   const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
   if (sceneDataWidget && sceneDataWidget.value && typeof sceneDataWidget.value === 'string' && sceneDataWidget.value.trim()) {
     try {
@@ -86,12 +167,9 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
   const stored = readStoredSceneProps(node)
   return {
     type: 'cube_scene',
-    num_assets: stored?.num_assets ?? 1,
-    asset_transforms: stored?.asset_transforms ?? [],
+    num_assets: stored?.num_assets ?? 0,
+    nodes: stored?.nodes ?? [],
   }
-}
-
-function syncSceneWidgetsFromState(node: ComfyNode, state: Partial<SceneState>): void {
 }
 
 function createSceneInstance(node: ComfyNode): SceneNodeInstance {
@@ -107,15 +185,27 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
   instance.widget = null
   instance.cleanupTimer = null
 
+  const storedPreset = node.properties?.['selectedPreset'] as string | undefined
+
   const vueApp = createApp(SceneWidget, {
     initialState: readSceneStateFromNode(node),
+    initialPreset: storedPreset,
     onStateChange: (state: SceneState) => {
       const live = instance.currentNode
-      syncSceneWidgetsFromState(live, state)
       writeStoredSceneProps(live, state)
       app.graph?.setDirtyCanvas(true, true)
       notifyConnectedActingNodes(live)
       notifyConnectedDirectingNodes(live)
+    },
+    onPresetSaved: (filename: string) => {
+      const live = instance.currentNode
+      if (!live.properties) live.properties = {}
+      live.properties['selectedPreset'] = filename
+    },
+    onPresetChanged: (filename: string) => {
+      const live = instance.currentNode
+      if (!live.properties) live.properties = {}
+      live.properties['selectedPreset'] = filename
     }
   })
 
@@ -127,7 +217,13 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
   return instance
 }
 
-function bindSceneWidgetCallbacks(node: ComfyNode, exposed: SceneAppExposed): void {
+function updateSceneNodeFromLinks(node: ComfyNode): void {
+  const instance = sceneInstances.get(node)
+  if (!instance) return
+  const state = readSceneStateFromNode(node)
+  instance.exposed.setState(state)
+  notifyConnectedActingNodes(node)
+  notifyConnectedDirectingNodes(node)
 }
 
 function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
@@ -156,7 +252,16 @@ function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
   )
 
   instance.widget = widget
-  bindSceneWidgetCallbacks(node, instance.exposed)
+
+  const origOnConnectionsChange = node.onConnectionsChange
+  node.onConnectionsChange = function (slotType, slotIndex, isConnected, link, ioSlot) {
+    origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
+    if (slotType === 1) { // INPUT
+      setTimeout(() => updateSceneNodeFromLinks(this), 50)
+    }
+  }
+
+  setTimeout(() => updateSceneNodeFromLinks(node), 100)
 
   const baseOnRemove = widget.onRemove?.bind(widget)
   widget.onRemove = () => {
@@ -231,10 +336,13 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
   if (!actingInst) return
 
   const connectedSceneNode = findConnectedSceneNode(actingNode)
+  const currentActingState = readActingStateFromNode(actingNode)
+  const charType = currentActingState.actor_type ?? 'human'
+
   if (connectedSceneNode) {
     const sceneState = readSceneStateFromNode(connectedSceneNode) as SceneState
-    actingInst.exposed.setState({ scene_data: sceneState })
-    writeStoredActingProps(actingNode, { scene_data: sceneState })
+    actingInst.exposed.setState({ scene_data: sceneState, actor_type: charType })
+    writeStoredActingProps(actingNode, { scene_data: sceneState, actor_type: charType })
 
     const sceneInst = sceneInstances.get(connectedSceneNode)
     const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
@@ -243,8 +351,8 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode): void {
     }
     notifyConnectedDirectingNodes(actingNode)
   } else {
-    actingInst.exposed.setState({ scene_data: undefined })
-    writeStoredActingProps(actingNode, { scene_data: undefined })
+    actingInst.exposed.setState({ scene_data: undefined, actor_type: charType })
+    writeStoredActingProps(actingNode, { scene_data: undefined, actor_type: charType })
     if (actingInst.exposed.setConnectedThreeScene) {
       actingInst.exposed.setConnectedThreeScene(null)
     }
@@ -265,21 +373,48 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
         if (directingInst) {
           if (originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'ActingNode') {
             const actingState = readActingStateFromNode(originNode)
-            const actingBlob = JSON.stringify({
-              motion_data: actingState.motion_data ?? '',
-              scene_data: actingState.scene_data ?? {},
-            })
+            const actingInst = actingInstances.get(originNode)
+            const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
+
+            if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+              (directingInst.exposed as any).setConnectedThreeActing(threeActing)
+            }
+
+            const rawBlob = actingState.motion_data ?? ''
+            let actingBlob = rawBlob
+            const currentSceneData = threeActing?.getSceneData() ?? actingState.scene_data
+            const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
+
+            if (rawBlob) {
+              try {
+                const parsed = JSON.parse(rawBlob)
+                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                  parsed.actor_type = currentActorType
+                  if (currentSceneData) parsed.scene_data = currentSceneData
+                  if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
+                  actingBlob = JSON.stringify(parsed)
+                } else {
+                  actingBlob = JSON.stringify({
+                    type: 'acting_motion',
+                    actor_type: currentActorType,
+                    scene_data: currentSceneData,
+                    trajectory: parsed,
+                    motion_data: parsed
+                  })
+                }
+              } catch (e) { }
+            } else if (currentSceneData) {
+              actingBlob = JSON.stringify({
+                type: 'acting_motion',
+                actor_type: currentActorType,
+                scene_data: currentSceneData,
+                trajectory: [],
+                motion_data: []
+              })
+            }
+
             directingInst.exposed.setState({ acting_data: actingBlob })
             writeStoredDirectingProps(targetNode, { acting_data: actingBlob })
-
-            // Pass live ThreeActing scene for cloning (with lights)
-            const actingInst = actingInstances.get(originNode)
-            if (actingInst?.exposed?.getThreeActing) {
-              const threeActing = (actingInst.exposed as any).getThreeActing()
-              if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
-                (directingInst.exposed as any).setConnectedThreeActing(threeActing)
-              }
-            }
           }
         }
       }
@@ -306,8 +441,9 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
         if (targetNode) {
           const actingInst = actingInstances.get(targetNode)
           if (actingInst) {
-            actingInst.exposed.setState({ scene_data: sceneState })
-            writeStoredActingProps(targetNode, { scene_data: sceneState })
+            const charType = readActingStateFromNode(targetNode).actor_type ?? 'human'
+            actingInst.exposed.setState({ scene_data: sceneState, actor_type: charType })
+            writeStoredActingProps(targetNode, { scene_data: sceneState, actor_type: charType })
             if (threeScene && actingInst.exposed.setConnectedThreeScene) {
               actingInst.exposed.setConnectedThreeScene(threeScene)
             }
@@ -320,12 +456,14 @@ function notifyConnectedActingNodes(sceneNode: ComfyNode): void {
 }
 
 function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
-  const speedVal = getWidgetValue(node, 'character_speed', 10.0)
+  const typeVal = getWidgetValue(node, 'actor_type', 'human')
+  const speedVal = getWidgetValue(node, 'actor_speed', 10.0)
   const durationVal = getWidgetValue(node, 'duration', 7.0)
   const motionDataVal = getWidgetValue(node, 'motion_data', '')
   const storedProps = readStoredActingProps(node)
   return {
-    character_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
+    actor_type: (typeVal as string) === 'car' ? 'car' : 'human',
+    actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
     scene_data: storedProps?.scene_data ?? (undefined as any),
@@ -354,8 +492,9 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
   const vueApp = createApp(ActingWidget, {
     currentNode: node,
     initialState: {
-      character_speed: stored.character_speed ?? 10.0,
-      duration: stored.duration ?? 8.0,
+      actor_type: stored.actor_type ?? 'human',
+      actor_speed: stored.actor_speed ?? 10.0,
+      duration: stored.duration ?? 7.0,
       motion_data: stored.motion_data ?? '',
       scene_data: initialSceneState,
     },
@@ -368,13 +507,13 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       if (durationWidget && durationWidget.value !== state.duration) {
         durationWidget.value = state.duration
       }
-      const speedWidget = live.widgets?.find(w => w.name === 'character_speed')
-      if (speedWidget && speedWidget.value !== state.character_speed) {
-        speedWidget.value = state.character_speed
+      const speedWidget = live.widgets?.find(w => w.name === 'actor_speed')
+      if (speedWidget && speedWidget.value !== state.actor_speed) {
+        speedWidget.value = state.actor_speed
       }
       const motionWidget = live.widgets?.find(w => w.name === 'motion_data')
       if (motionWidget && motionWidget.value !== state.motion_data) {
-        motionWidget.value = state.motion_data
+        motionWidget.value = state.motion_data ?? ''
       }
 
       app.graph?.setDirtyCanvas(true, true)
@@ -382,9 +521,9 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
     }
   })
 
-  const mounted = vueApp.mount(container)
+  const mounted = vueApp.mount(container) as unknown as ActingAppExposed
   instance.vueApp = vueApp
-  instance.exposed = mounted as unknown as ActingAppExposed
+  instance.exposed = mounted
 
   if (connectedThreeScene && instance.exposed.setConnectedThreeScene) {
     instance.exposed.setConnectedThreeScene(connectedThreeScene)
@@ -405,9 +544,16 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
     }
   }
 
-  wire('character_speed', v => {
-    exposed.setState({ character_speed: Number(v) })
-    writeStoredActingProps(node, { character_speed: Number(v) })
+  wire('actor_type', v => {
+    const charType = String(v) === 'car' ? 'car' : 'human'
+    exposed.setState({ actor_type: charType })
+    writeStoredActingProps(node, { actor_type: charType })
+    notifyConnectedDirectingNodes(node)
+  })
+
+  wire('actor_speed', v => {
+    exposed.setState({ actor_speed: Number(v) })
+    writeStoredActingProps(node, { actor_speed: Number(v) })
   })
 
   wire('duration', v => {
@@ -518,11 +664,7 @@ function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
   const connectedActingNode = findConnectedActingNode(directingNode)
   if (connectedActingNode) {
     const actingState = readActingStateFromNode(connectedActingNode)
-    // Build an acting data blob with scene + motion
-    const actingBlob = JSON.stringify({
-      motion_data: actingState.motion_data ?? '',
-      scene_data: actingState.scene_data ?? {},
-    })
+    const actingBlob = actingState.motion_data ?? ''
     directingInst.exposed.setState({ acting_data: actingBlob })
     writeStoredDirectingProps(directingNode, { acting_data: actingBlob })
 
@@ -701,28 +843,39 @@ app.registerExtension({
     const comfyClass = node.constructor?.comfyClass
 
     if (comfyClass === 'SceneNode') {
-      const sceneDataWidget = node.widgets?.find(w => w.name === 'scene_data')
-      if (sceneDataWidget) {
-        sceneDataWidget.type = 'hidden'
-      }
-
-      const numAssetsWidget = node.widgets?.find(w => w.name === 'num_assets')
-      if (numAssetsWidget) {
-        numAssetsWidget.type = 'hidden'
-      }
+      hideNodeWidget(node, 'scene_data')
+      hideNodeWidget(node, 'num_assets')
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
+      node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)])
       createSceneNodeWidget(node)
+
+      const sceneFileWidget = node.widgets?.find(w => w.name === 'scene_file')
+      if (sceneFileWidget) {
+        const origCb = sceneFileWidget.callback
+        sceneFileWidget.callback = function (value: any) {
+          origCb?.call(this, value)
+          updateSceneNodeFromPreset(node, String(value))
+        }
+      }
+
+      const origOnExecuted = node.onExecuted
+      node.onExecuted = function (message: any) {
+        origOnExecuted?.call(this, message)
+        if (message?.scene_state && Array.isArray(message.scene_state.nodes) && message.scene_state.nodes.length > 0) {
+          const instance = sceneInstances.get(this)
+          if (instance) {
+            instance.exposed.setState(message.scene_state)
+          }
+        }
+      }
 
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
-        const numAssetsWidgetConf = this.widgets?.find(w => w.name === 'num_assets')
-        if (numAssetsWidgetConf) {
-          numAssetsWidgetConf.type = 'hidden'
-        }
+        hideNodeWidget(this, 'scene_data')
+        hideNodeWidget(this, 'num_assets')
 
         const instance = sceneInstances.get(this)
         if (instance) {
@@ -731,19 +884,11 @@ app.registerExtension({
         }
       }
     } else if (comfyClass === 'ActingNode') {
-      const motionDataWidget = node.widgets?.find(w => w.name === 'motion_data')
-      if (motionDataWidget) {
-        motionDataWidget.type = 'hidden'
-      }
-
-      // Hide the motion_data input slot from the left side of the node
-      const motionInputIdx = node.inputs?.findIndex(i => i.name === 'motion_data')
-      if (motionInputIdx !== -1 && motionInputIdx !== undefined) {
-        node.removeInput(motionInputIdx)
-      }
+      hideNodeWidget(node, 'motion_data')
+      removeNodeInput(node, 'motion_data')
 
       // Revert speed widget to render as number with step 1.0
-      const speedWidget = node.widgets?.find(w => w.name === 'character_speed')
+      const speedWidget = node.widgets?.find(w => w.name === 'actor_speed')
       if (speedWidget) {
         speedWidget.type = 'number'
         if (!speedWidget.options) speedWidget.options = {}
@@ -771,7 +916,7 @@ app.registerExtension({
           { min: 4.0, max: 15.0, step: 0.5 }
         )
         if (node.widgets) {
-          const speedIdx = node.widgets.findIndex(w => w.name === 'character_speed')
+          const speedIdx = node.widgets.findIndex(w => w.name === 'actor_speed')
           if (speedIdx !== -1) {
             node.widgets.pop()
             node.widgets.splice(speedIdx + 1, 0, durationWidget!)
@@ -789,18 +934,26 @@ app.registerExtension({
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createActingNodeWidget(node)
 
+      const origActingOnExecuted = node.onExecuted
+      node.onExecuted = function (message: any) {
+        origActingOnExecuted?.call(this, message)
+        if (message?.acting_state) {
+          const instance = actingInstances.get(this)
+          if (instance) {
+            instance.exposed.setState(message.acting_state)
+          }
+        }
+      }
+
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
-        // Hide the motion_data input slot on configure load
-        const motionInputIdxConf = this.inputs?.findIndex(i => i.name === 'motion_data')
-        if (motionInputIdxConf !== -1 && motionInputIdxConf !== undefined) {
-          this.removeInput(motionInputIdxConf)
-        }
+        hideNodeWidget(this, 'motion_data')
+        removeNodeInput(this, 'motion_data')
 
         // Reinforce speed limits and number type on configure load
-        const speedWidgetConf = this.widgets?.find(w => w.name === 'character_speed')
+        const speedWidgetConf = this.widgets?.find(w => w.name === 'actor_speed')
         if (speedWidgetConf) {
           speedWidgetConf.type = 'number'
           if (!speedWidgetConf.options) speedWidgetConf.options = {}
@@ -828,7 +981,7 @@ app.registerExtension({
             { min: 4.0, max: 15.0, step: 0.5 }
           )
           if (this.widgets) {
-            const speedIdx = this.widgets.findIndex(w => w.name === 'character_speed')
+            const speedIdx = this.widgets.findIndex(w => w.name === 'actor_speed')
             if (speedIdx !== -1) {
               this.widgets.pop()
               this.widgets.splice(speedIdx + 1, 0, durationWidgetConf!)
@@ -849,6 +1002,9 @@ app.registerExtension({
         }
       }
     } else if (comfyClass === 'DirectingNode') {
+      hideNodeWidget(node, 'directing_data')
+      removeNodeInput(node, 'directing_data')
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createDirectingNodeWidget(node)
@@ -856,6 +1012,9 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
+
+        hideNodeWidget(this, 'directing_data')
+        removeNodeInput(this, 'directing_data')
 
         const instance = directingInstances.get(this)
         if (instance) {

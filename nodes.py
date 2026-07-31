@@ -1,6 +1,6 @@
 """
 ComfyUI Scene Camera Action Nodes
-Custom nodes for 3D scene setup and character acting within ComfyUI.
+Custom nodes for 3D scene setup and actor acting within ComfyUI.
 """
 
 from __future__ import annotations
@@ -54,10 +54,38 @@ SceneIO = io.Custom("SCENE")
 ActingIO = io.Custom("ACTING")
 
 
+CUSTOM_NODE_DIR = os.path.dirname(os.path.realpath(__file__))
+PRESETS_DIR = os.path.join(CUSTOM_NODE_DIR, "presets")
+
+
+def get_staging_scene_files() -> list[str]:
+    files = set()
+    # 1. Scan presets/ inside custom node directory
+    if os.path.exists(PRESETS_DIR):
+        for f in os.listdir(PRESETS_DIR):
+            if f.endswith(".json"):
+                files.add(f)
+
+    # 2. Scan input/staging_scenes/ in ComfyUI input directory
+    try:
+        input_dir = folder_paths.get_input_directory()
+        if input_dir:
+            scenes_dir = os.path.join(input_dir, "staging_scenes")
+            if os.path.exists(scenes_dir):
+                for f in os.listdir(scenes_dir):
+                    if f.endswith(".json"):
+                        files.add(f)
+    except Exception:
+        pass
+
+    return sorted(list(files)) if files else ["None"]
+
+
 class SceneNode(io.ComfyNode):
     """
     Scene Node / Staging 3D Node
     Configures a 3D scene environment with multiple adjustable 3D assets (cubes).
+    Supports loading preset files, interactive visual editing, and live saving directly inside the 3D widget.
     """
 
     @classmethod
@@ -69,17 +97,12 @@ class SceneNode(io.ComfyNode):
             is_output_node=False,
             description="Configures a 3D scene environment with multiple assets.",
             inputs=[
-                io.Int.Input(
-                    "num_assets",
-                    default=1, min=1, max=12, step=1,
-                    display_name="Number of Assets",
-                    tooltip="Number of 3D assets to render in the scene",
-                ),
                 io.String.Input(
                     "scene_data",
                     default="",
                     display_name="Scene Data",
-                    tooltip="Serialized JSON data of the scene configurations (hidden)",
+                    tooltip="Serialized JSON data of the scene configurations",
+                    optional=True,
                 ),
             ],
             outputs=[
@@ -91,7 +114,6 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        num_assets: int,
         scene_data: str = "",
     ) -> io.NodeOutput:
         scene_dict = {}
@@ -104,8 +126,8 @@ class SceneNode(io.ComfyNode):
         if not scene_dict:
             scene_dict = {
                 "type": "cube_scene",
-                "num_assets": num_assets,
-                "asset_transforms": [],
+                "num_assets": 0,
+                "nodes": [],
             }
 
         scene_json = json.dumps(scene_dict)
@@ -114,16 +136,15 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def fingerprint_inputs(
         cls,
-        num_assets: int,
         scene_data: str = "",
     ):
-        return f"{num_assets}_{scene_data}"
+        return f"{scene_data}"
 
 
 class ActingNode(io.ComfyNode):
     """
     Acting Node
-    Receives scene data from a SceneNode and hosts interactive character acting.
+    Receives scene data from a SceneNode and hosts interactive actor acting.
     """
 
     @classmethod
@@ -133,7 +154,7 @@ class ActingNode(io.ComfyNode):
             display_name="Acting 3D Node",
             category="SceneCameraAction",
             is_output_node=False,
-            description="Receives a 3D scene from SceneNode and hosts interactive character acting.",
+            description="Receives a 3D scene from SceneNode and hosts interactive actor acting.",
             inputs=[
                 SceneIO.Input(
                     "scene",
@@ -141,11 +162,18 @@ class ActingNode(io.ComfyNode):
                     tooltip="Scene data connection from a SceneNode",
                     optional=True,
                 ),
+                io.Combo.Input(
+                    "actor_type",
+                    options=["human", "car"],
+                    default="human",
+                    display_name="Actor Type",
+                    tooltip="Select between Human (capsule physics) and Car (vehicle physics with inertia)",
+                ),
                 io.Float.Input(
-                    "character_speed",
+                    "actor_speed",
                     default=10.0, min=1.0, max=20.0, step=1.0,
-                    display_name="Character Speed",
-                    tooltip="Movement speed of the 3D character",
+                    display_name="Actor Speed",
+                    tooltip="Movement speed of the 3D actor",
                 ),
                 io.Float.Input(
                     "duration",
@@ -157,7 +185,8 @@ class ActingNode(io.ComfyNode):
                     "motion_data",
                     default="",
                     display_name="Motion Data",
-                    tooltip="Serialized JSON recording of character acting (hidden)",
+                    tooltip="Serialized JSON recording of actor acting (hidden)",
+                    optional=True,
                 ),
             ],
             outputs=[
@@ -170,7 +199,8 @@ class ActingNode(io.ComfyNode):
     def execute(
         cls,
         scene: str | dict | None = None,
-        character_speed: float = 10.0,
+        actor_type: str = "human",
+        actor_speed: float = 10.0,
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
@@ -185,7 +215,8 @@ class ActingNode(io.ComfyNode):
 
         acting_dict = {
             "scene_data": scene_data,
-            "character_speed": character_speed,
+            "actor_type": actor_type,
+            "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,
         }
@@ -220,6 +251,7 @@ class DirectingNode(io.ComfyNode):
                     default="",
                     display_name="Directing Data",
                     tooltip="Serialized camera cut timeline (managed internally)",
+                    optional=True,
                 ),
             ],
             outputs=[
@@ -333,7 +365,7 @@ class SceneCameraActionExtension(ComfyExtension):
         return [SceneNode, ActingNode, DirectingNode]
 
 
-# --- API Routes to receive video and image uploads ---
+# --- API Routes to receive video, image uploads, and scene presets ---
 @PromptServer.instance.routes.post("/scene_camera_action/upload_video")
 async def upload_video(request):
     post = await request.post()
@@ -370,5 +402,73 @@ async def upload_image(request):
     return web.json_response({"success": False, "error": "No image file received"})
 
 
+@PromptServer.instance.routes.get("/scene_camera_action/list_presets")
+async def list_presets(request):
+    files = get_staging_scene_files()
+    return web.json_response({"files": files})
+
+
+@PromptServer.instance.routes.get("/scene_camera_action/get_preset")
+async def get_preset(request):
+    filename = request.query.get("filename", "")
+    if not filename or filename == "None":
+        return web.json_response({"type": "cube_scene", "nodes": []})
+
+    filepath = os.path.join(PRESETS_DIR, filename)
+    if not os.path.exists(filepath):
+        try:
+            input_dir = folder_paths.get_input_directory()
+            filepath = os.path.join(input_dir, "staging_scenes", filename)
+        except Exception:
+            pass
+
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return web.json_response(data)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    return web.json_response({"error": "File not found"}, status=404)
+
+
+@PromptServer.instance.routes.post("/scene_camera_action/save_preset")
+async def save_preset(request):
+    try:
+        body = await request.json()
+        filename = body.get("filename", "")
+        scene_data = body.get("scene_data", {})
+
+        if not filename or filename == "None":
+            filename = "nueva_escena.json"
+        if not filename.endswith(".json"):
+            filename += ".json"
+
+        os.makedirs(PRESETS_DIR, exist_ok=True)
+        filepath = os.path.join(PRESETS_DIR, filename)
+
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(scene_data, f, indent=2)
+
+        return web.json_response({"success": True, "filename": filename, "filepath": filepath})
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+
 async def comfy_entrypoint():
     return SceneCameraActionExtension()
+
+
+NODE_CLASS_MAPPINGS = {
+    "SceneNode": SceneNode,
+    "ActingNode": ActingNode,
+    "DirectingNode": DirectingNode,
+}
+
+NODE_DISPLAY_NAME_MAPPINGS = {
+    "SceneNode": "Staging 3D Node",
+    "ActingNode": "Acting 3D Node",
+    "DirectingNode": "Directing 3D Node",
+}
+

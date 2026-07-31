@@ -3,6 +3,9 @@ import { MapControls } from 'three/addons/controls/MapControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import type { SceneState, ThreeSceneOptions, CubeTransform } from './types'
 import * as config from './threeConfig'
+import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
+import { SceneSelectionManager } from './scene/SceneSelectionManager'
+import { StageEnvironment } from './scene/StageEnvironment'
 
 export class ThreeScene {
   private container: HTMLElement
@@ -10,18 +13,26 @@ export class ThreeScene {
   private onStateChange?: (state: SceneState) => void
   private onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   private onSelectionChange?: (hasSelection: boolean) => void
+  private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
+
+  private hierarchyManager: SceneHierarchyManager
+  private selectionManager: SceneSelectionManager
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
-  private meshes: THREE.Mesh[] = []
   private animationId: number | null = null
   private controls!: MapControls
   private transformControls!: TransformControls
   private isHovered = false
+
   private globalWheelHandler?: (e: WheelEvent) => void
   private pointerDownHandler?: (e: PointerEvent) => void
-  private transformMode: 'translate' | 'rotate' | 'scale' | null = null
+  private pointerUpHandler?: (e: PointerEvent) => void
+  private windowPointerDownHandler?: (e: PointerEvent) => void
+
+  private pointerDownPos: { x: number; y: number } | null = null
+  private transformMode: 'translate' | 'rotate' | 'scale' | null = 'translate'
   private lastTransformMode: 'translate' | 'rotate' | 'scale' = 'translate'
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
@@ -31,10 +42,15 @@ export class ThreeScene {
     this.onStateChange = options.onStateChange
     this.onTransformModeChange = options.onTransformModeChange
     this.onSelectionChange = options.onSelectionChange
+    this.onSelectionInfoChange = options.onSelectionInfoChange
+
+    this.hierarchyManager = new SceneHierarchyManager()
+    this.selectionManager = new SceneSelectionManager()
+
     this.state = {
       type: 'cube_scene',
-      num_assets: options.initialState?.num_assets ?? 1,
-      asset_transforms: options.initialState?.asset_transforms ?? [],
+      num_assets: options.initialState?.num_assets ?? 0,
+      nodes: options.initialState?.nodes ?? [],
     }
 
     this.initThreeJS()
@@ -51,7 +67,7 @@ export class ThreeScene {
     this.scene.background = bgColor
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
-    this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+    this.camera = new THREE.PerspectiveCamera(config.CAMERA_FOV, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
     this.camera.position.set(0, 4, 8)
     this.camera.lookAt(0, 0, 0)
 
@@ -64,6 +80,8 @@ export class ThreeScene {
     this.container.appendChild(this.renderer.domElement)
 
     const canvas = this.renderer.domElement
+    canvas.tabIndex = 0
+    canvas.style.outline = 'none'
     canvas.style.position = 'absolute'
     canvas.style.top = '0'
     canvas.style.left = '0'
@@ -71,297 +89,214 @@ export class ThreeScene {
     canvas.style.height = '100%'
     canvas.style.cursor = 'grab'
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-    this.scene.add(ambientLight)
+    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
+    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
 
-    const mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-    mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-    mainLight.castShadow = true
-    mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-    mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-    mainLight.shadow.bias = config.SHADOW_BIAS
-    mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-    
-    const d = config.SHADOW_FRUSTUM_SIZE
-    mainLight.shadow.camera.left = -d
-    mainLight.shadow.camera.right = d
-    mainLight.shadow.camera.top = d
-    mainLight.shadow.camera.bottom = -d
-    mainLight.shadow.camera.near = 0.1
-    mainLight.shadow.camera.far = 100
-    this.scene.add(mainLight)
+    // Setup Stage Environment (Lights, Floor, Grid)
+    const stageEnv = new StageEnvironment()
+    stageEnv.initStage(this.scene)
 
-    const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
-    fillLight.position.copy(config.FILL_LIGHT_POSITION)
-    this.scene.add(fillLight)
-
-    // Floor Grid matching ComfyUI-3D-motion-reference
-    const gridHelper = new THREE.GridHelper(
-      config.GRID_SIZE,
-      config.GRID_DIVISIONS,
-      config.GRID_COLOR_CENTER,
-      config.GRID_COLOR_GRID
-    )
-    gridHelper.position.y = -1.0
-    this.scene.add(gridHelper)
-
-    // Floor plane that receives shadows
-    const floorGeo = new THREE.PlaneGeometry(100, 100)
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0xdbdbdb,
-      roughness: 1,
-      metalness: 0,
-    })
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-    floorMesh.name = 'floor'
-    floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = -1.002
-    floorMesh.receiveShadow = true
-    this.scene.add(floorMesh)
-
-    // Setup TransformControls
+    // TransformControls
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
     this.transformControls.size = 2.0
     this.transformControls.addEventListener('change', () => this.renderer.render(this.scene, this.camera))
     this.transformControls.addEventListener('dragging-changed', (event: any) => {
       this.controls.enabled = !event.value
+
+      if (event.value && (window.event as KeyboardEvent)?.shiftKey) {
+        this.enableSnapping()
+      }
+
+      this.selectionManager.onDraggingChanged(event.value)
+
+      if (!event.value && !(window.event as KeyboardEvent)?.shiftKey) {
+        this.disableSnapping()
+      }
     })
 
     this.transformControls.addEventListener('objectChange', () => {
-      const target = this.transformControls.object
-      if (target) {
-        const index = this.meshes.indexOf(target as THREE.Mesh)
-        if (index !== -1 && this.state.asset_transforms) {
-          const t = this.state.asset_transforms[index]
-          if (t) {
-            t.px = target.position.x
-            t.py = target.position.y
-            t.pz = target.position.z
-            t.rx = target.rotation.x
-            t.ry = target.rotation.y
-            t.rz = target.rotation.z
-            t.sx = target.scale.x
-            t.sy = target.scale.y
-            t.sz = target.scale.z
-
-            if (this.onStateChange) {
-              this.onStateChange({ ...this.state })
-            }
-          }
-        }
-      }
+      this.selectionManager.onObjectChange()
+      this.syncStateAndNotify()
     })
 
     this.scene.add(this.transformControls.getHelper())
 
-    // Create the meshes
+    // Update scene mesh hierarchy from state
     this.updateMesh()
 
-    // Initialize MapControls
+    // MapControls
     this.controls = new MapControls(this.camera, this.renderer.domElement)
     this.controls.enableDamping = true
     this.controls.dampingFactor = 0.05
     this.controls.screenSpacePanning = false
-    this.controls.minDistance = 1.5
-    this.controls.maxDistance = 20.0
+    this.controls.minDistance = config.CAMERA_MIN_DISTANCE
+    this.controls.maxDistance = config.CAMERA_MAX_DISTANCE
     this.controls.maxPolarAngle = Math.PI / 2 - 0.05
     this.controls.zoomToCursor = true
   }
 
   private updateMesh(): void {
-    if (this.transformControls) {
-      this.transformControls.detach()
-    }
+    this.hierarchyManager.updateMesh(
+      this.scene,
+      this.state,
+      () => this.selectionManager.clearSelectionUI(this.scene, this.transformControls),
+      this.transformControls.getHelper()
+    )
+    this.syncStateAndNotify()
+  }
 
-    this.meshes.forEach((mesh) => {
-      this.scene.remove(mesh)
-      mesh.geometry.dispose()
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach((m) => m.dispose())
-      } else {
-        mesh.material.dispose()
+  private syncStateAndNotify(): void {
+    this.hierarchyManager.syncState(
+      this.scene,
+      this.state,
+      this.transformControls.getHelper(),
+      this.selectionManager.getMultiSelectionPivot(),
+      this.onStateChange
+    )
+  }
+
+  private updateSelectionUI(): void {
+    this.selectionManager.updateSelectionUI(
+      this.scene,
+      this.transformControls,
+      this.transformMode,
+      this.lastTransformMode,
+      {
+        onSelectionChange: this.onSelectionChange,
+        onSelectionInfoChange: this.onSelectionInfoChange,
+      }
+    )
+  }
+
+  public groupSelected(): void {
+    const selectedObjects = this.selectionManager.getSelectedObjects()
+    const group = this.hierarchyManager.groupSelected(this.scene, selectedObjects)
+    if (group) {
+      this.selectionManager.setSelectedObjects([group])
+      this.updateSelectionUI()
+      this.syncStateAndNotify()
+    }
+  }
+
+  public selectAll(): void {
+    const topLevelObjects: THREE.Object3D[] = []
+    this.scene.children.forEach((child) => {
+      if (
+        child.name !== 'floor' &&
+        !(child instanceof THREE.GridHelper) &&
+        child !== this.transformControls.getHelper() &&
+        child !== this.selectionManager.getMultiSelectionPivot() &&
+        !(child instanceof THREE.Light) &&
+        child.name !== '__edge_outline__'
+      ) {
+        topLevelObjects.push(child)
       }
     })
-    this.meshes = []
+    this.selectionManager.setSelectedObjects(topLevelObjects)
+    this.updateSelectionUI()
+  }
 
-    // Side: 0xbfbfbf, Top: 0xe6e6e6, Front: 0x3d4974 (blueish)
-    const frontMat = new THREE.MeshStandardMaterial({ color: 0x3d4974, roughness: 0.4, metalness: 0.1 })
-    const topMat = new THREE.MeshStandardMaterial({ color: 0xe6e6e6, roughness: 0.4, metalness: 0.1 })
-    const sideMat = new THREE.MeshStandardMaterial({ color: 0xbfbfbf, roughness: 0.4, metalness: 0.1 })
-    const materials = [sideMat, sideMat, topMat, sideMat, frontMat, sideMat]
-
-    if (!this.state.asset_transforms) {
-      this.state.asset_transforms = []
-    }
-
-
-
-    // Migrate old scale 1x1x1 configurations to their calculated dimensions so they don't jump sizes when shifted
-    this.state.asset_transforms.forEach((t, i) => {
-      if (t.sx === 1.0 && t.sy === 1.0 && t.sz === 1.0) {
-        if (i === 0) {
-          t.sx = 0.8
-          t.sz = 0.8
-          t.sy = 2.0
-        } else {
-          const seed1 = Math.sin(i * 12.9898) * 43758.5453
-          const seed2 = Math.sin(i * 78.233) * 43758.5453
-          const rand1 = seed1 - Math.floor(seed1)
-          const rand2 = seed2 - Math.floor(seed2)
-          t.sx = 0.6 + rand1 * 0.4
-          t.sz = 0.6 + rand2 * 0.4
-          t.sy = 1.0 + rand1 * 1.5
-        }
-      }
-    })
-
-    this.state.num_assets = this.state.asset_transforms.length
-
-    this.state.asset_transforms.forEach((t) => {
-      // Always create a 1x1x1 box and let the scale represent its true dimensions
-      const geometry = new THREE.BoxGeometry(1, 1, 1)
-      const mesh = new THREE.Mesh(geometry, materials)
-
-      mesh.position.set(t.px, t.py, t.pz)
-      mesh.rotation.set(t.rx, t.ry, t.rz)
-      mesh.scale.set(t.sx, t.sy, t.sz)
-      mesh.castShadow = true
-      mesh.receiveShadow = true
-
-      this.scene.add(mesh)
-      this.meshes.push(mesh)
-    })
+  public ungroupSelected(): void {
+    const selectedObjects = this.selectionManager.getSelectedObjects()
+    const newSelected = this.hierarchyManager.ungroupSelected(this.scene, selectedObjects)
+    this.selectionManager.setSelectedObjects(newSelected)
+    this.updateSelectionUI()
+    this.syncStateAndNotify()
   }
 
   public addNewAsset(): void {
-    if (!this.state.asset_transforms) {
-      this.state.asset_transforms = []
-    }
+    const px = Number((Math.random() * 4 - 2).toFixed(3))
+    const pz = Number((Math.random() * 4 - 2).toFixed(3))
 
-    // Spawn with random offset from center
-    const px = (Math.random() * 4 - 2)
-    const pz = (Math.random() * 4 - 2)
-    const py = 0.0 // box center Y (spawns on floor)
-
-    // Randomize dimensions directly into scale
     const rand1 = Math.random()
     const rand2 = Math.random()
-    const sx = 0.6 + rand1 * 0.4
-    const sz = 0.6 + rand2 * 0.4
-    const sy = 1.0 + rand1 * 1.5
+    const sx = Number((0.6 + rand1 * 0.4).toFixed(3))
+    const sz = Number((0.6 + rand2 * 0.4).toFixed(3))
+    const sy = Number((1.0 + rand1 * 1.5).toFixed(3))
+    const py = Number((sy / 2.0).toFixed(3))
 
-    const newTransform: CubeTransform = {
-      px, py, pz,
-      rx: 0, ry: 0, rz: 0,
-      sx, sy, sz
+    const newTransform: CubeTransform = { px, py, pz, rx: 0, ry: 0, rz: 0, sx, sy, sz }
+    const newMesh = this.hierarchyManager.createBlockMesh(newTransform)
+    this.scene.add(newMesh)
+    this.hierarchyManager.registerMesh(newMesh)
+
+    this.selectionManager.setSelectedObjects([newMesh])
+    const modeToUse = this.transformMode ?? this.lastTransformMode
+    this.setTransformMode(modeToUse)
+    if (this.onTransformModeChange) {
+      this.onTransformModeChange(modeToUse)
     }
 
-    this.state.asset_transforms.push(newTransform)
-    this.state.num_assets = this.state.asset_transforms.length
-
-    this.updateMesh()
-
-    // Select the new asset automatically
-    const newMesh = this.meshes[this.meshes.length - 1]
-    if (newMesh) {
-      if (!this.transformMode) {
-        this.setTransformMode('translate')
-        if (this.onTransformModeChange) {
-          this.onTransformModeChange('translate')
-        }
-      }
-      this.transformControls.attach(newMesh)
-    }
-
-    if (this.onStateChange) {
-      this.onStateChange({ ...this.state })
-    }
+    this.updateSelectionUI()
+    this.syncStateAndNotify()
   }
 
   public deleteSelectedAsset(): void {
-    if (!this.transformControls.object) return
-    const selectedMesh = this.transformControls.object as THREE.Mesh
-    const index = this.meshes.indexOf(selectedMesh)
-    if (index !== -1) {
-      if (!this.state.asset_transforms) {
-        this.state.asset_transforms = []
-      }
-      this.state.asset_transforms.splice(index, 1)
-      this.state.num_assets = this.state.asset_transforms.length
+    const selectedObjects = this.selectionManager.getSelectedObjects()
+    if (selectedObjects.length === 0) return
 
-      this.transformControls.detach()
-      if (this.onSelectionChange) {
-        this.onSelectionChange(false)
-      }
-      this.updateMesh()
-
-      // Select previous asset if there is one
-      const prevIndex = index - 1
-      if (prevIndex >= 0 && this.meshes[prevIndex]) {
-        const prevMesh = this.meshes[prevIndex]
-        if (!this.transformMode) {
-          this.setTransformMode('translate')
-          if (this.onTransformModeChange) {
-            this.onTransformModeChange('translate')
+    selectedObjects.forEach(obj => {
+      this.scene.remove(obj)
+      if (obj.type === 'Mesh') {
+        const mesh = obj as THREE.Mesh
+        this.hierarchyManager.unregisterMesh(mesh)
+        mesh.geometry.dispose()
+      } else if (obj.type === 'Group') {
+        obj.traverse(child => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh
+            this.hierarchyManager.unregisterMesh(m)
+            m.geometry.dispose()
           }
-        }
-        this.transformControls.attach(prevMesh)
-        if (this.onSelectionChange) {
-          this.onSelectionChange(true)
-        }
+        })
       }
+    })
 
-      if (this.onStateChange) {
-        this.onStateChange({ ...this.state })
-      }
-    }
+    this.selectionManager.setSelectedObjects([])
+    this.updateSelectionUI()
+    this.syncStateAndNotify()
   }
 
   public duplicateSelectedAsset(): void {
-    if (!this.transformControls.object) return
-    const selectedMesh = this.transformControls.object as THREE.Mesh
-    const index = this.meshes.indexOf(selectedMesh)
-    if (index === -1 || !this.state.asset_transforms) return
+    const selectedObjects = this.selectionManager.getSelectedObjects()
+    if (selectedObjects.length === 0) return
 
-    const srcTransform = this.state.asset_transforms[index]
-    if (!srcTransform) return
+    const newSelected: THREE.Object3D[] = []
 
-    // Clone transform with a small position offset so the duplicate doesn't overlap
-    const dupTransform: CubeTransform = {
-      px: srcTransform.px + 0.8,
-      py: srcTransform.py,
-      pz: srcTransform.pz + 0.8,
-      rx: srcTransform.rx,
-      ry: srcTransform.ry,
-      rz: srcTransform.rz,
-      sx: srcTransform.sx,
-      sy: srcTransform.sy,
-      sz: srcTransform.sz,
-    }
-
-    this.state.asset_transforms.push(dupTransform)
-    this.state.num_assets = this.state.asset_transforms.length
-
-    this.updateMesh()
-
-    // Auto-select the duplicated asset
-    const newMesh = this.meshes[this.meshes.length - 1]
-    if (newMesh) {
-      if (!this.transformMode) {
-        this.setTransformMode('translate')
-        if (this.onTransformModeChange) {
-          this.onTransformModeChange('translate')
-        }
+    selectedObjects.forEach(obj => {
+      const nodeData = this.hierarchyManager.serializeObjectToNode(
+        obj,
+        this.transformControls.getHelper(),
+        this.selectionManager.getMultiSelectionPivot()
+      )
+      if (nodeData) {
+        nodeData.transform.px += 0.8
+        nodeData.transform.pz += 0.8
+        nodeData.id = 'node_' + Math.random().toString(36).substring(2, 9)
+        const dupObj = this.hierarchyManager.buildNodeFromData(nodeData)
+        this.scene.add(dupObj)
+        newSelected.push(dupObj)
       }
-      this.transformControls.attach(newMesh)
-      if (this.onSelectionChange) {
-        this.onSelectionChange(true)
-      }
-    }
+    })
 
-    if (this.onStateChange) {
-      this.onStateChange({ ...this.state })
+    this.selectionManager.setSelectedObjects(newSelected)
+    this.updateSelectionUI()
+    this.syncStateAndNotify()
+  }
+
+  private enableSnapping(): void {
+    if (this.transformControls) {
+      this.transformControls.setTranslationSnap(0.5)
+      this.transformControls.setRotationSnap(THREE.MathUtils.degToRad(22.5))
+      this.transformControls.setScaleSnap(0.5)
+    }
+  }
+
+  private disableSnapping(): void {
+    if (this.transformControls) {
+      this.transformControls.setTranslationSnap(null)
+      this.transformControls.setRotationSnap(null)
+      this.transformControls.setScaleSnap(null)
     }
   }
 
@@ -400,7 +335,19 @@ export class ThreeScene {
     const mouse = new THREE.Vector2()
 
     this.pointerDownHandler = (event: PointerEvent) => {
-      if (event.button !== 0) return // Left clicks only
+      if (event.button !== 0) return
+      this.pointerDownPos = { x: event.clientX, y: event.clientY }
+    }
+
+    this.pointerUpHandler = (event: PointerEvent) => {
+      if (event.button !== 0 || !this.pointerDownPos) return
+
+      const dx = event.clientX - this.pointerDownPos.x
+      const dy = event.clientY - this.pointerDownPos.y
+      this.pointerDownPos = null
+
+      const dist = Math.hypot(dx, dy)
+      if (dist > 15) return
 
       const rect = this.renderer.domElement.getBoundingClientRect()
       mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
@@ -408,42 +355,80 @@ export class ThreeScene {
 
       raycaster.setFromCamera(mouse, this.camera)
 
-      // Check gizmo intersection FIRST — if the user is interacting with
-      // gizmo handles, do NOT re-run mesh selection to avoid switching assets
+      // Check gizmo hit
       if (this.transformControls.object) {
-        const gizmoIntersects = raycaster.intersectObjects(
+        const rawGizmoIntersects = raycaster.intersectObjects(
           this.transformControls.getHelper().children, true
         )
-        if (gizmoIntersects.length > 0) {
-          return // User is clicking on the gizmo, don't change selection
+        const activeAxis = (this.transformControls as any).axis
+        const visibleGizmoIntersects = rawGizmoIntersects.filter((hit) => {
+          let curr: THREE.Object3D | null = hit.object
+          while (curr && curr !== this.transformControls.getHelper()) {
+            if (!curr.visible) return false
+            curr = curr.parent
+          }
+          const name = hit.object.name
+          return (name && name !== '' && name !== 'helper') || activeAxis !== null
+        })
+        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some(h => ['X', 'Y', 'Z', 'XY', 'YZ', 'XZ', 'E', 'R', 'S', 'XYZE'].includes(h.object.name)))) {
+          return
         }
       }
 
-      const intersects = raycaster.intersectObjects(this.meshes)
+      // Collect selectable objects
+      const selectableObjects: THREE.Object3D[] = []
+      this.scene.children.forEach(child => {
+        if (!StageEnvironment.isStageObject(child, this.transformControls.getHelper())) {
+          selectableObjects.push(child)
+        }
+      })
+
+      const intersects = raycaster.intersectObjects(selectableObjects, true)
 
       if (intersects.length > 0) {
         const clickedMesh = intersects[0].object
-        if (!this.transformMode) {
-          // Restore the last active transform mode
-          this.setTransformMode(this.lastTransformMode)
-          if (this.onTransformModeChange) {
-            this.onTransformModeChange(this.lastTransformMode)
+        const topObj = this.selectionManager.getTopSelectableObject(clickedMesh, this.scene, this.transformControls.getHelper())
+
+        if (topObj) {
+          const selectedObjects = this.selectionManager.getSelectedObjects()
+          if (event.shiftKey) {
+            const existingIdx = selectedObjects.indexOf(topObj)
+            if (existingIdx !== -1) {
+              selectedObjects.splice(existingIdx, 1)
+            } else {
+              selectedObjects.push(topObj)
+            }
+          } else {
+            this.selectionManager.setSelectedObjects([topObj])
           }
-        }
-        this.transformControls.attach(clickedMesh)
-        if (this.onSelectionChange) {
-          this.onSelectionChange(true)
+          const modeToUse = this.transformMode ?? this.lastTransformMode
+          if (!this.transformMode) {
+            this.setTransformMode(modeToUse)
+            if (this.onTransformModeChange) {
+              this.onTransformModeChange(modeToUse)
+            }
+          }
+          this.updateSelectionUI()
         }
       } else {
-        // Clicked empty space — deselect
-        this.transformControls.detach()
-        if (this.onSelectionChange) {
-          this.onSelectionChange(false)
+        this.selectionManager.setSelectedObjects([])
+        this.updateSelectionUI()
+      }
+    }
+
+    this.windowPointerDownHandler = (event: PointerEvent) => {
+      if (event.button !== 0) return
+      if (this.container && !this.container.contains(event.target as Node)) {
+        if (this.selectionManager.getSelectedObjects().length > 0) {
+          this.selectionManager.setSelectedObjects([])
+          this.updateSelectionUI()
         }
       }
     }
 
     this.renderer.domElement.addEventListener('pointerdown', this.pointerDownHandler)
+    this.renderer.domElement.addEventListener('pointerup', this.pointerUpHandler)
+    window.addEventListener('pointerdown', this.windowPointerDownHandler)
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -470,8 +455,12 @@ export class ThreeScene {
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
     if (this.controls) {
+      this.controls.target.x = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.x))
+      this.controls.target.z = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.z))
       this.controls.update()
+
     }
+    this.selectionManager.updateBoxHelpers()
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -483,23 +472,25 @@ export class ThreeScene {
     if (this.transformControls) {
       if (mode) {
         this.transformControls.setMode(mode)
+        if (this.selectionManager.getSelectedObjects().length > 0) {
+          this.updateSelectionUI()
+        }
       } else {
         this.transformControls.detach()
-        if (this.onSelectionChange) {
-          this.onSelectionChange(false)
-        }
       }
     }
   }
 
   public setState(newState: Partial<SceneState>): void {
-    if (newState.num_assets !== undefined && newState.num_assets !== this.state.num_assets) {
-      this.state.num_assets = newState.num_assets
+    if (newState.nodes !== undefined) {
+      this.state.nodes = newState.nodes
+      this.updateMesh()
+    } else {
+      this.state.nodes = []
       this.updateMesh()
     }
-    if (newState.asset_transforms !== undefined) {
-      this.state.asset_transforms = newState.asset_transforms
-      this.updateMesh()
+    if (newState.num_assets !== undefined) {
+      this.state.num_assets = newState.num_assets
     }
   }
 
@@ -526,6 +517,12 @@ export class ThreeScene {
     if (this.pointerDownHandler) {
       this.renderer.domElement.removeEventListener('pointerdown', this.pointerDownHandler)
     }
+    if (this.pointerUpHandler) {
+      this.renderer.domElement.removeEventListener('pointerup', this.pointerUpHandler)
+    }
+    if (this.windowPointerDownHandler) {
+      window.removeEventListener('pointerdown', this.windowPointerDownHandler)
+    }
 
     if (this.controls) {
       this.controls.dispose()
@@ -541,6 +538,10 @@ export class ThreeScene {
 
   public getScene(): THREE.Scene {
     return this.scene
+  }
+
+  public getState(): SceneState {
+    return this.state
   }
 
   public getTransformHelper(): THREE.Object3D {
