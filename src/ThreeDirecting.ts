@@ -324,20 +324,46 @@ export class ThreeDirecting {
       this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
 
     } else if (activeMode === 'Wide') {
-      // Low FOV for telephoto perspective
-      if (this.camera.fov !== 28) {
-        this.camera.fov = 28
+      const fov = 35
+      if (this.camera.fov !== fov) {
+        this.camera.fov = fov
         this.camera.updateProjectionMatrix()
       }
-      // Fixed position high up in a corner of the stage
-      this.camera.position.set(-11, 7, 11)
-      const targetPos = new THREE.Vector3(charPos.x * 0.35, charPos.y + 0.4, charPos.z * 0.35)
-      if (this.lastCameraMode !== 'Wide') {
-        this.wideTarget.copy(targetPos)
-      } else {
-        this.wideTarget.lerp(targetPos, 0.05)
+
+      // Calculate bounding box of active stage environment
+      const bbox = new THREE.Box3()
+      if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
+        bbox.setFromObject(this.clonedEnvGroup)
       }
-      this.camera.lookAt(this.wideTarget)
+
+      let center = charPos.clone()
+      let size = new THREE.Vector3(12, 6, 12)
+
+      if (!bbox.isEmpty()) {
+        const bboxCenter = new THREE.Vector3()
+        const bboxSize = new THREE.Vector3()
+        bbox.getCenter(bboxCenter)
+        bbox.getSize(bboxSize)
+
+        // Blend stage center with actor position (70% scene center, 30% actor position)
+        center.copy(bboxCenter).lerp(charPos, 0.3)
+        size.copy(bboxSize)
+      }
+
+      const maxSpan = Math.max(size.x, size.z, 10.0)
+      const dist = Math.max(12.0, (maxSpan / 2.0) / Math.tan((fov * Math.PI / 180) / 2.0) * 0.75)
+
+      // Cinematic elevated corner angle offset relative to scene bounds
+      const idealCamPos = center.clone().add(new THREE.Vector3(-dist * 0.7, dist * 0.5, dist * 0.7))
+
+      if (this.lastCameraMode !== 'Wide') {
+        this.wideTarget.copy(center)
+        this.camera.position.copy(idealCamPos)
+      } else {
+        this.wideTarget.lerp(center, 0.05)
+        this.camera.position.lerp(idealCamPos, 0.05)
+      }
+      this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
       // Side tracking profile camera with custom 40° FOV
