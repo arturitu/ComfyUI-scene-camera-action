@@ -56,14 +56,12 @@ export class ThreeDirecting {
   }
 
   public loadActingData(actingDataJson: string): void {
-    console.log('[ThreeDirecting] loadActingData called, payload length:', actingDataJson?.length ?? 0)
     let parsedActorType: string | undefined
     if (actingDataJson && actingDataJson.trim()) {
       try {
         const parsed = JSON.parse(actingDataJson)
         if (typeof parsed === 'object' && parsed !== null) {
           parsedActorType = parsed.actor_type || parsed.actorType || parsed.char_type
-          console.log('[ThreeDirecting] Parsed actor_type:', parsedActorType)
           if (parsed.scene_data && !this.connectedThreeActing) {
             this.buildSceneFromData(parsed.scene_data)
           }
