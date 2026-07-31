@@ -19,6 +19,10 @@ export class HumanActor extends BaseActor {
     return 'human'
   }
 
+  public override getFPVOffset(): THREE.Vector3 {
+    return new THREE.Vector3(0, 1.55, 0.12)
+  }
+
   public override onPlaybackMotion(_distMoved: number, _diffY: number): void {}
 
   public buildMesh(): void {

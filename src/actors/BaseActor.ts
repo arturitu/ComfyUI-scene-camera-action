@@ -56,6 +56,14 @@ export abstract class BaseActor {
   ): void
   abstract getType(): 'human' | 'car'
 
+  public getFPVOffset(): THREE.Vector3 {
+    return new THREE.Vector3(0, 1.5, 0.1)
+  }
+
+  public setMeshVisibleForFPV(isFPV: boolean): void {
+    this.group.visible = !isFPV
+  }
+
   public setPosition(x: number, y: number, z: number, ry: number): void {
     this.position.set(x, y, z)
     this.rotationY = ry

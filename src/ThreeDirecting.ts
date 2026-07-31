@@ -296,15 +296,21 @@ export class ThreeDirecting {
     const rotY = this.actorController.group.rotation.y
     const activeMode = this.getActiveKeyframeMode(this.playbackController.getCurrentTime())
 
-    if (activeMode === 'First Person') {
+    const isFPV = activeMode === 'First Person'
+    this.actorController.setMeshVisibleForFPV(isFPV)
+
+    if (isFPV) {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const headPos = new THREE.Vector3(charPos.x, charPos.y + 1.1, charPos.z)
-      this.camera.position.copy(headPos)
-      const forward = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
-      this.camera.lookAt(headPos.clone().add(forward))
+      const localOffset = this.actorController.getFPVOffset()
+      const worldOffset = localOffset.clone().applyQuaternion(this.actorController.group.quaternion)
+      const fpvCamPos = charPos.clone().add(worldOffset)
+      this.camera.position.copy(fpvCamPos)
+
+      const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
+      this.camera.lookAt(fpvCamPos.clone().add(forward))
 
     } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {

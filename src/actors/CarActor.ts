@@ -60,6 +60,10 @@ export class CarActor extends BaseActor {
     return 'car'
   }
 
+  public override getFPVOffset(): THREE.Vector3 {
+    return new THREE.Vector3(-0.25, 0.95, -0.1)
+  }
+
   public override onPlaybackMotion(distMoved: number, angularVel: number): void {
     const dt = 1 / 60
     const currentSpeed = distMoved / dt
