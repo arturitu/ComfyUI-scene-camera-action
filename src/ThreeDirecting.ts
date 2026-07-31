@@ -4,7 +4,7 @@ import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { PlaybackController } from './utils/PlaybackController'
-import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
+import { StageEnvironment } from './scene/StageEnvironment'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -15,8 +15,6 @@ export class ThreeDirecting {
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
   private actorController: BaseActor | null = null
-  private mainLight!: THREE.DirectionalLight
-  private gridHelper: THREE.GridHelper | null = null
   private animationId: number | null = null
   private clonedEnvGroup: THREE.Group | null = null
   private connectedThreeActing: any = null
@@ -48,10 +46,12 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
-    if (this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function') {
-      const actorType = this.connectedThreeActing.getActorType()
-      this.buildActor(actorType)
-    }
+    const actorType = (this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function')
+      ? this.connectedThreeActing.getActorType()
+      : (this.connectedThreeActing && typeof this.connectedThreeActing.getState === 'function')
+        ? this.connectedThreeActing.getState()?.actor_type
+        : undefined
+    this.buildActor(actorType)
     this.buildSceneEnvironment()
   }
 
@@ -143,6 +143,10 @@ export class ThreeDirecting {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
+    // Setup Stage Environment (Lights, Floor, Grid)
+    const stageEnv = new StageEnvironment()
+    const stageSetup = stageEnv.initStage(this.scene)
+
     this.buildSceneEnvironment()
     this.buildActor()
 
@@ -173,220 +177,53 @@ export class ThreeDirecting {
       })
       this.clonedEnvGroup = null
     }
-    if (this.gridHelper) {
-      this.scene.remove(this.gridHelper)
-      this.gridHelper = null
+
+    this.clonedEnvGroup = new THREE.Group()
+    this.scene.add(this.clonedEnvGroup)
+
+    let actingPayload: any = this.state.acting_data
+    if (typeof actingPayload === 'string') {
+      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
     }
-    this.mainLight = null as any
+    const sceneData = actingPayload?.scene_data || (this.connectedThreeActing?.getState ? this.connectedThreeActing.getState()?.scene_data : undefined)
 
-    let hasGrid = false
+    const stageEnv = new StageEnvironment()
+    stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
 
-    if (this.connectedThreeActing && typeof this.connectedThreeActing.getScene === 'function') {
-      const sourceScene = this.connectedThreeActing.getScene() as THREE.Scene
-      this.clonedEnvGroup = new THREE.Group()
-
-      let inheritedActor: THREE.Group | null = null
-
-      for (const child of sourceScene.children) {
-        if (
-          child instanceof THREE.Camera ||
-          child.name.includes('TransformControls') ||
-          child.name.includes('Helper')
-        ) continue
-
-        if (child instanceof THREE.GridHelper) {
-          hasGrid = true
-        }
-
-        if (child.name === 'actorGroup' || child.name === 'characterGroup') {
-          inheritedActor = child.clone(true) as THREE.Group
-          continue
-        }
-
-        const clone = child.clone(true)
-        this.clonedEnvGroup!.add(clone)
-      }
-
-      if (inheritedActor) {
-        if (this.actorController) {
-          this.scene.remove(this.actorController.group)
-          this.actorController.dispose()
-        }
-        this.actorController = {
-          group: inheritedActor,
-          position: this.actorPosition,
-          rotationY: 0,
-          velocity: new THREE.Vector3(),
-          isOnGround: true,
-          buildMesh: () => {},
-          updatePhysics: () => {},
-          getType: () => 'human',
-          setPosition: (x: number, y: number, z: number, ry: number) => {
-            this.actorPosition.set(x, y, z)
-            inheritedActor!.position.set(x, y, z)
-            inheritedActor!.rotation.set(0, ry, 0)
-          },
-          applyMotionFrame: (frame: any) => {
-            this.actorPosition.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
-            inheritedActor!.position.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
-            const euler = new THREE.Euler(frame.rx ?? 0, frame.ry ?? 0, frame.rz ?? 0, 'YXZ')
-            inheritedActor!.quaternion.setFromEuler(euler)
-          },
-          getMotionState: (t: number) => ({
-            t, px: this.actorPosition.x, py: this.actorPosition.y, pz: this.actorPosition.z, rx: 0, ry: 0, rz: 0
-          }),
-          dispose: () => {
-            inheritedActor!.traverse((child) => {
-              if (child instanceof THREE.Mesh) {
-                child.geometry.dispose()
-                if (Array.isArray(child.material)) {
-                  child.material.forEach((m) => m.dispose())
-                } else {
-                  child.material.dispose()
-                }
-              }
-            })
-          }
-        } as any
-        if (this.actorController) {
-          this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
-          this.scene.add(this.actorController.group)
-        }
-      } else {
-        this.buildActor()
-      }
-
-      if (this.clonedEnvGroup) {
-        this.clonedEnvGroup.traverse((child) => {
-          if (child instanceof THREE.DirectionalLight) {
-            this.mainLight = child
-            this.mainLight.castShadow = true
-            this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-            this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-            this.mainLight.shadow.bias = config.SHADOW_BIAS
-            this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-            const d = config.SHADOW_FRUSTUM_SIZE
-            this.mainLight.shadow.camera.left = -d
-            this.mainLight.shadow.camera.right = d
-            this.mainLight.shadow.camera.top = d
-            this.mainLight.shadow.camera.bottom = -d
-            this.scene.add(this.mainLight.target)
-          }
-        })
-
-        this.scene.add(this.clonedEnvGroup)
-      }
-    }
-
-    if (!hasGrid) {
-      this.gridHelper = new THREE.GridHelper(
-        config.GRID_SIZE,
-        config.GRID_DIVISIONS,
-        config.GRID_COLOR_CENTER,
-        config.GRID_COLOR_GRID
-      )
-      this.gridHelper.position.y = config.GRID_Y
-      this.scene.add(this.gridHelper)
-    }
+    this.buildActor()
   }
 
   private buildSceneFromData(sceneData: any): void {
-    if (this.clonedEnvGroup) {
-      this.scene.remove(this.clonedEnvGroup)
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose()
-          if (Array.isArray(child.material)) {
-            child.material.forEach((m) => m.dispose())
-          } else {
-            child.material.dispose()
-          }
-        }
-      })
-      this.clonedEnvGroup = null
+    let actingPayload: any = this.state.acting_data
+    if (typeof actingPayload === 'string') {
+      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
     }
-    if (this.gridHelper) {
-      this.scene.remove(this.gridHelper)
-      this.gridHelper = null
+    if (!actingPayload || typeof actingPayload !== 'object') {
+      actingPayload = {}
     }
-    this.mainLight = null as any
-
-    this.clonedEnvGroup = new THREE.Group()
-
-    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-    this.clonedEnvGroup.add(ambientLight)
-
-    const hemiLight = new THREE.HemisphereLight(
-      config.HEMI_SKY_COLOR,
-      config.HEMI_GROUND_COLOR,
-      config.HEMI_LIGHT_INTENSITY
-    )
-    hemiLight.position.set(0, 50, 0)
-    this.clonedEnvGroup.add(hemiLight)
-
-    const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
-    fillLight.position.copy(config.FILL_LIGHT_POSITION)
-    this.clonedEnvGroup.add(fillLight)
-
-    this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-    this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-    this.mainLight.castShadow = true
-    this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-    this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-    this.mainLight.shadow.bias = config.SHADOW_BIAS
-    this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-    const d = config.SHADOW_FRUSTUM_SIZE
-    this.mainLight.shadow.camera.left = -d
-    this.mainLight.shadow.camera.right = d
-    this.mainLight.shadow.camera.top = d
-    this.mainLight.shadow.camera.bottom = -d
-    this.scene.add(this.mainLight.target)
-    this.clonedEnvGroup.add(this.mainLight)
-
-    const floorGeo = new THREE.PlaneGeometry(100, 100)
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: config.FLOOR_COLOR,
-      roughness: config.FLOOR_ROUGHNESS,
-      metalness: config.FLOOR_METALNESS
-    })
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-    floorMesh.name = 'floor'
-    floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = config.FLOOR_Y
-    floorMesh.receiveShadow = true
-    this.clonedEnvGroup.add(floorMesh)
-
-    const nodes: any[] = sceneData.nodes ?? []
-    const hierarchyManager = new SceneHierarchyManager()
-    nodes.forEach((nodeData: any) => {
-      const obj = hierarchyManager.buildNodeFromData(nodeData)
-      this.clonedEnvGroup!.add(obj)
-    })
-
-    this.scene.add(this.clonedEnvGroup)
-
-    this.gridHelper = new THREE.GridHelper(
-      config.GRID_SIZE,
-      config.GRID_DIVISIONS,
-      config.GRID_COLOR_CENTER,
-      config.GRID_COLOR_GRID
-    )
-    this.gridHelper.position.y = config.GRID_Y
-    this.scene.add(this.gridHelper)
-
-    // Ensure actor exists when building from JSON
-    if (!this.actorController) {
-      this.buildActor()
-    }
+    actingPayload.scene_data = sceneData
+    this.state.acting_data = actingPayload
+    this.buildSceneEnvironment()
   }
 
   private buildActor(type?: string): void {
     let charType = type
-    if (!charType && this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function') {
-      charType = this.connectedThreeActing.getActorType()
+    if (!charType && this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getActorType === 'function') {
+        charType = this.connectedThreeActing.getActorType()
+      } else if (typeof this.connectedThreeActing.getState === 'function') {
+        charType = this.connectedThreeActing.getState()?.actor_type
+      }
     }
     if (!charType) {
-      charType = 'human'
+      let actingPayload: any = this.state.acting_data
+      if (typeof actingPayload === 'string') {
+        try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
+      }
+      charType = actingPayload?.actor_type || actingPayload?.actorType || actingPayload?.char_type
+    }
+    if (!charType) {
+      charType = 'car'
     }
     if (this.actorController && (this.actorController as any).getType?.() === charType) {
       return
@@ -515,12 +352,6 @@ export class ThreeDirecting {
 
     this.updateActorMovement(dt)
     this.updateCamera()
-
-    if (this.actorController && this.mainLight) {
-      this.mainLight.position.copy(this.actorPosition).add(config.MAIN_LIGHT_OFFSET)
-      this.mainLight.target.position.copy(this.actorPosition)
-      this.mainLight.target.updateMatrixWorld()
-    }
 
     this.renderer.render(this.scene, this.camera)
   }
@@ -702,5 +533,13 @@ export class ThreeDirecting {
 
     this.renderer.dispose()
     this.scene.clear()
+  }
+
+  public getState(): DirectingState {
+    return this.state
+  }
+
+  public getScene(): THREE.Scene {
+    return this.scene
   }
 }

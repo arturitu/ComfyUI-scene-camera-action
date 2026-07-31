@@ -1,6 +1,6 @@
 {
   "type": "cube_scene",
-  "num_assets": 2,
+  "num_assets": 3,
   "nodes": [
     {
       "id": "d7d226b4-3bc6-4be2-9402-8202575fac06",
@@ -32,6 +32,22 @@
         "sx": 1.04,
         "sy": 1.44,
         "sz": 1.39
+      }
+    },
+    {
+      "id": "32aa54bf-d712-4045-8022-addf5a314c2e",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 2.55,
+        "py": 1.14,
+        "pz": 1.6,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.94,
+        "sy": 0.94,
+        "sz": 2.24
       }
     }
   ],

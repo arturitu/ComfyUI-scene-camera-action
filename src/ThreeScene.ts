@@ -5,6 +5,7 @@ import type { SceneState, ThreeSceneOptions, CubeTransform } from './types'
 import * as config from './threeConfig'
 import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
 import { SceneSelectionManager } from './scene/SceneSelectionManager'
+import { StageEnvironment } from './scene/StageEnvironment'
 
 export class ThreeScene {
   private container: HTMLElement
@@ -91,62 +92,9 @@ export class ThreeScene {
     canvas.addEventListener('mouseenter', () => { this.isHovered = true })
     canvas.addEventListener('mouseleave', () => { this.isHovered = false })
 
-    // Lighting Setup
-    const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-    this.scene.add(ambientLight)
-
-    const hemiLight = new THREE.HemisphereLight(
-      config.HEMI_SKY_COLOR,
-      config.HEMI_GROUND_COLOR,
-      config.HEMI_LIGHT_INTENSITY
-    )
-    hemiLight.position.set(0, 50, 0)
-    this.scene.add(hemiLight)
-
-    const mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-    mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-    mainLight.castShadow = true
-    mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-    mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-    mainLight.shadow.bias = config.SHADOW_BIAS
-    mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-    
-    const d = config.SHADOW_FRUSTUM_SIZE
-    mainLight.shadow.camera.left = -d
-    mainLight.shadow.camera.right = d
-    mainLight.shadow.camera.top = d
-    mainLight.shadow.camera.bottom = -d
-    mainLight.shadow.camera.near = 0.1
-    mainLight.shadow.camera.far = 100
-    this.scene.add(mainLight)
-
-    const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
-    fillLight.position.copy(config.FILL_LIGHT_POSITION)
-    this.scene.add(fillLight)
-
-    // Floor Grid
-    const gridHelper = new THREE.GridHelper(
-      config.GRID_SIZE,
-      config.GRID_DIVISIONS,
-      config.GRID_COLOR_CENTER,
-      config.GRID_COLOR_GRID
-    )
-    gridHelper.position.y = config.GRID_Y
-    this.scene.add(gridHelper)
-
-    // Floor plane
-    const floorGeo = new THREE.PlaneGeometry(100, 100)
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: config.FLOOR_COLOR,
-      roughness: config.FLOOR_ROUGHNESS,
-      metalness: config.FLOOR_METALNESS
-    })
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-    floorMesh.name = 'floor'
-    floorMesh.rotation.x = -Math.PI / 2
-    floorMesh.position.y = config.FLOOR_Y
-    floorMesh.receiveShadow = true
-    this.scene.add(floorMesh)
+    // Setup Stage Environment (Lights, Floor, Grid)
+    const stageEnv = new StageEnvironment()
+    stageEnv.initStage(this.scene)
 
     // TransformControls
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
@@ -422,7 +370,7 @@ export class ThreeScene {
           const name = hit.object.name
           return (name && name !== '' && name !== 'helper') || activeAxis !== null
         })
-        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some(h => ['X','Y','Z','XY','YZ','XZ','E','R','S','XYZE'].includes(h.object.name)))) {
+        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some(h => ['X', 'Y', 'Z', 'XY', 'YZ', 'XZ', 'E', 'R', 'S', 'XYZE'].includes(h.object.name)))) {
           return
         }
       }
@@ -430,11 +378,7 @@ export class ThreeScene {
       // Collect selectable objects
       const selectableObjects: THREE.Object3D[] = []
       this.scene.children.forEach(child => {
-        if (child.name !== 'floor' &&
-            child.type !== 'AmbientLight' &&
-            child.type !== 'DirectionalLight' &&
-            child.type !== 'GridHelper' &&
-            child !== this.transformControls.getHelper()) {
+        if (!StageEnvironment.isStageObject(child, this.transformControls.getHelper())) {
           selectableObjects.push(child)
         }
       })
@@ -514,6 +458,7 @@ export class ThreeScene {
       this.controls.target.x = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.x))
       this.controls.target.z = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.z))
       this.controls.update()
+
     }
     this.selectionManager.updateBoxHelpers()
     this.renderer.render(this.scene, this.camera)
@@ -593,6 +538,10 @@ export class ThreeScene {
 
   public getScene(): THREE.Scene {
     return this.scene
+  }
+
+  public getState(): SceneState {
+    return this.state
   }
 
   public getTransformHelper(): THREE.Object3D {

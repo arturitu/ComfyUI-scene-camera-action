@@ -8,6 +8,7 @@ import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
 import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
+import { StageEnvironment } from './scene/StageEnvironment'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -19,51 +20,52 @@ export class ThreeActing {
   private renderer!: THREE.WebGLRenderer
   private environmentMeshes: THREE.Mesh[] = []
   private actorController!: BaseActor
-  private gridHelper: THREE.GridHelper | null = null
-  private mainLight!: THREE.DirectionalLight
   private animationId: number | null = null
   private isHovered = false
   private connectedThreeScene: any = null
-  private clonedEnvGroup: THREE.Group | null = null
-  private debugPanel: DebugPanel | null = null
+  private keysPressed: Record<string, boolean> = {}
+
+  private colliderBVH: MeshBVH | null = null
+  private colliderVisualizer: THREE.Object3D | null = null
+  private bvhHelper: BVHHelper | null = null
+  private displayCollider = false
+  private displayActorCollider = false
+  private displayBVH = false
 
   private isRecording = false
-  private isPlaying = false
   private recordingTime = 0
   private activeRecordingTargetDuration = 7.0
   private activeRecordingSpeed = 1.0
-  private playbackController = new PlaybackController()
-  private trajectory: Array<any> = []
-  private onRecordingFinished?: (trajectoryJson: string) => void
+  private trajectory: Array<{ t: number; px: number; py: number; pz: number; rx: number; ry: number; rz: number }> = []
 
-  // BVH Collision data
-  private colliderBVH: MeshBVH | null = null
-  private bvhHelper: BVHHelper | null = null
-  private colliderVisualizer: THREE.Mesh | null = null
-  private displayBVH = false
-  private displayCollider = false
-  private displayActorCollider = false
+  public isPlaying = false
+  private playbackController: PlaybackController
 
-  // Actor movement & physics control state
-  private keysPressed: Record<string, boolean> = {}
-  private lastTime = performance.now()
+  private debugPanel: DebugPanel | null = null
+  private clonedEnvGroup: THREE.Group | null = null
+
   private keydownHandler?: (e: KeyboardEvent) => void
   private keyupHandler?: (e: KeyboardEvent) => void
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
+  private lastTime = performance.now()
+  private onRecordingFinished?: (jsonString: string) => void
 
   constructor(options: ThreeActingOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onRecordingFinished = options.onRecordingFinished
     this.connectedThreeScene = options.connectedThreeScene ?? null
+
     this.state = {
-      actor_type: options.initialState?.actor_type ?? 'human',
-      actor_speed: options.initialState?.actor_speed ?? 1.0,
-      duration: options.initialState?.duration ?? 8.0,
-      motion_data: options.initialState?.motion_data ?? '',
-      scene_data: options.initialState?.scene_data ?? { type: 'cube_scene', num_assets: 0, nodes: [] } as any,
+      actor_type: options.initialState?.actor_type ?? 'car',
+      actor_speed: options.initialState?.actor_speed ?? 10.0,
+      duration: options.initialState?.duration ?? 7.0,
+      scene_data: options.initialState?.scene_data ?? { type: 'cube_scene', num_assets: 0, nodes: [] },
+      motion_data: options.initialState?.motion_data
     }
+
+    this.playbackController = new PlaybackController()
 
     this.initThreeJS()
     this.bindEvents()
@@ -89,54 +91,32 @@ export class ThreeActing {
     this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
   }
 
-  public getActorType(): 'human' | 'car' {
-    return this.actorController ? this.actorController.getType() : 'human'
-  }
-
   public stopRecording(): string {
     this.isRecording = false
-    const payload = {
-      actor_type: this.getActorType(),
-      motion_data: this.trajectory,
-      scene_data: this.state.scene_data ?? null
-    }
-    const json = JSON.stringify(payload)
+    this.isPlaying = false
+    const json = JSON.stringify(this.trajectory)
     this.state.motion_data = json
-    this.playbackController.setTrajectory(json)
+    this.loadTrajectory(json)
     if (this.onStateChange) {
       this.onStateChange({ ...this.state })
     }
     return json
   }
 
-  public startPlayback(trajectoryJson?: string): void {
-    if (trajectoryJson) {
-      this.loadTrajectory(trajectoryJson)
+  public startPlayback(motionData?: string): void {
+    if (motionData) {
+      this.loadTrajectory(motionData)
     }
-    this.playbackController.start()
-    this.isPlaying = this.playbackController.getIsPlaying()
-    this.isRecording = false
-  }
-
-  public play(): void {
-    this.playbackController.play()
-    this.isPlaying = true
-    this.isRecording = false
-  }
-
-  public pause(): void {
-    this.playbackController.pause()
-    this.isPlaying = false
-  }
-
-  public stop(): void {
-    this.playbackController.stop()
-    this.isPlaying = false
-    this.resetActorPosition()
+    if (this.playbackController.getTrajectory().length > 0) {
+      this.isRecording = false
+      this.isPlaying = true
+      this.playbackController.start()
+    }
   }
 
   public stopPlayback(): void {
-    this.stop()
+    this.isPlaying = false
+    this.playbackController.stop()
   }
 
   public loadTrajectory(trajectoryJson: string): void {
@@ -172,6 +152,10 @@ export class ThreeActing {
     canvas.style.width = '100%'
     canvas.style.height = '100%'
 
+    // Setup Stage Environment (Lights, Floor, Grid)
+    const stageEnv = new StageEnvironment()
+    stageEnv.initStage(this.scene)
+
     // Build environment and actor
     this.buildSceneEnvironment()
     this.buildActor(this.state.actor_type)
@@ -182,10 +166,9 @@ export class ThreeActing {
   }
 
   private buildSceneEnvironment(): void {
-    // 1. Cleanup old cloned environment group if present
+    // 1. Cleanup old environment group if present
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
-      // Traverse to dispose child geometries and materials to avoid memory leaks
       this.clonedEnvGroup.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.geometry.dispose()
@@ -200,153 +183,20 @@ export class ThreeActing {
     }
 
     this.environmentMeshes = []
-    this.mainLight = null as any
+    this.clonedEnvGroup = new THREE.Group()
+    this.scene.add(this.clonedEnvGroup)
 
+    let sceneData: any = this.state.scene_data
     if (this.connectedThreeScene) {
-      const sourceScene = this.connectedThreeScene.getScene()
-      const transformHelper = this.connectedThreeScene.getTransformHelper()
-
-      this.clonedEnvGroup = new THREE.Group()
-      this.scene.add(this.clonedEnvGroup)
-
-      // Clone and add each child of the source Scene except the transform controls helper
-      sourceScene.children.forEach((child: THREE.Object3D) => {
-        if (child !== transformHelper) {
-          const cloned = child.clone()
-          this.clonedEnvGroup!.add(cloned)
-        }
-      })
-
-      // Traverse cloned group to identify main light and asset meshes
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          // Skip the mesh named 'floor' so we don't treat it as a box collider for actor physics
-          if (child.name !== 'floor') {
-            this.environmentMeshes.push(child)
-          }
-        } else if (child instanceof THREE.DirectionalLight && child.castShadow) {
-          this.mainLight = child
-          // DirectionalLight.target needs to be in the scene to update its world matrix
-          this.scene.add(this.mainLight.target)
-        }
-      })
-    } else if (this.state.scene_data && (this.state.scene_data.nodes?.length || this.state.scene_data.num_assets)) {
-      // Reconstruct scene environment from scene_data state JSON
-      this.clonedEnvGroup = new THREE.Group()
-      this.scene.add(this.clonedEnvGroup)
-
-      const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-      this.clonedEnvGroup.add(ambientLight)
-
-      const hemiLight = new THREE.HemisphereLight(
-        config.HEMI_SKY_COLOR,
-        config.HEMI_GROUND_COLOR,
-        config.HEMI_LIGHT_INTENSITY
-      )
-      hemiLight.position.set(0, 50, 0)
-      this.clonedEnvGroup.add(hemiLight)
-
-      const fillLight = new THREE.DirectionalLight(config.FILL_LIGHT_COLOR, config.FILL_LIGHT_INTENSITY)
-      fillLight.position.copy(config.FILL_LIGHT_POSITION)
-      this.clonedEnvGroup.add(fillLight)
-
-      this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-      this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-      this.mainLight.castShadow = true
-      this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-      this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-      this.mainLight.shadow.bias = config.SHADOW_BIAS
-      this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-      const d = config.SHADOW_FRUSTUM_SIZE
-      this.mainLight.shadow.camera.left = -d
-      this.mainLight.shadow.camera.right = d
-      this.mainLight.shadow.camera.top = d
-      this.mainLight.shadow.camera.bottom = -d
-      this.scene.add(this.mainLight.target)
-      this.clonedEnvGroup.add(this.mainLight)
-
-      const gridHelper = new THREE.GridHelper(
-        config.GRID_SIZE,
-        config.GRID_DIVISIONS,
-        config.GRID_COLOR_CENTER,
-        config.GRID_COLOR_GRID
-      )
-      gridHelper.position.y = config.GRID_Y
-      this.clonedEnvGroup.add(gridHelper)
-
-      const floorGeo = new THREE.PlaneGeometry(100, 100)
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: config.FLOOR_COLOR,
-        roughness: config.FLOOR_ROUGHNESS,
-        metalness: config.FLOOR_METALNESS
-      })
-      const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-      floorMesh.name = 'floor'
-      floorMesh.rotation.x = -Math.PI / 2
-      floorMesh.position.y = config.FLOOR_Y
-      floorMesh.receiveShadow = true
-      this.clonedEnvGroup.add(floorMesh)
-
-      const nodes = this.state.scene_data.nodes ?? []
-      const hierarchyManager = new SceneHierarchyManager()
-      nodes.forEach((nodeData) => {
-        const obj = hierarchyManager.buildNodeFromData(nodeData)
-        this.clonedEnvGroup!.add(obj)
-        if (obj instanceof THREE.Mesh) {
-          this.environmentMeshes.push(obj)
-        } else {
-          obj.traverse((child) => {
-            if (child instanceof THREE.Mesh) {
-              this.environmentMeshes.push(child)
-            }
-          })
-        }
-      })
-    } else {
-      // Fallback: Create simple grid and ambient/directional lights if no SceneNode is connected yet
-      this.clonedEnvGroup = new THREE.Group()
-      this.scene.add(this.clonedEnvGroup)
-
-      const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
-      this.clonedEnvGroup.add(ambientLight)
-
-      this.mainLight = new THREE.DirectionalLight(config.MAIN_LIGHT_COLOR, config.MAIN_LIGHT_INTENSITY)
-      this.mainLight.position.copy(config.MAIN_LIGHT_OFFSET)
-      this.mainLight.castShadow = true
-      this.mainLight.shadow.mapSize.width = config.SHADOW_MAP_WIDTH
-      this.mainLight.shadow.mapSize.height = config.SHADOW_MAP_HEIGHT
-      this.mainLight.shadow.bias = config.SHADOW_BIAS
-      this.mainLight.shadow.normalBias = config.SHADOW_NORMAL_BIAS
-      const d = config.SHADOW_FRUSTUM_SIZE
-      this.mainLight.shadow.camera.left = -d
-      this.mainLight.shadow.camera.right = d
-      this.mainLight.shadow.camera.top = d
-      this.mainLight.shadow.camera.bottom = -d
-      this.scene.add(this.mainLight.target)
-      this.clonedEnvGroup.add(this.mainLight)
-
-      const gridHelper = new THREE.GridHelper(
-        config.GRID_SIZE,
-        config.GRID_DIVISIONS,
-        config.GRID_COLOR_CENTER,
-        config.GRID_COLOR_GRID
-      )
-      gridHelper.position.y = config.GRID_Y
-      this.clonedEnvGroup.add(gridHelper)
-
-      const floorGeo = new THREE.PlaneGeometry(100, 100)
-      const floorMat = new THREE.MeshStandardMaterial({
-        color: config.FLOOR_COLOR,
-        roughness: config.FLOOR_ROUGHNESS,
-        metalness: config.FLOOR_METALNESS
-      })
-      const floorMesh = new THREE.Mesh(floorGeo, floorMat)
-      floorMesh.name = 'floor'
-      floorMesh.rotation.x = -Math.PI / 2
-      floorMesh.position.y = config.FLOOR_Y
-      floorMesh.receiveShadow = true
-      this.clonedEnvGroup.add(floorMesh)
+      if (typeof this.connectedThreeScene.getState === 'function') {
+        sceneData = this.connectedThreeScene.getState()
+      } else if (typeof this.connectedThreeScene.readSceneStateFromNode === 'function') {
+        sceneData = this.connectedThreeScene.readSceneStateFromNode()
+      }
     }
+
+    const stageEnv = new StageEnvironment()
+    this.environmentMeshes = stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
 
     // 2. Build BVH Collision Tree
     const geometries: THREE.BufferGeometry[] = []
@@ -372,12 +222,12 @@ export class ThreeActing {
     if (geometries.length > 0) {
       const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
       this.colliderBVH = new MeshBVH(mergedGeom)
-      ;(mergedGeom as any).boundsTree = this.colliderBVH
+        ; (mergedGeom as any).boundsTree = this.colliderBVH
 
       // Create collider visualizer (Green Wireframe Mesh of stage geometry)
       if (this.colliderVisualizer) {
         this.scene.remove(this.colliderVisualizer)
-        this.colliderVisualizer.geometry.dispose()
+          ; (this.colliderVisualizer as THREE.Mesh).geometry?.dispose()
       }
       const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
         color: 0x00ff44,
@@ -398,7 +248,7 @@ export class ThreeActing {
       }
       this.bvhHelper = new BVHHelper(colliderMesh, 10)
       if ((this.bvhHelper as any).color?.set) {
-        ;(this.bvhHelper as any).color.set(0xffff00)
+        ; (this.bvhHelper as any).color.set(0xffff00)
       }
       this.bvhHelper.visible = this.displayBVH
       this.bvhHelper.renderOrder = 999
@@ -434,42 +284,34 @@ export class ThreeActing {
   }
 
   private bindEvents(): void {
-    this.container.addEventListener('mouseenter', () => {
-      this.isHovered = true
-    })
+    const canvas = this.renderer.domElement
 
-    this.container.addEventListener('mouseleave', () => {
-      this.isHovered = false
-    })
+    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
+    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
 
-    // Keyboard listeners when mouse is hovered over canvas (WASD + Arrow keys)
-    this.keydownHandler = (e: KeyboardEvent) => {
-      if (!this.isHovered) return
-      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)
-      if (isMovementKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        e.stopImmediatePropagation()
-        this.keysPressed[e.code] = true
+    this.keydownHandler = (event: KeyboardEvent) => {
+      const activeEl = document.activeElement
+      if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+        return
       }
-      if (e.code === 'Space') {
-        if (e.repeat) return
-        if (this.actorController) {
-          this.actorController.jump()
-        }
-      }
+
+      const isCanvasHoveredOrFocused = this.isHovered || activeEl === this.renderer.domElement || (activeEl && this.container.contains(activeEl))
+      if (!isCanvasHoveredOrFocused) return
+
+      event.stopPropagation()
+      event.stopImmediatePropagation()
+
+      this.keysPressed[event.code] = true
+      this.keysPressed[event.key] = true
     }
 
-    this.keyupHandler = (e: KeyboardEvent) => {
-      const isMovementKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'].includes(e.code)
-      if (this.isHovered && isMovementKey) {
-        e.preventDefault()
-        e.stopPropagation()
-        e.stopImmediatePropagation()
+    this.keyupHandler = (event: KeyboardEvent) => {
+      if (this.isHovered || this.keysPressed[event.code] || this.keysPressed[event.key]) {
+        event.stopPropagation()
+        event.stopImmediatePropagation()
       }
-      if (isMovementKey) {
-        this.keysPressed[e.code] = false
-      }
+      this.keysPressed[event.code] = false
+      this.keysPressed[event.key] = false
     }
 
     window.addEventListener('keydown', this.keydownHandler, { capture: true })
@@ -488,34 +330,25 @@ export class ThreeActing {
   }
 
   private updateActorMovement(dt: number): void {
-    if (!this.actorController) return
-
-    // 1. Playback / Paused Replay Mode (when recorded trajectory is loaded)
-    if (this.playbackController.getTrajectory().length > 0 && !this.isRecording) {
+    if (this.isPlaying) {
       this.playbackController.update(dt, this.actorController)
       return
     }
 
-    const currentSpeed = this.isRecording ? this.activeRecordingSpeed : this.state.actor_speed
+    if (this.actorController) {
+      const speedMult = this.state.actor_speed ?? 10.0
+      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH)
 
-    // 2. Physics & Interactive WASD Controls (Live Mode)
-    this.actorController.updatePhysics(
-      dt,
-      this.keysPressed,
-      currentSpeed,
-      this.colliderBVH
-    )
+      if (this.isRecording) {
+        this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
 
-    // 3. Record coordinates if in recording state
-    if (this.isRecording) {
-      this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
+        this.recordingTime += dt
 
-      this.recordingTime += dt
-
-      if (this.recordingTime >= this.activeRecordingTargetDuration) {
-        const json = this.stopRecording()
-        if (this.onRecordingFinished) {
-          this.onRecordingFinished(json)
+        if (this.recordingTime >= this.activeRecordingTargetDuration) {
+          const json = this.stopRecording()
+          if (this.onRecordingFinished) {
+            this.onRecordingFinished(json)
+          }
         }
       }
     }
@@ -595,12 +428,6 @@ export class ThreeActing {
         pos.y + 0.5,
         pos.z
       )
-
-      if (this.mainLight) {
-        this.mainLight.position.copy(pos).add(config.MAIN_LIGHT_OFFSET)
-        this.mainLight.target.position.copy(pos)
-        this.mainLight.target.updateMatrixWorld()
-      }
     }
 
     this.renderer.render(this.scene, this.camera)
@@ -646,6 +473,14 @@ export class ThreeActing {
       return this.playbackController.getMaxDuration() || (this.state.duration ?? 7.0)
     }
     return this.state.duration ?? 7.0
+  }
+
+  public getActorType(): 'human' | 'car' {
+    return this.state.actor_type ?? 'car'
+  }
+
+  public getState(): ActingState {
+    return this.state
   }
 
   public getScene(): THREE.Scene {

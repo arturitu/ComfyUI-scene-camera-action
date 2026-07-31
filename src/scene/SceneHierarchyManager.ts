@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import type { SceneState, SceneNode, CubeTransform } from '../types'
 import * as config from '../threeConfig'
+import { StageEnvironment } from './StageEnvironment'
 
 function r2(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100
@@ -72,11 +73,7 @@ export class SceneHierarchyManager {
 
     const objectsToRemove: THREE.Object3D[] = []
     scene.children.forEach(child => {
-      if (child.name !== 'floor' &&
-          child.type !== 'AmbientLight' &&
-          child.type !== 'DirectionalLight' &&
-          child.type !== 'GridHelper' &&
-          child !== transformControlsHelper) {
+      if (!StageEnvironment.isStageObject(child, transformControlsHelper)) {
         objectsToRemove.push(child)
       }
     })

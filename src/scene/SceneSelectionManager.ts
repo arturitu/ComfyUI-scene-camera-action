@@ -83,6 +83,7 @@ export class SceneSelectionManager {
       // Multi-selection (2+ items): show BoxHelpers and attach TransformControls to multiSelectionPivot
       this.selectedObjects.forEach(obj => {
         const helper = new THREE.BoxHelper(obj, 0x4a90e2)
+        helper.name = '__box_helper__'
         scene.add(helper)
         this.boxHelpers.push(helper)
       })
