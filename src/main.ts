@@ -373,18 +373,48 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
         if (directingInst) {
           if (originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'ActingNode') {
             const actingState = readActingStateFromNode(originNode)
-            const actingBlob = actingState.motion_data ?? ''
+            const actingInst = actingInstances.get(originNode)
+            const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
+
+            if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+              (directingInst.exposed as any).setConnectedThreeActing(threeActing)
+            }
+
+            const rawBlob = actingState.motion_data ?? ''
+            let actingBlob = rawBlob
+            const currentSceneData = threeActing?.getSceneData() ?? actingState.scene_data
+            const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
+
+            if (rawBlob) {
+              try {
+                const parsed = JSON.parse(rawBlob)
+                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                  parsed.actor_type = currentActorType
+                  if (currentSceneData) parsed.scene_data = currentSceneData
+                  if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
+                  actingBlob = JSON.stringify(parsed)
+                } else {
+                  actingBlob = JSON.stringify({
+                    type: 'acting_motion',
+                    actor_type: currentActorType,
+                    scene_data: currentSceneData,
+                    trajectory: parsed,
+                    motion_data: parsed
+                  })
+                }
+              } catch (e) { }
+            } else if (currentSceneData) {
+              actingBlob = JSON.stringify({
+                type: 'acting_motion',
+                actor_type: currentActorType,
+                scene_data: currentSceneData,
+                trajectory: [],
+                motion_data: []
+              })
+            }
+
             directingInst.exposed.setState({ acting_data: actingBlob })
             writeStoredDirectingProps(targetNode, { acting_data: actingBlob })
-
-            // Pass live ThreeActing scene for cloning (with lights)
-            const actingInst = actingInstances.get(originNode)
-            if (actingInst?.exposed?.getThreeActing) {
-              const threeActing = (actingInst.exposed as any).getThreeActing()
-              if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
-                (directingInst.exposed as any).setConnectedThreeActing(threeActing)
-              }
-            }
           }
         }
       }

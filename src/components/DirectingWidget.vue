@@ -214,20 +214,17 @@ function parseKeyframes(raw: string): Keyframe[] {
 }
 
 const hasActingData = computed(() => {
+  if (threeDirecting && (threeDirecting as any).connectedThreeActing) return true
   if (!state.acting_data || !state.acting_data.trim()) return false
   try {
     const parsed = JSON.parse(state.acting_data)
     if (parsed && typeof parsed === 'object') {
-      if (Array.isArray(parsed.motion_data)) {
-        return parsed.motion_data.length > 0
-      }
-      if (typeof parsed.motion_data === 'string') {
-        return parsed.motion_data.trim().length > 0
-      }
+      if (Array.isArray(parsed.trajectory)) return true
+      if (Array.isArray(parsed.motion_data)) return true
+      if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim().length > 0) return true
+      if (parsed.scene_data) return true
     }
-    if (Array.isArray(parsed)) {
-      return parsed.length > 0
-    }
+    if (Array.isArray(parsed)) return true
   } catch {}
   return false
 })

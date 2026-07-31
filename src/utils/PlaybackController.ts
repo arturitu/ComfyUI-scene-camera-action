@@ -23,7 +23,9 @@ export class PlaybackController {
         if (Array.isArray(parsed)) {
           this.trajectory = parsed
         } else if (typeof parsed === 'object' && parsed !== null) {
-          if (Array.isArray(parsed.motion_data)) {
+          if (Array.isArray(parsed.trajectory)) {
+            this.trajectory = parsed.trajectory
+          } else if (Array.isArray(parsed.motion_data)) {
             this.trajectory = parsed.motion_data
           } else if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim()) {
             this.trajectory = JSON.parse(parsed.motion_data)

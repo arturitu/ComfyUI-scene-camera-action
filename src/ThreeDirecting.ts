@@ -73,10 +73,9 @@ export class ThreeDirecting {
       }
       this.playbackController.setTrajectory(actingDataJson)
       this.playbackController.start()
-    } else {
-      this.playbackController.setTrajectory([])
     }
 
+    this.buildSceneEnvironment()
     this.buildActor(parsedActorType)
 
     if (this.actorController) {
@@ -162,6 +161,26 @@ export class ThreeDirecting {
     this.resizeObserver.observe(this.container)
   }
 
+  public getSceneData(): any {
+    let actingPayload: any = this.state.acting_data
+    if (typeof actingPayload === 'string') {
+      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
+    }
+    if (actingPayload?.scene_data) {
+      return actingPayload.scene_data
+    }
+    if (this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getSceneData === 'function') {
+        return this.connectedThreeActing.getSceneData()
+      }
+      if (typeof this.connectedThreeActing.getState === 'function') {
+        const actingState = this.connectedThreeActing.getState()
+        if (actingState?.scene_data) return actingState.scene_data
+      }
+    }
+    return undefined
+  }
+
   private buildSceneEnvironment(): void {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
@@ -181,11 +200,7 @@ export class ThreeDirecting {
     this.clonedEnvGroup = new THREE.Group()
     this.scene.add(this.clonedEnvGroup)
 
-    let actingPayload: any = this.state.acting_data
-    if (typeof actingPayload === 'string') {
-      try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
-    }
-    const sceneData = actingPayload?.scene_data || (this.connectedThreeActing?.getState ? this.connectedThreeActing.getState()?.scene_data : undefined)
+    const sceneData = this.getSceneData()
 
     const stageEnv = new StageEnvironment()
     stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
@@ -208,19 +223,19 @@ export class ThreeDirecting {
 
   private buildActor(type?: string): void {
     let charType = type
-    if (!charType && this.connectedThreeActing) {
-      if (typeof this.connectedThreeActing.getActorType === 'function') {
-        charType = this.connectedThreeActing.getActorType()
-      } else if (typeof this.connectedThreeActing.getState === 'function') {
-        charType = this.connectedThreeActing.getState()?.actor_type
-      }
-    }
     if (!charType) {
       let actingPayload: any = this.state.acting_data
       if (typeof actingPayload === 'string') {
         try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
       }
       charType = actingPayload?.actor_type || actingPayload?.actorType || actingPayload?.char_type
+    }
+    if (!charType && this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getActorType === 'function') {
+        charType = this.connectedThreeActing.getActorType()
+      } else if (typeof this.connectedThreeActing.getState === 'function') {
+        charType = this.connectedThreeActing.getState()?.actor_type
+      }
     }
     if (!charType) {
       charType = 'car'

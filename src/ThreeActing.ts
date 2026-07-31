@@ -94,13 +94,24 @@ export class ThreeActing {
   public stopRecording(): string {
     this.isRecording = false
     this.isPlaying = false
-    const json = JSON.stringify(this.trajectory)
+    const payload = {
+      type: 'acting_motion',
+      actor_type: this.getActorType(),
+      scene_data: this.getSceneData(),
+      trajectory: this.trajectory,
+      motion_data: this.trajectory
+    }
+    const json = JSON.stringify(payload)
     this.state.motion_data = json
     this.loadTrajectory(json)
     if (this.onStateChange) {
       this.onStateChange({ ...this.state })
     }
     return json
+  }
+
+  public getTrajectory(): Array<{ t: number; px: number; py: number; pz: number; rx: number; ry: number; rz: number }> {
+    return this.trajectory
   }
 
   public startPlayback(motionData?: string): void {
@@ -186,14 +197,8 @@ export class ThreeActing {
     this.clonedEnvGroup = new THREE.Group()
     this.scene.add(this.clonedEnvGroup)
 
-    let sceneData: any = this.state.scene_data
-    if (this.connectedThreeScene) {
-      if (typeof this.connectedThreeScene.getState === 'function') {
-        sceneData = this.connectedThreeScene.getState()
-      } else if (typeof this.connectedThreeScene.readSceneStateFromNode === 'function') {
-        sceneData = this.connectedThreeScene.readSceneStateFromNode()
-      }
-    }
+    let sceneData: any = this.getSceneData()
+    this.state.scene_data = sceneData
 
     const stageEnv = new StageEnvironment()
     this.environmentMeshes = stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
@@ -473,6 +478,18 @@ export class ThreeActing {
       return this.playbackController.getMaxDuration() || (this.state.duration ?? 7.0)
     }
     return this.state.duration ?? 7.0
+  }
+
+  public getSceneData(): any {
+    let sceneData: any = this.state.scene_data
+    if (this.connectedThreeScene) {
+      if (typeof this.connectedThreeScene.getState === 'function') {
+        sceneData = this.connectedThreeScene.getState()
+      } else if (typeof this.connectedThreeScene.readSceneStateFromNode === 'function') {
+        sceneData = this.connectedThreeScene.readSceneStateFromNode()
+      }
+    }
+    return sceneData
   }
 
   public getActorType(): 'human' | 'car' {
