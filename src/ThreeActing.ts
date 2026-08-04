@@ -496,6 +496,10 @@ export class ThreeActing {
     return this.state.actor_type ?? 'car'
   }
 
+  public getActorController(): BaseActor {
+    return this.actorController
+  }
+
   public getState(): ActingState {
     return this.state
   }

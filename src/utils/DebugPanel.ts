@@ -94,7 +94,7 @@ export class DebugPanel {
 
     bvhFolder.close()
 
-    // 2. Actor Controls Folder
+    // 2. Actor Physics Folder
     const actorFolder = this.gui.addFolder('Actor Physics')
     const actorParams = {
       resetPos: () => {
