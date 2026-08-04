@@ -44,8 +44,9 @@ export class ThreeActing {
   private debugPanel: DebugPanel | null = null
   private clonedEnvGroup: THREE.Group | null = null
 
-  private keydownHandler?: (e: KeyboardEvent) => void
-  private keyupHandler?: (e: KeyboardEvent) => void
+  private keydownHandler!: (e: KeyboardEvent) => void
+  private keyupHandler!: (e: KeyboardEvent) => void
+  private blurHandler!: () => void
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
   private lastTime = performance.now()
@@ -211,7 +212,9 @@ export class ThreeActing {
     floorBox.translate(0, -0.05, 0)
     geometries.push(floorBox)
 
-    // Ensure all world matrices across group hierarchy are fully updated before extracting BVH geometries
+    // Force full scene graph world matrix evaluation before extracting mesh geometries
+    this.scene.updateMatrixWorld(true)
+
     if (this.clonedEnvGroup) {
       this.clonedEnvGroup.updateMatrixWorld(true)
     }
@@ -226,8 +229,9 @@ export class ThreeActing {
 
     if (geometries.length > 0) {
       const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
-      this.colliderBVH = new MeshBVH(mergedGeom)
-        ; (mergedGeom as any).boundsTree = this.colliderBVH
+      const newBVH = new MeshBVH(mergedGeom)
+      ;(mergedGeom as any).boundsTree = newBVH
+      this.colliderBVH = newBVH
 
       // Create collider visualizer (Green Wireframe Mesh of stage geometry)
       if (this.colliderVisualizer) {
@@ -291,36 +295,48 @@ export class ThreeActing {
   private bindEvents(): void {
     const canvas = this.renderer.domElement
 
-    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
-    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
+    canvas.addEventListener('mouseenter', () => {
+      this.isHovered = true
+    })
+    canvas.addEventListener('mouseleave', () => {
+      this.isHovered = false
+      this.keysPressed = {}
+    })
 
     this.keydownHandler = (event: KeyboardEvent) => {
       const activeEl = document.activeElement
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+        this.keysPressed = {}
         return
       }
 
       const isCanvasHoveredOrFocused = this.isHovered || activeEl === this.renderer.domElement || (activeEl && this.container.contains(activeEl))
-      if (!isCanvasHoveredOrFocused) return
+      if (!isCanvasHoveredOrFocused) {
+        this.keysPressed = {}
+        return
+      }
 
       event.stopPropagation()
       event.stopImmediatePropagation()
 
       this.keysPressed[event.code] = true
-      this.keysPressed[event.key] = true
     }
 
     this.keyupHandler = (event: KeyboardEvent) => {
-      if (this.isHovered || this.keysPressed[event.code] || this.keysPressed[event.key]) {
+      if (this.isHovered || this.keysPressed[event.code]) {
         event.stopPropagation()
         event.stopImmediatePropagation()
       }
       this.keysPressed[event.code] = false
-      this.keysPressed[event.key] = false
+    }
+
+    this.blurHandler = () => {
+      this.keysPressed = {}
     }
 
     window.addEventListener('keydown', this.keydownHandler, { capture: true })
     window.addEventListener('keyup', this.keyupHandler, { capture: true })
+    window.addEventListener('blur', this.blurHandler)
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -529,6 +545,9 @@ export class ThreeActing {
     }
     if (this.keyupHandler) {
       window.removeEventListener('keyup', this.keyupHandler, { capture: true })
+    }
+    if (this.blurHandler) {
+      window.removeEventListener('blur', this.blurHandler)
     }
 
     if (this.debugPanel) {

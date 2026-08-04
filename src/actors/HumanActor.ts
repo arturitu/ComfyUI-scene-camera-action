@@ -71,6 +71,10 @@ export class HumanActor extends BaseActor {
   private lastPlaybackTime: number = 0
   private isDisposed: boolean = false
 
+  // Wireframe collider geometries for standing (2.20m total height) and crouching (1.40m total height)
+  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.25, 1.70, 8, 16)
+  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.25, 0.90, 8, 16)
+
   constructor() {
     super()
     this.buildMesh()
@@ -78,6 +82,10 @@ export class HumanActor extends BaseActor {
 
   public getType(): 'human' {
     return 'human'
+  }
+
+  public getCurrentAnimationName(): string {
+    return this.currentAnimationName ?? 'None'
   }
 
   public override getFPVOffset(): THREE.Vector3 {
@@ -117,8 +125,7 @@ export class HumanActor extends BaseActor {
     }
     this.modelGroup = null
 
-    // Collider Wireframe Visualizer
-    const colliderGeo = new THREE.CapsuleGeometry(0.45, 0.9, 8, 16)
+    // Collider Wireframe Visualizer (matches 2.20m human height, radius 0.25, height 1.70)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0xff00ff,
       wireframe: true,
@@ -127,8 +134,8 @@ export class HumanActor extends BaseActor {
       transparent: true,
       opacity: 0.85,
     })
-    this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
-    this.colliderWireframe.position.y = 0.75
+    this.colliderWireframe = new THREE.Mesh(this.standingWireframeGeo, colliderMat)
+    this.colliderWireframe.position.y = 1.10
     this.colliderWireframe.renderOrder = 1000
     this.colliderWireframe.visible = this.showCollider
     this.group.add(this.colliderWireframe)
@@ -137,7 +144,7 @@ export class HumanActor extends BaseActor {
       this.setupHumanModel(cachedAssets)
     } else {
       // Temporary placeholder mesh while GLTF loads asynchronously for the first time
-      const bodyGeo = new THREE.CapsuleGeometry(0.25, 0.85, 8, 16)
+      const bodyGeo = new THREE.CapsuleGeometry(0.25, 1.20, 8, 16)
       const bodyMat = new THREE.MeshStandardMaterial({
         color: 0xff007f,
         roughness: 0.4,
@@ -192,7 +199,7 @@ export class HumanActor extends BaseActor {
     this.playAnimation('Idle_A', 0)
   }
 
-  private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0): void {
+  private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {
     if (!this.mixer) return
 
     if (this.currentAnimationName === animName) {
@@ -212,6 +219,14 @@ export class HumanActor extends BaseActor {
     }
 
     newAction.reset()
+    if (loopOnce) {
+      newAction.setLoop(THREE.LoopOnce, 1)
+      newAction.clampWhenFinished = true
+    } else {
+      newAction.setLoop(THREE.LoopRepeat, Infinity)
+      newAction.clampWhenFinished = false
+    }
+
     newAction.fadeIn(fadeDuration)
     newAction.timeScale = timeScale
     newAction.play()
@@ -231,9 +246,10 @@ export class HumanActor extends BaseActor {
     const isA = keysPressed['ArrowLeft'] || keysPressed['KeyA']
     const isD = keysPressed['ArrowRight'] || keysPressed['KeyD']
     const isSpace = keysPressed['Space'] || keysPressed[' '] || keysPressed['KeyJ']
-    const isShift = keysPressed['ShiftLeft'] || keysPressed['ShiftRight'] || keysPressed['Shift']
-    const isCrouch = keysPressed['KeyC'] || keysPressed['ControlLeft'] || keysPressed['ControlRight'] || keysPressed['Control']
+    const isShift = Boolean(keysPressed['ShiftLeft'] || keysPressed['ShiftRight'] || keysPressed['Shift'])
+    const isCrouch = Boolean(keysPressed['KeyC'])
 
+    // Jump takeoff trigger
     if (isSpace && this.isOnGround) {
       this.jump()
     }
@@ -270,6 +286,15 @@ export class HumanActor extends BaseActor {
     this.velocity.x = _tempDir.x * speed
     this.velocity.z = _tempDir.z * speed
 
+    // Dynamically adjust collider capsule dimensions based on standing vs crouching
+    const radius = 0.25
+    const height = isCrouch ? 0.90 : 1.70
+
+    if (this.colliderWireframe instanceof THREE.Mesh) {
+      this.colliderWireframe.geometry = isCrouch ? this.crouchingWireframeGeo : this.standingWireframeGeo
+      this.colliderWireframe.position.y = (height / 2) + radius
+    }
+
     let touchGround = false
 
     for (let step = 0; step < physicsSteps; step++) {
@@ -277,19 +302,17 @@ export class HumanActor extends BaseActor {
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
-        const radius = 0.45
-        const height = 0.9
-
         _tempSegment.start.copy(this.position)
         _tempSegment.start.y += radius
         _tempSegment.end.copy(this.position)
         _tempSegment.end.y += radius + height
 
-        _tempCapsuleBounds.min.set(this.position.x - 1.0, this.position.y - 1.5, this.position.z - 1.0)
+        const totalCapsuleHeight = height + (2 * radius)
+        _tempCapsuleBounds.min.set(this.position.x - 0.8, this.position.y - 0.5, this.position.z - 0.8)
         _tempCapsuleBounds.max.set(
-          this.position.x + 1.0,
-          this.position.y + radius + height + radius + 1.5,
-          this.position.z + 1.0
+          this.position.x + 0.8,
+          this.position.y + totalCapsuleHeight + 0.8,
+          this.position.z + 0.8
         )
 
         colliderBVH.shapecast({
@@ -300,7 +323,7 @@ export class HumanActor extends BaseActor {
 
             if (dist < radius) {
               const depth = radius - dist
-              const direction = _tempVecB.sub(_tempVecA).normalize()
+              const direction = _tempVecB.clone().sub(_tempVecA).normalize()
               if (direction.y > 0.3) {
                 touchGround = true
               }
@@ -338,7 +361,7 @@ export class HumanActor extends BaseActor {
 
     this.group.position.copy(this.position)
 
-    // Select active animation & calculate dynamic timeScale proportional to speed
+    // Select active animation phase
     let targetAnimation = 'Idle_A'
     let animTimeScale = 1.0
 
@@ -380,6 +403,8 @@ export class HumanActor extends BaseActor {
       this.mixer.stopAllAction()
       this.mixer = null
     }
+    this.standingWireframeGeo.dispose()
+    this.crouchingWireframeGeo.dispose()
     this.modelGroup = null
     super.dispose()
   }

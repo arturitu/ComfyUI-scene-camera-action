@@ -1,0 +1,23 @@
+{
+  "type": "cube_scene",
+  "num_assets": 1,
+  "nodes": [
+    {
+      "id": "2262f941-95b6-45f8-b219-ffd32977fa27",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 2.47,
+        "py": 1.47,
+        "pz": 1.93,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 2.7,
+        "sy": 0.31,
+        "sz": 3.42
+      }
+    }
+  ],
+  "selectedPreset": "__NEW__"
+}
