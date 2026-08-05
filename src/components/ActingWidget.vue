@@ -79,7 +79,11 @@
         <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
         <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
         <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
-        <div class="hint">Use WASD or Arrow keys to move actor</div>
+        
+        <button class="info-help-btn" title="View Keyboard Controls" @click="showHelpModal = true">
+          <span class="info-icon">?</span>
+          <span class="info-label">Controls</span>
+        </button>
       </template>
       <template v-else>
         <div class="hint">Waiting for scene link...</div>
@@ -89,6 +93,65 @@
     <!-- Time Counter Overlay (Bottom Right) -->
     <div v-if="state.scene_data" class="time-counter-overlay">
       {{ formattedTime }}
+    </div>
+
+    <!-- Help / Keyboard Controls Modal (Scoped to Acting Widget container) -->
+    <div v-if="showHelpModal" class="controls-modal-backdrop" @click.self="showHelpModal = false">
+      <div class="controls-modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h3 class="modal-title">Keyboard Controls</h3>
+            <span class="actor-type-badge" :class="state.actor_type">
+              {{ state.actor_type === 'car' ? 'CAR ACTOR' : 'HUMAN ACTOR' }}
+            </span>
+          </div>
+          <button class="modal-close-btn" @click="showHelpModal = false" title="Close">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div v-if="state.actor_type === 'car'" class="controls-list">
+            <div class="control-row">
+              <div class="key-group"><kbd>W</kbd> <span class="or">or</span> <kbd>▲</kbd></div>
+              <span class="action-desc">Accelerate</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>S</kbd> <span class="or">or</span> <kbd>▼</kbd></div>
+              <span class="action-desc">Brake / Reverse</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>A</kbd> <kbd>D</kbd> <span class="or">or</span> <kbd>◀</kbd> <kbd>▶</kbd></div>
+              <span class="action-desc">Steer Left / Right</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>Space</kbd></div>
+              <span class="action-desc">Handbrake</span>
+            </div>
+          </div>
+
+          <div v-else class="controls-list">
+            <div class="control-row">
+              <div class="key-group"><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <span class="or">or</span> <kbd>Arrows</kbd></div>
+              <span class="action-desc">Move</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>Shift</kbd> + Move</div>
+              <span class="action-desc">Sprint (Fast Run)</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>C</kbd></div>
+              <span class="action-desc">Crouch / Crouch Walk</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>Space</kbd> <span class="or">or</span> <kbd>J</kbd></div>
+              <span class="action-desc">Jump</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="modal-ok-btn" @click="showHelpModal = false">Got it</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -118,6 +181,13 @@ const countdownVal = ref<number | null>(null)
 const isRecording = ref(false)
 const recordingElapsed = ref(0)
 const isPlaying = ref(false)
+const showHelpModal = ref(false)
+
+const handleEscapeKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && showHelpModal.value) {
+    showHelpModal.value = false
+  }
+}
 
 let threeActing: ThreeActing | null = null
 let currentThreeScene: any = null
@@ -317,6 +387,7 @@ const formattedTime = computed(() => {
 
 onMounted(() => {
   timeFrameId = requestAnimationFrame(updateTimeCounter)
+  window.addEventListener('keydown', handleEscapeKey)
 })
 
 onUnmounted(() => {
@@ -324,6 +395,7 @@ onUnmounted(() => {
     cancelAnimationFrame(timeFrameId)
     timeFrameId = null
   }
+  window.removeEventListener('keydown', handleEscapeKey)
   cleanup()
 })
 
@@ -565,7 +637,43 @@ defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
   display: flex;
   flex-direction: column;
   gap: 2px;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.info-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #00ffff;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.info-help-btn:hover {
+  background: rgba(0, 255, 255, 0.25);
+  border-color: #00ffff;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #00ffff;
+  color: #100b14;
+  font-weight: 800;
+  font-size: 9px;
 }
 
 .title {
@@ -630,5 +738,178 @@ defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
   pointer-events: none;
   z-index: 10;
   letter-spacing: 0.5px;
+}
+
+/* Modal Styles (Scoped to Acting Widget container) */
+.controls-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 8, 16, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.controls-modal-card {
+  background: #181524;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 255, 255, 0.15);
+  overflow: hidden;
+  font-family: system-ui, -apple-system, sans-serif;
+  animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-icon {
+  font-size: 16px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.actor-type-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.actor-type-badge.human {
+  background: rgba(255, 0, 127, 0.2);
+  color: #ff007f;
+  border: 1px solid rgba(255, 0, 127, 0.4);
+}
+
+.actor-type-badge.car {
+  background: rgba(0, 255, 255, 0.2);
+  color: #00ffff;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: #8a8a9e;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.controls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.key-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+kbd {
+  background: #282438;
+  border: 1px solid #48425e;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  color: #ffffff;
+  display: inline-block;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.or {
+  font-size: 10px;
+  color: #707085;
+}
+
+.action-desc {
+  font-size: 12px;
+  font-weight: 500;
+  color: #d0d0e0;
+}
+
+.modal-footer {
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-ok-btn {
+  background: #00ffff;
+  color: #0b0a14;
+  border: none;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-ok-btn:hover {
+  background: #80ffff;
+  transform: translateY(-1px);
 }
 </style>

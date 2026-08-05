@@ -408,7 +408,7 @@ export class CarActor extends BaseActor {
 
               if (dist < radius) {
                 const depth = radius - dist
-                const direction = _tempVecB.sub(_tempVecA).normalize()
+                const direction = _tempVecB.clone().sub(_tempVecA).normalize()
                 if (direction.y > 0.3) {
                   touchGround = true
                 }
@@ -439,12 +439,15 @@ export class CarActor extends BaseActor {
       this.isOnGround = false
     }
 
-    // 5. Ramp Slope Detection via Vertical Ground Raycast
+    // 5. Ramp Slope Detection via Vertical Ground Raycast (Cast 0.55m ahead to pitch up early on ramps)
     let targetRampPitch = this.rampPitchAngle
     let targetRampRoll = this.rampRollAngle
 
     if (this.isOnGround && colliderBVH) {
-      _tempRay.origin.set(this.position.x, this.position.y + SLOPE_CONFIG.rayOriginHeight, this.position.z)
+      const aheadOffset = 1.55
+      const rayX = this.position.x + forwardX * aheadOffset
+      const rayZ = this.position.z + forwardZ * aheadOffset
+      _tempRay.origin.set(rayX, this.position.y + SLOPE_CONFIG.rayOriginHeight, rayZ)
       _tempRay.direction.set(0, -1, 0)
       const hit = colliderBVH.raycastFirst(_tempRay)
 

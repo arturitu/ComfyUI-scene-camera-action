@@ -1,23 +1,71 @@
 {
   "type": "cube_scene",
-  "num_assets": 1,
+  "num_assets": 4,
   "nodes": [
     {
-      "id": "2262f941-95b6-45f8-b219-ffd32977fa27",
+      "id": "node_f4y33zf",
       "type": "block",
       "name": "Block",
       "transform": {
-        "px": 2.47,
-        "py": 1.47,
-        "pz": 1.93,
+        "px": 17.55,
+        "py": 4.16,
+        "pz": -0.09,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.32,
+        "sx": 7.16,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "node_16w8n24",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 21.27,
+        "py": 2.91,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.32,
+        "sx": 7.16,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "node_a0pkzm3",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 7.02,
+        "py": 1.2,
+        "pz": 0.46,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0.54,
+        "sx": 16.45,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "8d45e4dd-52a8-4fe1-995e-7502b7a726fb",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -7.56,
+        "py": 2.01,
+        "pz": 3.02,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 2.7,
-        "sy": 0.31,
-        "sz": 3.42
+        "sx": 6.5,
+        "sy": 0.3,
+        "sz": 4
       }
     }
   ],
-  "selectedPreset": "__NEW__"
+  "selectedPreset": "test-collider.json"
 }

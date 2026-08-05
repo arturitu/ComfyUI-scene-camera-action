@@ -304,6 +304,11 @@ export class ThreeActing {
     })
 
     this.keydownHandler = (event: KeyboardEvent) => {
+      if (event.metaKey || event.code.startsWith('Meta') || event.code.startsWith('OS')) {
+        this.keysPressed = {}
+        return
+      }
+
       const activeEl = document.activeElement
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
         this.keysPressed = {}

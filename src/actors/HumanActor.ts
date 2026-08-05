@@ -13,6 +13,7 @@ const _tempVecA = new THREE.Vector3()
 const _tempVecB = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
 const _tempCapsuleBounds = new THREE.Box3()
+const _tempRay = new THREE.Ray()
 
 interface CachedHumanAssets {
   modelScene: THREE.Group
@@ -70,6 +71,8 @@ export class HumanActor extends BaseActor {
   private placeholderMesh: THREE.Mesh | null = null
   private lastPlaybackTime: number = 0
   private isDisposed: boolean = false
+  private isUserJumping: boolean = false
+  private airborneTime: number = 0
 
   // Wireframe collider geometries for standing (2.20m total height) and crouching (1.40m total height)
   private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.25, 1.70, 8, 16)
@@ -252,6 +255,8 @@ export class HumanActor extends BaseActor {
     // Jump takeoff trigger
     if (isSpace && this.isOnGround) {
       this.jump()
+      this.isUserJumping = true
+      this.isOnGround = false
     }
 
     const isMoving = isW || isS || isA || isD
@@ -321,14 +326,17 @@ export class HumanActor extends BaseActor {
             const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
             const dist = Math.sqrt(distSq)
 
-            if (dist < radius) {
+            const contactMargin = 0.02
+            if (dist < radius + contactMargin) {
               const depth = radius - dist
               const direction = _tempVecB.clone().sub(_tempVecA).normalize()
-              if (direction.y > 0.3) {
+              if (direction.y > 0.3 || _tempVecA.y <= this.position.y + 0.1) {
                 touchGround = true
               }
-              _tempSegment.start.addScaledVector(direction, depth)
-              _tempSegment.end.addScaledVector(direction, depth)
+              if (depth > 0) {
+                _tempSegment.start.addScaledVector(direction, depth)
+                _tempSegment.end.addScaledVector(direction, depth)
+              }
             }
           },
         })
@@ -340,18 +348,45 @@ export class HumanActor extends BaseActor {
           this.velocity.y = 0
           this.isOnGround = true
         }
-      } else {
-        if (this.position.y <= config.GROUND_Y) {
-          this.position.y = config.GROUND_Y
-          this.velocity.y = 0
-          this.isOnGround = true
-          touchGround = true
+
+        // Downward Slope / Cuesta Snapping:
+        // When running down a ramp/slope, snap position down to surface if feet float slightly above
+        if (!touchGround && this.velocity.y <= 0) {
+          _tempRay.origin.set(this.position.x, this.position.y + 0.5, this.position.z)
+          _tempRay.direction.set(0, -1, 0)
+          const hit = colliderBVH.raycastFirst(_tempRay)
+          if (hit && hit.distance < 0.95 && hit.face && hit.face.normal.y > 0.3) {
+            const slopeY = hit.point.y
+            if (this.position.y >= slopeY && this.position.y - slopeY < 0.45) {
+              this.position.y = slopeY
+              this.velocity.y = 0
+              this.isOnGround = true
+              touchGround = true
+            }
+          }
         }
+      }
+
+      // Hard floor boundary at Y=0: Actor can NEVER sink below ground level
+      if (this.position.y <= config.GROUND_Y) {
+        this.position.y = config.GROUND_Y
+        if (this.velocity.y < 0) this.velocity.y = 0
+        this.isOnGround = true
+        touchGround = true
       }
     }
 
-    if (!touchGround && colliderBVH) {
+    if (touchGround) {
+      this.isOnGround = true
+      this.isUserJumping = false
+      this.airborneTime = 0
+    } else if (colliderBVH) {
       this.isOnGround = false
+      this.airborneTime += dt
+      // Only set jumping if falling down a high ledge/cliff for >0.35s
+      if (this.airborneTime > 0.35 && this.velocity.y < -3.0) {
+        this.isUserJumping = true
+      }
     }
 
     if (this.position.y < -10.0) {
@@ -365,7 +400,8 @@ export class HumanActor extends BaseActor {
     let targetAnimation = 'Idle_A'
     let animTimeScale = 1.0
 
-    if (!this.isOnGround) {
+    // Only play Jump_air if user explicitly pressed Jump or fell off a high cliff
+    if (this.isUserJumping && !this.isOnGround) {
       targetAnimation = 'Jump_air'
       animTimeScale = 1.0
     } else if (isCrouch) {
