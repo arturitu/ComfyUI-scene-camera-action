@@ -91,32 +91,51 @@ export class HumanActor extends BaseActor {
     return this.currentAnimationName ?? 'None'
   }
 
-  public override getFPVOffset(): THREE.Vector3 {
-    return new THREE.Vector3(0, 1.55, 0.12)
+  private filteredSpeed: number = 0
+
+  public override getMotionState(t: number) {
+    const frame = super.getMotionState(t)
+    frame.anim = this.currentAnimationName ?? 'Idle_A'
+    return frame
   }
 
-  public override onPlaybackMotion(distMoved: number, _diffY: number): void {
-    const now = performance.now()
-    const dt = this.lastPlaybackTime > 0 ? Math.min((now - this.lastPlaybackTime) / 1000, 0.1) : 0.016
-    this.lastPlaybackTime = now
-
-    const speed = distMoved / dt
-
+  public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016): void {
+    const frameDt = Math.max(0, dt)
     let targetAnim = 'Idle_A'
     let animTimeScale = 1.0
 
-    if (distMoved > 0.08) {
-      targetAnim = 'Sprint'
-      animTimeScale = Math.max(0.2, speed / this.sprintBaseSpeed)
-    } else if (distMoved > 0.005) {
-      targetAnim = 'Walk'
-      animTimeScale = Math.max(0.2, speed / this.walkBaseSpeed)
+    if (animName && animName !== 'None' && this.animationsMapMap.has(animName)) {
+      targetAnim = animName
+      const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
+      if (targetAnim === 'Walk') {
+        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
+      } else if (targetAnim === 'Sprint') {
+        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.sprintBaseSpeed))
+      } else if (targetAnim === 'Crouch_Walk') {
+        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
+      }
+    } else {
+      // Fallback smooth speed calculation with hysteresis for legacy recordings
+      const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
+      this.filteredSpeed += (instantSpeed - this.filteredSpeed) * 0.25
+
+      if (this.filteredSpeed > 2.5) {
+        targetAnim = 'Sprint'
+        animTimeScale = Math.max(0.3, this.filteredSpeed / this.sprintBaseSpeed)
+      } else if (this.filteredSpeed > 0.15) {
+        targetAnim = 'Walk'
+        animTimeScale = Math.max(0.3, this.filteredSpeed / this.walkBaseSpeed)
+      } else if (this.currentAnimationName === 'Walk' || this.currentAnimationName === 'Sprint') {
+        if (this.filteredSpeed > 0.08) {
+          targetAnim = this.currentAnimationName
+        }
+      }
     }
 
-    this.playAnimation(targetAnim, 0.15, animTimeScale)
+    this.playAnimation(targetAnim, 0.2, animTimeScale)
 
-    if (this.mixer) {
-      this.mixer.update(dt)
+    if (this.mixer && frameDt > 0) {
+      this.mixer.update(frameDt)
     }
   }
 
@@ -189,7 +208,7 @@ export class HumanActor extends BaseActor {
     // Clone skinned mesh structure
     const clonedModel = SkeletonUtils.clone(assets.modelScene) as THREE.Group
     // Elevate model slightly so feet soles sit flush on the floor Y = 0
-    clonedModel.position.y = 0.25
+    clonedModel.position.y = 0.01
 
     this.modelGroup = clonedModel
     this.group.add(this.modelGroup)
@@ -200,6 +219,23 @@ export class HumanActor extends BaseActor {
 
     // Start default animation
     this.playAnimation('Idle_A', 0)
+  }
+
+  public override resetToOrigin(): void {
+    super.resetToOrigin()
+    this.filteredSpeed = 0
+    this.isUserJumping = false
+    this.airborneTime = 0
+    this.currentAnimationName = null
+    this.currentAction = null
+    this.playAnimation('Idle_A', 0)
+  }
+
+  public override resetAnimation(initialAnim?: string): void {
+    this.filteredSpeed = 0
+    this.currentAnimationName = null
+    const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : 'Idle_A'
+    this.playAnimation(targetAnim, 0)
   }
 
   private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {

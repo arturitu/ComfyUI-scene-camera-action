@@ -64,8 +64,8 @@ export class CarActor extends BaseActor {
     return new THREE.Vector3(-0.25, 0.95, -0.1)
   }
 
-  public override onPlaybackMotion(distMoved: number, angularVel: number): void {
-    const dt = 1 / 60
+  public override onPlaybackMotion(distMoved: number, angularVel: number, _animName?: string, frameDt: number = 0.016): void {
+    const dt = Math.max(0.001, frameDt)
     const currentSpeed = distMoved / dt
     const speedDelta = (currentSpeed - this.prevPlaybackSpeed) / dt
     this.prevPlaybackSpeed = currentSpeed

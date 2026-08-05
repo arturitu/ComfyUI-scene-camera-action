@@ -84,7 +84,7 @@ export abstract class BaseActor {
     }
   }
 
-  public applyMotionFrame(frame: any, diffY: number = 0): void {
+  public applyMotionFrame(frame: any, diffY: number = 0, dt: number = 0.016): void {
     if (!frame) return
 
     const prevX = this.position.x
@@ -103,10 +103,12 @@ export abstract class BaseActor {
     const dz = this.position.z - prevZ
     const distMoved = Math.sqrt(dx * dx + dz * dz)
 
-    this.onPlaybackMotion(distMoved, diffY)
+    this.onPlaybackMotion(distMoved, diffY, frame.anim, dt)
   }
 
-  public onPlaybackMotion(_distMoved: number, _diffY: number): void {}
+  public onPlaybackMotion(_distMoved: number, _diffY: number, _animName?: string, _dt: number = 0.016): void {}
+
+  public resetAnimation(_initialAnim?: string): void {}
 
   /**
    * Universal ground raycasting & gravity resolution shared by all actors.

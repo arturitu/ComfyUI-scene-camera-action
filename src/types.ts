@@ -20,6 +20,7 @@ export interface MotionFrame {
   rx: number
   ry: number
   rz: number
+  anim?: string
 }
 
 export interface SceneBlockNode {

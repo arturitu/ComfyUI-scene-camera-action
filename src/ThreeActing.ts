@@ -115,25 +115,73 @@ export class ThreeActing {
     return this.trajectory
   }
 
+  private isPlaybackMode: boolean = false
+
   public startPlayback(motionData?: string): void {
     if (motionData) {
       this.loadTrajectory(motionData)
     }
     if (this.playbackController.getTrajectory().length > 0) {
       this.isRecording = false
+      this.isPlaybackMode = true
       this.isPlaying = true
       this.playbackController.start()
     }
   }
 
-  public stopPlayback(): void {
+  public play(): void {
+    if (this.playbackController.getTrajectory().length > 0) {
+      this.isRecording = false
+      this.isPlaybackMode = true
+      this.isPlaying = true
+      this.playbackController.play()
+    }
+  }
+
+  public pause(): void {
+    this.isPlaying = false
+    this.playbackController.pause()
+  }
+
+  public stop(): void {
     this.isPlaying = false
     this.playbackController.stop()
+    const trajectory = this.playbackController.getTrajectory()
+    if (trajectory.length > 0) {
+      this.isPlaybackMode = true
+      const initialAnim = trajectory[0]?.anim
+      if (this.actorController) {
+        this.actorController.resetAnimation(initialAnim)
+        this.playbackController.evaluateAt(0, this.actorController, 0)
+      }
+    } else {
+      this.isPlaybackMode = false
+      if (this.actorController) {
+        this.actorController.resetToOrigin()
+        this.actorController.resetAnimation('Idle_A')
+      }
+    }
+  }
+
+  public stopPlayback(): void {
+    this.stop()
+  }
+
+  public getIsPlaying(): boolean {
+    return this.isPlaying
   }
 
   public loadTrajectory(trajectoryJson: string): void {
     this.playbackController.setTrajectory(trajectoryJson)
     this.trajectory = this.playbackController.getTrajectory()
+    if (this.trajectory.length > 0) {
+      this.isPlaybackMode = true
+    } else {
+      this.isPlaybackMode = false
+      if (this.actorController) {
+        this.actorController.resetToOrigin()
+      }
+    }
   }
 
   private initThreeJS(): void {
@@ -356,8 +404,12 @@ export class ThreeActing {
   }
 
   private updateActorMovement(dt: number): void {
-    if (this.isPlaying) {
-      this.playbackController.update(dt, this.actorController)
+    if (this.isPlaybackMode) {
+      if (this.isPlaying) {
+        this.playbackController.update(dt, this.actorController)
+      } else if (this.actorController) {
+        this.playbackController.evaluateAt(this.playbackController.getCurrentTime(), this.actorController, 0)
+      }
       return
     }
 

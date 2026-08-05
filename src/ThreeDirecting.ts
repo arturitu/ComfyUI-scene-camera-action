@@ -367,16 +367,29 @@ export class ThreeDirecting {
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
-      // Side tracking profile camera with custom 40° FOV
-      if (this.camera.fov !== 40) {
-        this.camera.fov = 40
-        this.camera.updateProjectionMatrix()
+      const isCar = (this.actorController as any)?.getType?.() === 'car'
+
+      if (isCar) {
+        // Car Side Camera: Centered vertically on car body height
+        if (this.camera.fov !== 45) {
+          this.camera.fov = 45
+          this.camera.updateProjectionMatrix()
+        }
+        const sideOffset = new THREE.Vector3(-4.8, 1.3, 0.4).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+        const targetCamPos = charPos.clone().add(sideOffset)
+        this.camera.position.copy(targetCamPos)
+        this.camera.lookAt(charPos.x, charPos.y + 0.55, charPos.z)
+      } else {
+        // Human Side Camera: Centered vertically on human torso (2.20m total height, center Y=1.15m)
+        if (this.camera.fov !== 45) {
+          this.camera.fov = 45
+          this.camera.updateProjectionMatrix()
+        }
+        const sideOffset = new THREE.Vector3(-4.5, 1.4, 0.4).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+        const targetCamPos = charPos.clone().add(sideOffset)
+        this.camera.position.copy(targetCamPos)
+        this.camera.lookAt(charPos.x, charPos.y + 1.15, charPos.z)
       }
-      // Positioned to the side of the actor tracking alongside
-      const sideOffset = new THREE.Vector3(-3.2, 1.4, 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
-      const targetCamPos = charPos.clone().add(sideOffset)
-      this.camera.position.copy(targetCamPos)
-      this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
     }
 
     this.lastCameraMode = activeMode
@@ -526,7 +539,10 @@ export class ThreeDirecting {
   public stop(): void {
     this.playbackController.stop()
     if (this.actorController) {
-      this.playbackController.evaluateAt(0, this.actorController)
+      const firstFrame = this.playbackController.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      this.actorController.resetAnimation(initialAnim)
+      this.playbackController.evaluateAt(0, this.actorController, 0)
       this.actorPosition.copy(this.actorController.position)
     }
   }
@@ -544,7 +560,13 @@ export class ThreeDirecting {
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
-    this.playbackController.setCurrentTime(Math.max(0, Math.min(t, maxDur)))
+    const targetT = Math.max(0, Math.min(t, maxDur))
+    this.playbackController.setCurrentTime(targetT)
+    if (targetT === 0 && this.actorController) {
+      const firstFrame = this.playbackController.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      this.actorController.resetAnimation(initialAnim)
+    }
     this.lastCameraMode = null
     this.updateActorMovement(0)
     this.updateCamera()
