@@ -76,9 +76,9 @@ export class HumanActor extends BaseActor {
   private isUserJumping: boolean = false
   private airborneTime: number = 0
 
-  // Wireframe collider geometries for standing (2.20m total height) and crouching (1.40m total height)
-  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.25, 1.70, 8, 16)
-  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.25, 0.90, 8, 16)
+  // Wireframe collider geometries for standing (2.14m total height) and crouching (1.50m total height)
+  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 1.30, 8, 16)
+  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 0.70, 8, 16)
 
   constructor() {
     super()
@@ -347,8 +347,8 @@ export class HumanActor extends BaseActor {
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
-        const radius = 0.35
-        const height = isCrouch ? 0.80 : 1.40
+        const radius = 0.42
+        const height = isCrouch ? 0.70 : 1.30
 
         _tempSegment.start.copy(this.position)
         _tempSegment.start.y += radius

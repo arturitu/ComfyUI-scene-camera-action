@@ -258,8 +258,9 @@ export class CarActor extends BaseActor {
     carGroup.position.y = 0.27
     this.group.add(carGroup)
 
-    // 5. Car Collider Wireframe Visualizer
-    const colliderGeo = new THREE.BoxGeometry(1.30, 0.65, 2.10)
+    // 5. Car Collider Wireframe Visualizer (matches 2.14m physical horizontal capsule: radius 0.52, length 1.10)
+    const colliderGeo = new THREE.CapsuleGeometry(0.52, 1.10, 8, 16)
+    colliderGeo.rotateX(Math.PI / 2)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       wireframe: true,
@@ -269,7 +270,7 @@ export class CarActor extends BaseActor {
       opacity: 0.85,
     })
     this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
-    this.colliderWireframe.position.set(0, 0.48, 0)
+    this.colliderWireframe.position.set(0, 0.52, 0)
     this.colliderWireframe.renderOrder = 1000
     this.colliderWireframe.visible = this.showCollider
     this.group.add(this.colliderWireframe)
@@ -390,15 +391,24 @@ export class CarActor extends BaseActor {
       this.position.y += this.velocity.y * stepDt
 
       if (colliderBVH) {
-        // Option 3: Rounded Sphere Base Chassis (Radius 0.50m)
         const radius = 0.50
-        _tempSegment.start.set(this.position.x, this.position.y + radius, this.position.z)
-        _tempSegment.end.set(this.position.x, this.position.y + radius, this.position.z)
+        const halfAxle = 0.50
 
-        _tempCapsuleBounds.min.set(this.position.x - 1.2, this.position.y - 0.5, this.position.z - 1.2)
-        _tempCapsuleBounds.max.set(this.position.x + 1.2, this.position.y + 1.5, this.position.z + 1.2)
+        _tempSegment.start.set(
+          this.position.x - forwardX * halfAxle,
+          this.position.y + radius,
+          this.position.z - forwardZ * halfAxle
+        )
+        _tempSegment.end.set(
+          this.position.x + forwardX * halfAxle,
+          this.position.y + radius,
+          this.position.z + forwardZ * halfAxle
+        )
 
-        this.isOnGround = false
+        _tempCapsuleBounds.min.set(this.position.x - 1.5, this.position.y - 0.5, this.position.z - 1.5)
+        _tempCapsuleBounds.max.set(this.position.x + 1.5, this.position.y + 1.5, this.position.z + 1.5)
+
+        let touchGround = false
         let targetPitch = 0
 
         colliderBVH.shapecast({
@@ -410,34 +420,40 @@ export class CarActor extends BaseActor {
               const depth = radius - dist
               const dir = _tempVecB.clone().sub(_tempVecA).normalize()
 
-              if (dir.y > 0.3) {
-                const forwardDot = forwardX * dir.x + forwardZ * dir.z
-                targetPitch = Math.asin(Math.max(-0.6, Math.min(0.6, forwardDot)))
-              }
+              tri.getNormal(_tempNormal)
 
-              _tempSegment.start.addScaledVector(dir, depth)
-              _tempSegment.end.addScaledVector(dir, depth)
+              if (_tempNormal.y > 0.3) {
+                // Ramp or Floor surface -> push capsule up & align pitch
+                touchGround = true
+                const forwardDot = forwardX * _tempNormal.x + forwardZ * _tempNormal.z
+                targetPitch = Math.asin(Math.max(-0.6, Math.min(0.6, forwardDot)))
+                _tempSegment.start.addScaledVector(dir, depth)
+                _tempSegment.end.addScaledVector(dir, depth)
+              } else {
+                // Wall or Obstacle surface -> push capsule strictly horizontally out of wall
+                dir.y = 0
+                if (dir.lengthSq() > 0.0001) {
+                  dir.normalize()
+                  _tempSegment.start.addScaledVector(dir, depth)
+                  _tempSegment.end.addScaledVector(dir, depth)
+                }
+              }
             }
           }
         })
 
-        _tempVecA.copy(this.position)
-        this.position.copy(_tempSegment.start)
-        this.position.y -= radius
+        // Update position from segment midpoint
+        _tempVecA.addVectors(_tempSegment.start, _tempSegment.end).multiplyScalar(0.5)
+        this.position.x = _tempVecA.x
+        this.position.z = _tempVecA.z
+        this.position.y = _tempVecA.y - radius
 
-        _tempVecB.subVectors(this.position, _tempVecA)
-        const deltaLen = _tempVecB.length()
-        if (deltaLen > 0.00001) {
-          const normalY = _tempVecB.y / deltaLen
-          if (_tempVecB.y > 0 && normalY > 0.25) {
-            this.isOnGround = true
-          }
-        }
-
-        if (this.isOnGround && this.velocity.y <= 0) {
+        if (touchGround && this.velocity.y <= 0) {
           this.velocity.y = 0
-          this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1.0, 8.0 * stepDt)
+          this.isOnGround = true
+          this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1.0, 10.0 * stepDt)
         } else {
+          this.isOnGround = false
           this.rampPitchAngle *= 0.9
         }
       } else {
