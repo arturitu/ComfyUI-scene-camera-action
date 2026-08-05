@@ -21,6 +21,7 @@ const _tempRight = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
 const _tempCapsuleBounds = new THREE.Box3()
 const _tempRay = new THREE.Ray()
+const _tempNormal = new THREE.Vector3()
 const _tempEuler = new THREE.Euler()
 
 const LOCAL_PROBES = [
@@ -254,7 +255,7 @@ export class CarActor extends BaseActor {
       this.rearRightWheelGroup
     )
 
-    carGroup.position.y = 0.22
+    carGroup.position.y = 0.27
     this.group.add(carGroup)
 
     // 5. Car Collider Wireframe Visualizer
@@ -373,105 +374,86 @@ export class CarActor extends BaseActor {
 
     const physicsSteps = 5
     const stepDt = dt / physicsSteps
-    let touchGround = false
 
     const forwardX = Math.sin(this.rotationY)
     const forwardZ = Math.cos(this.rotationY)
-    const rightX = Math.cos(this.rotationY)
-    const rightZ = -Math.sin(this.rotationY)
 
     for (let step = 0; step < physicsSteps; step++) {
-      this.velocity.y -= 30 * stepDt
-      this.position.addScaledVector(this.velocity, stepDt)
+      if (this.isOnGround) {
+        this.velocity.y = -30.0 * stepDt
+      } else {
+        this.velocity.y -= 30.0 * stepDt
+      }
+
+      this.position.x += forwardX * this.currentSpeed * stepDt
+      this.position.z += forwardZ * this.currentSpeed * stepDt
+      this.position.y += this.velocity.y * stepDt
 
       if (colliderBVH) {
-        const radius = 0.38
-        const height = 0.20
+        // Option 3: Rounded Sphere Base Chassis (Radius 0.50m)
+        const radius = 0.50
+        _tempSegment.start.set(this.position.x, this.position.y + radius, this.position.z)
+        _tempSegment.end.set(this.position.x, this.position.y + radius, this.position.z)
 
-        for (let idx = 0; idx < LOCAL_PROBES.length; idx++) {
-          const probe = LOCAL_PROBES[idx]
-          const px = this.position.x + probe.x * rightX + probe.z * forwardX
-          const py = this.position.y
-          const pz = this.position.z + probe.x * rightZ + probe.z * forwardZ
+        _tempCapsuleBounds.min.set(this.position.x - 1.2, this.position.y - 0.5, this.position.z - 1.2)
+        _tempCapsuleBounds.max.set(this.position.x + 1.2, this.position.y + 1.5, this.position.z + 1.2)
 
-          _tempSegment.start.set(px, py + radius, pz)
-          _tempSegment.end.set(px, py + radius + height, pz)
+        this.isOnGround = false
+        let targetPitch = 0
 
-          _tempCapsuleBounds.min.set(px - 1.5, py - 1.5, pz - 1.5)
-          _tempCapsuleBounds.max.set(px + 1.5, py + radius + height + radius + 1.5, pz + 1.5)
-
-          colliderBVH.shapecast({
-            intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
-            intersectsTriangle: (tri: any) => {
-              const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
+        colliderBVH.shapecast({
+          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
+          intersectsTriangle: (tri: any) => {
+            const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
+            if (distSq < radius * radius) {
               const dist = Math.sqrt(distSq)
+              const depth = radius - dist
+              const dir = _tempVecB.clone().sub(_tempVecA).normalize()
 
-              if (dist < radius) {
-                const depth = radius - dist
-                const direction = _tempVecB.clone().sub(_tempVecA).normalize()
-                if (direction.y > 0.3) {
-                  touchGround = true
-                }
-                this.position.addScaledVector(direction, depth)
-                if (Math.abs(direction.y) < 0.5) {
-                  this.currentSpeed *= 0.8
-                }
+              if (dir.y > 0.3) {
+                const forwardDot = forwardX * dir.x + forwardZ * dir.z
+                targetPitch = Math.asin(Math.max(-0.6, Math.min(0.6, forwardDot)))
               }
+
+              _tempSegment.start.addScaledVector(dir, depth)
+              _tempSegment.end.addScaledVector(dir, depth)
             }
-          })
+          }
+        })
+
+        _tempVecA.copy(this.position)
+        this.position.copy(_tempSegment.start)
+        this.position.y -= radius
+
+        _tempVecB.subVectors(this.position, _tempVecA)
+        const deltaLen = _tempVecB.length()
+        if (deltaLen > 0.00001) {
+          const normalY = _tempVecB.y / deltaLen
+          if (_tempVecB.y > 0 && normalY > 0.25) {
+            this.isOnGround = true
+          }
         }
 
-        if (touchGround && this.velocity.y <= 0) {
+        if (this.isOnGround && this.velocity.y <= 0) {
           this.velocity.y = 0
-          this.isOnGround = true
+          this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1.0, 8.0 * stepDt)
+        } else {
+          this.rampPitchAngle *= 0.9
         }
       } else {
         if (this.position.y <= config.GROUND_Y) {
           this.position.y = config.GROUND_Y
           this.velocity.y = 0
           this.isOnGround = true
-          touchGround = true
+          this.rampPitchAngle = 0
+        } else {
+          this.isOnGround = false
         }
       }
     }
-
-    if (!touchGround && colliderBVH) {
-      this.isOnGround = false
-    }
-
-    // 5. Ramp Slope Detection via Vertical Ground Raycast (Cast 0.55m ahead to pitch up early on ramps)
-    let targetRampPitch = this.rampPitchAngle
-    let targetRampRoll = this.rampRollAngle
-
-    if (this.isOnGround && colliderBVH) {
-      const aheadOffset = 1.55
-      const rayX = this.position.x + forwardX * aheadOffset
-      const rayZ = this.position.z + forwardZ * aheadOffset
-      _tempRay.origin.set(rayX, this.position.y + SLOPE_CONFIG.rayOriginHeight, rayZ)
-      _tempRay.direction.set(0, -1, 0)
-      const hit = colliderBVH.raycastFirst(_tempRay)
-
-      if (hit && hit.distance < SLOPE_CONFIG.maxRayDistance && hit.face && hit.face.normal) {
-        const groundNormal = hit.face.normal
-        if (groundNormal.y > SLOPE_CONFIG.minNormalY) {
-          _tempFwd.set(forwardX, 0, forwardZ)
-          _tempRight.set(rightX, 0, rightZ)
-
-          const clampVal = SLOPE_CONFIG.clampThreshold
-          targetRampPitch = Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempFwd.dot(groundNormal)))) * SLOPE_CONFIG.pitchMultiplier
-          targetRampRoll = -Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempRight.dot(groundNormal)))) * SLOPE_CONFIG.rollMultiplier
-        }
-      }
-    } else if (!this.isOnGround) {
-      targetRampPitch *= Math.max(0, 1.0 - SLOPE_CONFIG.airborneDecay * dt)
-      targetRampRoll *= Math.max(0, 1.0 - SLOPE_CONFIG.airborneDecay * dt)
-    }
-
-    this.rampPitchAngle += (targetRampPitch - this.rampPitchAngle) * Math.min(1.0, SLOPE_CONFIG.lerpSpeed * dt)
-    this.rampRollAngle += (targetRampRoll - this.rampRollAngle) * Math.min(1.0, SLOPE_CONFIG.lerpSpeed * dt)
 
     this.group.position.copy(this.position)
-    _tempEuler.set(this.rampPitchAngle, this.rotationY, this.rampRollAngle, 'YXZ')
+    _tempEuler.set(this.rampPitchAngle, this.rotationY, 0, 'YXZ')
     this.group.quaternion.setFromEuler(_tempEuler)
 
     if (this.position.y < -10.0) {

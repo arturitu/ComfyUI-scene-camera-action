@@ -14,6 +14,8 @@ const _tempVecB = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
 const _tempCapsuleBounds = new THREE.Box3()
 const _tempRay = new THREE.Ray()
+const _tempNormal = new THREE.Vector3()
+const _tempHitPoint = new THREE.Vector3()
 
 interface CachedHumanAssets {
   modelScene: THREE.Group
@@ -207,8 +209,8 @@ export class HumanActor extends BaseActor {
 
     // Clone skinned mesh structure
     const clonedModel = SkeletonUtils.clone(assets.modelScene) as THREE.Group
-    // Elevate model slightly so feet soles sit flush on the floor Y = 0
-    clonedModel.position.y = 0.01
+    // Elevate model mesh slightly so feet soles sit 100% flush on floor surface Y = 0
+    clonedModel.position.y = 0.25
 
     this.modelGroup = clonedModel
     this.group.add(this.modelGroup)
@@ -336,92 +338,76 @@ export class HumanActor extends BaseActor {
       this.colliderWireframe.position.y = (height / 2) + radius
     }
 
-    let touchGround = false
-
     for (let step = 0; step < physicsSteps; step++) {
-      this.velocity.y -= 30 * stepDt
+      if (this.isOnGround) {
+        this.velocity.y = -30.0 * stepDt
+      } else {
+        this.velocity.y -= 30.0 * stepDt
+      }
       this.position.addScaledVector(this.velocity, stepDt)
 
       if (colliderBVH) {
+        const radius = 0.35
+        const height = isCrouch ? 0.80 : 1.40
+
         _tempSegment.start.copy(this.position)
         _tempSegment.start.y += radius
         _tempSegment.end.copy(this.position)
         _tempSegment.end.y += radius + height
 
-        const totalCapsuleHeight = height + (2 * radius)
-        _tempCapsuleBounds.min.set(this.position.x - 0.8, this.position.y - 0.5, this.position.z - 0.8)
-        _tempCapsuleBounds.max.set(
-          this.position.x + 0.8,
-          this.position.y + totalCapsuleHeight + 0.8,
-          this.position.z + 0.8
-        )
+        _tempCapsuleBounds.min.set(this.position.x - 1.0, this.position.y - 0.5, this.position.z - 1.0)
+        _tempCapsuleBounds.max.set(this.position.x + 1.0, this.position.y + height + 1.0, this.position.z + 1.0)
+
+        this.isOnGround = false
 
         colliderBVH.shapecast({
           intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
           intersectsTriangle: (tri: any) => {
             const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
-            const dist = Math.sqrt(distSq)
-
-            const contactMargin = 0.02
-            if (dist < radius + contactMargin) {
+            if (distSq < radius * radius) {
+              const dist = Math.sqrt(distSq)
               const depth = radius - dist
-              const direction = _tempVecB.clone().sub(_tempVecA).normalize()
-              if (direction.y > 0.3 || _tempVecA.y <= this.position.y + 0.1) {
-                touchGround = true
-              }
-              if (depth > 0) {
-                _tempSegment.start.addScaledVector(direction, depth)
-                _tempSegment.end.addScaledVector(direction, depth)
-              }
+              const dir = _tempVecB.clone().sub(_tempVecA).normalize()
+
+              _tempSegment.start.addScaledVector(dir, depth)
+              _tempSegment.end.addScaledVector(dir, depth)
             }
-          },
+          }
         })
 
+        _tempVecA.copy(this.position)
         this.position.copy(_tempSegment.start)
         this.position.y -= radius
 
-        if (touchGround && this.velocity.y <= 0) {
-          this.velocity.y = 0
-          this.isOnGround = true
-        }
-
-        // Downward Slope / Cuesta Snapping:
-        // When running down a ramp/slope, snap position down to surface if feet float slightly above
-        if (!touchGround && this.velocity.y <= 0) {
-          _tempRay.origin.set(this.position.x, this.position.y + 0.5, this.position.z)
-          _tempRay.direction.set(0, -1, 0)
-          const hit = colliderBVH.raycastFirst(_tempRay)
-          if (hit && hit.distance < 0.95 && hit.face && hit.face.normal.y > 0.3) {
-            const slopeY = hit.point.y
-            if (this.position.y >= slopeY && this.position.y - slopeY < 0.45) {
-              this.position.y = slopeY
-              this.velocity.y = 0
-              this.isOnGround = true
-              touchGround = true
-            }
+        _tempVecB.subVectors(this.position, _tempVecA)
+        const deltaLen = _tempVecB.length()
+        if (deltaLen > 0.00001) {
+          const normalY = _tempVecB.y / deltaLen
+          if (_tempVecB.y > 0 && normalY > 0.25) {
+            this.isOnGround = true
           }
         }
-      }
 
-      // Hard floor boundary at Y=0: Actor can NEVER sink below ground level
-      if (this.position.y <= config.GROUND_Y) {
-        this.position.y = config.GROUND_Y
-        if (this.velocity.y < 0) this.velocity.y = 0
-        this.isOnGround = true
-        touchGround = true
-      }
-    }
-
-    if (touchGround) {
-      this.isOnGround = true
-      this.isUserJumping = false
-      this.airborneTime = 0
-    } else if (colliderBVH) {
-      this.isOnGround = false
-      this.airborneTime += dt
-      // Only set jumping if falling down a high ledge/cliff for >0.35s
-      if (this.airborneTime > 0.35 && this.velocity.y < -3.0) {
-        this.isUserJumping = true
+        if (this.isOnGround && this.velocity.y <= 0) {
+          this.velocity.y = 0
+          this.isUserJumping = false
+          this.airborneTime = 0
+        } else {
+          this.airborneTime += stepDt
+          if (this.airborneTime > 0.35 && this.velocity.y < -3.0) {
+            this.isUserJumping = true
+          }
+        }
+      } else {
+        if (this.position.y <= config.GROUND_Y) {
+          this.position.y = config.GROUND_Y
+          this.velocity.y = 0
+          this.isOnGround = true
+          this.isUserJumping = false
+          this.airborneTime = 0
+        } else {
+          this.isOnGround = false
+        }
       }
     }
 
