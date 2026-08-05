@@ -381,11 +381,11 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             }
 
             const rawBlob = actingState.motion_data ?? ''
-            let actingBlob = rawBlob
+            let actingBlob = ''
             const currentSceneData = threeActing?.getSceneData() ?? actingState.scene_data
             const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
 
-            if (rawBlob) {
+            if (rawBlob && rawBlob.trim()) {
               try {
                 const parsed = JSON.parse(rawBlob)
                 if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
@@ -402,15 +402,11 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
                     motion_data: parsed
                   })
                 }
-              } catch (e) { }
-            } else if (currentSceneData) {
-              actingBlob = JSON.stringify({
-                type: 'acting_motion',
-                actor_type: currentActorType,
-                scene_data: currentSceneData,
-                trajectory: [],
-                motion_data: []
-              })
+              } catch (e) {
+                actingBlob = rawBlob
+              }
+            } else {
+              actingBlob = ''
             }
 
             directingInst.exposed.setState({ acting_data: actingBlob })

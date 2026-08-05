@@ -71,6 +71,9 @@ export class ThreeDirecting {
       }
       this.playbackController.setTrajectory(actingDataJson)
       this.playbackController.start()
+    } else {
+      this.playbackController.setTrajectory('')
+      this.playbackController.stop()
     }
 
     this.buildSceneEnvironment()
