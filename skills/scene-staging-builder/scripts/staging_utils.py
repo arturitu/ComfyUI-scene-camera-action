@@ -90,11 +90,32 @@ def generate_curved_track_blocks(
     return blocks
 
 
-def create_spawn_point(px: float = 0.0, py: float = 0.0, pz: float = 2.0, ry: float = 0.0) -> Dict[str, float]:
-    """Creates a spawn_point dict for actor placement."""
+def calculate_top_surface_height(block_py: float, block_sy: float) -> float:
+    """Calculates the top surface Y height of a supporting block (Y_top = py + sy / 2.0)."""
+    return float(block_py) + (float(block_sy) / 2.0)
+
+
+def create_spawn_point(
+    px: float = 0.0,
+    py: float = 0.0,
+    pz: float = 2.0,
+    ry: float = 0.0,
+    supporting_block: Optional[Dict[str, Any]] = None
+) -> Dict[str, float]:
+    """
+    Creates a spawn_point dict for actor placement.
+    If supporting_block is provided, py is automatically calculated as the top surface of the block (Y_top = py + sy / 2.0).
+    """
+    spawn_py = float(py)
+    if supporting_block and "transform" in supporting_block:
+        transform = supporting_block["transform"]
+        b_py = transform.get("py", 0.0)
+        b_sy = transform.get("sy", 0.0)
+        spawn_py = calculate_top_surface_height(b_py, b_sy)
+
     return {
         "px": float(px),
-        "py": float(py),
+        "py": float(spawn_py),
         "pz": float(pz),
         "ry": float(ry)
     }

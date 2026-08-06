@@ -3,10 +3,11 @@
   "num_assets": 102,
   "spawn_point": {
     "px": 12.0,
-    "py": 0.0,
+    "py": 0.635,
     "pz": 20.0,
     "ry": -2.85
   },
+  "selectedPreset": "liberty_beach.json",
   "nodes": [
     {
       "id": "group_cliff_rocks",

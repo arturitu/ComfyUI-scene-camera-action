@@ -86,7 +86,7 @@
   "selectedPreset": "test-collider.json",
   "spawn_point": {
     "px": 0,
-    "py": 0,
+    "py": 1.375,
     "pz": 1.715,
     "ry": 1.588
   }
