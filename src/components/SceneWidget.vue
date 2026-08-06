@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import SceneCanvas from './SceneCanvas.vue'
 import { ThreeScene } from '../ThreeScene'
 import type { SceneState } from '../types'
@@ -180,6 +180,10 @@ const fetchPresetList = async () => {
 
 onMounted(() => {
   fetchPresetList()
+})
+
+onUnmounted(() => {
+  cleanup()
 })
 
 const loadPresetFile = async (filename: string) => {

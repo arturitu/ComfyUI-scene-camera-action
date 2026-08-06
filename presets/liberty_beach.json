@@ -1,6 +1,6 @@
 {
   "type": "cube_scene",
-  "num_assets": 150,
+  "num_assets": 155,
   "nodes": [
     {
       "id": "group_cliff_rocks",
@@ -699,7 +699,7 @@
       "transform": {
         "px": -3.26,
         "py": 1,
-        "pz": 9.29,
+        "pz": 9.3,
         "rx": 0,
         "ry": -1.49,
         "rz": 0,
@@ -2473,13 +2473,93 @@
           }
         }
       ]
+    },
+    {
+      "id": "63b5b5c1-c516-4795-8af6-040656e34415",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -32.86,
+        "py": -0.02,
+        "pz": 11.94,
+        "rx": -0.2,
+        "ry": -0.06,
+        "rz": 0.28,
+        "sx": 5.46,
+        "sy": 6.02,
+        "sz": 4.72
+      }
+    },
+    {
+      "id": "054f6695-1272-4bb8-be4c-0eae36f6830b",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18.97,
+        "py": 4.45,
+        "pz": 17.92,
+        "rx": -0.19,
+        "ry": -0.37,
+        "rz": 0,
+        "sx": 2.8,
+        "sy": 6.98,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_pc16ygl",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18,
+        "py": 8.49,
+        "pz": 12.34,
+        "rx": -1.42,
+        "ry": 0,
+        "rz": -0.11,
+        "sx": 2.43,
+        "sy": 11.33,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_x9tlzoe",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -19.42,
+        "py": 2.27,
+        "pz": 20.03,
+        "rx": -1.7,
+        "ry": -0.37,
+        "rz": 0,
+        "sx": 2.43,
+        "sy": 7.37,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_02zq9df",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18.36,
+        "py": 4.38,
+        "pz": 19.16,
+        "rx": -0.25,
+        "ry": 0.79,
+        "rz": 0.07,
+        "sx": 2.43,
+        "sy": 3.11,
+        "sz": 1.86
+      }
     }
   ],
   "selectedPreset": "liberty_beach.json",
   "spawn_point": {
     "px": -35.423,
     "py": 1.564,
-    "pz": 0.922,
+    "pz": -11.088,
     "ry": 0.491
   }
 }

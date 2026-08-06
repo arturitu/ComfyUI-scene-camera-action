@@ -95,6 +95,13 @@ export class ThreeScene {
 
     canvas.addEventListener('mouseenter', () => { this.isHovered = true })
     canvas.addEventListener('mouseleave', () => { this.isHovered = false })
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
+      event.preventDefault()
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId)
+        this.animationId = null
+      }
+    }, false)
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
@@ -652,7 +659,13 @@ export class ThreeScene {
       this.transformControls.dispose()
     }
 
-    this.renderer.dispose()
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.forceContextLoss()
+      if (this.renderer.domElement && this.renderer.domElement.parentElement) {
+        this.renderer.domElement.remove()
+      }
+    }
     this.scene.clear()
   }
 

@@ -880,6 +880,21 @@ app.registerExtension({
           instance.exposed.setState(state)
         }
       }
+
+      const origOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origOnRemoved?.call(this)
+        const instance = sceneInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          sceneInstances.delete(this)
+        }
+      }
     } else if (comfyClass === 'ActingNode') {
       hideNodeWidget(node, 'motion_data')
       removeNodeInput(node, 'motion_data')
@@ -998,6 +1013,21 @@ app.registerExtension({
           instance.exposed.setState(state)
         }
       }
+
+      const origActingOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origActingOnRemoved?.call(this)
+        const instance = actingInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          actingInstances.delete(this)
+        }
+      }
     } else if (comfyClass === 'DirectingNode') {
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
@@ -1017,6 +1047,21 @@ app.registerExtension({
         if (instance) {
           const state = readDirectingStateFromNode(this)
           instance.exposed.setState(state)
+        }
+      }
+
+      const origDirectingOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origDirectingOnRemoved?.call(this)
+        const instance = directingInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          directingInstances.delete(this)
         }
       }
     }

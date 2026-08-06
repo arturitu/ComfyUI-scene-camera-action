@@ -121,14 +121,20 @@ export class ThreeDirecting {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    this.container.appendChild(this.renderer.domElement)
-
     const canvas = this.renderer.domElement
+    this.container.appendChild(canvas)
     canvas.style.position = 'absolute'
     canvas.style.top = '0'
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
+      event.preventDefault()
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId)
+        this.animationId = null
+      }
+    }, false)
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
@@ -610,7 +616,13 @@ export class ThreeDirecting {
       this.resizeObserver = null
     }
 
-    this.renderer.dispose()
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.forceContextLoss()
+      if (this.renderer.domElement && this.renderer.domElement.parentElement) {
+        this.renderer.domElement.remove()
+      }
+    }
     this.scene.clear()
   }
 
