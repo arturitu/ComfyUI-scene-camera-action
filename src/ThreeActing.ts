@@ -195,7 +195,7 @@ export class ThreeActing {
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
     this.camera = new THREE.PerspectiveCamera(config.CAMERA_FOV, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
-    this.camera.position.set(0, 4, 8)
+    this.camera.position.set(-8, 4, 0)
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -416,7 +416,7 @@ export class ThreeActing {
 
     if (this.actorController) {
       const speedMult = this.state.actor_speed ?? 10.0
-      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH)
+      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
 
       if (this.isRecording) {
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
@@ -497,7 +497,7 @@ export class ThreeActing {
     // Camera following actor with smooth lerp
     if (this.actorController) {
       const pos = this.actorController.position
-      const idealCamPos = new THREE.Vector3(pos.x, pos.y + 4, pos.z + 8)
+      const idealCamPos = new THREE.Vector3(pos.x - 8, pos.y + 4, pos.z)
       const idealTarget = new THREE.Vector3(pos.x, pos.y + 0.5, pos.z)
 
       this.camera.position.lerp(idealCamPos, 0.12)

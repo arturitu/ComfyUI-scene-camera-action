@@ -276,7 +276,8 @@ export class HumanActor extends BaseActor {
     dt: number,
     keysPressed: Record<string, boolean>,
     speedMultiplier: number,
-    colliderBVH: any
+    colliderBVH: any,
+    camera?: THREE.Camera
   ): void {
     const isW = keysPressed['ArrowUp'] || keysPressed['KeyW']
     const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']
@@ -307,15 +308,30 @@ export class HumanActor extends BaseActor {
     const stepDt = dt / physicsSteps
     const speed = (speedMultiplier * 0.5) * movementSpeedFactor
 
-    let moveZ = 0
-    let moveX = 0
+    _tempDir.set(0, 0, 0)
 
-    if (isW) moveZ -= 1
-    if (isS) moveZ += 1
-    if (isA) moveX -= 1
-    if (isD) moveX += 1
+    if (camera) {
+      const camFwd = new THREE.Vector3(0, 0, -1)
+      const camRight = new THREE.Vector3(1, 0, 0)
+      camera.getWorldDirection(camFwd)
+      camFwd.y = 0
+      camFwd.normalize()
+      camRight.crossVectors(camFwd, new THREE.Vector3(0, 1, 0)).normalize()
 
-    _tempDir.set(moveX, 0, moveZ)
+      if (isW) _tempDir.add(camFwd)
+      if (isS) _tempDir.sub(camFwd)
+      if (isD) _tempDir.add(camRight)
+      if (isA) _tempDir.sub(camRight)
+    } else {
+      let moveZ = 0
+      let moveX = 0
+      if (isW) moveZ -= 1
+      if (isS) moveZ += 1
+      if (isA) moveX -= 1
+      if (isD) moveX += 1
+      _tempDir.set(moveX, 0, moveZ)
+    }
+
     if (_tempDir.lengthSq() > 0) {
       _tempDir.normalize()
       const targetRotationY = Math.atan2(_tempDir.x, _tempDir.z)

@@ -52,8 +52,6 @@ export class CarActor extends BaseActor {
 
   constructor() {
     super()
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
-    this.group.rotation.y = this.rotationY
     this.buildMesh()
   }
 
@@ -106,9 +104,7 @@ export class CarActor extends BaseActor {
   }
 
   public override resetToOrigin(): void {
-    this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
-    this.velocity.set(0, 0, 0)
+    super.resetToOrigin()
     this.currentSpeed = 0
     this.prevSpeed = 0
     this.prevPlaybackSpeed = 0
@@ -120,9 +116,6 @@ export class CarActor extends BaseActor {
     if (this.bodySuspensionGroup) {
       this.bodySuspensionGroup.rotation.set(0, 0, 0)
     }
-    this.isOnGround = true
-    this.group.position.copy(this.position)
-    this.group.rotation.set(0, this.rotationY, 0)
   }
 
   public buildMesh(): void {
@@ -277,7 +270,8 @@ export class CarActor extends BaseActor {
     dt: number,
     keysPressed: Record<string, boolean>,
     speedMultiplier: number,
-    colliderBVH: any
+    colliderBVH: any,
+    _camera?: THREE.Camera
   ): void {
     const isW = keysPressed['ArrowUp'] || keysPressed['KeyW']
     const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']

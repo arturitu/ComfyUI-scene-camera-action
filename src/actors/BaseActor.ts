@@ -52,7 +52,8 @@ export abstract class BaseActor {
     dt: number,
     keysPressed: Record<string, boolean>,
     speedMultiplier: number,
-    colliderBVH: any
+    colliderBVH: any,
+    camera?: THREE.Camera
   ): void
   abstract getType(): 'human' | 'car'
 

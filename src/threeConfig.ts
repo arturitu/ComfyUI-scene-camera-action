@@ -27,7 +27,7 @@ export const AMBIENT_LIGHT_INTENSITY = 0.5
 // Directional Light Config
 export const MAIN_LIGHT_COLOR = 0xffffff
 export const MAIN_LIGHT_INTENSITY = 0.65
-export const MAIN_LIGHT_OFFSET = new THREE.Vector3(35, 60, 35)
+export const MAIN_LIGHT_OFFSET = new THREE.Vector3(-35, 55, 35)
 
 // Shadow Settings (Smart Target-Tracking for 100x100m stage coverage)
 export const SHADOW_MAP_WIDTH = 2048
@@ -44,7 +44,7 @@ export const HEMI_LIGHT_INTENSITY = 0.5
 // Fill Light Config
 export const FILL_LIGHT_COLOR = 0x8fa2c4
 export const FILL_LIGHT_INTENSITY = 0.45
-export const FILL_LIGHT_POSITION = new THREE.Vector3(-15, 20, -15)
+export const FILL_LIGHT_POSITION = new THREE.Vector3(25, 25, -25)
 
 // Edge Outline Config
 export const EDGE_COLOR = 0x66666f
@@ -54,7 +54,7 @@ export const EDGE_OPACITY = 0.50
 export const GROUND_Y = 0.0
 export const GRID_Y = 0.0
 export const FLOOR_Y = -0.002
-export const DEFAULT_ACTOR_ROTATION_Y = Math.PI / 2 // 90 degrees in radians (facing Right)
+export const DEFAULT_ACTOR_ROTATION_Y = 0 // 0 degrees in radians (facing +Z)
 
 // Floor Material Config
 export const FLOOR_COLOR = 0xc9c9cf
