@@ -318,12 +318,40 @@ export class HumanActor extends BaseActor {
     _tempDir.set(moveX, 0, moveZ)
     if (_tempDir.lengthSq() > 0) {
       _tempDir.normalize()
-      this.rotationY = Math.atan2(_tempDir.x, _tempDir.z)
-      this.group.rotation.set(0, this.rotationY, 0)
-    }
+      const targetRotationY = Math.atan2(_tempDir.x, _tempDir.z)
 
-    this.velocity.x = _tempDir.x * speed
-    this.velocity.z = _tempDir.z * speed
+      // Shortest angle difference between current rotationY and targetRotationY
+      let diff = targetRotationY - this.rotationY
+      while (diff < -Math.PI) diff += Math.PI * 2
+      while (diff > Math.PI) diff -= Math.PI * 2
+
+      // Dynamic turn speed scales with linear speed so fast movement turns tighter and quicker
+      const dynamicTurnSpeed = 12.0 + (speed * 2.5)
+      const lerpFactor = 1.0 - Math.exp(-dynamicTurnSpeed * Math.max(0.001, dt))
+      this.rotationY += diff * lerpFactor
+
+      // Keep rotationY in [-PI, PI] bounds
+      while (this.rotationY < -Math.PI) this.rotationY += Math.PI * 2
+      while (this.rotationY > Math.PI) this.rotationY -= Math.PI * 2
+
+      this.group.rotation.set(0, this.rotationY, 0)
+
+      // Blend velocity direction towards current facing direction proportionally to speed
+      // High speed -> velocity follows facing direction (curved natural arc)
+      // Low speed -> velocity follows raw input (precise local control)
+      const facingDirX = Math.sin(this.rotationY)
+      const facingDirZ = Math.cos(this.rotationY)
+      const facingBlend = Math.min(0.75, 0.2 + (speed * 0.1))
+
+      const moveDirX = THREE.MathUtils.lerp(_tempDir.x, facingDirX, facingBlend)
+      const moveDirZ = THREE.MathUtils.lerp(_tempDir.z, facingDirZ, facingBlend)
+
+      this.velocity.x = moveDirX * speed
+      this.velocity.z = moveDirZ * speed
+    } else {
+      this.velocity.x = 0
+      this.velocity.z = 0
+    }
 
     // Dynamically adjust collider capsule dimensions based on standing vs crouching
     const radius = 0.25

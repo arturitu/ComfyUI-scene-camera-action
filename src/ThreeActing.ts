@@ -24,6 +24,7 @@ export class ThreeActing {
   private isHovered = false
   private connectedThreeScene: any = null
   private keysPressed: Record<string, boolean> = {}
+  private actingCameraTarget = new THREE.Vector3()
 
   private colliderBVH: MeshBVH | null = null
   private colliderVisualizer: THREE.Object3D | null = null
@@ -493,19 +494,15 @@ export class ThreeActing {
 
     this.updateActorMovement(dt)
 
-    // Camera following actor
+    // Camera following actor with smooth lerp
     if (this.actorController) {
       const pos = this.actorController.position
-      this.camera.position.set(
-        pos.x,
-        pos.y + 4,
-        pos.z + 8
-      )
-      this.camera.lookAt(
-        pos.x,
-        pos.y + 0.5,
-        pos.z
-      )
+      const idealCamPos = new THREE.Vector3(pos.x, pos.y + 4, pos.z + 8)
+      const idealTarget = new THREE.Vector3(pos.x, pos.y + 0.5, pos.z)
+
+      this.camera.position.lerp(idealCamPos, 0.12)
+      this.actingCameraTarget.lerp(idealTarget, 0.12)
+      this.camera.lookAt(this.actingCameraTarget)
     }
 
     this.renderer.render(this.scene, this.camera)

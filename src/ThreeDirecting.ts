@@ -22,6 +22,8 @@ export class ThreeDirecting {
   private playbackController = new PlaybackController()
   private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
+  private tpvTarget = new THREE.Vector3(0, 0, 0)
+  private sideTarget = new THREE.Vector3(0, 0, 0)
   private cachedEnvBBox = new THREE.Box3()
   private cachedBBoxCenter = new THREE.Vector3()
   private cachedBBoxSize = new THREE.Vector3()
@@ -298,10 +300,16 @@ export class ThreeDirecting {
       const localOffset = this.actorController.getFPVOffset()
       const worldOffset = localOffset.clone().applyQuaternion(this.actorController.group.quaternion)
       const fpvCamPos = charPos.clone().add(worldOffset)
-      this.camera.position.copy(fpvCamPos)
-
       const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
-      this.camera.lookAt(fpvCamPos.clone().add(forward))
+      const targetLookAt = fpvCamPos.clone().add(forward)
+
+      if (this.lastCameraMode !== 'First Person') {
+        this.camera.position.copy(fpvCamPos)
+        this.camera.lookAt(targetLookAt)
+      } else {
+        this.camera.position.lerp(fpvCamPos, 0.2)
+        this.camera.lookAt(targetLookAt)
+      }
 
     } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {
@@ -310,9 +318,18 @@ export class ThreeDirecting {
       }
       const backOffset = new THREE.Vector3(0, 1.8, -3.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(backOffset)
-      // Instant hard cut & lock on TPV position without sliding lerp drift
-      this.camera.position.copy(targetCamPos)
-      this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
+      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + 0.8, charPos.z)
+
+      if (this.lastCameraMode !== 'Third Person') {
+        // Hard cut on initial mode change
+        this.camera.position.copy(targetCamPos)
+        this.tpvTarget.copy(targetLookAt)
+      } else {
+        // Smooth camera follow lerp
+        this.camera.position.lerp(targetCamPos, 0.12)
+        this.tpvTarget.lerp(targetLookAt, 0.12)
+      }
+      this.camera.lookAt(this.tpvTarget)
 
     } else if (activeMode === 'Wide') {
       const fov = 35
@@ -351,28 +368,28 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Side') {
       const isCar = (this.actorController as any)?.getType?.() === 'car'
-
-      if (isCar) {
-        // Car Side Camera: Centered vertically on car body height
-        if (this.camera.fov !== 45) {
-          this.camera.fov = 45
-          this.camera.updateProjectionMatrix()
-        }
-        const sideOffset = new THREE.Vector3(-4.8, 1.3, 0.4).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
-        const targetCamPos = charPos.clone().add(sideOffset)
-        this.camera.position.copy(targetCamPos)
-        this.camera.lookAt(charPos.x, charPos.y + 0.55, charPos.z)
-      } else {
-        // Human Side Camera: Centered vertically on human torso (2.20m total height, center Y=1.15m)
-        if (this.camera.fov !== 45) {
-          this.camera.fov = 45
-          this.camera.updateProjectionMatrix()
-        }
-        const sideOffset = new THREE.Vector3(-4.5, 1.4, 0.4).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
-        const targetCamPos = charPos.clone().add(sideOffset)
-        this.camera.position.copy(targetCamPos)
-        this.camera.lookAt(charPos.x, charPos.y + 1.15, charPos.z)
+      const fov = 45
+      if (this.camera.fov !== fov) {
+        this.camera.fov = fov
+        this.camera.updateProjectionMatrix()
       }
+
+      const sideVec = isCar ? new THREE.Vector3(-4.8, 1.3, 0.4) : new THREE.Vector3(-4.5, 1.4, 0.4)
+      const targetOffsetY = isCar ? 0.55 : 1.15
+      const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const targetCamPos = charPos.clone().add(sideOffset)
+      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
+
+      if (this.lastCameraMode !== 'Side') {
+        // Hard cut on initial mode change
+        this.camera.position.copy(targetCamPos)
+        this.sideTarget.copy(targetLookAt)
+      } else {
+        // Smooth camera follow lerp
+        this.camera.position.lerp(targetCamPos, 0.12)
+        this.sideTarget.lerp(targetLookAt, 0.12)
+      }
+      this.camera.lookAt(this.sideTarget)
     }
 
     this.lastCameraMode = activeMode
