@@ -130,8 +130,8 @@ export class HumanActor extends BaseActor {
 
     this.playAnimation(targetAnim, 0.2, animTimeScale)
 
-    if (this.mixer) {
-      this.mixer.update(Math.max(0.001, frameDt))
+    if (this.mixer && frameDt > 0) {
+      this.mixer.update(frameDt)
     }
   }
 

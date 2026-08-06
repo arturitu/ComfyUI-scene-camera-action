@@ -13,7 +13,19 @@ Build your 3D environment, control and record actor movements in real time using
 
 ## Release History
 
-### 🚀 Shipped - v0.2.0 (Current Version)
+### 🚀 Shipped - v0.3.0 (Current Version)
+- **Animated 3D Humanoid Model**: Replaced static capsule with a custom 3D human model (modeled by @arturitu, using armature bone structure and animations based on [Mesh2Motion](https://github.com/Mesh2Motion/mesh2motion-app)).
+- **Configurable Spawn Points**: UI selection for actor starting locations across Staging and Acting nodes with dynamic surface height alignment.
+- **New 3D Scene Presets**:
+  - `liberty_beach`: Statue of Liberty ruins on a beach environment.
+  - `industrial_ruin`: Industrial ruin environment.
+  - `warehouse`: Interior warehouse structure.
+  - `test-collider.json`: Dedicated collider testing map.
+- **Camera & Motion Smoothing**: Smooth camera interpolation and responsive actor rotation.
+
+![v0.3.0 Preview](v0-3-0.jpg)
+
+### 📦 Shipped - v0.2.0
 - **Natural Language 3D Scene Builder (`SKILL.md`)**: Transform prompts or reference images into 3D stage compositions using any AI coding assistant.
 - **Multi-Archetype Actor Physics Engine**: Support for Humanoid and Vehicle (`CarActor`) movement physics, multi-probe suspension, and steering.
 - **Hierarchical Scene Management**: Grouping (`Group`/`Ungroup`), multi-selection, and transform snapping in the Staging Node.
@@ -21,9 +33,15 @@ Build your 3D environment, control and record actor movements in real time using
 - **High-Fidelity Captures**: 1:1 initial frame stage snapshot matching camera view, FOV, and atmosphere.
 - **3D Scene Presets**: Built-in previz tracks (`space_platform_track.json`, `race_track.json`, `varied_forest.json`).
 
+[![v0.2.0 Preview](v0-2-0.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7488962940134481920/)
+👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7488962940134481920/)
+
 ### 📦 Shipped - v0.1.0 (Initial PoC Release)
 - Initial proof-of-concept custom nodes (`SceneNode`, `ActingNode`, `DirectingNode`).
 - Basic 3D asset editing, single human capsule actor, and timeline camera cuts.
+
+[![v0.1.0 Preview](v0-1-0.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7486069273581400064/)
+👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7486069273581400064/)
 
 ---
 
