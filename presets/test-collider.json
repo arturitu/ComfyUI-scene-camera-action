@@ -1,0 +1,93 @@
+{
+  "type": "cube_scene",
+  "num_assets": 5,
+  "nodes": [
+    {
+      "id": "node_f4y33zf",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 17.55,
+        "py": 4.16,
+        "pz": -0.09,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.32,
+        "sx": 7.16,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "node_16w8n24",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 21.27,
+        "py": 2.91,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.32,
+        "sx": 7.16,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "node_a0pkzm3",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 7.02,
+        "py": 1.22,
+        "pz": 0.46,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0.54,
+        "sx": 16.45,
+        "sy": 0.31,
+        "sz": 6.31
+      }
+    },
+    {
+      "id": "8d45e4dd-52a8-4fe1-995e-7502b7a726fb",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -7.56,
+        "py": 2.01,
+        "pz": -3.59,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 6.5,
+        "sy": 0.3,
+        "sz": 4
+      }
+    },
+    {
+      "id": "754293ee-a39e-4436-aa9a-31916bf341ad",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 2.35,
+        "py": 0.83,
+        "pz": -0.65,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.77,
+        "sy": 1.65,
+        "sz": 0.87
+      }
+    }
+  ],
+  "selectedPreset": "test-collider.json",
+  "spawn_point": {
+    "px": 0,
+    "py": 1.375,
+    "pz": 1.715,
+    "ry": 1.588
+  }
+}

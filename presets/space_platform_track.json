@@ -7,11 +7,11 @@
       "type": "group",
       "name": "Space Launch Gate",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -121,11 +121,11 @@
       "type": "group",
       "name": "Mega Kicker Ramp",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -299,11 +299,11 @@
       "type": "group",
       "name": "Floating Landing Island",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -397,11 +397,11 @@
       "type": "group",
       "name": "Space Skate Halfpipe & Funbox",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -543,11 +543,11 @@
       "type": "group",
       "name": "High Orbit Step-Up Ramps & Finish Gate",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -769,11 +769,11 @@
       "type": "group",
       "name": "Space Adventure Props & Satellites",
       "transform": {
-        "px": 0.33,
+        "px": 1.28,
         "py": 0,
-        "pz": 1.72,
+        "pz": -5.43,
         "rx": 0,
-        "ry": 1.57,
+        "ry": 0,
         "rz": 0,
         "sx": 1,
         "sy": 1,
@@ -911,5 +911,11 @@
       ]
     }
   ],
-  "selectedPreset": "space_platform_track.json"
+  "selectedPreset": "space_platform_track.json",
+  "spawn_point": {
+    "px": -1.062,
+    "py": 0,
+    "pz": -37.879,
+    "ry": 1.503
+  }
 }

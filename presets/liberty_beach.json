@@ -1,0 +1,2565 @@
+{
+  "type": "cube_scene",
+  "num_assets": 155,
+  "nodes": [
+    {
+      "id": "group_cliff_rocks",
+      "type": "group",
+      "name": "Curved Coastal Cliff Wall (Left Cove)",
+      "transform": {
+        "px": 3.47,
+        "py": -8.96,
+        "pz": -25.76,
+        "rx": 2.5,
+        "ry": 1.45,
+        "rz": -2.74,
+        "sx": 0.86,
+        "sy": 0.9,
+        "sz": 1.15
+      },
+      "children": [
+        {
+          "id": "cliff_rock_01",
+          "type": "block",
+          "name": "Curved Cliff Rock 01",
+          "transform": {
+            "px": -32.42,
+            "py": 7.32,
+            "pz": -24.28,
+            "rx": 0.14,
+            "ry": -0.41,
+            "rz": 0.08,
+            "sx": 8.19,
+            "sy": 7.64,
+            "sz": 11.06
+          }
+        },
+        {
+          "id": "cliff_rock_02",
+          "type": "block",
+          "name": "Curved Cliff Rock 02",
+          "transform": {
+            "px": -35.8,
+            "py": 12.6,
+            "pz": -23.71,
+            "rx": 0.11,
+            "ry": -0.38,
+            "rz": 0.09,
+            "sx": 9.97,
+            "sy": 9.21,
+            "sz": 10.67
+          }
+        },
+        {
+          "id": "cliff_rock_03",
+          "type": "block",
+          "name": "Curved Cliff Rock 03",
+          "transform": {
+            "px": -33.09,
+            "py": 3.2,
+            "pz": -24.57,
+            "rx": -0.14,
+            "ry": -0.41,
+            "rz": -0.06,
+            "sx": 11.29,
+            "sy": 6.39,
+            "sz": 11.25
+          }
+        },
+        {
+          "id": "cliff_rock_04",
+          "type": "block",
+          "name": "Curved Cliff Rock 04",
+          "transform": {
+            "px": -31.25,
+            "py": 7.04,
+            "pz": -19.75,
+            "rx": 0.11,
+            "ry": -0.29,
+            "rz": -0.11,
+            "sx": 7.28,
+            "sy": 7.08,
+            "sz": 12.39
+          }
+        },
+        {
+          "id": "cliff_rock_05",
+          "type": "block",
+          "name": "Curved Cliff Rock 05",
+          "transform": {
+            "px": -31.56,
+            "py": 14.74,
+            "pz": -22.03,
+            "rx": -0.08,
+            "ry": -0.26,
+            "rz": -0.07,
+            "sx": 7.75,
+            "sy": 13.49,
+            "sz": 7.76
+          }
+        },
+        {
+          "id": "cliff_rock_06",
+          "type": "block",
+          "name": "Curved Cliff Rock 06",
+          "transform": {
+            "px": -26.29,
+            "py": 3.48,
+            "pz": -20.23,
+            "rx": 0.11,
+            "ry": -0.2,
+            "rz": -0.06,
+            "sx": 8.15,
+            "sy": 6.95,
+            "sz": 8.75
+          }
+        },
+        {
+          "id": "cliff_rock_07",
+          "type": "block",
+          "name": "Curved Cliff Rock 07",
+          "transform": {
+            "px": -29.18,
+            "py": 6.89,
+            "pz": -20.34,
+            "rx": 0.02,
+            "ry": -0.31,
+            "rz": -0.08,
+            "sx": 9.3,
+            "sy": 6.78,
+            "sz": 10.13
+          }
+        },
+        {
+          "id": "cliff_rock_08",
+          "type": "block",
+          "name": "Curved Cliff Rock 08",
+          "transform": {
+            "px": -27.05,
+            "py": 13.04,
+            "pz": -17.73,
+            "rx": -0.14,
+            "ry": -0.17,
+            "rz": 0.11,
+            "sx": 12.84,
+            "sy": 10.07,
+            "sz": 10.52
+          }
+        },
+        {
+          "id": "cliff_rock_09",
+          "type": "block",
+          "name": "Curved Cliff Rock 09",
+          "transform": {
+            "px": -27.19,
+            "py": 2.66,
+            "pz": -13.43,
+            "rx": 0.11,
+            "ry": -0.21,
+            "rz": 0.11,
+            "sx": 12.51,
+            "sy": 5.32,
+            "sz": 8.01
+          }
+        },
+        {
+          "id": "cliff_rock_10",
+          "type": "block",
+          "name": "Curved Cliff Rock 10",
+          "transform": {
+            "px": -26.88,
+            "py": 8.38,
+            "pz": -13.91,
+            "rx": 0.02,
+            "ry": -0.3,
+            "rz": -0.11,
+            "sx": 7.77,
+            "sy": 9.76,
+            "sz": 8.11
+          }
+        },
+        {
+          "id": "cliff_rock_11",
+          "type": "block",
+          "name": "Curved Cliff Rock 11",
+          "transform": {
+            "px": -27.81,
+            "py": 13.95,
+            "pz": -14.3,
+            "rx": -0.14,
+            "ry": -0.28,
+            "rz": 0.02,
+            "sx": 9.8,
+            "sy": 11.9,
+            "sz": 10.62
+          }
+        },
+        {
+          "id": "cliff_rock_12",
+          "type": "block",
+          "name": "Curved Cliff Rock 12",
+          "transform": {
+            "px": -26.21,
+            "py": 2.59,
+            "pz": -14.83,
+            "rx": 0,
+            "ry": -0.28,
+            "rz": -0.07,
+            "sx": 10.91,
+            "sy": 5.18,
+            "sz": 12.76
+          }
+        },
+        {
+          "id": "cliff_rock_13",
+          "type": "block",
+          "name": "Curved Cliff Rock 13",
+          "transform": {
+            "px": -22.35,
+            "py": 6.91,
+            "pz": -9.78,
+            "rx": 0.01,
+            "ry": -0.11,
+            "rz": 0,
+            "sx": 9.8,
+            "sy": 6.82,
+            "sz": 7.22
+          }
+        },
+        {
+          "id": "cliff_rock_14",
+          "type": "block",
+          "name": "Curved Cliff Rock 14",
+          "transform": {
+            "px": -21.06,
+            "py": 14,
+            "pz": -11.43,
+            "rx": -0.13,
+            "ry": -0.16,
+            "rz": 0.03,
+            "sx": 9.82,
+            "sy": 12,
+            "sz": 10.62
+          }
+        },
+        {
+          "id": "cliff_rock_15",
+          "type": "block",
+          "name": "Curved Cliff Rock 15",
+          "transform": {
+            "px": -23.75,
+            "py": 2.53,
+            "pz": -8.68,
+            "rx": 0.04,
+            "ry": -0.13,
+            "rz": 0.09,
+            "sx": 9.51,
+            "sy": 5.06,
+            "sz": 12.65
+          }
+        },
+        {
+          "id": "cliff_rock_16",
+          "type": "block",
+          "name": "Curved Cliff Rock 16",
+          "transform": {
+            "px": -20.42,
+            "py": 7.25,
+            "pz": -7.76,
+            "rx": 0,
+            "ry": -0.13,
+            "rz": -0.08,
+            "sx": 12.24,
+            "sy": 7.5,
+            "sz": 10.39
+          }
+        },
+        {
+          "id": "cliff_rock_17",
+          "type": "block",
+          "name": "Curved Cliff Rock 17",
+          "transform": {
+            "px": -22.92,
+            "py": 13.61,
+            "pz": -6.15,
+            "rx": -0.03,
+            "ry": -0.08,
+            "rz": -0.06,
+            "sx": 11.65,
+            "sy": 11.22,
+            "sz": 9.69
+          }
+        },
+        {
+          "id": "cliff_rock_18",
+          "type": "block",
+          "name": "Curved Cliff Rock 18",
+          "transform": {
+            "px": -17.83,
+            "py": 2.95,
+            "pz": -4.84,
+            "rx": 0.14,
+            "ry": -0.03,
+            "rz": 0.09,
+            "sx": 9.95,
+            "sy": 5.9,
+            "sz": 12.04
+          }
+        },
+        {
+          "id": "cliff_rock_19",
+          "type": "block",
+          "name": "Curved Cliff Rock 19",
+          "transform": {
+            "px": -18.35,
+            "py": 7.34,
+            "pz": -5.03,
+            "rx": 0.03,
+            "ry": -0.04,
+            "rz": 0.07,
+            "sx": 9.79,
+            "sy": 7.67,
+            "sz": 7.31
+          }
+        },
+        {
+          "id": "cliff_rock_20",
+          "type": "block",
+          "name": "Curved Cliff Rock 20",
+          "transform": {
+            "px": -20.79,
+            "py": 14.22,
+            "pz": -0.83,
+            "rx": 0.13,
+            "ry": 0.01,
+            "rz": 0.03,
+            "sx": 10.47,
+            "sy": 12.43,
+            "sz": 8.37
+          }
+        },
+        {
+          "id": "cliff_rock_21",
+          "type": "block",
+          "name": "Curved Cliff Rock 21",
+          "transform": {
+            "px": -21.37,
+            "py": 2.79,
+            "pz": -3.58,
+            "rx": 0.06,
+            "ry": 0.03,
+            "rz": 0.08,
+            "sx": 12.51,
+            "sy": 5.59,
+            "sz": 9.66
+          }
+        },
+        {
+          "id": "cliff_rock_22",
+          "type": "block",
+          "name": "Curved Cliff Rock 22",
+          "transform": {
+            "px": -20.55,
+            "py": 8.43,
+            "pz": -2.42,
+            "rx": -0.03,
+            "ry": -0.09,
+            "rz": -0.05,
+            "sx": 7.84,
+            "sy": 9.85,
+            "sz": 13
+          }
+        },
+        {
+          "id": "cliff_rock_23",
+          "type": "block",
+          "name": "Curved Cliff Rock 23",
+          "transform": {
+            "px": -17.5,
+            "py": 12.42,
+            "pz": -0.25,
+            "rx": 0.02,
+            "ry": 0,
+            "rz": 0.04,
+            "sx": 7.47,
+            "sy": 8.84,
+            "sz": 7.3
+          }
+        },
+        {
+          "id": "cliff_rock_24",
+          "type": "block",
+          "name": "Curved Cliff Rock 24",
+          "transform": {
+            "px": -21.21,
+            "py": 3.33,
+            "pz": 0.29,
+            "rx": -0.07,
+            "ry": 0.1,
+            "rz": 0.04,
+            "sx": 8.95,
+            "sy": 6.66,
+            "sz": 11.16
+          }
+        },
+        {
+          "id": "cliff_rock_25",
+          "type": "block",
+          "name": "Curved Cliff Rock 25",
+          "transform": {
+            "px": -19.41,
+            "py": 7.19,
+            "pz": 3.53,
+            "rx": -0.06,
+            "ry": 0.14,
+            "rz": 0.03,
+            "sx": 12.52,
+            "sy": 7.39,
+            "sz": 11.45
+          }
+        },
+        {
+          "id": "cliff_rock_26",
+          "type": "block",
+          "name": "Curved Cliff Rock 26",
+          "transform": {
+            "px": -16.68,
+            "py": 14.74,
+            "pz": 4.71,
+            "rx": 0.07,
+            "ry": 0.17,
+            "rz": 0.01,
+            "sx": 10.26,
+            "sy": 13.48,
+            "sz": 9.07
+          }
+        },
+        {
+          "id": "cliff_rock_27",
+          "type": "block",
+          "name": "Curved Cliff Rock 27",
+          "transform": {
+            "px": -17.6,
+            "py": 3,
+            "pz": 5.33,
+            "rx": -0.1,
+            "ry": 0.1,
+            "rz": 0.07,
+            "sx": 8.2,
+            "sy": 6,
+            "sz": 10.74
+          }
+        },
+        {
+          "id": "cliff_rock_28",
+          "type": "block",
+          "name": "Curved Cliff Rock 28",
+          "transform": {
+            "px": -19.7,
+            "py": 8.43,
+            "pz": 5.62,
+            "rx": -0.09,
+            "ry": 0.18,
+            "rz": -0.03,
+            "sx": 10.54,
+            "sy": 9.86,
+            "sz": 10.24
+          }
+        },
+        {
+          "id": "cliff_rock_29",
+          "type": "block",
+          "name": "Curved Cliff Rock 29",
+          "transform": {
+            "px": -17.82,
+            "py": 14.49,
+            "pz": 9.37,
+            "rx": 0.05,
+            "ry": 0.08,
+            "rz": -0.11,
+            "sx": 8.33,
+            "sy": 12.99,
+            "sz": 12.57
+          }
+        },
+        {
+          "id": "cliff_rock_30",
+          "type": "block",
+          "name": "Curved Cliff Rock 30",
+          "transform": {
+            "px": -20.81,
+            "py": 3.23,
+            "pz": 8.67,
+            "rx": -0.13,
+            "ry": 0.23,
+            "rz": 0,
+            "sx": 7.03,
+            "sy": 6.45,
+            "sz": 12.69
+          }
+        },
+        {
+          "id": "cliff_rock_31",
+          "type": "block",
+          "name": "Curved Cliff Rock 31",
+          "transform": {
+            "px": -17.72,
+            "py": 7.89,
+            "pz": 10.94,
+            "rx": -0.09,
+            "ry": 0.14,
+            "rz": -0.11,
+            "sx": 9.27,
+            "sy": 8.78,
+            "sz": 10.11
+          }
+        },
+        {
+          "id": "cliff_rock_32",
+          "type": "block",
+          "name": "Curved Cliff Rock 32",
+          "transform": {
+            "px": -20.59,
+            "py": 14.16,
+            "pz": 12.54,
+            "rx": -0.02,
+            "ry": 0.21,
+            "rz": 0,
+            "sx": 7.37,
+            "sy": 12.32,
+            "sz": 9.05
+          }
+        },
+        {
+          "id": "cliff_rock_33",
+          "type": "block",
+          "name": "Curved Cliff Rock 33",
+          "transform": {
+            "px": -18.06,
+            "py": 3.46,
+            "pz": 10.16,
+            "rx": -0.1,
+            "ry": 0.15,
+            "rz": 0.03,
+            "sx": 10.89,
+            "sy": 6.92,
+            "sz": 7.1
+          }
+        },
+        {
+          "id": "cliff_rock_34",
+          "type": "block",
+          "name": "Curved Cliff Rock 34",
+          "transform": {
+            "px": -18.28,
+            "py": 8.18,
+            "pz": 14.74,
+            "rx": 0.05,
+            "ry": 0.2,
+            "rz": 0,
+            "sx": 10.29,
+            "sy": 9.35,
+            "sz": 10.72
+          }
+        },
+        {
+          "id": "cliff_rock_35",
+          "type": "block",
+          "name": "Curved Cliff Rock 35",
+          "transform": {
+            "px": -22.99,
+            "py": 13.1,
+            "pz": 13.13,
+            "rx": 0,
+            "ry": 0.18,
+            "rz": -0.1,
+            "sx": 12.74,
+            "sy": 10.19,
+            "sz": 8.26
+          }
+        },
+        {
+          "id": "cliff_rock_36",
+          "type": "block",
+          "name": "Curved Cliff Rock 36",
+          "transform": {
+            "px": -21.11,
+            "py": 3.29,
+            "pz": 15.58,
+            "rx": 0.04,
+            "ry": 0.36,
+            "rz": -0.09,
+            "sx": 12.93,
+            "sy": 6.57,
+            "sz": 9.86
+          }
+        },
+        {
+          "id": "cliff_rock_37",
+          "type": "block",
+          "name": "Curved Cliff Rock 37",
+          "transform": {
+            "px": -20.01,
+            "py": 8.26,
+            "pz": 14.43,
+            "rx": 0.11,
+            "ry": 0.21,
+            "rz": -0.1,
+            "sx": 11.56,
+            "sy": 9.52,
+            "sz": 11.69
+          }
+        },
+        {
+          "id": "cliff_rock_38",
+          "type": "block",
+          "name": "Curved Cliff Rock 38",
+          "transform": {
+            "px": -22.57,
+            "py": 14.73,
+            "pz": 15.24,
+            "rx": 0.07,
+            "ry": 0.24,
+            "rz": 0.09,
+            "sx": 8.06,
+            "sy": 13.47,
+            "sz": 8.39
+          }
+        },
+        {
+          "id": "cliff_rock_39",
+          "type": "block",
+          "name": "Curved Cliff Rock 39",
+          "transform": {
+            "px": -23.43,
+            "py": 3.75,
+            "pz": 18.74,
+            "rx": -0.04,
+            "ry": 0.38,
+            "rz": -0.05,
+            "sx": 7.44,
+            "sy": 7.51,
+            "sz": 8.53
+          }
+        },
+        {
+          "id": "cliff_rock_40",
+          "type": "block",
+          "name": "Curved Cliff Rock 40",
+          "transform": {
+            "px": -23.49,
+            "py": 7.68,
+            "pz": 18.25,
+            "rx": -0.15,
+            "ry": 0.37,
+            "rz": 0.11,
+            "sx": 9.51,
+            "sy": 8.36,
+            "sz": 10.89
+          }
+        },
+        {
+          "id": "cliff_rock_41",
+          "type": "block",
+          "name": "Curved Cliff Rock 41",
+          "transform": {
+            "px": -25.07,
+            "py": 14.32,
+            "pz": 19.54,
+            "rx": -0.03,
+            "ry": 0.31,
+            "rz": -0.04,
+            "sx": 7.88,
+            "sy": 12.63,
+            "sz": 10.06
+          }
+        },
+        {
+          "id": "cliff_rock_42",
+          "type": "block",
+          "name": "Curved Cliff Rock 42",
+          "transform": {
+            "px": -22.21,
+            "py": 2.87,
+            "pz": 22.66,
+            "rx": -0.1,
+            "ry": 0.45,
+            "rz": -0.09,
+            "sx": 10.55,
+            "sy": 5.75,
+            "sz": 12.97
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_sand_dunes",
+      "type": "group",
+      "name": "Beach Sand Dunes (Covering to Cliff Base)",
+      "transform": {
+        "px": -3.26,
+        "py": 1,
+        "pz": 9.3,
+        "rx": 0,
+        "ry": -1.49,
+        "rz": 0,
+        "sx": 1,
+        "sy": 0.86,
+        "sz": 1.14
+      },
+      "children": [
+        {
+          "id": "sand_dune_01",
+          "type": "block",
+          "name": "Beach Sand Dune 01",
+          "transform": {
+            "px": -36.72,
+            "py": 0.3,
+            "pz": -29.14,
+            "rx": 0,
+            "ry": 0.02,
+            "rz": 0,
+            "sx": 11.28,
+            "sy": 0.6,
+            "sz": 11.56
+          }
+        },
+        {
+          "id": "sand_dune_02",
+          "type": "block",
+          "name": "Beach Sand Dune 02",
+          "transform": {
+            "px": -28.7,
+            "py": 0.24,
+            "pz": -28.93,
+            "rx": 0,
+            "ry": -0.06,
+            "rz": 0,
+            "sx": 8.67,
+            "sy": 0.49,
+            "sz": 12.91
+          }
+        },
+        {
+          "id": "sand_dune_03",
+          "type": "block",
+          "name": "Beach Sand Dune 03",
+          "transform": {
+            "px": -20.95,
+            "py": 0.35,
+            "pz": -28.35,
+            "rx": 0,
+            "ry": 0.04,
+            "rz": 0,
+            "sx": 10.19,
+            "sy": 0.7,
+            "sz": 12.71
+          }
+        },
+        {
+          "id": "sand_dune_04",
+          "type": "block",
+          "name": "Beach Sand Dune 04",
+          "transform": {
+            "px": -14.18,
+            "py": 0.32,
+            "pz": -29.35,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 8.15,
+            "sy": 0.64,
+            "sz": 11.04
+          }
+        },
+        {
+          "id": "sand_dune_05",
+          "type": "block",
+          "name": "Beach Sand Dune 05",
+          "transform": {
+            "px": -9.06,
+            "py": 0.26,
+            "pz": -28.08,
+            "rx": 0,
+            "ry": -0.06,
+            "rz": 0,
+            "sx": 10.36,
+            "sy": 0.51,
+            "sz": 11.09
+          }
+        },
+        {
+          "id": "sand_dune_06",
+          "type": "block",
+          "name": "Beach Sand Dune 06",
+          "transform": {
+            "px": -1.09,
+            "py": 0.36,
+            "pz": -28.23,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 12.69,
+            "sy": 0.72,
+            "sz": 9.36
+          }
+        },
+        {
+          "id": "sand_dune_07",
+          "type": "block",
+          "name": "Beach Sand Dune 07",
+          "transform": {
+            "px": 5.87,
+            "py": 0.36,
+            "pz": -28.54,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 12.31,
+            "sy": 0.73,
+            "sz": 8.89
+          }
+        },
+        {
+          "id": "sand_dune_08",
+          "type": "block",
+          "name": "Beach Sand Dune 08",
+          "transform": {
+            "px": 14.02,
+            "py": 0.28,
+            "pz": -26.9,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0,
+            "sx": 8.08,
+            "sy": 0.55,
+            "sz": 11.48
+          }
+        },
+        {
+          "id": "sand_dune_09",
+          "type": "block",
+          "name": "Beach Sand Dune 09",
+          "transform": {
+            "px": -30.34,
+            "py": 0.3,
+            "pz": -22.16,
+            "rx": 0,
+            "ry": -0.04,
+            "rz": 0,
+            "sx": 8.47,
+            "sy": 0.6,
+            "sz": 10.95
+          }
+        },
+        {
+          "id": "sand_dune_10",
+          "type": "block",
+          "name": "Beach Sand Dune 10",
+          "transform": {
+            "px": -25.32,
+            "py": 0.33,
+            "pz": -19.95,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 11.23,
+            "sy": 0.66,
+            "sz": 9.74
+          }
+        },
+        {
+          "id": "sand_dune_11",
+          "type": "block",
+          "name": "Beach Sand Dune 11",
+          "transform": {
+            "px": -16.8,
+            "py": 0.32,
+            "pz": -21.83,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 8.54,
+            "sy": 0.64,
+            "sz": 8.81
+          }
+        },
+        {
+          "id": "sand_dune_12",
+          "type": "block",
+          "name": "Beach Sand Dune 12",
+          "transform": {
+            "px": -9.98,
+            "py": 0.33,
+            "pz": -20.71,
+            "rx": 0,
+            "ry": 0.06,
+            "rz": 0,
+            "sx": 10.87,
+            "sy": 0.65,
+            "sz": 10.15
+          }
+        },
+        {
+          "id": "sand_dune_13",
+          "type": "block",
+          "name": "Beach Sand Dune 13",
+          "transform": {
+            "px": -2.91,
+            "py": 0.24,
+            "pz": -21.04,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 11.72,
+            "sy": 0.48,
+            "sz": 8.25
+          }
+        },
+        {
+          "id": "sand_dune_14",
+          "type": "block",
+          "name": "Beach Sand Dune 14",
+          "transform": {
+            "px": 4.5,
+            "py": 0.35,
+            "pz": -19.51,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 10.56,
+            "sy": 0.7,
+            "sz": 11.44
+          }
+        },
+        {
+          "id": "sand_dune_15",
+          "type": "block",
+          "name": "Beach Sand Dune 15",
+          "transform": {
+            "px": 10.4,
+            "py": 0.27,
+            "pz": -19.71,
+            "rx": 0,
+            "ry": -0.06,
+            "rz": 0,
+            "sx": 11.59,
+            "sy": 0.54,
+            "sz": 8.04
+          }
+        },
+        {
+          "id": "sand_dune_16",
+          "type": "block",
+          "name": "Beach Sand Dune 16",
+          "transform": {
+            "px": -24.98,
+            "py": 0.33,
+            "pz": -13.58,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 11.04,
+            "sy": 0.66,
+            "sz": 8.79
+          }
+        },
+        {
+          "id": "sand_dune_17",
+          "type": "block",
+          "name": "Beach Sand Dune 17",
+          "transform": {
+            "px": -18.95,
+            "py": 0.37,
+            "pz": -13.79,
+            "rx": 0,
+            "ry": 0.03,
+            "rz": 0,
+            "sx": 10.23,
+            "sy": 0.74,
+            "sz": 11.51
+          }
+        },
+        {
+          "id": "sand_dune_18",
+          "type": "block",
+          "name": "Beach Sand Dune 18",
+          "transform": {
+            "px": -13.2,
+            "py": 0.28,
+            "pz": -12.59,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 12.8,
+            "sy": 0.55,
+            "sz": 12.36
+          }
+        },
+        {
+          "id": "sand_dune_19",
+          "type": "block",
+          "name": "Beach Sand Dune 19",
+          "transform": {
+            "px": -4.7,
+            "py": 0.33,
+            "pz": -13.54,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0,
+            "sx": 9.34,
+            "sy": 0.65,
+            "sz": 8.95
+          }
+        },
+        {
+          "id": "sand_dune_20",
+          "type": "block",
+          "name": "Beach Sand Dune 20",
+          "transform": {
+            "px": 1.59,
+            "py": 0.28,
+            "pz": -12.62,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0,
+            "sx": 11.26,
+            "sy": 0.55,
+            "sz": 12.97
+          }
+        },
+        {
+          "id": "sand_dune_21",
+          "type": "block",
+          "name": "Beach Sand Dune 21",
+          "transform": {
+            "px": 8.68,
+            "py": 0.27,
+            "pz": -12.66,
+            "rx": 0,
+            "ry": 0.08,
+            "rz": 0,
+            "sx": 11.86,
+            "sy": 0.53,
+            "sz": 11.89
+          }
+        },
+        {
+          "id": "sand_dune_22",
+          "type": "block",
+          "name": "Beach Sand Dune 22",
+          "transform": {
+            "px": -24.21,
+            "py": 0.35,
+            "pz": -7.42,
+            "rx": 0,
+            "ry": 0.04,
+            "rz": 0,
+            "sx": 9.66,
+            "sy": 0.71,
+            "sz": 8.94
+          }
+        },
+        {
+          "id": "sand_dune_23",
+          "type": "block",
+          "name": "Beach Sand Dune 23",
+          "transform": {
+            "px": -16.88,
+            "py": 0.34,
+            "pz": -6.51,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 11.86,
+            "sy": 0.68,
+            "sz": 11.57
+          }
+        },
+        {
+          "id": "sand_dune_24",
+          "type": "block",
+          "name": "Beach Sand Dune 24",
+          "transform": {
+            "px": -8.77,
+            "py": 0.25,
+            "pz": -6.71,
+            "rx": 0,
+            "ry": 0.07,
+            "rz": 0,
+            "sx": 11.87,
+            "sy": 0.5,
+            "sz": 12.47
+          }
+        },
+        {
+          "id": "sand_dune_25",
+          "type": "block",
+          "name": "Beach Sand Dune 25",
+          "transform": {
+            "px": -1.96,
+            "py": 0.37,
+            "pz": -6.39,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 10.78,
+            "sy": 0.74,
+            "sz": 10.1
+          }
+        },
+        {
+          "id": "sand_dune_26",
+          "type": "block",
+          "name": "Beach Sand Dune 26",
+          "transform": {
+            "px": 3.69,
+            "py": 0.38,
+            "pz": -5.91,
+            "rx": 0,
+            "ry": 0.06,
+            "rz": 0,
+            "sx": 10.73,
+            "sy": 0.75,
+            "sz": 12
+          }
+        },
+        {
+          "id": "sand_dune_27",
+          "type": "block",
+          "name": "Beach Sand Dune 27",
+          "transform": {
+            "px": 10.65,
+            "py": 0.29,
+            "pz": -7.37,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 11.08,
+            "sy": 0.59,
+            "sz": 8.78
+          }
+        },
+        {
+          "id": "sand_dune_28",
+          "type": "block",
+          "name": "Beach Sand Dune 28",
+          "transform": {
+            "px": -21.47,
+            "py": 0.33,
+            "pz": -1.33,
+            "rx": 0,
+            "ry": 0.03,
+            "rz": 0,
+            "sx": 11.84,
+            "sy": 0.65,
+            "sz": 12.77
+          }
+        },
+        {
+          "id": "sand_dune_29",
+          "type": "block",
+          "name": "Beach Sand Dune 29",
+          "transform": {
+            "px": -13.1,
+            "py": 0.24,
+            "pz": 0.49,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.61,
+            "sy": 0.48,
+            "sz": 8.97
+          }
+        },
+        {
+          "id": "sand_dune_30",
+          "type": "block",
+          "name": "Beach Sand Dune 30",
+          "transform": {
+            "px": -6.09,
+            "py": 0.2,
+            "pz": 0.17,
+            "rx": 0,
+            "ry": 0.02,
+            "rz": 0,
+            "sx": 8.39,
+            "sy": 0.41,
+            "sz": 11.35
+          }
+        },
+        {
+          "id": "sand_dune_31",
+          "type": "block",
+          "name": "Beach Sand Dune 31",
+          "transform": {
+            "px": 0.27,
+            "py": 0.23,
+            "pz": -0.69,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 11.52,
+            "sy": 0.47,
+            "sz": 9.24
+          }
+        },
+        {
+          "id": "sand_dune_32",
+          "type": "block",
+          "name": "Beach Sand Dune 32",
+          "transform": {
+            "px": 7.7,
+            "py": 0.34,
+            "pz": -1.2,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 9.14,
+            "sy": 0.67,
+            "sz": 12.27
+          }
+        },
+        {
+          "id": "sand_dune_33",
+          "type": "block",
+          "name": "Beach Sand Dune 33",
+          "transform": {
+            "px": 14.7,
+            "py": 0.36,
+            "pz": 1.26,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 12.07,
+            "sy": 0.73,
+            "sz": 8.92
+          }
+        },
+        {
+          "id": "sand_dune_34",
+          "type": "block",
+          "name": "Beach Sand Dune 34",
+          "transform": {
+            "px": -21.16,
+            "py": 0.35,
+            "pz": 6.08,
+            "rx": 0,
+            "ry": -0.04,
+            "rz": 0,
+            "sx": 9.9,
+            "sy": 0.7,
+            "sz": 11.88
+          }
+        },
+        {
+          "id": "sand_dune_35",
+          "type": "block",
+          "name": "Beach Sand Dune 35",
+          "transform": {
+            "px": -14.15,
+            "py": 0.35,
+            "pz": 5.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12.32,
+            "sy": 0.71,
+            "sz": 12.78
+          }
+        },
+        {
+          "id": "sand_dune_36",
+          "type": "block",
+          "name": "Beach Sand Dune 36",
+          "transform": {
+            "px": -5.2,
+            "py": 0.23,
+            "pz": 6.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.24,
+            "sy": 0.45,
+            "sz": 10.77
+          }
+        },
+        {
+          "id": "sand_dune_37",
+          "type": "block",
+          "name": "Beach Sand Dune 37",
+          "transform": {
+            "px": -0.32,
+            "py": 0.27,
+            "pz": 7,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 8.11,
+            "sy": 0.53,
+            "sz": 8.26
+          }
+        },
+        {
+          "id": "sand_dune_38",
+          "type": "block",
+          "name": "Beach Sand Dune 38",
+          "transform": {
+            "px": 9.46,
+            "py": 0.26,
+            "pz": 7.74,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 11.03,
+            "sy": 0.51,
+            "sz": 12.81
+          }
+        },
+        {
+          "id": "sand_dune_39",
+          "type": "block",
+          "name": "Beach Sand Dune 39",
+          "transform": {
+            "px": 13.67,
+            "py": 0.32,
+            "pz": 7.96,
+            "rx": 0,
+            "ry": 0.07,
+            "rz": 0,
+            "sx": 12.14,
+            "sy": 0.64,
+            "sz": 12.1
+          }
+        },
+        {
+          "id": "sand_dune_40",
+          "type": "block",
+          "name": "Beach Sand Dune 40",
+          "transform": {
+            "px": -20.18,
+            "py": 0.2,
+            "pz": 13.23,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 9.17,
+            "sy": 0.41,
+            "sz": 10.14
+          }
+        },
+        {
+          "id": "sand_dune_41",
+          "type": "block",
+          "name": "Beach Sand Dune 41",
+          "transform": {
+            "px": -14.08,
+            "py": 0.32,
+            "pz": 13.31,
+            "rx": 0,
+            "ry": -0.06,
+            "rz": 0,
+            "sx": 9.27,
+            "sy": 0.63,
+            "sz": 10.34
+          }
+        },
+        {
+          "id": "sand_dune_42",
+          "type": "block",
+          "name": "Beach Sand Dune 42",
+          "transform": {
+            "px": -6.72,
+            "py": 0.34,
+            "pz": 15.34,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 9.73,
+            "sy": 0.68,
+            "sz": 12.28
+          }
+        },
+        {
+          "id": "sand_dune_43",
+          "type": "block",
+          "name": "Beach Sand Dune 43",
+          "transform": {
+            "px": -0.16,
+            "py": 0.22,
+            "pz": 15.17,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 8.62,
+            "sy": 0.44,
+            "sz": 12.28
+          }
+        },
+        {
+          "id": "sand_dune_44",
+          "type": "block",
+          "name": "Beach Sand Dune 44",
+          "transform": {
+            "px": 6.04,
+            "py": 0.26,
+            "pz": 14.69,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 8.59,
+            "sy": 0.51,
+            "sz": 9.72
+          }
+        },
+        {
+          "id": "sand_dune_45",
+          "type": "block",
+          "name": "Beach Sand Dune 45",
+          "transform": {
+            "px": 14.32,
+            "py": 0.36,
+            "pz": 12.95,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 10.85,
+            "sy": 0.73,
+            "sz": 9.38
+          }
+        },
+        {
+          "id": "sand_dune_46",
+          "type": "block",
+          "name": "Beach Sand Dune 46",
+          "transform": {
+            "px": -21.77,
+            "py": 0.26,
+            "pz": 19.61,
+            "rx": 0,
+            "ry": 0.08,
+            "rz": 0,
+            "sx": 9.07,
+            "sy": 0.51,
+            "sz": 10.97
+          }
+        },
+        {
+          "id": "sand_dune_47",
+          "type": "block",
+          "name": "Beach Sand Dune 47",
+          "transform": {
+            "px": -15.93,
+            "py": 0.21,
+            "pz": 21.13,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0,
+            "sx": 11.42,
+            "sy": 0.42,
+            "sz": 8.55
+          }
+        },
+        {
+          "id": "sand_dune_48",
+          "type": "block",
+          "name": "Beach Sand Dune 48",
+          "transform": {
+            "px": -8.62,
+            "py": 0.23,
+            "pz": 21.17,
+            "rx": 0,
+            "ry": 0.07,
+            "rz": 0,
+            "sx": 9.16,
+            "sy": 0.45,
+            "sz": 8.4
+          }
+        },
+        {
+          "id": "sand_dune_49",
+          "type": "block",
+          "name": "Beach Sand Dune 49",
+          "transform": {
+            "px": -0.57,
+            "py": 0.33,
+            "pz": 20.82,
+            "rx": 0,
+            "ry": -0.08,
+            "rz": 0,
+            "sx": 12.63,
+            "sy": 0.66,
+            "sz": 12.69
+          }
+        },
+        {
+          "id": "sand_dune_50",
+          "type": "block",
+          "name": "Beach Sand Dune 50",
+          "transform": {
+            "px": 4.06,
+            "py": 0.35,
+            "pz": 21.81,
+            "rx": 0,
+            "ry": -0.03,
+            "rz": 0,
+            "sx": 9.52,
+            "sy": 0.7,
+            "sz": 8.31
+          }
+        },
+        {
+          "id": "sand_dune_51",
+          "type": "block",
+          "name": "Beach Sand Dune 51",
+          "transform": {
+            "px": 12.15,
+            "py": 0.2,
+            "pz": 22.23,
+            "rx": 0,
+            "ry": -0.06,
+            "rz": 0,
+            "sx": 9.61,
+            "sy": 0.41,
+            "sz": 8.88
+          }
+        },
+        {
+          "id": "sand_dune_52",
+          "type": "block",
+          "name": "Beach Sand Dune 52",
+          "transform": {
+            "px": -25.49,
+            "py": 0.26,
+            "pz": 28.84,
+            "rx": 0,
+            "ry": -0.08,
+            "rz": 0,
+            "sx": 8.56,
+            "sy": 0.52,
+            "sz": 12.74
+          }
+        },
+        {
+          "id": "sand_dune_53",
+          "type": "block",
+          "name": "Beach Sand Dune 53",
+          "transform": {
+            "px": -18.66,
+            "py": 0.28,
+            "pz": 29.39,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 9.16,
+            "sy": 0.55,
+            "sz": 11.42
+          }
+        },
+        {
+          "id": "sand_dune_54",
+          "type": "block",
+          "name": "Beach Sand Dune 54",
+          "transform": {
+            "px": -10.68,
+            "py": 0.27,
+            "pz": 27.36,
+            "rx": 0,
+            "ry": 0.02,
+            "rz": 0,
+            "sx": 11.69,
+            "sy": 0.53,
+            "sz": 11.62
+          }
+        },
+        {
+          "id": "sand_dune_55",
+          "type": "block",
+          "name": "Beach Sand Dune 55",
+          "transform": {
+            "px": -3.36,
+            "py": 0.24,
+            "pz": 27.41,
+            "rx": 0,
+            "ry": 0.01,
+            "rz": 0,
+            "sx": 8.58,
+            "sy": 0.48,
+            "sz": 9.51
+          }
+        },
+        {
+          "id": "sand_dune_56",
+          "type": "block",
+          "name": "Beach Sand Dune 56",
+          "transform": {
+            "px": 1.87,
+            "py": 0.27,
+            "pz": 26.64,
+            "rx": 0,
+            "ry": 0.04,
+            "rz": 0,
+            "sx": 9.91,
+            "sy": 0.53,
+            "sz": 10.04
+          }
+        },
+        {
+          "id": "sand_dune_57",
+          "type": "block",
+          "name": "Beach Sand Dune 57",
+          "transform": {
+            "px": 9.09,
+            "py": 0.28,
+            "pz": 28.63,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 9.38,
+            "sy": 0.55,
+            "sz": 12.85
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_shoreline",
+      "type": "group",
+      "name": "Shoreline & Ocean Water",
+      "transform": {
+        "px": -6.1,
+        "py": 1.09,
+        "pz": 14.06,
+        "rx": 0,
+        "ry": -1.48,
+        "rz": 0,
+        "sx": 0.86,
+        "sy": 0.86,
+        "sz": 1.28
+      },
+      "children": [
+        {
+          "id": "ocean_water_01",
+          "type": "block",
+          "name": "Ocean Water Surface 01",
+          "transform": {
+            "px": 20.73,
+            "py": 0.05,
+            "pz": -30,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_02",
+          "type": "block",
+          "name": "Ocean Water Surface 02",
+          "transform": {
+            "px": 21.7,
+            "py": 0.05,
+            "pz": -24.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_03",
+          "type": "block",
+          "name": "Ocean Water Surface 03",
+          "transform": {
+            "px": 19.1,
+            "py": 0.05,
+            "pz": -19.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_04",
+          "type": "block",
+          "name": "Ocean Water Surface 04",
+          "transform": {
+            "px": 21.31,
+            "py": 0.05,
+            "pz": -13.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_05",
+          "type": "block",
+          "name": "Ocean Water Surface 05",
+          "transform": {
+            "px": 18.61,
+            "py": 0.05,
+            "pz": -8.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_06",
+          "type": "block",
+          "name": "Ocean Water Surface 06",
+          "transform": {
+            "px": 20.02,
+            "py": 0.05,
+            "pz": -2.73,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_07",
+          "type": "block",
+          "name": "Ocean Water Surface 07",
+          "transform": {
+            "px": 20.37,
+            "py": 0.05,
+            "pz": 2.73,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_08",
+          "type": "block",
+          "name": "Ocean Water Surface 08",
+          "transform": {
+            "px": 20.33,
+            "py": 0.05,
+            "pz": 8.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_09",
+          "type": "block",
+          "name": "Ocean Water Surface 09",
+          "transform": {
+            "px": 18.85,
+            "py": 0.05,
+            "pz": 13.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_10",
+          "type": "block",
+          "name": "Ocean Water Surface 10",
+          "transform": {
+            "px": 22.52,
+            "py": 0.05,
+            "pz": 19.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "ocean_water_11",
+          "type": "block",
+          "name": "Ocean Water Surface 11",
+          "transform": {
+            "px": 19.27,
+            "py": 0.05,
+            "pz": 24.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20,
+            "sy": 0.1,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "foam_line_01",
+          "type": "block",
+          "name": "Shoreline Foam Line 01",
+          "transform": {
+            "px": 11,
+            "py": 0.12,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0.03,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_02",
+          "type": "block",
+          "name": "Shoreline Foam Line 02",
+          "transform": {
+            "px": 11.5,
+            "py": 0.12,
+            "pz": -24,
+            "rx": 0,
+            "ry": -0.07,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_03",
+          "type": "block",
+          "name": "Shoreline Foam Line 03",
+          "transform": {
+            "px": 12,
+            "py": 0.12,
+            "pz": -20,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_04",
+          "type": "block",
+          "name": "Shoreline Foam Line 04",
+          "transform": {
+            "px": 12.5,
+            "py": 0.12,
+            "pz": -16,
+            "rx": 0,
+            "ry": 0.02,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_05",
+          "type": "block",
+          "name": "Shoreline Foam Line 05",
+          "transform": {
+            "px": 13,
+            "py": 0.12,
+            "pz": -12,
+            "rx": 0,
+            "ry": -0.04,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_06",
+          "type": "block",
+          "name": "Shoreline Foam Line 06",
+          "transform": {
+            "px": 13.5,
+            "py": 0.12,
+            "pz": -8,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_07",
+          "type": "block",
+          "name": "Shoreline Foam Line 07",
+          "transform": {
+            "px": 14,
+            "py": 0.12,
+            "pz": -4,
+            "rx": 0,
+            "ry": 0.01,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_08",
+          "type": "block",
+          "name": "Shoreline Foam Line 08",
+          "transform": {
+            "px": 14.5,
+            "py": 0.12,
+            "pz": 0,
+            "rx": 0,
+            "ry": -0.08,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_09",
+          "type": "block",
+          "name": "Shoreline Foam Line 09",
+          "transform": {
+            "px": 15,
+            "py": 0.12,
+            "pz": 4,
+            "rx": 0,
+            "ry": -0.01,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_10",
+          "type": "block",
+          "name": "Shoreline Foam Line 10",
+          "transform": {
+            "px": 15.5,
+            "py": 0.12,
+            "pz": 8,
+            "rx": 0,
+            "ry": -0.04,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_11",
+          "type": "block",
+          "name": "Shoreline Foam Line 11",
+          "transform": {
+            "px": 16,
+            "py": 0.12,
+            "pz": 12,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_12",
+          "type": "block",
+          "name": "Shoreline Foam Line 12",
+          "transform": {
+            "px": 16.5,
+            "py": 0.12,
+            "pz": 16,
+            "rx": 0,
+            "ry": 0.07,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_13",
+          "type": "block",
+          "name": "Shoreline Foam Line 13",
+          "transform": {
+            "px": 17,
+            "py": 0.12,
+            "pz": 20,
+            "rx": 0,
+            "ry": -0.07,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_14",
+          "type": "block",
+          "name": "Shoreline Foam Line 14",
+          "transform": {
+            "px": 17.5,
+            "py": 0.12,
+            "pz": 24,
+            "rx": 0,
+            "ry": -0.02,
+            "rz": 0,
+            "sx": 3.8,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_statue_liberty",
+      "type": "group",
+      "name": "Monumental Half-Buried Liberty Statue",
+      "transform": {
+        "px": 8.31,
+        "py": 0,
+        "pz": 3.32,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 0.75,
+        "sy": 0.75,
+        "sz": 0.75
+      },
+      "children": [
+        {
+          "id": "toga_sand_base_1",
+          "type": "block",
+          "name": "Toga Sand Base Front Left",
+          "transform": {
+            "px": 12.95,
+            "py": 2.28,
+            "pz": 13.3,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 4.48,
+            "sy": 2.41,
+            "sz": 3.45
+          }
+        },
+        {
+          "id": "toga_sand_base_2",
+          "type": "block",
+          "name": "Toga Sand Base Front Right",
+          "transform": {
+            "px": 12.1,
+            "py": 2.49,
+            "pz": 8.98,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 4.13,
+            "sy": 2.24,
+            "sz": 3.79
+          }
+        },
+        {
+          "id": "toga_sand_base_3",
+          "type": "block",
+          "name": "Toga Back Base Sand",
+          "transform": {
+            "px": 9.34,
+            "py": 2.2,
+            "pz": 11.91,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 5.17,
+            "sy": 2.59,
+            "sz": 3.1
+          }
+        },
+        {
+          "id": "torso_chest_upper",
+          "type": "block",
+          "name": "Upper Chest Core Volume",
+          "transform": {
+            "px": 11.86,
+            "py": 5.03,
+            "pz": 11.9,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 6.21,
+            "sy": 3.79,
+            "sz": 4.83
+          }
+        },
+        {
+          "id": "chest_drape_left",
+          "type": "block",
+          "name": "Chest Toga Fold Left",
+          "transform": {
+            "px": 13.17,
+            "py": 5.4,
+            "pz": 13.42,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 2.58,
+            "sy": 3.1,
+            "sz": 2.76
+          }
+        },
+        {
+          "id": "chest_drape_right",
+          "type": "block",
+          "name": "Chest Toga Fold Right",
+          "transform": {
+            "px": 12.4,
+            "py": 5.55,
+            "pz": 9.71,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 2.58,
+            "sy": 3.1,
+            "sz": 2.76
+          }
+        },
+        {
+          "id": "shoulder_left_base",
+          "type": "block",
+          "name": "Left Shoulder Base",
+          "transform": {
+            "px": 12.19,
+            "py": 6.37,
+            "pz": 15.05,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 2.76,
+            "sy": 2.41,
+            "sz": 3.1
+          }
+        },
+        {
+          "id": "shoulder_right_base",
+          "type": "block",
+          "name": "Right Raised Arm Shoulder",
+          "transform": {
+            "px": 11.75,
+            "py": 7.15,
+            "pz": 8.36,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 2.93,
+            "sy": 2.76,
+            "sz": 3.1
+          }
+        },
+        {
+          "id": "arm_left_bicep",
+          "type": "block",
+          "name": "Left Arm Bicep Segment",
+          "transform": {
+            "px": 12.66,
+            "py": 4.69,
+            "pz": 15.37,
+            "rx": 2.12,
+            "ry": 1.25,
+            "rz": -1.86,
+            "sx": 1.89,
+            "sy": 2.76,
+            "sz": 1.89
+          }
+        },
+        {
+          "id": "arm_left_forearm_hand",
+          "type": "block",
+          "name": "Left Forearm & Hand Holding Tablet",
+          "transform": {
+            "px": 13.65,
+            "py": 2.91,
+            "pz": 15.78,
+            "rx": 2,
+            "ry": 1.16,
+            "rz": -1.66,
+            "sx": 1.72,
+            "sy": 2.24,
+            "sz": 1.72
+          }
+        },
+        {
+          "id": "statue_tablet_book",
+          "type": "block",
+          "name": "Statue Tablet of Law / Book (Facing Forward)",
+          "transform": {
+            "px": 13.08,
+            "py": 4.01,
+            "pz": 18.71,
+            "rx": 1.8,
+            "ry": 0.89,
+            "rz": -1.32,
+            "sx": 4.56,
+            "sy": 5.8,
+            "sz": 0.93
+          }
+        },
+        {
+          "id": "collar_mantle_front",
+          "type": "block",
+          "name": "Collar Robe Mantle Front",
+          "transform": {
+            "px": 13.33,
+            "py": 7.04,
+            "pz": 11.6,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 4.48,
+            "sy": 1.72,
+            "sz": 2.07
+          }
+        },
+        {
+          "id": "statue_neck",
+          "type": "block",
+          "name": "Statue Neck Column",
+          "transform": {
+            "px": 12.64,
+            "py": 8.91,
+            "pz": 11.86,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 1.89,
+            "sy": 2.07,
+            "sz": 1.89
+          }
+        },
+        {
+          "id": "statue_head_cubic",
+          "type": "block",
+          "name": "Tilted Liberty Head Block",
+          "transform": {
+            "px": 13.18,
+            "py": 11.09,
+            "pz": 11.73,
+            "rx": 2.37,
+            "ry": 1.19,
+            "rz": -2.34,
+            "sx": 3.45,
+            "sy": 3.79,
+            "sz": 3.27
+          }
+        },
+        {
+          "id": "statue_face_mask",
+          "type": "block",
+          "name": "Statue Facial Features Mask",
+          "transform": {
+            "px": 13.78,
+            "py": 10.71,
+            "pz": 10.43,
+            "rx": 2.37,
+            "ry": 1.19,
+            "rz": -2.34,
+            "sx": 2.41,
+            "sy": 2.41,
+            "sz": 1.21
+          }
+        },
+        {
+          "id": "crown_spike_1",
+          "type": "block",
+          "name": "Crown Sharp Spike 1 (-50.0 deg)",
+          "transform": {
+            "px": 14.08,
+            "py": 13.29,
+            "pz": 13.16,
+            "rx": -2.93,
+            "ry": 0.36,
+            "rz": -2.67,
+            "sx": 0.38,
+            "sy": 3.96,
+            "sz": 0.38
+          }
+        },
+        {
+          "id": "crown_spike_3",
+          "type": "block",
+          "name": "Crown Sharp Spike 3 (-10.0 deg)",
+          "transform": {
+            "px": 14.1,
+            "py": 13.48,
+            "pz": 12.13,
+            "rx": 2.93,
+            "ry": 0.48,
+            "rz": -2.55,
+            "sx": 0.38,
+            "sy": 3.96,
+            "sz": 0.38
+          }
+        },
+        {
+          "id": "crown_spike_5",
+          "type": "block",
+          "name": "Crown Sharp Spike 5 (30.0 deg)",
+          "transform": {
+            "px": 14.02,
+            "py": 13.53,
+            "pz": 11.08,
+            "rx": 2.59,
+            "ry": 0.45,
+            "rz": -2.67,
+            "sx": 0.38,
+            "sy": 3.96,
+            "sz": 0.38
+          }
+        },
+        {
+          "id": "crown_spike_6",
+          "type": "block",
+          "name": "Crown Sharp Spike 6 (50.0 deg)",
+          "transform": {
+            "px": 13.23,
+            "py": 13.5,
+            "pz": 9.88,
+            "rx": 2.34,
+            "ry": 0.54,
+            "rz": -3,
+            "sx": 0.38,
+            "sy": 3.96,
+            "sz": 0.38
+          }
+        },
+        {
+          "id": "arm_bicep_upper",
+          "type": "block",
+          "name": "Right Bicep Arm Segment",
+          "transform": {
+            "px": 12.47,
+            "py": 10.72,
+            "pz": 7.84,
+            "rx": 2.24,
+            "ry": 1.4,
+            "rz": -2.56,
+            "sx": 1.89,
+            "sy": 3.79,
+            "sz": 1.89
+          }
+        },
+        {
+          "id": "arm_forearm_upper",
+          "type": "block",
+          "name": "Right Forearm Raising Torch",
+          "transform": {
+            "px": 13.61,
+            "py": 14.55,
+            "pz": 7.19,
+            "rx": 2.33,
+            "ry": 1.35,
+            "rz": -2.34,
+            "sx": 1.55,
+            "sy": 4.48,
+            "sz": 1.55
+          }
+        },
+        {
+          "id": "arm_wrist_hand",
+          "type": "block",
+          "name": "Hand Gripping Torch Base",
+          "transform": {
+            "px": 14.25,
+            "py": 17.76,
+            "pz": 7.14,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 1.38,
+            "sy": 1.89,
+            "sz": 1.38
+          }
+        },
+        {
+          "id": "torch_handle_gallery",
+          "type": "block",
+          "name": "Torch Gallery Platform Rim",
+          "transform": {
+            "px": 14.47,
+            "py": 19.1,
+            "pz": 7.03,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 2.24,
+            "sy": 1.38,
+            "sz": 2.24
+          }
+        },
+        {
+          "id": "torch_flame_core",
+          "type": "block",
+          "name": "Torch Flame Core Volume",
+          "transform": {
+            "px": 14.78,
+            "py": 20.67,
+            "pz": 7.12,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 3.43,
+            "sy": 2.76,
+            "sz": 3.33
+          }
+        },
+        {
+          "id": "torch_flame_spire",
+          "type": "block",
+          "name": "Torch Flame Top Spire",
+          "transform": {
+            "px": 15.24,
+            "py": 22.12,
+            "pz": 7.15,
+            "rx": 2.33,
+            "ry": 1.33,
+            "rz": -2.26,
+            "sx": 1.38,
+            "sy": 2.59,
+            "sz": 1.38
+          }
+        },
+        {
+          "id": "node_cdjk0dh",
+          "type": "block",
+          "name": "Crown Sharp Spike 1 (-50.0 deg)",
+          "transform": {
+            "px": 14.12,
+            "py": 12.3,
+            "pz": 13.86,
+            "rx": -2.08,
+            "ry": 0.48,
+            "rz": -2.8,
+            "sx": 0.38,
+            "sy": 3.96,
+            "sz": 0.38
+          }
+        }
+      ]
+    },
+    {
+      "id": "63b5b5c1-c516-4795-8af6-040656e34415",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -32.86,
+        "py": -0.02,
+        "pz": 11.94,
+        "rx": -0.2,
+        "ry": -0.06,
+        "rz": 0.28,
+        "sx": 5.46,
+        "sy": 6.02,
+        "sz": 4.72
+      }
+    },
+    {
+      "id": "054f6695-1272-4bb8-be4c-0eae36f6830b",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18.97,
+        "py": 4.45,
+        "pz": 17.92,
+        "rx": -0.19,
+        "ry": -0.37,
+        "rz": 0,
+        "sx": 2.8,
+        "sy": 6.98,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_pc16ygl",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18,
+        "py": 8.49,
+        "pz": 12.34,
+        "rx": -1.42,
+        "ry": 0,
+        "rz": -0.11,
+        "sx": 2.43,
+        "sy": 11.33,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_x9tlzoe",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -19.42,
+        "py": 2.27,
+        "pz": 20.03,
+        "rx": -1.7,
+        "ry": -0.37,
+        "rz": 0,
+        "sx": 2.43,
+        "sy": 7.37,
+        "sz": 1.86
+      }
+    },
+    {
+      "id": "node_02zq9df",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -18.36,
+        "py": 4.38,
+        "pz": 19.16,
+        "rx": -0.25,
+        "ry": 0.79,
+        "rz": 0.07,
+        "sx": 2.43,
+        "sy": 3.11,
+        "sz": 1.86
+      }
+    }
+  ],
+  "selectedPreset": "liberty_beach.json",
+  "spawn_point": {
+    "px": -35.423,
+    "py": 1.564,
+    "pz": -11.088,
+    "ry": 0.491
+  }
+}

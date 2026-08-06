@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { MotionFrame } from '../types'
+import type { MotionFrame, SpawnPoint } from '../types'
 import * as config from '../threeConfig'
 
 // Static scratch instances to avoid per-frame GC allocations
@@ -17,6 +17,8 @@ export abstract class BaseActor {
   public colliderWireframe: THREE.Object3D | null = null
   public showCollider: boolean = false
 
+  public lastSpawnPoint?: SpawnPoint
+
   constructor() {
     this.group = new THREE.Group()
     this.group.name = 'actorGroup'
@@ -24,13 +26,22 @@ export abstract class BaseActor {
     this.group.rotation.y = this.rotationY
   }
 
-  public resetToOrigin(): void {
-    this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
+  public resetToOrigin(sp?: SpawnPoint): void {
+    if (sp) {
+      this.lastSpawnPoint = sp
+    }
+    const targetSp = sp || this.lastSpawnPoint
+    const px = targetSp?.px ?? 0
+    const py = targetSp?.py ?? config.GROUND_Y
+    const pz = targetSp?.pz ?? 2
+    const ry = targetSp?.ry ?? config.DEFAULT_ACTOR_ROTATION_Y
+
+    this.position.set(px, py, pz)
+    this.rotationY = ry
     this.velocity.set(0, 0, 0)
     this.isOnGround = true
     this.group.position.copy(this.position)
-    this.group.rotation.y = this.rotationY
+    this.group.rotation.set(0, this.rotationY, 0)
   }
 
   public jump(): void {
@@ -52,12 +63,17 @@ export abstract class BaseActor {
     dt: number,
     keysPressed: Record<string, boolean>,
     speedMultiplier: number,
-    colliderBVH: any
+    colliderBVH: any,
+    camera?: THREE.Camera
   ): void
   abstract getType(): 'human' | 'car'
 
   public getFPVOffset(): THREE.Vector3 {
     return new THREE.Vector3(0, 1.5, 0.1)
+  }
+
+  public isCrouching(): boolean {
+    return false
   }
 
   public setMeshVisibleForFPV(isFPV: boolean): void {
@@ -74,17 +90,17 @@ export abstract class BaseActor {
   public getMotionState(t: number): MotionFrame {
     _tempEuler.setFromQuaternion(this.group.quaternion, 'YXZ')
     return {
-      t: Number(t.toFixed(3)),
-      px: Number(this.group.position.x.toFixed(3)),
-      py: Number(this.group.position.y.toFixed(3)),
-      pz: Number(this.group.position.z.toFixed(3)),
-      rx: Number(_tempEuler.x.toFixed(3)),
-      ry: Number(this.rotationY.toFixed(3)),
-      rz: Number(_tempEuler.z.toFixed(3)),
+      t: Math.round(t * 1000) / 1000,
+      px: Math.round(this.group.position.x * 1000) / 1000,
+      py: Math.round(this.group.position.y * 1000) / 1000,
+      pz: Math.round(this.group.position.z * 1000) / 1000,
+      rx: Math.round(_tempEuler.x * 1000) / 1000,
+      ry: Math.round(this.rotationY * 1000) / 1000,
+      rz: Math.round(_tempEuler.z * 1000) / 1000,
     }
   }
 
-  public applyMotionFrame(frame: any, diffY: number = 0): void {
+  public applyMotionFrame(frame: any, diffY: number = 0, dt: number = 0.016): void {
     if (!frame) return
 
     const prevX = this.position.x
@@ -103,10 +119,12 @@ export abstract class BaseActor {
     const dz = this.position.z - prevZ
     const distMoved = Math.sqrt(dx * dx + dz * dz)
 
-    this.onPlaybackMotion(distMoved, diffY)
+    this.onPlaybackMotion(distMoved, diffY, frame.anim, dt)
   }
 
-  public onPlaybackMotion(_distMoved: number, _diffY: number): void {}
+  public onPlaybackMotion(_distMoved: number, _diffY: number, _animName?: string, _dt: number = 0.016): void {}
+
+  public resetAnimation(_initialAnim?: string): void {}
 
   /**
    * Universal ground raycasting & gravity resolution shared by all actors.

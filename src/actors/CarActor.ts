@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
 import * as config from '../threeConfig'
 
+import type { SpawnPoint } from '../types'
+
 const SLOPE_CONFIG = {
   maxRayDistance: 3.0,
   minNormalY: 0.3,
@@ -16,6 +18,7 @@ const SLOPE_CONFIG = {
 // Module-level static scratch objects to eliminate Garbage Collection allocations per frame
 const _tempVecA = new THREE.Vector3()
 const _tempVecB = new THREE.Vector3()
+const _tempDir = new THREE.Vector3()
 const _tempFwd = new THREE.Vector3()
 const _tempRight = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
@@ -51,8 +54,6 @@ export class CarActor extends BaseActor {
 
   constructor() {
     super()
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
-    this.group.rotation.y = this.rotationY
     this.buildMesh()
   }
 
@@ -64,8 +65,8 @@ export class CarActor extends BaseActor {
     return new THREE.Vector3(-0.25, 0.95, -0.1)
   }
 
-  public override onPlaybackMotion(distMoved: number, angularVel: number): void {
-    const dt = 1 / 60
+  public override onPlaybackMotion(distMoved: number, angularVel: number, _animName?: string, frameDt: number = 0.016): void {
+    const dt = Math.max(0.001, frameDt)
     const currentSpeed = distMoved / dt
     const speedDelta = (currentSpeed - this.prevPlaybackSpeed) / dt
     this.prevPlaybackSpeed = currentSpeed
@@ -104,11 +105,8 @@ export class CarActor extends BaseActor {
     }
   }
 
-  public override resetToOrigin(): void {
-    this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
-    this.group.rotation.y = this.rotationY
-    this.velocity.set(0, 0, 0)
+  public override resetToOrigin(sp?: SpawnPoint): void {
+    super.resetToOrigin(sp)
     this.currentSpeed = 0
     this.prevSpeed = 0
     this.prevPlaybackSpeed = 0
@@ -118,12 +116,8 @@ export class CarActor extends BaseActor {
     this.rampPitchAngle = 0
     this.rampRollAngle = 0
     if (this.bodySuspensionGroup) {
-      this.bodySuspensionGroup.rotation.x = 0
-      this.bodySuspensionGroup.rotation.z = 0
+      this.bodySuspensionGroup.rotation.set(0, 0, 0)
     }
-    this.isOnGround = true
-    this.group.position.copy(this.position)
-    this.group.rotation.set(0, 0, 0)
   }
 
   public buildMesh(): void {
@@ -278,7 +272,8 @@ export class CarActor extends BaseActor {
     dt: number,
     keysPressed: Record<string, boolean>,
     speedMultiplier: number,
-    colliderBVH: any
+    colliderBVH: any,
+    _camera?: THREE.Camera
   ): void {
     const isW = keysPressed['ArrowUp'] || keysPressed['KeyW']
     const isS = keysPressed['ArrowDown'] || keysPressed['KeyS']
@@ -408,12 +403,12 @@ export class CarActor extends BaseActor {
 
               if (dist < radius) {
                 const depth = radius - dist
-                const direction = _tempVecB.sub(_tempVecA).normalize()
-                if (direction.y > 0.3) {
+                _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
+                if (_tempDir.y > 0.3) {
                   touchGround = true
                 }
-                this.position.addScaledVector(direction, depth)
-                if (Math.abs(direction.y) < 0.5) {
+                this.position.addScaledVector(_tempDir, depth)
+                if (Math.abs(_tempDir.y) < 0.5) {
                   this.currentSpeed *= 0.8
                 }
               }
@@ -439,12 +434,15 @@ export class CarActor extends BaseActor {
       this.isOnGround = false
     }
 
-    // 5. Ramp Slope Detection via Vertical Ground Raycast
+    // 5. Ramp Slope Detection via Vertical Ground Raycast (Cast 0.55m ahead to pitch up early on ramps)
     let targetRampPitch = this.rampPitchAngle
     let targetRampRoll = this.rampRollAngle
 
     if (this.isOnGround && colliderBVH) {
-      _tempRay.origin.set(this.position.x, this.position.y + SLOPE_CONFIG.rayOriginHeight, this.position.z)
+      const aheadOffset = 1.55
+      const rayX = this.position.x + forwardX * aheadOffset
+      const rayZ = this.position.z + forwardZ * aheadOffset
+      _tempRay.origin.set(rayX, this.position.y + SLOPE_CONFIG.rayOriginHeight, rayZ)
       _tempRay.direction.set(0, -1, 0)
       const hit = colliderBVH.raycastFirst(_tempRay)
 

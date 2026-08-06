@@ -2,7 +2,7 @@
   <div class="three-container">
     <div v-if="!hasActingData" class="disabled-overlay">
       <div class="disabled-title">Directing Canvas Disabled</div>
-      <div class="disabled-subtitle">Connect an Acting 3D Node to direct.</div>
+      <div class="disabled-subtitle">{{ disabledSubtitle }}</div>
     </div>
     <div v-else class="canvas-wrapper" @mousedown="onCanvasMouseDown">
       <div class="canvas-aspect-container">
@@ -213,20 +213,40 @@ function parseKeyframes(raw: string): Keyframe[] {
   return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
 }
 
-const hasActingData = computed(() => {
+const isActingNodeConnected = computed(() => {
   if (threeDirecting && (threeDirecting as any).connectedThreeActing) return true
   if (!state.acting_data || !state.acting_data.trim()) return false
   try {
     const parsed = JSON.parse(state.acting_data)
-    if (parsed && typeof parsed === 'object') {
-      if (Array.isArray(parsed.trajectory)) return true
-      if (Array.isArray(parsed.motion_data)) return true
-      if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim().length > 0) return true
-      if (parsed.scene_data) return true
-    }
-    if (Array.isArray(parsed)) return true
+    if (parsed && typeof parsed === 'object') return true
   } catch {}
   return false
+})
+
+const hasActingData = computed(() => {
+  if (!state.acting_data || !state.acting_data.trim()) return false
+  try {
+    const parsed = JSON.parse(state.acting_data)
+    if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true
+      if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true
+      if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim().length > 0) {
+        try {
+          const inner = JSON.parse(parsed.motion_data)
+          if (Array.isArray(inner) && inner.length > 0) return true
+        } catch {}
+      }
+    }
+    if (Array.isArray(parsed) && parsed.length > 0) return true
+  } catch {}
+  return false
+})
+
+const disabledSubtitle = computed(() => {
+  if (isActingNodeConnected.value) {
+    return 'Waiting for recorded motion from Acting 3D Node.'
+  }
+  return 'Connect an Acting 3D Node to direct.'
 })
 
 const progressPercent = computed(() => {

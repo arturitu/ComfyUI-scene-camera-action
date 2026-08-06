@@ -94,7 +94,7 @@ export class DebugPanel {
 
     bvhFolder.close()
 
-    // 2. Actor Controls Folder
+    // 2. Actor Physics Folder
     const actorFolder = this.gui.addFolder('Actor Physics')
     const actorParams = {
       resetPos: () => {
@@ -103,6 +103,38 @@ export class DebugPanel {
     }
     actorFolder.add(actorParams, 'resetPos').name('Reset Actor to Origin')
     actorFolder.close()
+
+    // 3. Actor Real-Time Status Monitor
+    const monitorFolder = this.gui.addFolder('Actor Real-Time Status')
+    const monitorState = {
+      animation: 'None',
+      activeKeys: 'None',
+      isGrounded: true,
+    }
+
+    monitorFolder.add(monitorState, 'animation').name('Anim Playing').listen().disable()
+    monitorFolder.add(monitorState, 'activeKeys').name('Active Keys').listen().disable()
+    monitorFolder.add(monitorState, 'isGrounded').name('Is Grounded').listen().disable()
+
+    let monitorAnimationFrameId: number | null = null
+
+    const updateMonitor = () => {
+      const actor = threeActing.getActorController()
+      if (actor) {
+        if ('getCurrentAnimationName' in actor && typeof (actor as any).getCurrentAnimationName === 'function') {
+          monitorState.animation = (actor as any).getCurrentAnimationName()
+        } else {
+          monitorState.animation = 'Base'
+        }
+        monitorState.isGrounded = actor.isOnGround
+      }
+      const keys = (threeActing as any).keysPressed || {}
+      const activeList = Object.keys(keys).filter((k) => keys[k])
+      monitorState.activeKeys = activeList.length > 0 ? activeList.join(', ') : 'None'
+
+      monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
+    }
+    monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
   }
 
   public toggle(): void {

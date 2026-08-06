@@ -1,0 +1,829 @@
+{
+  "type": "cube_scene",
+  "num_assets": 42,
+  "nodes": [
+    {
+      "id": "group_5001",
+      "type": "group",
+      "name": "West Low Barriers (Channel Margin)",
+      "transform": {
+        "px": -3.8,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1001",
+          "type": "block",
+          "name": "Concrete Slab Alpha",
+          "transform": {
+            "px": 0,
+            "py": 0.45,
+            "pz": -12,
+            "rx": 0.05,
+            "ry": 0.1,
+            "rz": -0.08,
+            "sx": 1.2,
+            "sy": 0.9,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "block_1002",
+          "type": "block",
+          "name": "Barrier Block West 1",
+          "transform": {
+            "px": -0.3,
+            "py": 0.7,
+            "pz": -7.5,
+            "rx": 0.12,
+            "ry": -0.2,
+            "rz": 0.15,
+            "sx": 1,
+            "sy": 1.4,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_1003",
+          "type": "block",
+          "name": "Stacked Barricade Lower",
+          "transform": {
+            "px": 0.2,
+            "py": 0.6,
+            "pz": -2,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0,
+            "sx": 1.4,
+            "sy": 1.2,
+            "sz": 4
+          }
+        },
+        {
+          "id": "block_1004",
+          "type": "block",
+          "name": "Stacked Barricade Upper",
+          "transform": {
+            "px": 0.1,
+            "py": 1.65,
+            "pz": -2.2,
+            "rx": -0.08,
+            "ry": 0.15,
+            "rz": 0.05,
+            "sx": 1.1,
+            "sy": 0.9,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_1005",
+          "type": "block",
+          "name": "Broken Wall Section West",
+          "transform": {
+            "px": -0.4,
+            "py": 1.1,
+            "pz": 4,
+            "rx": 0.05,
+            "ry": -0.1,
+            "rz": -0.12,
+            "sx": 1.2,
+            "sy": 2.2,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_1006",
+          "type": "block",
+          "name": "Concrete Slab Beta",
+          "transform": {
+            "px": 0,
+            "py": 0.5,
+            "pz": 10.5,
+            "rx": -0.1,
+            "ry": 0.2,
+            "rz": 0.06,
+            "sx": 1.3,
+            "sy": 1,
+            "sz": 3.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5002",
+      "type": "group",
+      "name": "East Low Barriers (Channel Margin)",
+      "transform": {
+        "px": 3.8,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1007",
+          "type": "block",
+          "name": "Barrier Block East 1",
+          "transform": {
+            "px": 0.2,
+            "py": 0.65,
+            "pz": -11,
+            "rx": -0.08,
+            "ry": 0.15,
+            "rz": 0.1,
+            "sx": 1.3,
+            "sy": 1.3,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_1008",
+          "type": "block",
+          "name": "Tilted Concrete Slab East",
+          "transform": {
+            "px": -0.2,
+            "py": 0.8,
+            "pz": -5,
+            "rx": 0.15,
+            "ry": -0.1,
+            "rz": -0.14,
+            "sx": 1.5,
+            "sy": 1,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_1009",
+          "type": "block",
+          "name": "Heavy Barricade Block",
+          "transform": {
+            "px": 0.1,
+            "py": 0.9,
+            "pz": 1,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0.04,
+            "sx": 1.4,
+            "sy": 1.8,
+            "sz": 3
+          }
+        },
+        {
+          "id": "block_1010",
+          "type": "block",
+          "name": "Broken Wall Section East",
+          "transform": {
+            "px": 0.3,
+            "py": 1.2,
+            "pz": 7,
+            "rx": -0.06,
+            "ry": 0.2,
+            "rz": 0.08,
+            "sx": 1.2,
+            "sy": 2.4,
+            "sz": 3.8
+          }
+        },
+        {
+          "id": "block_1011",
+          "type": "block",
+          "name": "Barrier Block East 2",
+          "transform": {
+            "px": -0.1,
+            "py": 0.55,
+            "pz": 12.5,
+            "rx": 0.1,
+            "ry": -0.15,
+            "rz": -0.05,
+            "sx": 1.2,
+            "sy": 1.1,
+            "sz": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5003",
+      "type": "group",
+      "name": "Mud Channel Embankment Mounds",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1012",
+          "type": "block",
+          "name": "West Mud Embankment North",
+          "transform": {
+            "px": -2.8,
+            "py": 0.05,
+            "pz": -8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.08,
+            "sx": 1.6,
+            "sy": 0.15,
+            "sz": 12
+          }
+        },
+        {
+          "id": "block_1013",
+          "type": "block",
+          "name": "West Mud Embankment South",
+          "transform": {
+            "px": -2.8,
+            "py": 0.05,
+            "pz": 6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.06,
+            "sx": 1.6,
+            "sy": 0.15,
+            "sz": 12
+          }
+        },
+        {
+          "id": "block_1014",
+          "type": "block",
+          "name": "East Mud Embankment North",
+          "transform": {
+            "px": 2.8,
+            "py": 0.05,
+            "pz": -8,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.08,
+            "sx": 1.6,
+            "sy": 0.15,
+            "sz": 12
+          }
+        },
+        {
+          "id": "block_1015",
+          "type": "block",
+          "name": "East Mud Embankment South",
+          "transform": {
+            "px": 2.8,
+            "py": 0.05,
+            "pz": 6,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.06,
+            "sx": 1.6,
+            "sy": 0.15,
+            "sz": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5004",
+      "type": "group",
+      "name": "West High Structural Wing",
+      "transform": {
+        "px": -8.5,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1016",
+          "type": "block",
+          "name": "Structural Column NW",
+          "transform": {
+            "px": -1,
+            "py": 4.5,
+            "pz": -11,
+            "rx": 0.04,
+            "ry": 0,
+            "rz": -0.06,
+            "sx": 0.8,
+            "sy": 9,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_1017",
+          "type": "block",
+          "name": "Fractured Column MW",
+          "transform": {
+            "px": -1.5,
+            "py": 3.2,
+            "pz": -1,
+            "rx": -0.08,
+            "ry": 0.2,
+            "rz": 0.12,
+            "sx": 0.9,
+            "sy": 6.4,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_1018",
+          "type": "block",
+          "name": "Structural Column SW",
+          "transform": {
+            "px": -0.8,
+            "py": 4.2,
+            "pz": 9,
+            "rx": 0.05,
+            "ry": -0.1,
+            "rz": -0.05,
+            "sx": 0.8,
+            "sy": 8.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_1019",
+          "type": "block",
+          "name": "Collapsed Main Beam NW",
+          "transform": {
+            "px": 1.8,
+            "py": 4.2,
+            "pz": -7,
+            "rx": 0.15,
+            "ry": 0.35,
+            "rz": -0.62,
+            "sx": 0.6,
+            "sy": 0.6,
+            "sz": 10.5
+          }
+        },
+        {
+          "id": "block_1020",
+          "type": "block",
+          "name": "Fallen Steel Girder MW",
+          "transform": {
+            "px": 1.4,
+            "py": 2.8,
+            "pz": 3,
+            "rx": -0.45,
+            "ry": -0.25,
+            "rz": -0.55,
+            "sx": 0.5,
+            "sy": 0.5,
+            "sz": 8.2
+          }
+        },
+        {
+          "id": "block_1021",
+          "type": "block",
+          "name": "High Structural Beam West",
+          "transform": {
+            "px": -1.1,
+            "py": 8.8,
+            "pz": -1,
+            "rx": 0.02,
+            "ry": 0,
+            "rz": 0.03,
+            "sx": 0.6,
+            "sy": 0.6,
+            "sz": 18
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5005",
+      "type": "group",
+      "name": "East High Structural Wing",
+      "transform": {
+        "px": 8.5,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1022",
+          "type": "block",
+          "name": "Structural Column NE",
+          "transform": {
+            "px": 1,
+            "py": 4.8,
+            "pz": -10.5,
+            "rx": -0.05,
+            "ry": 0.1,
+            "rz": 0.04,
+            "sx": 0.8,
+            "sy": 9.6,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_1023",
+          "type": "block",
+          "name": "Structural Column ME",
+          "transform": {
+            "px": 1.2,
+            "py": 4,
+            "pz": 0.5,
+            "rx": 0.06,
+            "ry": -0.15,
+            "rz": -0.08,
+            "sx": 0.85,
+            "sy": 8,
+            "sz": 0.85
+          }
+        },
+        {
+          "id": "block_1024",
+          "type": "block",
+          "name": "Structural Column SE",
+          "transform": {
+            "px": 0.8,
+            "py": 4.6,
+            "pz": 10,
+            "rx": -0.04,
+            "ry": 0.05,
+            "rz": 0.05,
+            "sx": 0.8,
+            "sy": 9.2,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_1025",
+          "type": "block",
+          "name": "Collapsed Main Beam NE",
+          "transform": {
+            "px": -1.9,
+            "py": 4.4,
+            "pz": -5.5,
+            "rx": -0.2,
+            "ry": -0.3,
+            "rz": 0.58,
+            "sx": 0.6,
+            "sy": 0.6,
+            "sz": 11
+          }
+        },
+        {
+          "id": "block_1026",
+          "type": "block",
+          "name": "Fallen Steel Girder SE",
+          "transform": {
+            "px": -1.5,
+            "py": 3.1,
+            "pz": 6.5,
+            "rx": 0.4,
+            "ry": 0.3,
+            "rz": 0.52,
+            "sx": 0.5,
+            "sy": 0.5,
+            "sz": 8.8
+          }
+        },
+        {
+          "id": "block_1027",
+          "type": "block",
+          "name": "High Structural Beam East",
+          "transform": {
+            "px": 1,
+            "py": 8.6,
+            "pz": -0.2,
+            "rx": -0.03,
+            "ry": 0,
+            "rz": -0.02,
+            "sx": 0.6,
+            "sy": 0.6,
+            "sz": 19
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5006",
+      "type": "group",
+      "name": "Overhead Metal Frames & Gantries",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1028",
+          "type": "block",
+          "name": "Overhead Main Beam North",
+          "transform": {
+            "px": 0,
+            "py": 8.2,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0.03,
+            "sx": 18.5,
+            "sy": 0.5,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_1029",
+          "type": "block",
+          "name": "Overhead Top Chord North",
+          "transform": {
+            "px": 0,
+            "py": 9.2,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0.05,
+            "rz": 0.03,
+            "sx": 18.5,
+            "sy": 0.35,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_1030",
+          "type": "block",
+          "name": "Overhead Strut N1",
+          "transform": {
+            "px": -5,
+            "py": 8.7,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.35,
+            "sx": 0.25,
+            "sy": 1.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_1031",
+          "type": "block",
+          "name": "Overhead Strut N2",
+          "transform": {
+            "px": 0,
+            "py": 8.7,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.35,
+            "sx": 0.25,
+            "sy": 1.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_1032",
+          "type": "block",
+          "name": "Overhead Strut N3",
+          "transform": {
+            "px": 5,
+            "py": 8.7,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.35,
+            "sx": 0.25,
+            "sy": 1.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_1033",
+          "type": "block",
+          "name": "Damaged Overhead Beam South",
+          "transform": {
+            "px": -0.5,
+            "py": 7.1,
+            "pz": 5,
+            "rx": 0.12,
+            "ry": -0.08,
+            "rz": -0.18,
+            "sx": 18,
+            "sy": 0.55,
+            "sz": 0.65
+          }
+        },
+        {
+          "id": "block_1034",
+          "type": "block",
+          "name": "Hanging Frame Segment",
+          "transform": {
+            "px": 2.5,
+            "py": 5.8,
+            "pz": 5.2,
+            "rx": 0.35,
+            "ry": 0.15,
+            "rz": 0.45,
+            "sx": 0.4,
+            "sy": 2.8,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5007",
+      "type": "group",
+      "name": "West Perimeter Industrial Ruins",
+      "transform": {
+        "px": -11,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1035",
+          "type": "block",
+          "name": "Ruined Wall Segment W1",
+          "transform": {
+            "px": -1.5,
+            "py": 2.5,
+            "pz": -11,
+            "rx": 0,
+            "ry": 0.15,
+            "rz": 0.03,
+            "sx": 0.9,
+            "sy": 5,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_1036",
+          "type": "block",
+          "name": "Ruined Wall Segment W2",
+          "transform": {
+            "px": -2,
+            "py": 2,
+            "pz": 8,
+            "rx": 0.05,
+            "ry": -0.2,
+            "rz": -0.05,
+            "sx": 0.9,
+            "sy": 4,
+            "sz": 5.2
+          }
+        },
+        {
+          "id": "block_1037",
+          "type": "block",
+          "name": "Collapsed Industrial Tank",
+          "transform": {
+            "px": -2.5,
+            "py": 1.8,
+            "pz": -2,
+            "rx": 0.4,
+            "ry": 0.3,
+            "rz": -0.5,
+            "sx": 3.2,
+            "sy": 3.6,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_1038",
+          "type": "block",
+          "name": "Rubble Pile West",
+          "transform": {
+            "px": -0.5,
+            "py": 0.6,
+            "pz": 2.5,
+            "rx": 0.15,
+            "ry": 0.4,
+            "rz": -0.2,
+            "sx": 2.8,
+            "sy": 1.2,
+            "sz": 3.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5008",
+      "type": "group",
+      "name": "East Perimeter Industrial Ruins",
+      "transform": {
+        "px": 11,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_1039",
+          "type": "block",
+          "name": "Ruined Wall Segment E1",
+          "transform": {
+            "px": 1.5,
+            "py": 2.8,
+            "pz": -9,
+            "rx": -0.04,
+            "ry": -0.12,
+            "rz": -0.02,
+            "sx": 0.9,
+            "sy": 5.6,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_1040",
+          "type": "block",
+          "name": "Ruined Wall Segment E2",
+          "transform": {
+            "px": 1.8,
+            "py": 2.2,
+            "pz": 9.5,
+            "rx": 0.03,
+            "ry": 0.18,
+            "rz": 0.04,
+            "sx": 0.9,
+            "sy": 4.4,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_1041",
+          "type": "block",
+          "name": "Broken Generator Housing",
+          "transform": {
+            "px": 2.2,
+            "py": 1.4,
+            "pz": -1,
+            "rx": -0.1,
+            "ry": 0.25,
+            "rz": 0.15,
+            "sx": 2.6,
+            "sy": 2.8,
+            "sz": 2.4
+          }
+        },
+        {
+          "id": "block_1042",
+          "type": "block",
+          "name": "Rubble Pile East",
+          "transform": {
+            "px": 0.8,
+            "py": 0.7,
+            "pz": -5.5,
+            "rx": -0.2,
+            "ry": -0.3,
+            "rz": 0.18,
+            "sx": 3,
+            "sy": 1.4,
+            "sz": 3.8
+          }
+        }
+      ]
+    }
+  ],
+  "selectedPreset": "industrial_ruin.json",
+  "spawn_point": {
+    "px": 0,
+    "py": 0,
+    "pz": -13.883,
+    "ry": 0
+  }
+}

@@ -22,6 +22,13 @@ export class ThreeDirecting {
   private playbackController = new PlaybackController()
   private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
+  private tpvTarget = new THREE.Vector3(0, 0, 0)
+  private sideTarget = new THREE.Vector3(0, 0, 0)
+  private cachedSceneExtent = 15.0
+  private cachedEnvBBox = new THREE.Box3()
+  private cachedBBoxCenter = new THREE.Vector3()
+  private cachedBBoxSize = new THREE.Vector3()
+  private lastSceneDataJson: string | null = null
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
@@ -71,9 +78,17 @@ export class ThreeDirecting {
       }
       this.playbackController.setTrajectory(actingDataJson)
       this.playbackController.start()
+    } else {
+      this.playbackController.setTrajectory('')
+      this.playbackController.stop()
     }
 
-    this.buildSceneEnvironment()
+    const currentSceneData = this.getSceneData()
+    const currentSceneJson = currentSceneData ? JSON.stringify(currentSceneData) : ''
+    if (currentSceneJson !== this.lastSceneDataJson || !this.clonedEnvGroup) {
+      this.lastSceneDataJson = currentSceneJson
+      this.buildSceneEnvironment()
+    }
     this.buildActor(parsedActorType)
 
     if (this.actorController) {
@@ -85,32 +100,7 @@ export class ThreeDirecting {
     this.updateCamera()
   }
 
-  private normalizeTrajectoryOrientation(): void {
-    const trajectory = this.playbackController.getTrajectory()
-    if (trajectory.length < 2) return
 
-    let firstMoveIdx = -1
-    for (let i = 1; i < trajectory.length; i++) {
-      const dx = trajectory[i].px - trajectory[0].px
-      const dz = trajectory[i].pz - trajectory[0].pz
-      if (dx * dx + dz * dz > 0.001 || Math.abs(trajectory[i].ry - trajectory[0].ry) > 0.001) {
-        firstMoveIdx = i
-        break
-      }
-    }
-
-    if (firstMoveIdx > 0) {
-      const dx = trajectory[firstMoveIdx].px - trajectory[0].px
-      const dz = trajectory[firstMoveIdx].pz - trajectory[0].pz
-      let initialRy = trajectory[firstMoveIdx].ry
-      if (dx * dx + dz * dz > 0.001) {
-        initialRy = Math.atan2(dx, dz)
-      }
-      for (let k = 0; k < firstMoveIdx; k++) {
-        trajectory[k].ry = initialRy
-      }
-    }
-  }
 
   private initThreeJS(): void {
     const width = this.container.clientWidth || 400
@@ -122,7 +112,7 @@ export class ThreeDirecting {
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
     this.camera = new THREE.PerspectiveCamera(50, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
-    this.camera.position.set(0, 4, 8)
+    this.camera.position.set(-8, 4, 0)
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -131,14 +121,20 @@ export class ThreeDirecting {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    this.container.appendChild(this.renderer.domElement)
-
     const canvas = this.renderer.domElement
+    this.container.appendChild(canvas)
     canvas.style.position = 'absolute'
     canvas.style.top = '0'
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
+      event.preventDefault()
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId)
+        this.animationId = null
+      }
+    }, false)
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
@@ -202,6 +198,16 @@ export class ThreeDirecting {
 
     const stageEnv = new StageEnvironment()
     stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
+
+    if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
+      this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)
+    } else {
+      this.cachedEnvBBox.makeEmpty()
+    }
+
+    // Dynamically adjust fog based on environment scene extent
+    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent)
 
     this.buildActor()
   }
@@ -305,21 +311,41 @@ export class ThreeDirecting {
       const localOffset = this.actorController.getFPVOffset()
       const worldOffset = localOffset.clone().applyQuaternion(this.actorController.group.quaternion)
       const fpvCamPos = charPos.clone().add(worldOffset)
-      this.camera.position.copy(fpvCamPos)
-
       const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
-      this.camera.lookAt(fpvCamPos.clone().add(forward))
+      const targetLookAt = fpvCamPos.clone().add(forward)
+
+      if (this.lastCameraMode !== 'First Person') {
+        this.camera.position.copy(fpvCamPos)
+        this.camera.lookAt(targetLookAt)
+      } else {
+        this.camera.position.lerp(fpvCamPos, 0.2)
+        this.camera.lookAt(targetLookAt)
+      }
 
     } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const backOffset = new THREE.Vector3(0, 1.8, -3.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const isCrouch = this.actorController?.isCrouching() ?? false
+      const camHeight = isCrouch ? 1.0 : 1.8
+      const camDist = isCrouch ? -2.8 : -3.5
+      const targetYOffset = isCrouch ? 1.05 : 0.8
+
+      const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(backOffset)
-      // Instant hard cut & lock on TPV position without sliding lerp drift
-      this.camera.position.copy(targetCamPos)
-      this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
+      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetYOffset, charPos.z)
+
+      if (this.lastCameraMode !== 'Third Person') {
+        // Hard cut on initial mode change
+        this.camera.position.copy(targetCamPos)
+        this.tpvTarget.copy(targetLookAt)
+      } else {
+        // Smooth camera follow lerp
+        this.camera.position.lerp(targetCamPos, 0.12)
+        this.tpvTarget.lerp(targetLookAt, 0.12)
+      }
+      this.camera.lookAt(this.tpvTarget)
 
     } else if (activeMode === 'Wide') {
       const fov = 35
@@ -328,24 +354,17 @@ export class ThreeDirecting {
         this.camera.updateProjectionMatrix()
       }
 
-      // Calculate bounding box of active stage environment
-      const bbox = new THREE.Box3()
-      if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
-        bbox.setFromObject(this.clonedEnvGroup)
-      }
-
+      // Reuse cached bounding box of active stage environment
       let center = charPos.clone()
       let size = new THREE.Vector3(12, 6, 12)
 
-      if (!bbox.isEmpty()) {
-        const bboxCenter = new THREE.Vector3()
-        const bboxSize = new THREE.Vector3()
-        bbox.getCenter(bboxCenter)
-        bbox.getSize(bboxSize)
+      if (!this.cachedEnvBBox.isEmpty()) {
+        this.cachedEnvBBox.getCenter(this.cachedBBoxCenter)
+        this.cachedEnvBBox.getSize(this.cachedBBoxSize)
 
         // Blend stage center with actor position (70% scene center, 30% actor position)
-        center.copy(bboxCenter).lerp(charPos, 0.3)
-        size.copy(bboxSize)
+        center.copy(this.cachedBBoxCenter).lerp(charPos, 0.3)
+        size.copy(this.cachedBBoxSize)
       }
 
       const maxSpan = Math.max(size.x, size.z, 10.0)
@@ -364,17 +383,33 @@ export class ThreeDirecting {
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
-      // Side tracking profile camera with custom 40° FOV
-      if (this.camera.fov !== 40) {
-        this.camera.fov = 40
+      const isCar = (this.actorController as any)?.getType?.() === 'car'
+      const fov = 45
+      if (this.camera.fov !== fov) {
+        this.camera.fov = fov
         this.camera.updateProjectionMatrix()
       }
-      // Positioned to the side of the actor tracking alongside
-      const sideOffset = new THREE.Vector3(-3.2, 1.4, 0.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+
+      const sideVec = isCar ? new THREE.Vector3(-4.8, 1.3, 0.4) : new THREE.Vector3(-4.5, 1.4, 0.4)
+      const targetOffsetY = isCar ? 0.55 : 1.15
+      const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(sideOffset)
-      this.camera.position.copy(targetCamPos)
-      this.camera.lookAt(charPos.x, charPos.y + 0.8, charPos.z)
+      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
+
+      if (this.lastCameraMode !== 'Side') {
+        // Hard cut on initial mode change
+        this.camera.position.copy(targetCamPos)
+        this.sideTarget.copy(targetLookAt)
+      } else {
+        // Smooth camera follow lerp
+        this.camera.position.lerp(targetCamPos, 0.12)
+        this.sideTarget.lerp(targetLookAt, 0.12)
+      }
+      this.camera.lookAt(this.sideTarget)
     }
+
+    const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget)
 
     this.lastCameraMode = activeMode
   }
@@ -523,7 +558,10 @@ export class ThreeDirecting {
   public stop(): void {
     this.playbackController.stop()
     if (this.actorController) {
-      this.playbackController.evaluateAt(0, this.actorController)
+      const firstFrame = this.playbackController.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      this.actorController.resetAnimation(initialAnim)
+      this.playbackController.evaluateAt(0, this.actorController, 0)
       this.actorPosition.copy(this.actorController.position)
     }
   }
@@ -541,7 +579,13 @@ export class ThreeDirecting {
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
-    this.playbackController.setCurrentTime(Math.max(0, Math.min(t, maxDur)))
+    const targetT = Math.max(0, Math.min(t, maxDur))
+    this.playbackController.setCurrentTime(targetT)
+    if (targetT === 0 && this.actorController) {
+      const firstFrame = this.playbackController.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      this.actorController.resetAnimation(initialAnim)
+    }
     this.lastCameraMode = null
     this.updateActorMovement(0)
     this.updateCamera()
@@ -572,7 +616,13 @@ export class ThreeDirecting {
       this.resizeObserver = null
     }
 
-    this.renderer.dispose()
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.forceContextLoss()
+      if (this.renderer.domElement && this.renderer.domElement.parentElement) {
+        this.renderer.domElement.remove()
+      }
+    }
     this.scene.clear()
   }
 

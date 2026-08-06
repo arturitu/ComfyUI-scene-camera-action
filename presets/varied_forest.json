@@ -1164,5 +1164,12 @@
         "sz": 1.11
       }
     }
-  ]
+  ],
+  "selectedPreset": "varied_forest.json",
+  "spawn_point": {
+    "px": 0,
+    "py": 0,
+    "pz": -13.914,
+    "ry": 0
+  }
 }

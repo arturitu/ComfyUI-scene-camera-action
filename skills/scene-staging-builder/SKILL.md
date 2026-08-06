@@ -78,14 +78,31 @@ When given a text prompt or reference image, decompose the 3D scene into 4 struc
 
 ---
 
-## 5. SceneState Schema Specification
+## 5. SceneState Schema Specification & Spawn Point
 
-Every generated scene MUST strictly adhere to the `SceneState` JSON schema used by `SceneNode` and `ActingNode`:
+Every generated scene MUST strictly adhere to the `SceneState` JSON schema used by `SceneNode` and `ActingNode`.
+Generators SHOULD include a `spawn_point` object defining where the 3D actor spawns and its initial heading angle `ry` (in radians).
+
+### Actor Spawn Point Placement Guidelines & Surface Height Calculation
+- **Car Actor (`actor_type: 'car'`)**: Place spawn point at the start of the road, lane, or track. Set `ry` facing along the direction of travel.
+- **Human Actor (`actor_type: 'human'`)**: Place spawn point at a doorway entrance, pathway start, or key room threshold facing into the main space.
+- **Surface Height Calculation (`py`)**:
+  - **Stage Floor ($Y = 0$)**: If spawning directly on the stage floor, set `py = 0.0`.
+  - **Elevated Platforms / Roads / Slabs / Steps / Bridges**: If spawning on top of a block (or stacked blocks) at location $(P_x, P_z)$, calculate the top surface height $Y_{top}$ of the supporting block:
+    $$Y_{top} = P_{y,\text{block}} + \frac{S_{y,\text{block}}}{2.0}$$
+    *(For stacked blocks or elevated group nodes, $Y_{top}$ is the top surface of the uppermost supporting block)*.
+  - **ALWAYS set `py = Y_top`** (or $Y_{top} + 0.05$) when placing a spawn point over a block so the actor spawns resting directly ON TOP of the surface, preventing the actor from spawning trapped inside or below the block!
 
 ```json
 {
   "type": "cube_scene",
   "num_assets": 12,
+  "spawn_point": {
+    "px": 0.0,
+    "py": 0.0,
+    "pz": 5.0,
+    "ry": 0.0
+  },
   "nodes": [
     {
       "id": "group_house_01",

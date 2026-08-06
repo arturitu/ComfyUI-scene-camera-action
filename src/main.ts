@@ -169,6 +169,7 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
     type: 'cube_scene',
     num_assets: stored?.num_assets ?? 0,
     nodes: stored?.nodes ?? [],
+    spawn_point: stored?.spawn_point,
   }
 }
 
@@ -381,11 +382,11 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             }
 
             const rawBlob = actingState.motion_data ?? ''
-            let actingBlob = rawBlob
+            let actingBlob = ''
             const currentSceneData = threeActing?.getSceneData() ?? actingState.scene_data
             const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
 
-            if (rawBlob) {
+            if (rawBlob && rawBlob.trim()) {
               try {
                 const parsed = JSON.parse(rawBlob)
                 if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
@@ -402,15 +403,11 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
                     motion_data: parsed
                   })
                 }
-              } catch (e) { }
-            } else if (currentSceneData) {
-              actingBlob = JSON.stringify({
-                type: 'acting_motion',
-                actor_type: currentActorType,
-                scene_data: currentSceneData,
-                trajectory: [],
-                motion_data: []
-              })
+              } catch (e) {
+                actingBlob = rawBlob
+              }
+            } else {
+              actingBlob = ''
             }
 
             directingInst.exposed.setState({ acting_data: actingBlob })
@@ -883,6 +880,21 @@ app.registerExtension({
           instance.exposed.setState(state)
         }
       }
+
+      const origOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origOnRemoved?.call(this)
+        const instance = sceneInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          sceneInstances.delete(this)
+        }
+      }
     } else if (comfyClass === 'ActingNode') {
       hideNodeWidget(node, 'motion_data')
       removeNodeInput(node, 'motion_data')
@@ -1001,6 +1013,21 @@ app.registerExtension({
           instance.exposed.setState(state)
         }
       }
+
+      const origActingOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origActingOnRemoved?.call(this)
+        const instance = actingInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          actingInstances.delete(this)
+        }
+      }
     } else if (comfyClass === 'DirectingNode') {
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
@@ -1020,6 +1047,21 @@ app.registerExtension({
         if (instance) {
           const state = readDirectingStateFromNode(this)
           instance.exposed.setState(state)
+        }
+      }
+
+      const origDirectingOnRemoved = node.onRemoved
+      node.onRemoved = function (this: ComfyNode) {
+        origDirectingOnRemoved?.call(this)
+        const instance = directingInstances.get(this)
+        if (instance) {
+          if (instance.cleanupTimer !== null) {
+            clearTimeout(instance.cleanupTimer)
+            instance.cleanupTimer = null
+          }
+          try { instance.exposed?.cleanup?.() } catch (e) {}
+          try { instance.vueApp?.unmount() } catch (e) {}
+          directingInstances.delete(this)
         }
       }
     }

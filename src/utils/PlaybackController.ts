@@ -108,14 +108,15 @@ export class PlaybackController {
       }
     }
 
-    this.evaluateAt(this.currentTime, actor)
+    const frameDt = this.isPlaying ? dt : 0
+    this.evaluateAt(this.currentTime, actor, frameDt)
   }
 
-  public evaluateAt(t: number, actor: BaseActor): void {
+  public evaluateAt(t: number, actor: BaseActor, dt: number = 0.016): void {
     if (this.trajectory.length === 0 || !actor) return
 
     if (this.trajectory.length === 1) {
-      actor.applyMotionFrame(this.trajectory[0], 0)
+      actor.applyMotionFrame(this.trajectory[0], 0, dt)
       return
     }
 
@@ -125,16 +126,13 @@ export class PlaybackController {
       else break
     }
 
-    const idxB = (idxA + 1) % this.trajectory.length
+    // Clamp idxB to avoid wrapping back to frame 0 at the end of the route
+    const idxB = Math.min(idxA + 1, this.trajectory.length - 1)
     const frameA = this.trajectory[idxA]
     const frameB = this.trajectory[idxB]
 
-    let timeDiff = frameB.t - frameA.t
-    if (timeDiff < 0) {
-      timeDiff = (this.maxDuration - frameA.t) + frameB.t
-    }
-
-    const factor = timeDiff > 0 ? (t - frameA.t) / timeDiff : 0
+    const timeDiff = frameB.t - frameA.t
+    const factor = (timeDiff > 0 && idxB > idxA) ? Math.min(1, Math.max(0, (t - frameA.t) / timeDiff)) : 0
 
     const px = frameA.px + (frameB.px - frameA.px) * factor
     const py = frameA.py + (frameB.py - frameA.py) * factor
@@ -157,8 +155,8 @@ export class PlaybackController {
 
     if (typeof (actor as any).applyMotionFrame === 'function') {
       (actor as any).applyMotionFrame({
-        t, px, py, pz, rx, ry, rz
-      }, angularVel)
+        t, px, py, pz, rx, ry, rz, anim: frameA.anim
+      }, angularVel, dt)
     } else if (typeof actor.setPosition === 'function') {
       actor.setPosition(px, py, pz, ry)
     }

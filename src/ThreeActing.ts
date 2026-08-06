@@ -9,6 +9,7 @@ import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
 import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
 import { StageEnvironment } from './scene/StageEnvironment'
+import { SpawnPointHelper } from './scene/SpawnPointHelper'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -24,6 +25,9 @@ export class ThreeActing {
   private isHovered = false
   private connectedThreeScene: any = null
   private keysPressed: Record<string, boolean> = {}
+  private actingCameraTarget = new THREE.Vector3()
+  private cachedSceneExtent = 15.0
+  private spawnPointHelper: SpawnPointHelper | null = null
 
   private colliderBVH: MeshBVH | null = null
   private colliderVisualizer: THREE.Object3D | null = null
@@ -44,8 +48,9 @@ export class ThreeActing {
   private debugPanel: DebugPanel | null = null
   private clonedEnvGroup: THREE.Group | null = null
 
-  private keydownHandler?: (e: KeyboardEvent) => void
-  private keyupHandler?: (e: KeyboardEvent) => void
+  private keydownHandler!: (e: KeyboardEvent) => void
+  private keyupHandler!: (e: KeyboardEvent) => void
+  private blurHandler!: () => void
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
   private lastTime = performance.now()
@@ -114,25 +119,73 @@ export class ThreeActing {
     return this.trajectory
   }
 
+  private isPlaybackMode: boolean = false
+
   public startPlayback(motionData?: string): void {
     if (motionData) {
       this.loadTrajectory(motionData)
     }
     if (this.playbackController.getTrajectory().length > 0) {
       this.isRecording = false
+      this.isPlaybackMode = true
       this.isPlaying = true
       this.playbackController.start()
     }
   }
 
-  public stopPlayback(): void {
+  public play(): void {
+    if (this.playbackController.getTrajectory().length > 0) {
+      this.isRecording = false
+      this.isPlaybackMode = true
+      this.isPlaying = true
+      this.playbackController.play()
+    }
+  }
+
+  public pause(): void {
+    this.isPlaying = false
+    this.playbackController.pause()
+  }
+
+  public stop(): void {
     this.isPlaying = false
     this.playbackController.stop()
+    const trajectory = this.playbackController.getTrajectory()
+    if (trajectory.length > 0) {
+      this.isPlaybackMode = true
+      const initialAnim = trajectory[0]?.anim
+      if (this.actorController) {
+        this.actorController.resetAnimation(initialAnim)
+        this.playbackController.evaluateAt(0, this.actorController, 0)
+      }
+    } else {
+      this.isPlaybackMode = false
+      if (this.actorController) {
+        this.resetActorPosition()
+        this.actorController.resetAnimation('Idle_A')
+      }
+    }
+  }
+
+  public stopPlayback(): void {
+    this.stop()
+  }
+
+  public getIsPlaying(): boolean {
+    return this.isPlaying
   }
 
   public loadTrajectory(trajectoryJson: string): void {
     this.playbackController.setTrajectory(trajectoryJson)
     this.trajectory = this.playbackController.getTrajectory()
+    if (this.trajectory.length > 0) {
+      this.isPlaybackMode = true
+    } else {
+      this.isPlaybackMode = false
+      if (this.actorController) {
+        this.actorController.resetToOrigin()
+      }
+    }
   }
 
   private initThreeJS(): void {
@@ -145,7 +198,7 @@ export class ThreeActing {
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
     this.camera = new THREE.PerspectiveCamera(config.CAMERA_FOV, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
-    this.camera.position.set(0, 4, 8)
+    this.camera.position.set(-8, 4, 0)
     this.camera.lookAt(0, 0, 0)
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
@@ -162,6 +215,13 @@ export class ThreeActing {
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
+      event.preventDefault()
+      if (this.animationId !== null) {
+        cancelAnimationFrame(this.animationId)
+        this.animationId = null
+      }
+    }, false)
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
@@ -203,6 +263,10 @@ export class ThreeActing {
     const stageEnv = new StageEnvironment()
     this.environmentMeshes = stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
 
+    // Dynamically adjust fog based on environment scene extent
+    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
+
     // 2. Build BVH Collision Tree
     const geometries: THREE.BufferGeometry[] = []
 
@@ -211,7 +275,9 @@ export class ThreeActing {
     floorBox.translate(0, -0.05, 0)
     geometries.push(floorBox)
 
-    // Ensure all world matrices across group hierarchy are fully updated before extracting BVH geometries
+    // Force full scene graph world matrix evaluation before extracting mesh geometries
+    this.scene.updateMatrixWorld(true)
+
     if (this.clonedEnvGroup) {
       this.clonedEnvGroup.updateMatrixWorld(true)
     }
@@ -226,8 +292,9 @@ export class ThreeActing {
 
     if (geometries.length > 0) {
       const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
-      this.colliderBVH = new MeshBVH(mergedGeom)
-        ; (mergedGeom as any).boundsTree = this.colliderBVH
+      const newBVH = new MeshBVH(mergedGeom)
+      ;(mergedGeom as any).boundsTree = newBVH
+      this.colliderBVH = newBVH
 
       // Create collider visualizer (Green Wireframe Mesh of stage geometry)
       if (this.colliderVisualizer) {
@@ -275,6 +342,10 @@ export class ThreeActing {
     } else {
       this.colliderBVH = null
     }
+
+    if (this.actorController && !this.isPlaying && !this.isRecording) {
+      this.resetActorPosition()
+    }
   }
 
   private buildActor(type?: 'human' | 'car'): void {
@@ -286,41 +357,72 @@ export class ThreeActing {
     this.actorController = ActorFactory.create(charType)
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
+    this.resetActorPosition()
+  }
+
+  public resetActorPosition(): void {
+    if (this.actorController) {
+      const sceneData = this.getSceneData()
+      this.actorController.resetToOrigin(sceneData?.spawn_point)
+
+      // Immediately set camera view targeting actor spawn position
+      const pos = this.actorController.position
+      this.camera.position.set(pos.x - 8, pos.y + 4, pos.z)
+      this.actingCameraTarget.set(pos.x, pos.y + 0.5, pos.z)
+      this.camera.lookAt(this.actingCameraTarget)
+    }
   }
 
   private bindEvents(): void {
     const canvas = this.renderer.domElement
 
-    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
-    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
+    canvas.addEventListener('mouseenter', () => {
+      this.isHovered = true
+    })
+    canvas.addEventListener('mouseleave', () => {
+      this.isHovered = false
+      this.keysPressed = {}
+    })
 
     this.keydownHandler = (event: KeyboardEvent) => {
+      if (event.metaKey || event.code.startsWith('Meta') || event.code.startsWith('OS')) {
+        this.keysPressed = {}
+        return
+      }
+
       const activeEl = document.activeElement
       if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')) {
+        this.keysPressed = {}
         return
       }
 
       const isCanvasHoveredOrFocused = this.isHovered || activeEl === this.renderer.domElement || (activeEl && this.container.contains(activeEl))
-      if (!isCanvasHoveredOrFocused) return
+      if (!isCanvasHoveredOrFocused) {
+        this.keysPressed = {}
+        return
+      }
 
       event.stopPropagation()
       event.stopImmediatePropagation()
 
       this.keysPressed[event.code] = true
-      this.keysPressed[event.key] = true
     }
 
     this.keyupHandler = (event: KeyboardEvent) => {
-      if (this.isHovered || this.keysPressed[event.code] || this.keysPressed[event.key]) {
+      if (this.isHovered || this.keysPressed[event.code]) {
         event.stopPropagation()
         event.stopImmediatePropagation()
       }
       this.keysPressed[event.code] = false
-      this.keysPressed[event.key] = false
+    }
+
+    this.blurHandler = () => {
+      this.keysPressed = {}
     }
 
     window.addEventListener('keydown', this.keydownHandler, { capture: true })
     window.addEventListener('keyup', this.keyupHandler, { capture: true })
+    window.addEventListener('blur', this.blurHandler)
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -335,14 +437,18 @@ export class ThreeActing {
   }
 
   private updateActorMovement(dt: number): void {
-    if (this.isPlaying) {
-      this.playbackController.update(dt, this.actorController)
+    if (this.isPlaybackMode) {
+      if (this.isPlaying) {
+        this.playbackController.update(dt, this.actorController)
+      } else if (this.actorController) {
+        this.playbackController.evaluateAt(this.playbackController.getCurrentTime(), this.actorController, 0)
+      }
       return
     }
 
     if (this.actorController) {
       const speedMult = this.state.actor_speed ?? 10.0
-      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH)
+      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
 
       if (this.isRecording) {
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
@@ -395,12 +501,6 @@ export class ThreeActing {
     return this.displayBVH
   }
 
-  public resetActorPosition(): void {
-    if (this.actorController) {
-      this.actorController.resetToOrigin()
-    }
-  }
-
   private onResize(): void {
     const w = this.container.clientWidth
     const h = this.container.clientHeight
@@ -420,20 +520,18 @@ export class ThreeActing {
 
     this.updateActorMovement(dt)
 
-    // Camera following actor
+    // Camera following actor with smooth lerp
     if (this.actorController) {
       const pos = this.actorController.position
-      this.camera.position.set(
-        pos.x,
-        pos.y + 4,
-        pos.z + 8
-      )
-      this.camera.lookAt(
-        pos.x,
-        pos.y + 0.5,
-        pos.z
-      )
+      const idealCamPos = new THREE.Vector3(pos.x - 8, pos.y + 4, pos.z)
+      const idealTarget = new THREE.Vector3(pos.x, pos.y + 0.5, pos.z)
+
+      this.camera.position.lerp(idealCamPos, 0.12)
+      this.actingCameraTarget.lerp(idealTarget, 0.12)
+      this.camera.lookAt(this.actingCameraTarget)
     }
+
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
 
     this.renderer.render(this.scene, this.camera)
   }
@@ -496,6 +594,10 @@ export class ThreeActing {
     return this.state.actor_type ?? 'car'
   }
 
+  public getActorController(): BaseActor {
+    return this.actorController
+  }
+
   public getState(): ActingState {
     return this.state
   }
@@ -505,6 +607,10 @@ export class ThreeActing {
   }
 
   public dispose(): void {
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.dispose()
+    }
+
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null
@@ -526,13 +632,22 @@ export class ThreeActing {
     if (this.keyupHandler) {
       window.removeEventListener('keyup', this.keyupHandler, { capture: true })
     }
+    if (this.blurHandler) {
+      window.removeEventListener('blur', this.blurHandler)
+    }
 
     if (this.debugPanel) {
       this.debugPanel.dispose()
       this.debugPanel = null
     }
 
-    this.renderer.dispose()
+    if (this.renderer) {
+      this.renderer.dispose()
+      this.renderer.forceContextLoss()
+      if (this.renderer.domElement && this.renderer.domElement.parentElement) {
+        this.renderer.domElement.remove()
+      }
+    }
     this.scene.clear()
   }
 }
