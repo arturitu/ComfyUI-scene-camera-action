@@ -72,6 +72,10 @@ export abstract class BaseActor {
     return new THREE.Vector3(0, 1.5, 0.1)
   }
 
+  public isCrouching(): boolean {
+    return false
+  }
+
   public setMeshVisibleForFPV(isFPV: boolean): void {
     this.group.visible = !isFPV
   }

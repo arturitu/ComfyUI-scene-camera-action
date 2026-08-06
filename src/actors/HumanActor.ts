@@ -90,6 +90,18 @@ export class HumanActor extends BaseActor {
     return 'human'
   }
 
+  private isCrouchedState: boolean = false
+
+  public override isCrouching(): boolean {
+    if (this.isCrouchedState) return true
+    const anim = (this.currentAnimationName ?? '').toLowerCase()
+    return anim.includes('crouch')
+  }
+
+  public override getFPVOffset(): THREE.Vector3 {
+    return this.isCrouching() ? new THREE.Vector3(0, 0.95, 0.1) : new THREE.Vector3(0, 1.5, 0.1)
+  }
+
   public getCurrentAnimationName(): string {
     return this.currentAnimationName ?? 'None'
   }
@@ -287,6 +299,7 @@ export class HumanActor extends BaseActor {
     const isSpace = keysPressed['Space'] || keysPressed[' '] || keysPressed['KeyJ']
     const isShift = Boolean(keysPressed['ShiftLeft'] || keysPressed['ShiftRight'] || keysPressed['Shift'])
     const isCrouch = Boolean(keysPressed['KeyC'])
+    this.isCrouchedState = isCrouch
 
     // Jump takeoff trigger
     if (isSpace && this.isOnGround) {

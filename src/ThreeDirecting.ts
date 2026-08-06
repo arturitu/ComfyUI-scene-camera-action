@@ -321,9 +321,14 @@ export class ThreeDirecting {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const backOffset = new THREE.Vector3(0, 1.8, -3.5).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const isCrouch = this.actorController?.isCrouching() ?? false
+      const camHeight = isCrouch ? 1.0 : 1.8
+      const camDist = isCrouch ? -2.8 : -3.5
+      const targetYOffset = isCrouch ? 1.05 : 0.8
+
+      const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
       const targetCamPos = charPos.clone().add(backOffset)
-      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + 0.8, charPos.z)
+      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetYOffset, charPos.z)
 
       if (this.lastCameraMode !== 'Third Person') {
         // Hard cut on initial mode change
