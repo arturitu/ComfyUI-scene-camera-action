@@ -248,7 +248,6 @@ const startCountdown = () => {
       recordingElapsed.value = 0
       if (threeActing) {
         threeActing.startRecording()
-        recordProgressFrameId = requestAnimationFrame(updateRecordProgress)
       }
     }
   }, 1000)
@@ -263,10 +262,6 @@ const stopRecording = () => {
 
 const onRecordingFinished = (json: string) => {
   isRecording.value = false
-  if (recordProgressFrameId !== null) {
-    cancelAnimationFrame(recordProgressFrameId)
-    recordProgressFrameId = null
-  }
 
   state.motion_data = json
   if (props.onStateChange) {
@@ -307,8 +302,8 @@ const resetToInteractive = () => {
   isPlaying.value = false
   isRecording.value = false
   if (threeActing) {
-    threeActing.stopPlayback()
     threeActing.setState({ motion_data: '' })
+    threeActing.stopPlayback()
   }
   state.motion_data = ''
   if (props.onStateChange) {
@@ -375,6 +370,9 @@ const updateTimeCounter = () => {
   if (threeActing) {
     currentTime.value = threeActing.getCurrentTime()
     totalDuration.value = threeActing.getDuration()
+    if (isRecording.value) {
+      recordingElapsed.value = (threeActing as any).recordingTime
+    }
   }
   timeFrameId = requestAnimationFrame(updateTimeCounter)
 }
@@ -501,7 +499,7 @@ defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
   transform: translateX(-50%);
   width: 90%;
   max-width: 320px;
-  background: rgba(12, 12, 18, 0.9);
+  background: rgba(12, 12, 18, 0.95);
   border: 1px solid rgba(255, 51, 102, 0.4);
   border-radius: 6px;
   padding: 8px 12px;
@@ -509,7 +507,6 @@ defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
   display: flex;
   flex-direction: column;
   gap: 6px;
-  backdrop-filter: blur(8px);
 }
 
 .rec-header {

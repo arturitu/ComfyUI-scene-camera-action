@@ -22,6 +22,10 @@ export class ThreeDirecting {
   private playbackController = new PlaybackController()
   private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
   private wideTarget = new THREE.Vector3(0, 0, 0)
+  private cachedEnvBBox = new THREE.Box3()
+  private cachedBBoxCenter = new THREE.Vector3()
+  private cachedBBoxSize = new THREE.Vector3()
+  private lastSceneDataJson: string | null = null
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
@@ -76,7 +80,12 @@ export class ThreeDirecting {
       this.playbackController.stop()
     }
 
-    this.buildSceneEnvironment()
+    const currentSceneData = this.getSceneData()
+    const currentSceneJson = currentSceneData ? JSON.stringify(currentSceneData) : ''
+    if (currentSceneJson !== this.lastSceneDataJson || !this.clonedEnvGroup) {
+      this.lastSceneDataJson = currentSceneJson
+      this.buildSceneEnvironment()
+    }
     this.buildActor(parsedActorType)
 
     if (this.actorController) {
@@ -88,32 +97,7 @@ export class ThreeDirecting {
     this.updateCamera()
   }
 
-  private normalizeTrajectoryOrientation(): void {
-    const trajectory = this.playbackController.getTrajectory()
-    if (trajectory.length < 2) return
 
-    let firstMoveIdx = -1
-    for (let i = 1; i < trajectory.length; i++) {
-      const dx = trajectory[i].px - trajectory[0].px
-      const dz = trajectory[i].pz - trajectory[0].pz
-      if (dx * dx + dz * dz > 0.001 || Math.abs(trajectory[i].ry - trajectory[0].ry) > 0.001) {
-        firstMoveIdx = i
-        break
-      }
-    }
-
-    if (firstMoveIdx > 0) {
-      const dx = trajectory[firstMoveIdx].px - trajectory[0].px
-      const dz = trajectory[firstMoveIdx].pz - trajectory[0].pz
-      let initialRy = trajectory[firstMoveIdx].ry
-      if (dx * dx + dz * dz > 0.001) {
-        initialRy = Math.atan2(dx, dz)
-      }
-      for (let k = 0; k < firstMoveIdx; k++) {
-        trajectory[k].ry = initialRy
-      }
-    }
-  }
 
   private initThreeJS(): void {
     const width = this.container.clientWidth || 400
@@ -205,6 +189,12 @@ export class ThreeDirecting {
 
     const stageEnv = new StageEnvironment()
     stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
+
+    if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
+      this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)
+    } else {
+      this.cachedEnvBBox.makeEmpty()
+    }
 
     this.buildActor()
   }
@@ -331,24 +321,17 @@ export class ThreeDirecting {
         this.camera.updateProjectionMatrix()
       }
 
-      // Calculate bounding box of active stage environment
-      const bbox = new THREE.Box3()
-      if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
-        bbox.setFromObject(this.clonedEnvGroup)
-      }
-
+      // Reuse cached bounding box of active stage environment
       let center = charPos.clone()
       let size = new THREE.Vector3(12, 6, 12)
 
-      if (!bbox.isEmpty()) {
-        const bboxCenter = new THREE.Vector3()
-        const bboxSize = new THREE.Vector3()
-        bbox.getCenter(bboxCenter)
-        bbox.getSize(bboxSize)
+      if (!this.cachedEnvBBox.isEmpty()) {
+        this.cachedEnvBBox.getCenter(this.cachedBBoxCenter)
+        this.cachedEnvBBox.getSize(this.cachedBBoxSize)
 
         // Blend stage center with actor position (70% scene center, 30% actor position)
-        center.copy(bboxCenter).lerp(charPos, 0.3)
-        size.copy(bboxSize)
+        center.copy(this.cachedBBoxCenter).lerp(charPos, 0.3)
+        size.copy(this.cachedBBoxSize)
       }
 
       const maxSpan = Math.max(size.x, size.z, 10.0)

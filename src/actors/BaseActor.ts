@@ -30,7 +30,7 @@ export abstract class BaseActor {
     this.velocity.set(0, 0, 0)
     this.isOnGround = true
     this.group.position.copy(this.position)
-    this.group.rotation.y = this.rotationY
+    this.group.rotation.set(0, this.rotationY, 0)
   }
 
   public jump(): void {
@@ -74,13 +74,13 @@ export abstract class BaseActor {
   public getMotionState(t: number): MotionFrame {
     _tempEuler.setFromQuaternion(this.group.quaternion, 'YXZ')
     return {
-      t: Number(t.toFixed(3)),
-      px: Number(this.group.position.x.toFixed(3)),
-      py: Number(this.group.position.y.toFixed(3)),
-      pz: Number(this.group.position.z.toFixed(3)),
-      rx: Number(_tempEuler.x.toFixed(3)),
-      ry: Number(this.rotationY.toFixed(3)),
-      rz: Number(_tempEuler.z.toFixed(3)),
+      t: Math.round(t * 1000) / 1000,
+      px: Math.round(this.group.position.x * 1000) / 1000,
+      py: Math.round(this.group.position.y * 1000) / 1000,
+      pz: Math.round(this.group.position.z * 1000) / 1000,
+      rx: Math.round(_tempEuler.x * 1000) / 1000,
+      ry: Math.round(this.rotationY * 1000) / 1000,
+      rz: Math.round(_tempEuler.z * 1000) / 1000,
     }
   }
 

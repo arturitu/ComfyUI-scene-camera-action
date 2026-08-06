@@ -103,41 +103,22 @@ export class HumanActor extends BaseActor {
 
   public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016): void {
     const frameDt = Math.max(0, dt)
-    let targetAnim = 'Idle_A'
+    let targetAnim = (animName && animName !== 'None' && this.animationsMapMap.has(animName)) ? animName : 'Idle_A'
     let animTimeScale = 1.0
 
-    if (animName && animName !== 'None' && this.animationsMapMap.has(animName)) {
-      targetAnim = animName
-      const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
-      if (targetAnim === 'Walk') {
-        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
-      } else if (targetAnim === 'Sprint') {
-        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.sprintBaseSpeed))
-      } else if (targetAnim === 'Crouch_Walk') {
-        animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
-      }
-    } else {
-      // Fallback smooth speed calculation with hysteresis for legacy recordings
-      const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
-      this.filteredSpeed += (instantSpeed - this.filteredSpeed) * 0.25
-
-      if (this.filteredSpeed > 2.5) {
-        targetAnim = 'Sprint'
-        animTimeScale = Math.max(0.3, this.filteredSpeed / this.sprintBaseSpeed)
-      } else if (this.filteredSpeed > 0.15) {
-        targetAnim = 'Walk'
-        animTimeScale = Math.max(0.3, this.filteredSpeed / this.walkBaseSpeed)
-      } else if (this.currentAnimationName === 'Walk' || this.currentAnimationName === 'Sprint') {
-        if (this.filteredSpeed > 0.08) {
-          targetAnim = this.currentAnimationName
-        }
-      }
+    const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
+    if (targetAnim === 'Walk') {
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
+    } else if (targetAnim === 'Sprint') {
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.sprintBaseSpeed))
+    } else if (targetAnim === 'Crouch_Walk') {
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
     }
 
     this.playAnimation(targetAnim, 0.2, animTimeScale)
 
-    if (this.mixer && frameDt > 0) {
-      this.mixer.update(frameDt)
+    if (this.mixer) {
+      this.mixer.update(Math.max(0.001, frameDt))
     }
   }
 
@@ -228,16 +209,29 @@ export class HumanActor extends BaseActor {
     this.filteredSpeed = 0
     this.isUserJumping = false
     this.airborneTime = 0
+    if (this.mixer) {
+      this.mixer.stopAllAction()
+    }
     this.currentAnimationName = null
     this.currentAction = null
     this.playAnimation('Idle_A', 0)
+    if (this.mixer) {
+      this.mixer.update(0.001)
+    }
   }
 
   public override resetAnimation(initialAnim?: string): void {
     this.filteredSpeed = 0
+    if (this.mixer) {
+      this.mixer.stopAllAction()
+    }
     this.currentAnimationName = null
+    this.currentAction = null
     const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : 'Idle_A'
     this.playAnimation(targetAnim, 0)
+    if (this.mixer) {
+      this.mixer.update(0.001)
+    }
   }
 
   private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {
@@ -274,6 +268,8 @@ export class HumanActor extends BaseActor {
 
     this.currentAction = newAction
     this.currentAnimationName = animName
+
+    this.mixer.update(0.001)
   }
 
   public updatePhysics(
@@ -323,7 +319,7 @@ export class HumanActor extends BaseActor {
     if (_tempDir.lengthSq() > 0) {
       _tempDir.normalize()
       this.rotationY = Math.atan2(_tempDir.x, _tempDir.z)
-      this.group.rotation.y = this.rotationY
+      this.group.rotation.set(0, this.rotationY, 0)
     }
 
     this.velocity.x = _tempDir.x * speed
@@ -367,10 +363,10 @@ export class HumanActor extends BaseActor {
             if (distSq < radius * radius) {
               const dist = Math.sqrt(distSq)
               const depth = radius - dist
-              const dir = _tempVecB.clone().sub(_tempVecA).normalize()
+              _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
 
-              _tempSegment.start.addScaledVector(dir, depth)
-              _tempSegment.end.addScaledVector(dir, depth)
+              _tempSegment.start.addScaledVector(_tempDir, depth)
+              _tempSegment.end.addScaledVector(_tempDir, depth)
             }
           }
         })

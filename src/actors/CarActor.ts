@@ -16,6 +16,7 @@ const SLOPE_CONFIG = {
 // Module-level static scratch objects to eliminate Garbage Collection allocations per frame
 const _tempVecA = new THREE.Vector3()
 const _tempVecB = new THREE.Vector3()
+const _tempDir = new THREE.Vector3()
 const _tempFwd = new THREE.Vector3()
 const _tempRight = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
@@ -107,7 +108,6 @@ export class CarActor extends BaseActor {
   public override resetToOrigin(): void {
     this.position.set(0, config.GROUND_Y, 2)
     this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
-    this.group.rotation.y = this.rotationY
     this.velocity.set(0, 0, 0)
     this.currentSpeed = 0
     this.prevSpeed = 0
@@ -118,12 +118,11 @@ export class CarActor extends BaseActor {
     this.rampPitchAngle = 0
     this.rampRollAngle = 0
     if (this.bodySuspensionGroup) {
-      this.bodySuspensionGroup.rotation.x = 0
-      this.bodySuspensionGroup.rotation.z = 0
+      this.bodySuspensionGroup.rotation.set(0, 0, 0)
     }
     this.isOnGround = true
     this.group.position.copy(this.position)
-    this.group.rotation.set(0, 0, 0)
+    this.group.rotation.set(0, this.rotationY, 0)
   }
 
   public buildMesh(): void {
@@ -408,12 +407,12 @@ export class CarActor extends BaseActor {
 
               if (dist < radius) {
                 const depth = radius - dist
-                const direction = _tempVecB.clone().sub(_tempVecA).normalize()
-                if (direction.y > 0.3) {
+                _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
+                if (_tempDir.y > 0.3) {
                   touchGround = true
                 }
-                this.position.addScaledVector(direction, depth)
-                if (Math.abs(direction.y) < 0.5) {
+                this.position.addScaledVector(_tempDir, depth)
+                if (Math.abs(_tempDir.y) < 0.5) {
                   this.currentSpeed *= 0.8
                 }
               }
