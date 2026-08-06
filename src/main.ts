@@ -169,6 +169,7 @@ function readSceneStateFromNode(node: ComfyNode): Partial<SceneState> {
     type: 'cube_scene',
     num_assets: stored?.num_assets ?? 0,
     nodes: stored?.nodes ?? [],
+    spawn_point: stored?.spawn_point,
   }
 }
 

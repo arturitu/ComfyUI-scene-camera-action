@@ -911,5 +911,11 @@
       ]
     }
   ],
-  "selectedPreset": "space_platform_track.json"
+  "selectedPreset": "space_platform_track.json",
+  "spawn_point": {
+    "px": -1.062,
+    "py": 0,
+    "pz": -37.879,
+    "ry": 1.503
+  }
 }

@@ -1,0 +1,1716 @@
+{
+  "type": "cube_scene",
+  "num_assets": 102,
+  "spawn_point": {
+    "px": 12.0,
+    "py": 0.0,
+    "pz": 20.0,
+    "ry": -2.85
+  },
+  "nodes": [
+    {
+      "id": "group_cliff_rocks",
+      "type": "group",
+      "name": "Cliff Formations (Left Coast)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "cliff_rock_01",
+          "type": "block",
+          "name": "Cliff Rock Mass 01",
+          "transform": {
+            "px": -28.67,
+            "py": 4.1,
+            "pz": -18.84,
+            "rx": 0.118,
+            "ry": -0.33,
+            "rz": -0.019,
+            "sx": 10.42,
+            "sy": 5.08,
+            "sz": 10.06
+          }
+        },
+        {
+          "id": "cliff_rock_02",
+          "type": "block",
+          "name": "Cliff Rock Mass 02",
+          "transform": {
+            "px": -23.38,
+            "py": 2.57,
+            "pz": -28.67,
+            "rx": 0.013,
+            "ry": -0.224,
+            "rz": 0.021,
+            "sx": 7.19,
+            "sy": 5.66,
+            "sz": 9.9
+          }
+        },
+        {
+          "id": "cliff_rock_03",
+          "type": "block",
+          "name": "Cliff Rock Mass 03",
+          "transform": {
+            "px": -16.47,
+            "py": 4.52,
+            "pz": 4.91,
+            "rx": 0.137,
+            "ry": -0.131,
+            "rz": -0.098,
+            "sx": 8.04,
+            "sy": 5.02,
+            "sz": 6.93
+          }
+        },
+        {
+          "id": "cliff_rock_04",
+          "type": "block",
+          "name": "Cliff Rock Mass 04",
+          "transform": {
+            "px": -21.11,
+            "py": 2.74,
+            "pz": 10.36,
+            "rx": 0.142,
+            "ry": -0.097,
+            "rz": 0.012,
+            "sx": 10.38,
+            "sy": 7.54,
+            "sz": 9.22
+          }
+        },
+        {
+          "id": "cliff_rock_05",
+          "type": "block",
+          "name": "Cliff Rock Mass 05",
+          "transform": {
+            "px": -15.18,
+            "py": 4.57,
+            "pz": -1.13,
+            "rx": -0.082,
+            "ry": -0.168,
+            "rz": -0.101,
+            "sx": 10.23,
+            "sy": 6.86,
+            "sz": 6.27
+          }
+        },
+        {
+          "id": "cliff_rock_06",
+          "type": "block",
+          "name": "Cliff Rock Mass 06",
+          "transform": {
+            "px": -28.61,
+            "py": 3.08,
+            "pz": 1.78,
+            "rx": -0.087,
+            "ry": -0.186,
+            "rz": 0.105,
+            "sx": 8.19,
+            "sy": 5.3,
+            "sz": 8.22
+          }
+        },
+        {
+          "id": "cliff_rock_07",
+          "type": "block",
+          "name": "Cliff Rock Mass 07",
+          "transform": {
+            "px": -31.06,
+            "py": 4.12,
+            "pz": 6.46,
+            "rx": 0.147,
+            "ry": 0.112,
+            "rz": 0.014,
+            "sx": 6.98,
+            "sy": 6.83,
+            "sz": 8.28
+          }
+        },
+        {
+          "id": "cliff_rock_08",
+          "type": "block",
+          "name": "Cliff Rock Mass 08",
+          "transform": {
+            "px": -17.15,
+            "py": 4.21,
+            "pz": -18.55,
+            "rx": -0.07,
+            "ry": -0.231,
+            "rz": 0.106,
+            "sx": 6.19,
+            "sy": 7.53,
+            "sz": 7.89
+          }
+        },
+        {
+          "id": "cliff_rock_09",
+          "type": "block",
+          "name": "Cliff Rock Mass 09",
+          "transform": {
+            "px": -19.92,
+            "py": 4.69,
+            "pz": -10.22,
+            "rx": -0.071,
+            "ry": -0.203,
+            "rz": 0.015,
+            "sx": 11.49,
+            "sy": 5.94,
+            "sz": 8.75
+          }
+        },
+        {
+          "id": "cliff_rock_10",
+          "type": "block",
+          "name": "Cliff Rock Mass 10",
+          "transform": {
+            "px": -14.35,
+            "py": 3.16,
+            "pz": -10.03,
+            "rx": 0.003,
+            "ry": -0.327,
+            "rz": -0.109,
+            "sx": 7.32,
+            "sy": 6.75,
+            "sz": 11.99
+          }
+        },
+        {
+          "id": "cliff_rock_11",
+          "type": "block",
+          "name": "Cliff Rock Mass 11",
+          "transform": {
+            "px": -16.78,
+            "py": 2.77,
+            "pz": -8.89,
+            "rx": 0.149,
+            "ry": 0.023,
+            "rz": 0.113,
+            "sx": 6.38,
+            "sy": 6.88,
+            "sz": 8.29
+          }
+        },
+        {
+          "id": "cliff_rock_12",
+          "type": "block",
+          "name": "Cliff Rock Mass 12",
+          "transform": {
+            "px": -18.42,
+            "py": 4.65,
+            "pz": 4.09,
+            "rx": 0.042,
+            "ry": -0.311,
+            "rz": -0.016,
+            "sx": 9.22,
+            "sy": 5.03,
+            "sz": 7.6
+          }
+        },
+        {
+          "id": "cliff_rock_13",
+          "type": "block",
+          "name": "Cliff Rock Mass 13",
+          "transform": {
+            "px": -20.48,
+            "py": 8.81,
+            "pz": -15.88,
+            "rx": 0.124,
+            "ry": 0.296,
+            "rz": -0.048,
+            "sx": 10.5,
+            "sy": 9.82,
+            "sz": 8.25
+          }
+        },
+        {
+          "id": "cliff_rock_14",
+          "type": "block",
+          "name": "Cliff Rock Mass 14",
+          "transform": {
+            "px": -34.94,
+            "py": 9.56,
+            "pz": 7.08,
+            "rx": 0.009,
+            "ry": -0.4,
+            "rz": -0.042,
+            "sx": 10.78,
+            "sy": 8.44,
+            "sz": 12.45
+          }
+        },
+        {
+          "id": "cliff_rock_15",
+          "type": "block",
+          "name": "Cliff Rock Mass 15",
+          "transform": {
+            "px": -20.43,
+            "py": 7.08,
+            "pz": 10.26,
+            "rx": 0.113,
+            "ry": 0.358,
+            "rz": -0.099,
+            "sx": 9.15,
+            "sy": 9.72,
+            "sz": 7.41
+          }
+        },
+        {
+          "id": "cliff_rock_16",
+          "type": "block",
+          "name": "Cliff Rock Mass 16",
+          "transform": {
+            "px": -22.79,
+            "py": 8.94,
+            "pz": 7.23,
+            "rx": 0.015,
+            "ry": -0.188,
+            "rz": 0.089,
+            "sx": 7.9,
+            "sy": 6.28,
+            "sz": 10.33
+          }
+        },
+        {
+          "id": "cliff_rock_17",
+          "type": "block",
+          "name": "Cliff Rock Mass 17",
+          "transform": {
+            "px": -27.21,
+            "py": 8.69,
+            "pz": 5.58,
+            "rx": 0.149,
+            "ry": 0.12,
+            "rz": -0.015,
+            "sx": 8.41,
+            "sy": 6.85,
+            "sz": 9.18
+          }
+        },
+        {
+          "id": "cliff_rock_18",
+          "type": "block",
+          "name": "Cliff Rock Mass 18",
+          "transform": {
+            "px": -33.51,
+            "py": 9.07,
+            "pz": -12.45,
+            "rx": -0.084,
+            "ry": -0.343,
+            "rz": 0.031,
+            "sx": 11.12,
+            "sy": 6.48,
+            "sz": 8.61
+          }
+        },
+        {
+          "id": "cliff_rock_19",
+          "type": "block",
+          "name": "Cliff Rock Mass 19",
+          "transform": {
+            "px": -20.81,
+            "py": 7.92,
+            "pz": -24.74,
+            "rx": -0.086,
+            "ry": -0.294,
+            "rz": 0.105,
+            "sx": 8.67,
+            "sy": 9.62,
+            "sz": 11.68
+          }
+        },
+        {
+          "id": "cliff_rock_20",
+          "type": "block",
+          "name": "Cliff Rock Mass 20",
+          "transform": {
+            "px": -22.31,
+            "py": 9.28,
+            "pz": 9.14,
+            "rx": -0.021,
+            "ry": -0.061,
+            "rz": -0.008,
+            "sx": 8.33,
+            "sy": 7.89,
+            "sz": 7.68
+          }
+        },
+        {
+          "id": "cliff_rock_21",
+          "type": "block",
+          "name": "Cliff Rock Mass 21",
+          "transform": {
+            "px": -18.32,
+            "py": 9.92,
+            "pz": -23.47,
+            "rx": 0.109,
+            "ry": -0.201,
+            "rz": -0.074,
+            "sx": 9.82,
+            "sy": 8.69,
+            "sz": 9.38
+          }
+        },
+        {
+          "id": "cliff_rock_22",
+          "type": "block",
+          "name": "Cliff Rock Mass 22",
+          "transform": {
+            "px": -32.43,
+            "py": 8.79,
+            "pz": -16.51,
+            "rx": 0.108,
+            "ry": 0.04,
+            "rz": -0.108,
+            "sx": 13.46,
+            "sy": 7.69,
+            "sz": 10.1
+          }
+        },
+        {
+          "id": "cliff_rock_23",
+          "type": "block",
+          "name": "Cliff Rock Mass 23",
+          "transform": {
+            "px": -18.62,
+            "py": 11.0,
+            "pz": 14.61,
+            "rx": -0.004,
+            "ry": -0.229,
+            "rz": -0.024,
+            "sx": 12.94,
+            "sy": 9.34,
+            "sz": 8.16
+          }
+        },
+        {
+          "id": "cliff_rock_24",
+          "type": "block",
+          "name": "Cliff Rock Mass 24",
+          "transform": {
+            "px": -18.29,
+            "py": 7.23,
+            "pz": -15.8,
+            "rx": -0.023,
+            "ry": 0.366,
+            "rz": 0.119,
+            "sx": 12.49,
+            "sy": 7.52,
+            "sz": 10.19
+          }
+        },
+        {
+          "id": "cliff_rock_25",
+          "type": "block",
+          "name": "Cliff Rock Mass 25",
+          "transform": {
+            "px": -38.9,
+            "py": 15.78,
+            "pz": -13.13,
+            "rx": 0.013,
+            "ry": 0.198,
+            "rz": -0.106,
+            "sx": 14.78,
+            "sy": 10.87,
+            "sz": 12.05
+          }
+        },
+        {
+          "id": "cliff_rock_26",
+          "type": "block",
+          "name": "Cliff Rock Mass 26",
+          "transform": {
+            "px": -24.95,
+            "py": 15.92,
+            "pz": -18.7,
+            "rx": -0.094,
+            "ry": 0.076,
+            "rz": 0.042,
+            "sx": 14.73,
+            "sy": 10.01,
+            "sz": 8.56
+          }
+        },
+        {
+          "id": "cliff_rock_27",
+          "type": "block",
+          "name": "Cliff Rock Mass 27",
+          "transform": {
+            "px": -24.19,
+            "py": 14.18,
+            "pz": -15.15,
+            "rx": -0.024,
+            "ry": 0.067,
+            "rz": 0.005,
+            "sx": 12.16,
+            "sy": 8.48,
+            "sz": 12.34
+          }
+        },
+        {
+          "id": "cliff_rock_28",
+          "type": "block",
+          "name": "Cliff Rock Mass 28",
+          "transform": {
+            "px": -27.68,
+            "py": 17.67,
+            "pz": -15.45,
+            "rx": -0.06,
+            "ry": -0.147,
+            "rz": 0.06,
+            "sx": 10.77,
+            "sy": 8.82,
+            "sz": 12.7
+          }
+        },
+        {
+          "id": "cliff_rock_29",
+          "type": "block",
+          "name": "Cliff Rock Mass 29",
+          "transform": {
+            "px": -22.03,
+            "py": 13.36,
+            "pz": 14.84,
+            "rx": -0.07,
+            "ry": 0.347,
+            "rz": 0.091,
+            "sx": 8.51,
+            "sy": 9.83,
+            "sz": 9.49
+          }
+        },
+        {
+          "id": "cliff_rock_30",
+          "type": "block",
+          "name": "Cliff Rock Mass 30",
+          "transform": {
+            "px": -38.85,
+            "py": 17.4,
+            "pz": 8.35,
+            "rx": 0.146,
+            "ry": 0.123,
+            "rz": -0.118,
+            "sx": 12.92,
+            "sy": 9.48,
+            "sz": 12.28
+          }
+        },
+        {
+          "id": "cliff_rock_31",
+          "type": "block",
+          "name": "Cliff Rock Mass 31",
+          "transform": {
+            "px": -28.73,
+            "py": 17.09,
+            "pz": 12.56,
+            "rx": -0.118,
+            "ry": 0.043,
+            "rz": -0.055,
+            "sx": 8.94,
+            "sy": 9.2,
+            "sz": 8.81
+          }
+        },
+        {
+          "id": "cliff_rock_32",
+          "type": "block",
+          "name": "Cliff Rock Mass 32",
+          "transform": {
+            "px": -37.93,
+            "py": 16.02,
+            "pz": 0.37,
+            "rx": 0.122,
+            "ry": 0.277,
+            "rz": -0.098,
+            "sx": 9.85,
+            "sy": 10.87,
+            "sz": 11.42
+          }
+        },
+        {
+          "id": "cliff_rock_33",
+          "type": "block",
+          "name": "Cliff Rock Mass 33",
+          "transform": {
+            "px": -41.93,
+            "py": 15.12,
+            "pz": 5.84,
+            "rx": 0.072,
+            "ry": 0.041,
+            "rz": -0.017,
+            "sx": 12.46,
+            "sy": 9.11,
+            "sz": 9.83
+          }
+        },
+        {
+          "id": "cliff_rock_34",
+          "type": "block",
+          "name": "Cliff Rock Mass 34",
+          "transform": {
+            "px": -24.34,
+            "py": 13.05,
+            "pz": 11.16,
+            "rx": 0.025,
+            "ry": -0.282,
+            "rz": -0.089,
+            "sx": 11.82,
+            "sy": 8.3,
+            "sz": 13.84
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_sand_dunes",
+      "type": "group",
+      "name": "Beach Sand Dunes (Center Diagonal)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "sand_dune_01",
+          "type": "block",
+          "name": "Beach Sand Dune 01",
+          "transform": {
+            "px": -16.77,
+            "py": 0.31,
+            "pz": -30.4,
+            "rx": 0,
+            "ry": -0.058,
+            "rz": 0,
+            "sx": 13.16,
+            "sy": 0.62,
+            "sz": 13.39
+          }
+        },
+        {
+          "id": "sand_dune_02",
+          "type": "block",
+          "name": "Beach Sand Dune 02",
+          "transform": {
+            "px": -15.32,
+            "py": 0.3,
+            "pz": -30.22,
+            "rx": 0,
+            "ry": 0.024,
+            "rz": 0,
+            "sx": 13.3,
+            "sy": 0.61,
+            "sz": 10.44
+          }
+        },
+        {
+          "id": "sand_dune_03",
+          "type": "block",
+          "name": "Beach Sand Dune 03",
+          "transform": {
+            "px": -14.01,
+            "py": 0.33,
+            "pz": -23.54,
+            "rx": 0,
+            "ry": 0.076,
+            "rz": 0,
+            "sx": 13.86,
+            "sy": 0.65,
+            "sz": 12.86
+          }
+        },
+        {
+          "id": "sand_dune_04",
+          "type": "block",
+          "name": "Beach Sand Dune 04",
+          "transform": {
+            "px": -12.85,
+            "py": 0.21,
+            "pz": -20.95,
+            "rx": 0,
+            "ry": 0.073,
+            "rz": 0,
+            "sx": 13.58,
+            "sy": 0.43,
+            "sz": 12.81
+          }
+        },
+        {
+          "id": "sand_dune_05",
+          "type": "block",
+          "name": "Beach Sand Dune 05",
+          "transform": {
+            "px": -8.02,
+            "py": 0.3,
+            "pz": -19.46,
+            "rx": 0,
+            "ry": 0.072,
+            "rz": 0,
+            "sx": 8.65,
+            "sy": 0.61,
+            "sz": 13.23
+          }
+        },
+        {
+          "id": "sand_dune_06",
+          "type": "block",
+          "name": "Beach Sand Dune 06",
+          "transform": {
+            "px": -8.69,
+            "py": 0.24,
+            "pz": -13.89,
+            "rx": 0,
+            "ry": -0.054,
+            "rz": 0,
+            "sx": 9.83,
+            "sy": 0.48,
+            "sz": 12.77
+          }
+        },
+        {
+          "id": "sand_dune_07",
+          "type": "block",
+          "name": "Beach Sand Dune 07",
+          "transform": {
+            "px": -7.8,
+            "py": 0.21,
+            "pz": -13.02,
+            "rx": 0,
+            "ry": -0.044,
+            "rz": 0,
+            "sx": 13.19,
+            "sy": 0.43,
+            "sz": 13.8
+          }
+        },
+        {
+          "id": "sand_dune_08",
+          "type": "block",
+          "name": "Beach Sand Dune 08",
+          "transform": {
+            "px": -3.64,
+            "py": 0.34,
+            "pz": -8.82,
+            "rx": 0,
+            "ry": -0.077,
+            "rz": 0,
+            "sx": 11.22,
+            "sy": 0.69,
+            "sz": 13.64
+          }
+        },
+        {
+          "id": "sand_dune_09",
+          "type": "block",
+          "name": "Beach Sand Dune 09",
+          "transform": {
+            "px": -0.64,
+            "py": 0.34,
+            "pz": -6.34,
+            "rx": 0,
+            "ry": -0.013,
+            "rz": 0,
+            "sx": 9.59,
+            "sy": 0.69,
+            "sz": 8.65
+          }
+        },
+        {
+          "id": "sand_dune_10",
+          "type": "block",
+          "name": "Beach Sand Dune 10",
+          "transform": {
+            "px": 0.07,
+            "py": 0.27,
+            "pz": -2.43,
+            "rx": 0,
+            "ry": 0.015,
+            "rz": 0,
+            "sx": 11.07,
+            "sy": 0.54,
+            "sz": 10.31
+          }
+        },
+        {
+          "id": "sand_dune_11",
+          "type": "block",
+          "name": "Beach Sand Dune 11",
+          "transform": {
+            "px": -0.14,
+            "py": 0.15,
+            "pz": 2.52,
+            "rx": 0,
+            "ry": 0.044,
+            "rz": 0,
+            "sx": 13.55,
+            "sy": 0.3,
+            "sz": 11.23
+          }
+        },
+        {
+          "id": "sand_dune_12",
+          "type": "block",
+          "name": "Beach Sand Dune 12",
+          "transform": {
+            "px": 3.49,
+            "py": 0.23,
+            "pz": 5.74,
+            "rx": 0,
+            "ry": -0.034,
+            "rz": 0,
+            "sx": 8.42,
+            "sy": 0.45,
+            "sz": 11.99
+          }
+        },
+        {
+          "id": "sand_dune_13",
+          "type": "block",
+          "name": "Beach Sand Dune 13",
+          "transform": {
+            "px": 3.47,
+            "py": 0.29,
+            "pz": 9.81,
+            "rx": 0,
+            "ry": -0.018,
+            "rz": 0,
+            "sx": 9.8,
+            "sy": 0.59,
+            "sz": 9.86
+          }
+        },
+        {
+          "id": "sand_dune_14",
+          "type": "block",
+          "name": "Beach Sand Dune 14",
+          "transform": {
+            "px": 5.5,
+            "py": 0.17,
+            "pz": 10.97,
+            "rx": 0,
+            "ry": 0.035,
+            "rz": 0,
+            "sx": 10.52,
+            "sy": 0.35,
+            "sz": 13.64
+          }
+        },
+        {
+          "id": "sand_dune_15",
+          "type": "block",
+          "name": "Beach Sand Dune 15",
+          "transform": {
+            "px": 9.19,
+            "py": 0.21,
+            "pz": 15.62,
+            "rx": 0,
+            "ry": -0.043,
+            "rz": 0,
+            "sx": 11.29,
+            "sy": 0.42,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "sand_dune_16",
+          "type": "block",
+          "name": "Beach Sand Dune 16",
+          "transform": {
+            "px": 8.98,
+            "py": 0.28,
+            "pz": 18.85,
+            "rx": 0,
+            "ry": -0.057,
+            "rz": 0,
+            "sx": 10.79,
+            "sy": 0.56,
+            "sz": 10.65
+          }
+        },
+        {
+          "id": "sand_dune_17",
+          "type": "block",
+          "name": "Beach Sand Dune 17",
+          "transform": {
+            "px": 10.84,
+            "py": 0.31,
+            "pz": 23.5,
+            "rx": 0,
+            "ry": 0.003,
+            "rz": 0,
+            "sx": 9.02,
+            "sy": 0.62,
+            "sz": 8.51
+          }
+        },
+        {
+          "id": "sand_dune_18",
+          "type": "block",
+          "name": "Beach Sand Dune 18",
+          "transform": {
+            "px": 13.16,
+            "py": 0.32,
+            "pz": 24.6,
+            "rx": 0,
+            "ry": -0.055,
+            "rz": 0,
+            "sx": 12.51,
+            "sy": 0.63,
+            "sz": 12.04
+          }
+        },
+        {
+          "id": "sand_dune_19",
+          "type": "block",
+          "name": "Beach Sand Dune 19",
+          "transform": {
+            "px": 13.11,
+            "py": 0.2,
+            "pz": 26.73,
+            "rx": 0,
+            "ry": -0.085,
+            "rz": 0,
+            "sx": 10.85,
+            "sy": 0.4,
+            "sz": 13.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_shoreline",
+      "type": "group",
+      "name": "Shoreline & Ocean (Right & Background)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "ocean_water_01",
+          "type": "block",
+          "name": "Ocean Water Surface 01",
+          "transform": {
+            "px": 20.9,
+            "py": 0.05,
+            "pz": -35.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_02",
+          "type": "block",
+          "name": "Ocean Water Surface 02",
+          "transform": {
+            "px": 22.41,
+            "py": 0.05,
+            "pz": -28.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_03",
+          "type": "block",
+          "name": "Ocean Water Surface 03",
+          "transform": {
+            "px": 19.36,
+            "py": 0.05,
+            "pz": -22.27,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_04",
+          "type": "block",
+          "name": "Ocean Water Surface 04",
+          "transform": {
+            "px": 22.87,
+            "py": 0.05,
+            "pz": -15.91,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_05",
+          "type": "block",
+          "name": "Ocean Water Surface 05",
+          "transform": {
+            "px": 21.46,
+            "py": 0.05,
+            "pz": -9.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_06",
+          "type": "block",
+          "name": "Ocean Water Surface 06",
+          "transform": {
+            "px": 19.71,
+            "py": 0.05,
+            "pz": -3.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_07",
+          "type": "block",
+          "name": "Ocean Water Surface 07",
+          "transform": {
+            "px": 22.59,
+            "py": 0.05,
+            "pz": 3.18,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_08",
+          "type": "block",
+          "name": "Ocean Water Surface 08",
+          "transform": {
+            "px": 18.04,
+            "py": 0.05,
+            "pz": 9.55,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_09",
+          "type": "block",
+          "name": "Ocean Water Surface 09",
+          "transform": {
+            "px": 23.26,
+            "py": 0.05,
+            "pz": 15.91,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_10",
+          "type": "block",
+          "name": "Ocean Water Surface 10",
+          "transform": {
+            "px": 23.39,
+            "py": 0.05,
+            "pz": 22.27,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "ocean_water_11",
+          "type": "block",
+          "name": "Ocean Water Surface 11",
+          "transform": {
+            "px": 18.75,
+            "py": 0.05,
+            "pz": 28.64,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 20.0,
+            "sy": 0.1,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "foam_line_01",
+          "type": "block",
+          "name": "Shoreline Foam Crest 01",
+          "transform": {
+            "px": 10.0,
+            "py": 0.12,
+            "pz": -32.0,
+            "rx": 0,
+            "ry": -0.015,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_02",
+          "type": "block",
+          "name": "Shoreline Foam Crest 02",
+          "transform": {
+            "px": 10.57,
+            "py": 0.12,
+            "pz": -27.43,
+            "rx": 0,
+            "ry": -0.065,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_03",
+          "type": "block",
+          "name": "Shoreline Foam Crest 03",
+          "transform": {
+            "px": 11.14,
+            "py": 0.12,
+            "pz": -22.86,
+            "rx": 0,
+            "ry": 0.092,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_04",
+          "type": "block",
+          "name": "Shoreline Foam Crest 04",
+          "transform": {
+            "px": 11.71,
+            "py": 0.12,
+            "pz": -18.29,
+            "rx": 0,
+            "ry": 0.004,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_05",
+          "type": "block",
+          "name": "Shoreline Foam Crest 05",
+          "transform": {
+            "px": 12.29,
+            "py": 0.12,
+            "pz": -13.71,
+            "rx": 0,
+            "ry": -0.09,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_06",
+          "type": "block",
+          "name": "Shoreline Foam Crest 06",
+          "transform": {
+            "px": 12.86,
+            "py": 0.12,
+            "pz": -9.14,
+            "rx": 0,
+            "ry": -0.05,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_07",
+          "type": "block",
+          "name": "Shoreline Foam Crest 07",
+          "transform": {
+            "px": 13.43,
+            "py": 0.12,
+            "pz": -4.57,
+            "rx": 0,
+            "ry": 0.07,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_08",
+          "type": "block",
+          "name": "Shoreline Foam Crest 08",
+          "transform": {
+            "px": 14.0,
+            "py": 0.12,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": -0.009,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_09",
+          "type": "block",
+          "name": "Shoreline Foam Crest 09",
+          "transform": {
+            "px": 14.57,
+            "py": 0.12,
+            "pz": 4.57,
+            "rx": 0,
+            "ry": 0.06,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_10",
+          "type": "block",
+          "name": "Shoreline Foam Crest 10",
+          "transform": {
+            "px": 15.14,
+            "py": 0.12,
+            "pz": 9.14,
+            "rx": 0,
+            "ry": 0.034,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_11",
+          "type": "block",
+          "name": "Shoreline Foam Crest 11",
+          "transform": {
+            "px": 15.71,
+            "py": 0.12,
+            "pz": 13.71,
+            "rx": 0,
+            "ry": 0.098,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_12",
+          "type": "block",
+          "name": "Shoreline Foam Crest 12",
+          "transform": {
+            "px": 16.29,
+            "py": 0.12,
+            "pz": 18.29,
+            "rx": 0,
+            "ry": 0.019,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_13",
+          "type": "block",
+          "name": "Shoreline Foam Crest 13",
+          "transform": {
+            "px": 16.86,
+            "py": 0.12,
+            "pz": 22.86,
+            "rx": 0,
+            "ry": 0.09,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "foam_line_14",
+          "type": "block",
+          "name": "Shoreline Foam Crest 14",
+          "transform": {
+            "px": 17.43,
+            "py": 0.12,
+            "pz": 27.43,
+            "rx": 0,
+            "ry": 0.078,
+            "rz": 0,
+            "sx": 3.5,
+            "sy": 0.15,
+            "sz": 4.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_statue_liberty",
+      "type": "group",
+      "name": "Monumental Half-Buried Liberty Statue",
+      "transform": {
+        "px": 1.78,
+        "py": -0.59,
+        "pz": -5.56,
+        "rx": 2.97,
+        "ry": 0.07,
+        "rz": -3.05,
+        "sx": 2.01,
+        "sy": 2.01,
+        "sz": 2.01
+      },
+      "children": [
+        {
+          "id": "toga_sand_base_1",
+          "type": "block",
+          "name": "Toga Sand Base Front Left",
+          "transform": {
+            "px": -1.2,
+            "py": 0.6,
+            "pz": 0.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.6,
+            "sy": 1.4,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "toga_sand_base_2",
+          "type": "block",
+          "name": "Toga Sand Base Front Right",
+          "transform": {
+            "px": 1.4,
+            "py": 0.5,
+            "pz": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.4,
+            "sy": 1.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "toga_sand_base_3",
+          "type": "block",
+          "name": "Toga Back Base Sand",
+          "transform": {
+            "px": 0.0,
+            "py": 0.7,
+            "pz": -1.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.0,
+            "sy": 1.5,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "torso_chest_upper",
+          "type": "block",
+          "name": "Upper Chest Core Volume",
+          "transform": {
+            "px": 0.0,
+            "py": 2.2,
+            "pz": 0.0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.6,
+            "sy": 2.2,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "chest_drape_left",
+          "type": "block",
+          "name": "Chest Toga Fold Left",
+          "transform": {
+            "px": -1.1,
+            "py": 2.4,
+            "pz": 0.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.5,
+            "sy": 1.8,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "chest_drape_right",
+          "type": "block",
+          "name": "Chest Toga Fold Right",
+          "transform": {
+            "px": 1.1,
+            "py": 2.3,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.5,
+            "sy": 1.8,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "shoulder_left_base",
+          "type": "block",
+          "name": "Left Shoulder Base",
+          "transform": {
+            "px": -1.9,
+            "py": 2.9,
+            "pz": -0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 1.4,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "shoulder_right_base",
+          "type": "block",
+          "name": "Right Raised Arm Shoulder",
+          "transform": {
+            "px": 2.0,
+            "py": 3.1,
+            "pz": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.7,
+            "sy": 1.6,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "collar_mantle_front",
+          "type": "block",
+          "name": "Collar Robe Mantle Front",
+          "transform": {
+            "px": 0.0,
+            "py": 3.3,
+            "pz": 0.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.6,
+            "sy": 1.0,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "statue_neck",
+          "type": "block",
+          "name": "Statue Neck Column",
+          "transform": {
+            "px": 0.0,
+            "py": 4.3,
+            "pz": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 1.2,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "statue_head_cubic",
+          "type": "block",
+          "name": "Tilted Liberty Head Block",
+          "transform": {
+            "px": 0.1,
+            "py": 5.6,
+            "pz": 0.2,
+            "rx": 0.1,
+            "ry": 0.1,
+            "rz": -0.05,
+            "sx": 2.0,
+            "sy": 2.2,
+            "sz": 1.9
+          }
+        },
+        {
+          "id": "statue_face_mask",
+          "type": "block",
+          "name": "Statue Facial Features Mask",
+          "transform": {
+            "px": 0.8,
+            "py": 5.4,
+            "pz": 0.7,
+            "rx": 0.1,
+            "ry": 0.1,
+            "rz": -0.05,
+            "sx": 1.4,
+            "sy": 1.4,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "crown_spike_1",
+          "type": "block",
+          "name": "Crown Sharp Spike 1 (-50.0 deg)",
+          "transform": {
+            "px": -0.67,
+            "py": 6.99,
+            "pz": 0.36,
+            "rx": 0.2,
+            "ry": 1.0,
+            "rz": 0.65,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "crown_spike_2",
+          "type": "block",
+          "name": "Crown Sharp Spike 2 (-30.0 deg)",
+          "transform": {
+            "px": -0.4,
+            "py": 7.04,
+            "pz": 0.42,
+            "rx": 0.22,
+            "ry": 0.95,
+            "rz": 0.39,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "crown_spike_3",
+          "type": "block",
+          "name": "Crown Sharp Spike 3 (-10.0 deg)",
+          "transform": {
+            "px": -0.07,
+            "py": 7.07,
+            "pz": 0.45,
+            "rx": 0.23,
+            "ry": 0.88,
+            "rz": 0.13,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "crown_spike_4",
+          "type": "block",
+          "name": "Crown Sharp Spike 4 (10.0 deg)",
+          "transform": {
+            "px": 0.27,
+            "py": 7.07,
+            "pz": 0.45,
+            "rx": 0.23,
+            "ry": 0.82,
+            "rz": -0.13,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "crown_spike_5",
+          "type": "block",
+          "name": "Crown Sharp Spike 5 (30.0 deg)",
+          "transform": {
+            "px": 0.6,
+            "py": 7.04,
+            "pz": 0.42,
+            "rx": 0.22,
+            "ry": 0.75,
+            "rz": -0.39,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "crown_spike_6",
+          "type": "block",
+          "name": "Crown Sharp Spike 6 (50.0 deg)",
+          "transform": {
+            "px": 0.87,
+            "py": 6.99,
+            "pz": 0.36,
+            "rx": 0.2,
+            "ry": 0.7,
+            "rz": -0.65,
+            "sx": 0.22,
+            "sy": 2.3,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "arm_bicep_upper",
+          "type": "block",
+          "name": "Right Bicep Arm Segment",
+          "transform": {
+            "px": 2.4,
+            "py": 5.2,
+            "pz": 0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 2.2,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "arm_forearm_upper",
+          "type": "block",
+          "name": "Right Forearm Raising Torch",
+          "transform": {
+            "px": 2.9,
+            "py": 8.2,
+            "pz": 0.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.9,
+            "sy": 2.6,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "arm_wrist_hand",
+          "type": "block",
+          "name": "Hand Gripping Torch Base",
+          "transform": {
+            "px": 3.0,
+            "py": 9.8,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 1.1,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "torch_handle_gallery",
+          "type": "block",
+          "name": "Torch Gallery Platform Rim",
+          "transform": {
+            "px": 3.1,
+            "py": 10.6,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.3,
+            "sy": 0.8,
+            "sz": 1.3
+          }
+        },
+        {
+          "id": "torch_flame_core",
+          "type": "block",
+          "name": "Torch Flame Core Volume",
+          "transform": {
+            "px": 3.1,
+            "py": 11.6,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "torch_flame_spire",
+          "type": "block",
+          "name": "Torch Flame Top Spire",
+          "transform": {
+            "px": 3.0,
+            "py": 12.6,
+            "pz": 0.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 1.5,
+            "sz": 0.8
+          }
+        }
+      ]
+    }
+  ]
+}

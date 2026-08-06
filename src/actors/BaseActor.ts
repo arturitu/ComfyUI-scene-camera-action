@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { MotionFrame } from '../types'
+import type { MotionFrame, SpawnPoint } from '../types'
 import * as config from '../threeConfig'
 
 // Static scratch instances to avoid per-frame GC allocations
@@ -17,6 +17,8 @@ export abstract class BaseActor {
   public colliderWireframe: THREE.Object3D | null = null
   public showCollider: boolean = false
 
+  public lastSpawnPoint?: SpawnPoint
+
   constructor() {
     this.group = new THREE.Group()
     this.group.name = 'actorGroup'
@@ -24,9 +26,18 @@ export abstract class BaseActor {
     this.group.rotation.y = this.rotationY
   }
 
-  public resetToOrigin(): void {
-    this.position.set(0, config.GROUND_Y, 2)
-    this.rotationY = config.DEFAULT_ACTOR_ROTATION_Y
+  public resetToOrigin(sp?: SpawnPoint): void {
+    if (sp) {
+      this.lastSpawnPoint = sp
+    }
+    const targetSp = sp || this.lastSpawnPoint
+    const px = targetSp?.px ?? 0
+    const py = targetSp?.py ?? config.GROUND_Y
+    const pz = targetSp?.pz ?? 2
+    const ry = targetSp?.ry ?? config.DEFAULT_ACTOR_ROTATION_Y
+
+    this.position.set(px, py, pz)
+    this.rotationY = ry
     this.velocity.set(0, 0, 0)
     this.isOnGround = true
     this.group.position.copy(this.position)

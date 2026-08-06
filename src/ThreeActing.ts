@@ -9,6 +9,7 @@ import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
 import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
 import { StageEnvironment } from './scene/StageEnvironment'
+import { SpawnPointHelper } from './scene/SpawnPointHelper'
 
 export class ThreeActing {
   private container: HTMLElement
@@ -25,6 +26,8 @@ export class ThreeActing {
   private connectedThreeScene: any = null
   private keysPressed: Record<string, boolean> = {}
   private actingCameraTarget = new THREE.Vector3()
+  private cachedSceneExtent = 15.0
+  private spawnPointHelper: SpawnPointHelper | null = null
 
   private colliderBVH: MeshBVH | null = null
   private colliderVisualizer: THREE.Object3D | null = null
@@ -158,7 +161,7 @@ export class ThreeActing {
     } else {
       this.isPlaybackMode = false
       if (this.actorController) {
-        this.actorController.resetToOrigin()
+        this.resetActorPosition()
         this.actorController.resetAnimation('Idle_A')
       }
     }
@@ -253,6 +256,10 @@ export class ThreeActing {
     const stageEnv = new StageEnvironment()
     this.environmentMeshes = stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
 
+    // Dynamically adjust fog based on environment scene extent
+    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
+
     // 2. Build BVH Collision Tree
     const geometries: THREE.BufferGeometry[] = []
 
@@ -328,6 +335,10 @@ export class ThreeActing {
     } else {
       this.colliderBVH = null
     }
+
+    if (this.actorController && !this.isPlaying && !this.isRecording) {
+      this.resetActorPosition()
+    }
   }
 
   private buildActor(type?: 'human' | 'car'): void {
@@ -339,6 +350,20 @@ export class ThreeActing {
     this.actorController = ActorFactory.create(charType)
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
+    this.resetActorPosition()
+  }
+
+  public resetActorPosition(): void {
+    if (this.actorController) {
+      const sceneData = this.getSceneData()
+      this.actorController.resetToOrigin(sceneData?.spawn_point)
+
+      // Immediately set camera view targeting actor spawn position
+      const pos = this.actorController.position
+      this.camera.position.set(pos.x - 8, pos.y + 4, pos.z)
+      this.actingCameraTarget.set(pos.x, pos.y + 0.5, pos.z)
+      this.camera.lookAt(this.actingCameraTarget)
+    }
   }
 
   private bindEvents(): void {
@@ -469,12 +494,6 @@ export class ThreeActing {
     return this.displayBVH
   }
 
-  public resetActorPosition(): void {
-    if (this.actorController) {
-      this.actorController.resetToOrigin()
-    }
-  }
-
   private onResize(): void {
     const w = this.container.clientWidth
     const h = this.container.clientHeight
@@ -504,6 +523,8 @@ export class ThreeActing {
       this.actingCameraTarget.lerp(idealTarget, 0.12)
       this.camera.lookAt(this.actingCameraTarget)
     }
+
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
 
     this.renderer.render(this.scene, this.camera)
   }
@@ -579,6 +600,10 @@ export class ThreeActing {
   }
 
   public dispose(): void {
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.dispose()
+    }
+
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null

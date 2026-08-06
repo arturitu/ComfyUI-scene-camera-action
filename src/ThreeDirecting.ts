@@ -24,6 +24,7 @@ export class ThreeDirecting {
   private wideTarget = new THREE.Vector3(0, 0, 0)
   private tpvTarget = new THREE.Vector3(0, 0, 0)
   private sideTarget = new THREE.Vector3(0, 0, 0)
+  private cachedSceneExtent = 15.0
   private cachedEnvBBox = new THREE.Box3()
   private cachedBBoxCenter = new THREE.Vector3()
   private cachedBBoxSize = new THREE.Vector3()
@@ -197,6 +198,10 @@ export class ThreeDirecting {
     } else {
       this.cachedEnvBBox.makeEmpty()
     }
+
+    // Dynamically adjust fog based on environment scene extent
+    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent)
 
     this.buildActor()
   }
@@ -391,6 +396,9 @@ export class ThreeDirecting {
       }
       this.camera.lookAt(this.sideTarget)
     }
+
+    const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
+    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget)
 
     this.lastCameraMode = activeMode
   }

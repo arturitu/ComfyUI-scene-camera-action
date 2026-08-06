@@ -121,7 +121,7 @@ export class StageEnvironment {
    * Helper utility to identify standard stage elements (Lights, Floor, Grid, BoxHelpers, TransformControls).
    */
   public static isStageObject(object: THREE.Object3D, transformControlsHelper?: THREE.Object3D): boolean {
-    if (object.name === 'floor' || object.name === '__box_helper__') return true
+    if (object.name === 'floor' || object.name === '__box_helper__' || object.name === '__spawn_point_indicator__') return true
     if (
       object.type === 'AmbientLight' ||
       object.type === 'DirectionalLight' ||

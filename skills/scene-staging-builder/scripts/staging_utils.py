@@ -90,6 +90,16 @@ def generate_curved_track_blocks(
     return blocks
 
 
+def create_spawn_point(px: float = 0.0, py: float = 0.0, pz: float = 2.0, ry: float = 0.0) -> Dict[str, float]:
+    """Creates a spawn_point dict for actor placement."""
+    return {
+        "px": float(px),
+        "py": float(py),
+        "pz": float(pz),
+        "ry": float(ry)
+    }
+
+
 def validate_scene_state(scene_data: Dict[str, Any]) -> Dict[str, Any]:
     """Validates SceneState structure and updates total block count."""
     if not isinstance(scene_data, dict):
@@ -99,6 +109,15 @@ def validate_scene_state(scene_data: Dict[str, Any]) -> Dict[str, Any]:
     nodes = scene_data.get("nodes", [])
     if not isinstance(nodes, list):
         nodes = []
+
+    if "spawn_point" in scene_data and isinstance(scene_data["spawn_point"], dict):
+        sp = scene_data["spawn_point"]
+        scene_data["spawn_point"] = {
+            "px": float(sp.get("px", 0.0)),
+            "py": float(sp.get("py", 0.0)),
+            "pz": float(sp.get("pz", 2.0)),
+            "ry": float(sp.get("ry", 0.0))
+        }
 
     block_count = 0
 

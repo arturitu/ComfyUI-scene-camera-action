@@ -1,21 +1,21 @@
 {
   "type": "cube_scene",
-  "num_assets": 84,
+  "num_assets": 78,
   "nodes": [
     {
       "id": "group_7001",
       "type": "group",
       "name": "West Massive Parallel Concrete Wall",
       "transform": {
-        "px": -13.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": -13,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -23,12 +23,12 @@
           "type": "block",
           "name": "West Base Block 1",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -40.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -40,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -40,13 +40,13 @@
           "name": "West Upper Block 1",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -39.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -61,7 +61,7 @@
             "rx": -0.04,
             "ry": -0.02,
             "rz": 0.05,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -71,12 +71,12 @@
           "type": "block",
           "name": "West Base Block 2",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -30.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -30,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -87,12 +87,12 @@
           "type": "block",
           "name": "West Base Block 3",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -20.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -20,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -104,13 +104,13 @@
           "name": "West Upper Block 3",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -19.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -125,7 +125,7 @@
             "rx": -0.04,
             "ry": -0.02,
             "rz": 0.05,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -135,12 +135,12 @@
           "type": "block",
           "name": "West Base Block 4",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -10.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -10,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -152,13 +152,13 @@
           "name": "West Upper Block 4",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -9.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -167,12 +167,12 @@
           "type": "block",
           "name": "West Base Block 5",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 0.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -189,7 +189,7 @@
             "rx": -0.04,
             "ry": -0.02,
             "rz": 0.05,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -199,12 +199,12 @@
           "type": "block",
           "name": "West Base Block 6",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 10.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 10,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -216,13 +216,13 @@
           "name": "West Upper Block 6",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": 10.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -231,12 +231,12 @@
           "type": "block",
           "name": "West Base Block 7",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 20.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 20,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -248,13 +248,13 @@
           "name": "West Upper Block 7",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": 20.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -269,7 +269,7 @@
             "rx": -0.04,
             "ry": -0.02,
             "rz": 0.05,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -279,12 +279,12 @@
           "type": "block",
           "name": "West Base Block 8",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 30.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 30,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -295,12 +295,12 @@
           "type": "block",
           "name": "West Base Block 9",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 40.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 40,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -312,13 +312,13 @@
           "name": "West Upper Block 9",
           "transform": {
             "px": -0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": 40.5,
             "rx": 0.02,
             "ry": 0.05,
             "rz": -0.03,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -333,7 +333,7 @@
             "rx": -0.04,
             "ry": -0.02,
             "rz": 0.05,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -345,15 +345,15 @@
       "type": "group",
       "name": "East Massive Parallel Concrete Wall",
       "transform": {
-        "px": 13.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": 13,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -361,12 +361,12 @@
           "type": "block",
           "name": "East Base Block 1",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -40.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -40,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -378,13 +378,13 @@
           "name": "East Upper Block 1",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -40.4,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -393,12 +393,12 @@
           "type": "block",
           "name": "East Base Block 2",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -30.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -30,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -410,13 +410,13 @@
           "name": "East Upper Block 2",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -30.4,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -431,7 +431,7 @@
             "rx": 0.05,
             "ry": 0.03,
             "rz": -0.04,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -441,12 +441,12 @@
           "type": "block",
           "name": "East Base Block 3",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -20.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -20,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -457,12 +457,12 @@
           "type": "block",
           "name": "East Base Block 4",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": -10.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": -10,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -474,13 +474,13 @@
           "name": "East Upper Block 4",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -10.4,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -495,7 +495,7 @@
             "rx": 0.05,
             "ry": 0.03,
             "rz": -0.04,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -505,12 +505,12 @@
           "type": "block",
           "name": "East Base Block 5",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 0.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -522,13 +522,13 @@
           "name": "East Upper Block 5",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": -0.4,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -537,12 +537,12 @@
           "type": "block",
           "name": "East Base Block 6",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 10.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 10,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -559,7 +559,7 @@
             "rx": 0.05,
             "ry": 0.03,
             "rz": -0.04,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -569,12 +569,12 @@
           "type": "block",
           "name": "East Base Block 7",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 20.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 20,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -586,13 +586,13 @@
           "name": "East Upper Block 7",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": 19.6,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -601,12 +601,12 @@
           "type": "block",
           "name": "East Base Block 8",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 30.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 30,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -618,13 +618,13 @@
           "name": "East Upper Block 8",
           "transform": {
             "px": 0.2,
-            "py": 5.0,
+            "py": 5,
             "pz": 29.6,
             "rx": -0.03,
             "ry": -0.04,
             "rz": 0.02,
             "sx": 2.4,
-            "sy": 3.0,
+            "sy": 3,
             "sz": 8.8
           }
         },
@@ -639,7 +639,7 @@
             "rx": 0.05,
             "ry": 0.03,
             "rz": -0.04,
-            "sx": 2.0,
+            "sx": 2,
             "sy": 2.2,
             "sz": 7.5
           }
@@ -649,12 +649,12 @@
           "type": "block",
           "name": "East Base Block 9",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.75,
-            "pz": 40.0,
-            "rx": 0.0,
-            "ry": 0.0,
-            "rz": 0.0,
+            "pz": 40,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
             "sx": 2.8,
             "sy": 3.5,
             "sz": 9.5
@@ -667,15 +667,15 @@
       "type": "group",
       "name": "Midpoint Low Crouch Arch Structure",
       "transform": {
-        "px": 0.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -685,9 +685,9 @@
           "transform": {
             "px": -10.5,
             "py": 2.25,
-            "pz": 0.0,
-            "rx": 0.0,
-            "ry": 0.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
             "rz": 0.05,
             "sx": 1.8,
             "sy": 4.5,
@@ -701,9 +701,9 @@
           "transform": {
             "px": 10.5,
             "py": 2.25,
-            "pz": 0.0,
-            "rx": 0.0,
-            "ry": 0.0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
             "rz": -0.05,
             "sx": 1.8,
             "sy": 4.5,
@@ -715,14 +715,14 @@
           "type": "block",
           "name": "Low Crouch Beam (Clearance Y=1.45m)",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 1.95,
-            "pz": 0.0,
+            "pz": 0,
             "rx": 0.02,
-            "ry": 0.0,
-            "rz": 0.0,
-            "sx": 23.0,
-            "sy": 1.0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 23,
+            "sy": 1,
             "sz": 1.6
           }
         },
@@ -731,13 +731,13 @@
           "type": "block",
           "name": "Suspended Truss Top Chord",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 3.1,
-            "pz": 0.0,
+            "pz": 0,
             "rx": -0.05,
             "ry": 0.02,
             "rz": 0.02,
-            "sx": 21.0,
+            "sx": 21,
             "sy": 0.8,
             "sz": 2.2
           }
@@ -747,13 +747,13 @@
           "type": "block",
           "name": "Overhead Collapsed Roof Slab",
           "transform": {
-            "px": -2.0,
+            "px": -2,
             "py": 3.85,
             "pz": 0.3,
             "rx": 0.15,
             "ry": -0.05,
             "rz": -0.08,
-            "sx": 14.0,
+            "sx": 14,
             "sy": 0.5,
             "sz": 4.5
           }
@@ -765,15 +765,15 @@
       "type": "group",
       "name": "Vaulting & Jumping Pathway Obstacles",
       "transform": {
-        "px": 0.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -783,7 +783,7 @@
           "transform": {
             "px": -0.5,
             "py": 1.1,
-            "pz": -28.0,
+            "pz": -28,
             "rx": 0.61,
             "ry": 0.2,
             "rz": -0.1,
@@ -815,13 +815,13 @@
           "transform": {
             "px": 1.2,
             "py": 1.25,
-            "pz": -14.0,
+            "pz": -14,
             "rx": -0.73,
             "ry": -0.25,
             "rz": 0.15,
             "sx": 0.55,
             "sy": 0.55,
-            "sz": 6.0
+            "sz": 6
           }
         },
         {
@@ -829,14 +829,14 @@
           "type": "block",
           "name": "Concrete Debris Heap North-Mid",
           "transform": {
-            "px": 1.0,
+            "px": 1,
             "py": 0.5,
             "pz": -12.5,
             "rx": -0.15,
             "ry": 0.2,
             "rz": 0.1,
             "sx": 2.8,
-            "sy": 1.0,
+            "sy": 1,
             "sz": 3.2
           }
         },
@@ -845,9 +845,9 @@
           "type": "block",
           "name": "Crossed Beam Vault Left (38 deg)",
           "transform": {
-            "px": -1.0,
+            "px": -1,
             "py": 1.2,
-            "pz": 15.0,
+            "pz": 15,
             "rx": 0.66,
             "ry": -0.3,
             "rz": -0.2,
@@ -877,12 +877,12 @@
           "type": "block",
           "name": "Concrete Block Obstacle Base",
           "transform": {
-            "px": 0.0,
+            "px": 0,
             "py": 0.45,
-            "pz": 15.0,
+            "pz": 15,
             "rx": 0.05,
             "ry": 0.1,
-            "rz": 0.0,
+            "rz": 0,
             "sx": 3.5,
             "sy": 0.9,
             "sz": 2.2
@@ -895,7 +895,7 @@
           "transform": {
             "px": -0.2,
             "py": 1.2,
-            "pz": 30.0,
+            "pz": 30,
             "rx": -0.7,
             "ry": 0.18,
             "rz": -0.12,
@@ -915,7 +915,7 @@
             "rx": 0.12,
             "ry": -0.25,
             "rz": 0.08,
-            "sx": 3.0,
+            "sx": 3,
             "sy": 1.1,
             "sz": 2.8
           }
@@ -927,15 +927,15 @@
       "type": "group",
       "name": "Broken Industrial Pillars (Varying Heights)",
       "transform": {
-        "px": 0.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -945,9 +945,9 @@
           "transform": {
             "px": -7.5,
             "py": 3.75,
-            "pz": -35.0,
+            "pz": -35,
             "rx": 0.04,
-            "ry": 0.0,
+            "ry": 0,
             "rz": -0.05,
             "sx": 1.2,
             "sy": 7.5,
@@ -959,9 +959,9 @@
           "type": "block",
           "name": "Broken Pillar West 2 (H=4.2m)",
           "transform": {
-            "px": -8.0,
+            "px": -8,
             "py": 2.1,
-            "pz": -21.0,
+            "pz": -21,
             "rx": -0.08,
             "ry": 0.2,
             "rz": 0.1,
@@ -975,9 +975,9 @@
           "type": "block",
           "name": "Fractured Stub West 3 (H=2.4m)",
           "transform": {
-            "px": -7.0,
+            "px": -7,
             "py": 1.2,
-            "pz": -8.0,
+            "pz": -8,
             "rx": 0.12,
             "ry": -0.15,
             "rz": -0.08,
@@ -993,7 +993,7 @@
           "transform": {
             "px": -7.8,
             "py": 4.4,
-            "pz": 8.0,
+            "pz": 8,
             "rx": -0.03,
             "ry": 0.05,
             "rz": -0.04,
@@ -1009,12 +1009,12 @@
           "transform": {
             "px": -7.2,
             "py": 2.5,
-            "pz": 24.0,
+            "pz": 24,
             "rx": 0.06,
             "ry": -0.1,
             "rz": 0.07,
             "sx": 1.1,
-            "sy": 5.0,
+            "sy": 5,
             "sz": 1.1
           }
         },
@@ -1025,7 +1025,7 @@
           "transform": {
             "px": -8.2,
             "py": 1.55,
-            "pz": 38.0,
+            "pz": 38,
             "rx": -0.1,
             "ry": 0.25,
             "rz": -0.12,
@@ -1041,7 +1041,7 @@
           "transform": {
             "px": 7.8,
             "py": 4.1,
-            "pz": -36.0,
+            "pz": -36,
             "rx": -0.05,
             "ry": 0.1,
             "rz": 0.04,
@@ -1057,7 +1057,7 @@
           "transform": {
             "px": 7.2,
             "py": 1.9,
-            "pz": -22.0,
+            "pz": -22,
             "rx": 0.1,
             "ry": -0.18,
             "rz": -0.09,
@@ -1073,7 +1073,7 @@
           "transform": {
             "px": 8.2,
             "py": 2.8,
-            "pz": -6.0,
+            "pz": -6,
             "rx": -0.06,
             "ry": 0.12,
             "rz": 0.08,
@@ -1087,9 +1087,9 @@
           "type": "block",
           "name": "Fractured Stub East 4 (H=2.8m)",
           "transform": {
-            "px": 7.0,
+            "px": 7,
             "py": 1.4,
-            "pz": 10.0,
+            "pz": 10,
             "rx": 0.15,
             "ry": -0.2,
             "rz": -0.14,
@@ -1103,9 +1103,9 @@
           "type": "block",
           "name": "Tall Pillar East 5 (H=7.8m)",
           "transform": {
-            "px": 8.0,
+            "px": 8,
             "py": 3.9,
-            "pz": 25.0,
+            "pz": 25,
             "rx": 0.04,
             "ry": -0.08,
             "rz": -0.05,
@@ -1121,7 +1121,7 @@
           "transform": {
             "px": 7.5,
             "py": 2.25,
-            "pz": 37.0,
+            "pz": 37,
             "rx": -0.08,
             "ry": 0.15,
             "rz": 0.1,
@@ -1137,15 +1137,15 @@
       "type": "group",
       "name": "Scattered Uneven Crate Clusters",
       "transform": {
-        "px": 0.0,
-        "py": 0.0,
-        "pz": 0.0,
-        "rx": 0.0,
-        "ry": 0.0,
-        "rz": 0.0,
-        "sx": 1.0,
-        "sy": 1.0,
-        "sz": 1.0
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
       },
       "children": [
         {
@@ -1153,12 +1153,12 @@
           "type": "block",
           "name": "Crate Large NW 1",
           "transform": {
-            "px": -6.0,
+            "px": -6,
             "py": 0.9,
-            "pz": -33.0,
-            "rx": 0.0,
+            "pz": -33,
+            "rx": 0,
             "ry": 0.15,
-            "rz": 0.0,
+            "rz": 0,
             "sx": 1.8,
             "sy": 1.8,
             "sz": 1.8
@@ -1191,9 +1191,9 @@
             "rx": -0.1,
             "ry": 0.4,
             "rz": 0.12,
-            "sx": 1.0,
-            "sy": 1.0,
-            "sz": 1.0
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
           }
         },
         {
@@ -1202,14 +1202,14 @@
           "name": "Crate Large NE 1",
           "transform": {
             "px": 6.2,
-            "py": 1.0,
-            "pz": -19.0,
-            "rx": 0.0,
+            "py": 1,
+            "pz": -19,
+            "rx": 0,
             "ry": -0.22,
-            "rz": 0.0,
-            "sx": 2.0,
-            "sy": 2.0,
-            "sz": 2.0
+            "rz": 0,
+            "sx": 2,
+            "sy": 2,
+            "sz": 2
           }
         },
         {
@@ -1235,10 +1235,10 @@
           "transform": {
             "px": -5.5,
             "py": 0.8,
-            "pz": -5.0,
-            "rx": 0.0,
+            "pz": -5,
+            "rx": 0,
             "ry": 0.35,
-            "rz": 0.0,
+            "rz": 0,
             "sx": 1.6,
             "sy": 1.6,
             "sz": 2.4
@@ -1267,10 +1267,10 @@
           "transform": {
             "px": 5.8,
             "py": 0.85,
-            "pz": 6.0,
-            "rx": 0.0,
+            "pz": 6,
+            "rx": 0,
             "ry": -0.15,
-            "rz": 0.0,
+            "rz": 0,
             "sx": 1.7,
             "sy": 1.7,
             "sz": 2.6
@@ -1287,9 +1287,9 @@
             "rx": 0.06,
             "ry": 0.25,
             "rz": 0.08,
-            "sx": 1.0,
-            "sy": 1.0,
-            "sz": 1.0
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
           }
         },
         {
@@ -1299,10 +1299,10 @@
           "transform": {
             "px": -6.2,
             "py": 0.95,
-            "pz": 22.0,
-            "rx": 0.0,
+            "pz": 22,
+            "rx": 0,
             "ry": 0.12,
-            "rz": 0.0,
+            "rz": 0,
             "sx": 1.9,
             "sy": 1.9,
             "sz": 1.9
@@ -1313,7 +1313,7 @@
           "type": "block",
           "name": "Crate Medium SW 2",
           "transform": {
-            "px": -6.0,
+            "px": -6,
             "py": 2.45,
             "pz": 22.1,
             "rx": -0.12,
@@ -1330,14 +1330,14 @@
           "name": "Crate Large SE 1",
           "transform": {
             "px": 6.5,
-            "py": 1.0,
-            "pz": 35.0,
-            "rx": 0.0,
+            "py": 1,
+            "pz": 35,
+            "rx": 0,
             "ry": -0.3,
-            "rz": 0.0,
-            "sx": 2.0,
-            "sy": 2.0,
-            "sz": 2.0
+            "rz": 0,
+            "sx": 2,
+            "sy": 2,
+            "sz": 2
           }
         },
         {
@@ -1358,5 +1358,12 @@
         }
       ]
     }
-  ]
+  ],
+  "selectedPreset": "collapsed_warehouse.json",
+  "spawn_point": {
+    "px": 7.66,
+    "py": 0,
+    "pz": -41.895,
+    "ry": -0.29
+  }
 }

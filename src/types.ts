@@ -40,11 +40,19 @@ export interface SceneGroupNode {
 
 export type SceneNode = SceneBlockNode | SceneGroupNode
 
+export interface SpawnPoint {
+  px: number
+  py: number
+  pz: number
+  ry: number
+}
+
 export interface SceneState {
   type: string
   num_assets: number
   nodes?: SceneNode[]
   selectedPreset?: string
+  spawn_point?: SpawnPoint
 }
 
 export interface ActingState {

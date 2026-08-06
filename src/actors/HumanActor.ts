@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { BaseActor } from './BaseActor'
 import * as config from '../threeConfig'
+import type { SpawnPoint } from '../types'
 
 import humanCubesGlb from '../assets/models/human-cubes-rigged.glb'
 import humanAnimsGlb from '../assets/models/human-animations.glb'
@@ -204,8 +205,8 @@ export class HumanActor extends BaseActor {
     this.playAnimation('Idle_A', 0)
   }
 
-  public override resetToOrigin(): void {
-    super.resetToOrigin()
+  public override resetToOrigin(sp?: SpawnPoint): void {
+    super.resetToOrigin(sp)
     this.filteredSpeed = 0
     this.isUserJumping = false
     this.airborneTime = 0

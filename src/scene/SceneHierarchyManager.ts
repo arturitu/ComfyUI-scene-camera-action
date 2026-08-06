@@ -95,6 +95,9 @@ export class SceneHierarchyManager {
     transformControlsHelper: THREE.Object3D,
     multiSelectionPivot: THREE.Group | null
   ): SceneNode | null {
+    if (obj.name === '__spawn_point_indicator__' || obj.name === '__spawn_point_mesh__') {
+      return null
+    }
     if (obj.type === 'Mesh' && obj.name !== 'floor') {
       const mesh = obj as THREE.Mesh
       return {

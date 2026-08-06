@@ -40,7 +40,7 @@
       "name": "Block",
       "transform": {
         "px": 7.02,
-        "py": 1.2,
+        "py": 1.22,
         "pz": 0.46,
         "rx": 0,
         "ry": 0,
@@ -57,7 +57,7 @@
       "transform": {
         "px": -7.56,
         "py": 2.01,
-        "pz": 3.02,
+        "pz": -3.59,
         "rx": 0,
         "ry": 0,
         "rz": 0,
@@ -83,5 +83,11 @@
       }
     }
   ],
-  "selectedPreset": "test-collider.json"
+  "selectedPreset": "test-collider.json",
+  "spawn_point": {
+    "px": 0,
+    "py": 0,
+    "pz": 1.715,
+    "ry": 1.588
+  }
 }

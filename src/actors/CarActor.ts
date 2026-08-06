@@ -2,6 +2,8 @@ import * as THREE from 'three'
 import { BaseActor } from './BaseActor'
 import * as config from '../threeConfig'
 
+import type { SpawnPoint } from '../types'
+
 const SLOPE_CONFIG = {
   maxRayDistance: 3.0,
   minNormalY: 0.3,
@@ -103,8 +105,8 @@ export class CarActor extends BaseActor {
     }
   }
 
-  public override resetToOrigin(): void {
-    super.resetToOrigin()
+  public override resetToOrigin(sp?: SpawnPoint): void {
+    super.resetToOrigin(sp)
     this.currentSpeed = 0
     this.prevSpeed = 0
     this.prevPlaybackSpeed = 0

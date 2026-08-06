@@ -71,8 +71,18 @@ export class SceneSelectionManager {
 
     if (count === 1) {
       const target = this.selectedObjects[0]
+      const isSpawnPoint = target.name === '__spawn_point_indicator__'
       if (transformControls) {
         transformControls.setMode(modeToUse)
+        if (isSpawnPoint && modeToUse === 'rotate') {
+          transformControls.showX = false
+          transformControls.showY = true
+          transformControls.showZ = false
+        } else {
+          transformControls.showX = true
+          transformControls.showY = true
+          transformControls.showZ = true
+        }
         transformControls.attach(target)
       }
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(true)
