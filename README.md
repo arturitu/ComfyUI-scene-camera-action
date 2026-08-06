@@ -23,7 +23,8 @@ Build your 3D environment, control and record actor movements in real time using
   - `test-collider.json`: Dedicated collider testing map.
 - **Camera & Motion Smoothing**: Smooth camera interpolation and responsive actor rotation.
 
-![v0.3.0 Preview](v0-3-0.jpg)
+[![v0.3.0 Preview](v0-3-0.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7491165268455481345/)
+👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7491165268455481345/)
 
 ### 📦 Shipped - v0.2.0
 - **Natural Language 3D Scene Builder (`SKILL.md`)**: Transform prompts or reference images into 3D stage compositions using any AI coding assistant.
