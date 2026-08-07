@@ -99,6 +99,8 @@ Compose your sequence with live multi-camera cuts along a visual playback timeli
 
 ## 💻 Installation
 
+This custom node includes a TypeScript/Vue frontend that must be built after cloning the repository. Make sure Node.js and npm are installed before continuing.
+
 Clone this repository directly into your ComfyUI `custom_nodes` directory:
 
 ```bash
@@ -106,7 +108,24 @@ cd ComfyUI/custom_nodes
 git clone https://github.com/arturitu/ComfyUI-scene-camera-action.git
 ```
 
-Restart your ComfyUI server after installation.
+Install the frontend dependencies and build the JavaScript bundle:
+
+```bash
+cd ComfyUI-scene-camera-action
+npm ci
+npm run build
+```
+
+The build should create the frontend bundle at:
+
+```text
+js/main.js
+```
+
+Restart your ComfyUI server after the build completes.
+
+> [!NOTE]
+> A plain `git clone` does not include the generated `js/` directory because build output is excluded from the repository. If the frontend is not built before starting ComfyUI, startup may fail because `ComfyUI-scene-camera-action/js` does not exist.
 
 ---
 
