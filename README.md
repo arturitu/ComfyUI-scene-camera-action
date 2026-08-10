@@ -93,7 +93,7 @@ Compose your sequence with live multi-camera cuts along a visual playback timeli
 - **Timeline Keyframing**: Add, move, and adjust camera cuts along the playback timeline.
 - **Outputs**:
   - **`Captured Video` (`VIDEO`)**: 720p HD recorded video of the directed camera sequence.
-  - **`Captured Stage` (`IMAGE`)**: 720p stage overview image capturing the exact initial frame ($t = 0.0\text{s}$) camera view.
+  - **`Captured First Frame` (`IMAGE`)**: 720p stage overview image capturing the exact initial frame ($t = 0.0\text{s}$) camera view.
 
 ---
 

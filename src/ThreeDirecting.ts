@@ -263,20 +263,24 @@ export class ThreeDirecting {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
   }
 
-  public getActiveKeyframeMode(time: number): string {
+  public getActiveKeyframe(time: number): { id: string; mode: string } {
     if (!this.keyframes || this.keyframes.length === 0) {
-      return this.state.camera_mode || 'Third Person'
+      return { id: 'default', mode: this.state.camera_mode || 'Third Person' }
     }
     const sorted = [...this.keyframes].sort((a, b) => a.t - b.t)
-    let activeMode = sorted[0].mode
+    let active = sorted[0]
     for (let i = 0; i < sorted.length; i++) {
       if (time >= sorted[i].t) {
-        activeMode = sorted[i].mode
+        active = sorted[i]
       } else {
         break
       }
     }
-    return activeMode
+    return { id: active.id, mode: active.mode }
+  }
+
+  public getActiveKeyframeMode(time: number): string {
+    return this.getActiveKeyframe(time).mode
   }
 
   public isRecordingMode = false
@@ -292,13 +296,51 @@ export class ThreeDirecting {
   }
 
   private lastCameraMode: string | null = null
+  private lastActiveKeyframeId: string | null = null
+  private forceHardCutNextCameraUpdate: boolean = false
+  private smoothedCameraYaw: number = 0
 
-  private updateCamera(): void {
+  private updateCamera(dt: number = 0.016): void {
     if (!this.actorController) return
 
     const charPos = this.actorPosition
     const rotY = this.actorController.group.rotation.y
-    const activeMode = this.getActiveKeyframeMode(this.playbackController.getCurrentTime())
+    const currentTime = this.playbackController.getCurrentTime()
+    const activeKeyframe = this.getActiveKeyframe(currentTime)
+    const activeMode = activeKeyframe.mode
+
+    const isPlaying = this.playbackController.getIsPlaying()
+    let isHardCut = this.playbackController.consumeHardCut() || this.forceHardCutNextCameraUpdate
+
+    // Abrupt hard cut on keyframe cut or mode change
+    if (this.lastActiveKeyframeId !== null && this.lastActiveKeyframeId !== activeKeyframe.id) {
+      isHardCut = true
+    }
+    if (this.lastCameraMode !== null && this.lastCameraMode !== activeMode) {
+      isHardCut = true
+    }
+
+    this.forceHardCutNextCameraUpdate = false
+    this.lastActiveKeyframeId = activeKeyframe.id
+
+    // If paused and no seek/hard-cut was triggered, freeze camera in exact current visual state without jumping
+    if (!isPlaying && !isHardCut && this.lastCameraMode === activeMode) {
+      const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
+      config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget)
+      return
+    }
+
+    if (this.lastCameraMode !== activeMode || isHardCut) {
+      this.smoothedCameraYaw = rotY
+    } else {
+      let diffYaw = rotY - this.smoothedCameraYaw
+      while (diffYaw < -Math.PI) diffYaw += Math.PI * 2
+      while (diffYaw > Math.PI) diffYaw -= Math.PI * 2
+      const yawLerpFactor = 1.0 - Math.exp(-4.5 * Math.max(0.001, dt))
+      this.smoothedCameraYaw += diffYaw * yawLerpFactor
+    }
+
+    const posLerpFactor = 1.0 - Math.exp(-6.0 * Math.max(0.001, dt))
 
     const isFPV = activeMode === 'First Person'
     this.actorController.setMeshVisibleForFPV(isFPV)
@@ -314,11 +356,12 @@ export class ThreeDirecting {
       const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
       const targetLookAt = fpvCamPos.clone().add(forward)
 
-      if (this.lastCameraMode !== 'First Person') {
+      if (this.lastCameraMode !== 'First Person' || isHardCut) {
         this.camera.position.copy(fpvCamPos)
         this.camera.lookAt(targetLookAt)
       } else {
-        this.camera.position.lerp(fpvCamPos, 0.2)
+        const fpvLerpFactor = 1.0 - Math.exp(-10.0 * Math.max(0.001, dt))
+        this.camera.position.lerp(fpvCamPos, fpvLerpFactor)
         this.camera.lookAt(targetLookAt)
       }
 
@@ -332,18 +375,18 @@ export class ThreeDirecting {
       const camDist = isCrouch ? -2.8 : -3.5
       const targetYOffset = isCrouch ? 1.05 : 0.8
 
-      const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const targetCamPos = charPos.clone().add(backOffset)
       const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetYOffset, charPos.z)
 
-      if (this.lastCameraMode !== 'Third Person') {
-        // Hard cut on initial mode change
+      if (this.lastCameraMode !== 'Third Person' || isHardCut) {
+        // Hard cut on initial mode change or timeline loop/seek
         this.camera.position.copy(targetCamPos)
         this.tpvTarget.copy(targetLookAt)
       } else {
         // Smooth camera follow lerp
-        this.camera.position.lerp(targetCamPos, 0.12)
-        this.tpvTarget.lerp(targetLookAt, 0.12)
+        this.camera.position.lerp(targetCamPos, posLerpFactor)
+        this.tpvTarget.lerp(targetLookAt, posLerpFactor)
       }
       this.camera.lookAt(this.tpvTarget)
 
@@ -373,12 +416,13 @@ export class ThreeDirecting {
       // Cinematic elevated corner angle offset relative to scene bounds
       const idealCamPos = center.clone().add(new THREE.Vector3(-dist * 0.7, dist * 0.5, dist * 0.7))
 
-      if (this.lastCameraMode !== 'Wide') {
+      if (this.lastCameraMode !== 'Wide' || isHardCut) {
         this.wideTarget.copy(center)
         this.camera.position.copy(idealCamPos)
       } else {
-        this.wideTarget.lerp(center, 0.05)
-        this.camera.position.lerp(idealCamPos, 0.05)
+        const wideLerpFactor = 1.0 - Math.exp(-3.0 * Math.max(0.001, dt))
+        this.wideTarget.lerp(center, wideLerpFactor)
+        this.camera.position.lerp(idealCamPos, wideLerpFactor)
       }
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
@@ -392,18 +436,18 @@ export class ThreeDirecting {
 
       const sideVec = isCar ? new THREE.Vector3(-4.8, 1.3, 0.4) : new THREE.Vector3(-4.5, 1.4, 0.4)
       const targetOffsetY = isCar ? 0.55 : 1.15
-      const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotY)
+      const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const targetCamPos = charPos.clone().add(sideOffset)
       const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
 
-      if (this.lastCameraMode !== 'Side') {
+      if (this.lastCameraMode !== 'Side' || isHardCut) {
         // Hard cut on initial mode change
         this.camera.position.copy(targetCamPos)
         this.sideTarget.copy(targetLookAt)
       } else {
         // Smooth camera follow lerp
-        this.camera.position.lerp(targetCamPos, 0.12)
-        this.sideTarget.lerp(targetLookAt, 0.12)
+        this.camera.position.lerp(targetCamPos, posLerpFactor)
+        this.sideTarget.lerp(targetLookAt, posLerpFactor)
       }
       this.camera.lookAt(this.sideTarget)
     }
@@ -468,16 +512,28 @@ export class ThreeDirecting {
     this.updateActorMovement(0)
     this.updateCamera()
 
+    // Force explicit WebGL render of initial frame to ensure fresh buffer
+    this.renderer.render(this.scene, this.camera)
+
     const canvas = this.renderer.domElement
     const stream = (canvas as any).captureStream ? (canvas as any).captureStream(fps) : (canvas as any).mozCaptureStream(fps)
     this.recordedChunks = []
 
-    let options: MediaRecorderOptions = { mimeType: 'video/webm;codecs=vp9' }
-    if (!MediaRecorder.isTypeSupported(options.mimeType!)) {
-      options = { mimeType: 'video/webm;codecs=vp8' }
+    let options: MediaRecorderOptions = {
+      mimeType: 'video/webm;codecs=vp9',
+      videoBitsPerSecond: 16000000 // 16 Mbps for high bitrate & sharp initial frames
     }
     if (!MediaRecorder.isTypeSupported(options.mimeType!)) {
-      options = { mimeType: 'video/webm' }
+      options = {
+        mimeType: 'video/webm;codecs=vp8',
+        videoBitsPerSecond: 16000000
+      }
+    }
+    if (!MediaRecorder.isTypeSupported(options.mimeType!)) {
+      options = {
+        mimeType: 'video/webm',
+        videoBitsPerSecond: 16000000
+      }
     }
 
     this.mediaRecorder = new MediaRecorder(stream, options)
@@ -504,6 +560,25 @@ export class ThreeDirecting {
       }
 
       this.mediaRecorder.stop()
+    })
+  }
+
+  public captureCurrentCanvasSnapshot(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      if (!this.renderer || !this.scene) {
+        reject(new Error('ThreeDirecting not initialized'))
+        return
+      }
+
+      this.renderer.render(this.scene, this.camera)
+      const canvas = this.renderer.domElement
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob)
+        } else {
+          reject(new Error('Failed to capture current canvas snapshot'))
+        }
+      }, 'image/png')
     })
   }
 

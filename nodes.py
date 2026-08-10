@@ -6,6 +6,8 @@ Custom nodes for 3D scene setup and actor acting within ComfyUI.
 from __future__ import annotations
 import json
 import os
+import shutil
+import subprocess
 from aiohttp import web
 from server import PromptServer
 import folder_paths
@@ -256,7 +258,7 @@ class DirectingNode(io.ComfyNode):
             ],
             outputs=[
                 io.Video.Output("captured_video", display_name="Captured Video"),
-                io.Image.Output("captured_stage", display_name="Captured Stage"),
+                io.Image.Output("captured_first_frame", display_name="Captured First Frame"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -270,11 +272,21 @@ class DirectingNode(io.ComfyNode):
         node_id = cls.hidden.unique_id
         input_dir = folder_paths.get_input_directory()
 
-        # 1. Load Video (Check node-specific file first, then fallback to global)
-        specific_video = f"3d_directing_record_{node_id}.webm"
-        video_path = os.path.join(input_dir, specific_video)
-        if not os.path.exists(video_path):
-            video_path = os.path.join(input_dir, "3d_directing_record.webm")
+        # 1. Load Video (Prioritize QuickTime-compatible H.264 MP4, fallback to WebM)
+        specific_mp4 = f"3d_directing_record_{node_id}.mp4"
+        mp4_path = os.path.join(input_dir, specific_mp4)
+        if not os.path.exists(mp4_path):
+            mp4_path = os.path.join(input_dir, "3d_directing_record.mp4")
+
+        specific_webm = f"3d_directing_record_{node_id}.webm"
+        webm_path = os.path.join(input_dir, specific_webm)
+        if not os.path.exists(webm_path):
+            webm_path = os.path.join(input_dir, "3d_directing_record.webm")
+
+        if not os.path.exists(mp4_path) and os.path.exists(webm_path):
+            convert_webm_to_mp4(webm_path, mp4_path)
+
+        video_path = mp4_path if os.path.exists(mp4_path) else webm_path
 
         video_output = None
         if os.path.exists(video_path):
@@ -351,7 +363,7 @@ class DirectingNode(io.ComfyNode):
         input_dir = folder_paths.get_input_directory()
         mtime = 0.0
 
-        for candidate in [f"3d_directing_record_{node_id}.webm", f"3d_directing_stage_{node_id}.png"]:
+        for candidate in [f"3d_directing_record_{node_id}.mp4", f"3d_directing_record_{node_id}.webm", f"3d_directing_stage_{node_id}.png"]:
             path = os.path.join(input_dir, candidate)
             if os.path.exists(path):
                 mtime = max(mtime, os.path.getmtime(path))
@@ -363,6 +375,48 @@ class SceneCameraActionExtension(ComfyExtension):
     @override
     async def get_node_list(self):
         return [SceneNode, ActingNode, DirectingNode]
+
+
+def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
+    """
+    Converts WebM video to a QuickTime-compatible MP4 (H.264, YUV420P, faststart).
+    QuickTime Player on macOS requires H.264 with yuv420p pixel format and even dimensions.
+    """
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin:
+        for fallback in ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"]:
+            if os.path.exists(fallback):
+                ffmpeg_bin = fallback
+                break
+
+    if not ffmpeg_bin:
+        print("[SceneCameraAction] ffmpeg not found, skipping MP4 conversion")
+        return False
+
+    cmd = [
+        ffmpeg_bin, "-y",
+        "-i", webm_path,
+        "-c:v", "libx264",
+        "-crf", "17",
+        "-pix_fmt", "yuv420p",
+        "-profile:v", "main",
+        "-level", "4.0",
+        "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+        "-preset", "fast",
+        "-movflags", "+faststart",
+        mp4_path
+    ]
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
+        if res.returncode == 0 and os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 0:
+            print(f"[SceneCameraAction] Successfully converted {webm_path} -> {mp4_path} (QuickTime H.264/yuv420p)")
+            return True
+        else:
+            print(f"[SceneCameraAction] ffmpeg conversion warning: {res.stderr}")
+            return False
+    except Exception as e:
+        print(f"[SceneCameraAction] Error running ffmpeg: {e}")
+        return False
 
 
 # --- API Routes to receive video, image uploads, and scene presets ---
@@ -380,7 +434,16 @@ async def upload_video(request):
         with open(filepath, "wb") as f:
             f.write(video_file.file.read())
 
-        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
+        # Automatically convert WebM to QuickTime-compatible H.264 MP4
+        base_name, _ = os.path.splitext(filename)
+        mp4_filename = f"{base_name}.mp4"
+        mp4_filepath = os.path.join(input_dir, mp4_filename)
+
+        success_mp4 = convert_webm_to_mp4(filepath, mp4_filepath)
+        final_filename = mp4_filename if success_mp4 else filename
+        final_filepath = mp4_filepath if success_mp4 else filepath
+
+        return web.json_response({"success": True, "filepath": final_filepath, "filename": final_filename})
     return web.json_response({"success": False, "error": "No video file received"})
 
 

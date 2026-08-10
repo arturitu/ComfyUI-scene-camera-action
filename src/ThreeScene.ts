@@ -243,7 +243,7 @@ export class ThreeScene {
     }
   }
 
-  private updateSelectionUI(): void {
+  private updateSelectionUI(cycleInfo?: { index: number; total: number }): void {
     this.selectionManager.updateSelectionUI(
       this.scene,
       this.transformControls,
@@ -252,8 +252,53 @@ export class ThreeScene {
       {
         onSelectionChange: this.onSelectionChange,
         onSelectionInfoChange: this.onSelectionInfoChange,
-      }
+      },
+      cycleInfo
     )
+  }
+
+  public getSelectableCandidates(intersects: THREE.Intersection[]): THREE.Object3D[] {
+    const candidates: THREE.Object3D[] = []
+    const addCandidate = (obj: THREE.Object3D | null) => {
+      if (obj && !candidates.includes(obj)) {
+        candidates.push(obj)
+      }
+    }
+
+    for (const hit of intersects) {
+      let mesh: THREE.Object3D | null = hit.object
+      if (!mesh || !mesh.visible) continue
+
+      if (mesh.name === '__box_helper__' || mesh.name === 'floor' || mesh.name === 'grid' || mesh.name === 'helper') {
+        continue
+      }
+      if (mesh.name === '__edge_outline__') {
+        mesh = mesh.parent
+      }
+      if (!mesh) continue
+
+      if (this.spawnPointHelper.isSpawnPointObject(mesh)) {
+        addCandidate(this.spawnPointHelper.group)
+        continue
+      }
+
+      const topObj = this.selectionManager.getTopSelectableObject(mesh, this.scene, this.transformControls.getHelper())
+      if (topObj) {
+        addCandidate(topObj)
+
+        const chain: THREE.Object3D[] = []
+        let curr: THREE.Object3D | null = mesh
+        while (curr && curr !== topObj) {
+          if (curr.name !== '__edge_outline__' && curr.name !== '__box_helper__' && curr.name !== 'floor') {
+            chain.unshift(curr)
+          }
+          curr = curr.parent
+        }
+        chain.forEach(c => addCandidate(c))
+      }
+    }
+
+    return candidates
   }
 
   public groupSelected(): void {
@@ -475,41 +520,64 @@ export class ThreeScene {
       const intersects = raycaster.intersectObjects(selectableObjects, true)
 
       if (intersects.length > 0) {
-        const clickedMesh = intersects[0].object
-        if (this.spawnPointHelper.isSpawnPointObject(clickedMesh)) {
-          this.selectionManager.setSelectedObjects([this.spawnPointHelper.group])
-          const modeToUse = this.transformMode === 'scale' ? 'translate' : (this.transformMode ?? this.lastTransformMode)
-          this.setTransformMode(modeToUse)
-          if (this.onTransformModeChange) {
-            this.onTransformModeChange(modeToUse)
-          }
-          this.updateSelectionUI()
-        } else {
-          const topObj = this.selectionManager.getTopSelectableObject(clickedMesh, this.scene, this.transformControls.getHelper())
+        const candidates = this.getSelectableCandidates(intersects)
 
-          if (topObj) {
-            const selectedObjects = this.selectionManager.getSelectedObjects().filter(o => !this.spawnPointHelper.isSpawnPointObject(o))
-            if (event.shiftKey) {
-              const existingIdx = selectedObjects.indexOf(topObj)
+        if (candidates.length > 0) {
+          const selectedObjects = this.selectionManager.getSelectedObjects().filter(o => !this.spawnPointHelper.isSpawnPointObject(o))
+
+          if (event.shiftKey) {
+            const targetObj = candidates[0]
+            if (this.spawnPointHelper.isSpawnPointObject(targetObj) || targetObj === this.spawnPointHelper.group) {
+              const existingIdx = selectedObjects.indexOf(this.spawnPointHelper.group)
+              if (existingIdx !== -1) selectedObjects.splice(existingIdx, 1)
+              else selectedObjects.push(this.spawnPointHelper.group)
+            } else {
+              const existingIdx = selectedObjects.indexOf(targetObj)
               if (existingIdx !== -1) {
                 selectedObjects.splice(existingIdx, 1)
               } else {
-                selectedObjects.push(topObj)
+                selectedObjects.push(targetObj)
               }
-            } else {
-              selectedObjects.length = 0
-              selectedObjects.push(topObj)
             }
             this.selectionManager.setSelectedObjects(selectedObjects)
-            const modeToUse = this.transformMode ?? this.lastTransformMode
-            if (!this.transformMode) {
+            this.updateSelectionUI()
+          } else {
+            let targetObj: THREE.Object3D = candidates[0]
+            let targetIndex = 0
+
+            if (selectedObjects.length === 1) {
+              const currentSingle = selectedObjects[0]
+              const currentIdx = candidates.indexOf(currentSingle)
+              if (currentIdx !== -1) {
+                targetIndex = (currentIdx + 1) % candidates.length
+                targetObj = candidates[targetIndex]
+              }
+            }
+
+            if (this.spawnPointHelper.isSpawnPointObject(targetObj) || targetObj === this.spawnPointHelper.group) {
+              this.selectionManager.setSelectedObjects([this.spawnPointHelper.group])
+              const modeToUse = this.transformMode === 'scale' ? 'translate' : (this.transformMode ?? this.lastTransformMode)
               this.setTransformMode(modeToUse)
               if (this.onTransformModeChange) {
                 this.onTransformModeChange(modeToUse)
               }
+            } else {
+              this.selectionManager.setSelectedObjects([targetObj])
+              const modeToUse = this.transformMode ?? this.lastTransformMode
+              if (!this.transformMode) {
+                this.setTransformMode(modeToUse)
+                if (this.onTransformModeChange) {
+                  this.onTransformModeChange(modeToUse)
+                }
+              }
             }
-            this.updateSelectionUI()
+
+            const cycleInfo = candidates.length > 1 ? { index: targetIndex + 1, total: candidates.length } : undefined
+            this.updateSelectionUI(cycleInfo)
           }
+        } else {
+          this.selectionManager.setSelectedObjects([])
+          this.updateSelectionUI()
         }
       } else {
         this.selectionManager.setSelectedObjects([])

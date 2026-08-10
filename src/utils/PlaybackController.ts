@@ -4,6 +4,8 @@ import type { BaseActor } from '../actors/BaseActor'
 export class PlaybackController {
   private trajectory: MotionFrame[] = []
   private currentTime: number = 0
+  private lastTime: number = 0
+  private isHardCutPending: boolean = false
   private isPlaying: boolean = false
   private loop: boolean = true
   private maxDuration: number = 0
@@ -60,13 +62,26 @@ export class PlaybackController {
   }
 
   public setCurrentTime(t: number): void {
-    this.currentTime = Math.max(0, Math.min(t, this.maxDuration))
+    const targetT = Math.max(0, Math.min(t, this.maxDuration))
+    if (Math.abs(targetT - this.currentTime) > 0.05) {
+      this.isHardCutPending = true
+    }
+    this.currentTime = targetT
+    this.lastTime = targetT
+  }
+
+  public consumeHardCut(): boolean {
+    const val = this.isHardCutPending
+    this.isHardCutPending = false
+    return val
   }
 
   public start(): void {
     if (this.trajectory.length > 0) {
       this.isPlaying = true
       this.currentTime = 0
+      this.lastTime = 0
+      this.isHardCutPending = true
     }
   }
 
@@ -83,6 +98,8 @@ export class PlaybackController {
   public stop(): void {
     this.isPlaying = false
     this.currentTime = 0
+    this.lastTime = 0
+    this.isHardCutPending = true
   }
 
   public getIsPlaying(): boolean {
@@ -96,9 +113,15 @@ export class PlaybackController {
   public update(dt: number, actor: BaseActor | null): void {
     if (!actor || this.trajectory.length === 0) return
 
+    let isHardCut = this.isHardCutPending
+    this.isHardCutPending = false
+
     if (this.isPlaying) {
+      const prevTime = this.currentTime
       this.currentTime += dt
       if (this.currentTime >= this.maxDuration) {
+        isHardCut = true
+        this.isHardCutPending = true
         if (this.loop) {
           this.currentTime = this.currentTime % Math.max(0.001, this.maxDuration)
         } else {
@@ -108,15 +131,20 @@ export class PlaybackController {
       }
     }
 
+    if (this.currentTime < this.lastTime - 0.05) {
+      isHardCut = true
+    }
+    this.lastTime = this.currentTime
+
     const frameDt = this.isPlaying ? dt : 0
-    this.evaluateAt(this.currentTime, actor, frameDt)
+    this.evaluateAt(this.currentTime, actor, frameDt, isHardCut)
   }
 
-  public evaluateAt(t: number, actor: BaseActor, dt: number = 0.016): void {
+  public evaluateAt(t: number, actor: BaseActor, dt: number = 0.016, isHardCut: boolean = false): void {
     if (this.trajectory.length === 0 || !actor) return
 
     if (this.trajectory.length === 1) {
-      actor.applyMotionFrame(this.trajectory[0], 0, dt)
+      actor.applyMotionFrame(this.trajectory[0], 0, dt, isHardCut)
       return
     }
 
@@ -156,7 +184,7 @@ export class PlaybackController {
     if (typeof (actor as any).applyMotionFrame === 'function') {
       (actor as any).applyMotionFrame({
         t, px, py, pz, rx, ry, rz, anim: frameA.anim
-      }, angularVel, dt)
+      }, angularVel, dt, isHardCut)
     } else if (typeof actor.setPosition === 'function') {
       actor.setPosition(px, py, pz, ry)
     }

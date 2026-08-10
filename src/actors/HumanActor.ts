@@ -114,12 +114,12 @@ export class HumanActor extends BaseActor {
     return frame
   }
 
-  public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016): void {
+  public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016, isHardCut: boolean = false): void {
     const frameDt = Math.max(0, dt)
     let targetAnim = (animName && animName !== 'None' && this.animationsMapMap.has(animName)) ? animName : 'Idle_A'
     let animTimeScale = 1.0
 
-    const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
+    const instantSpeed = (frameDt > 0 && !isHardCut) ? distMoved / frameDt : 0
     if (targetAnim === 'Walk') {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
     } else if (targetAnim === 'Sprint') {
@@ -128,7 +128,8 @@ export class HumanActor extends BaseActor {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
     }
 
-    this.playAnimation(targetAnim, 0.2, animTimeScale)
+    const fadeDuration = isHardCut ? 0 : 0.2
+    this.playAnimation(targetAnim, fadeDuration, animTimeScale)
 
     if (this.mixer && frameDt > 0) {
       this.mixer.update(frameDt)
@@ -356,7 +357,7 @@ export class HumanActor extends BaseActor {
       while (diff > Math.PI) diff -= Math.PI * 2
 
       // Dynamic turn speed scales with linear speed so fast movement turns tighter and quicker
-      const dynamicTurnSpeed = 12.0 + (speed * 2.5)
+      const dynamicTurnSpeed = 6.5 + (speed * 2.0)
       const lerpFactor = 1.0 - Math.exp(-dynamicTurnSpeed * Math.max(0.001, dt))
       this.rotationY += diff * lerpFactor
 

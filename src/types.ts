@@ -69,7 +69,7 @@ export interface ThreeSceneOptions {
   onStateChange?: (state: SceneState) => void
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   onSelectionChange?: (hasSelection: boolean) => void
-  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
+  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 }
 
 export interface ThreeActingOptions {

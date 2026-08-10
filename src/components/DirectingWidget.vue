@@ -366,12 +366,12 @@ const syncKeyframes = () => {
 const handleRecordVideo = async () => {
   if (!threeDirecting || isRecordingVideo.value) return
 
-  // Validate that BOTH Captured Video AND Captured Stage output slots are connected
+  // Validate that BOTH Captured Video AND Captured First Frame output slots are connected
   const videoOutput = props.currentNode?.outputs?.find((o: any) =>
     o.name === 'captured_video' || o.name === 'Captured Video'
   )
   const stageOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_stage' || o.name === 'Captured Stage'
+    o.name === 'captured_stage' || o.name === 'Captured Stage' || o.name === 'Captured First Frame' || o.name === 'captured_first_frame'
   )
 
   const isVideoConnected = videoOutput?.links && videoOutput.links.length > 0
@@ -390,7 +390,7 @@ const handleRecordVideo = async () => {
 
       const missingNames: string[] = []
       if (!isVideoConnected) missingNames.push("'Captured Video'")
-      if (!isStageConnected) missingNames.push("'Captured Stage'")
+      if (!isStageConnected) missingNames.push("'Captured First Frame'")
 
       const validationErrorMsg = {
         "prompt_id": "validation_error",
@@ -433,6 +433,10 @@ const handleRecordVideo = async () => {
   threeDirecting.seekToTime(0)
   threeDirecting.setIsRecordingMode(true)
   currentTime.value = 0
+
+  // Capture exact first frame image directly from canvas at t=0
+  const stageBlob = await threeDirecting.captureCurrentCanvasSnapshot()
+
   threeDirecting.isPlaying = true
   isPlaying.value = true
 
@@ -456,7 +460,6 @@ const handleRecordVideo = async () => {
 
         try {
           const videoBlob = await threeDirecting.stopRecording()
-          const stageBlob = await threeDirecting.captureStageSnapshot()
           threeDirecting.setIsRecordingMode(false)
 
           const nodeId = props.currentNode?.id ?? 'default'

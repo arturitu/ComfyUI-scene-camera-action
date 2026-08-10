@@ -80,6 +80,9 @@
     </div>
     <div class="info-overlay">
       <div>Assets: {{ state.num_assets }}</div>
+      <div v-if="cycleInfo" class="cycle-info-text">
+        Hit {{ cycleInfo.index }}/{{ cycleInfo.total }} (Click to cycle)
+      </div>
     </div>
 
     <!-- Unsaved Changes Warning Modal -->
@@ -298,6 +301,8 @@ const resetCurrentPreset = () => {
   }
 }
 
+const cycleInfo = ref<{ index: number; total: number } | null>(null)
+
 const initScene = (container: HTMLElement) => {
   threeScene = new ThreeScene({
     container,
@@ -314,11 +319,13 @@ const initScene = (container: HTMLElement) => {
     },
     onSelectionChange: (selected) => {
       hasSelection.value = selected
+      if (!selected) cycleInfo.value = null
     },
     onSelectionInfoChange: (info) => {
       hasSelection.value = info.selectedCount > 0
       canGroup.value = info.canGroup
       canUngroup.value = info.canUngroup
+      cycleInfo.value = info.cycleInfo || null
     }
   })
   threeScene.setTransformMode(activeMode.value)
@@ -616,6 +623,11 @@ defineExpose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetL
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.cycle-info-text {
+  color: #00ffcc;
+  font-weight: 600;
 }
 
 .confirm-modal-backdrop {

@@ -47,8 +47,8 @@ export const FILL_LIGHT_INTENSITY = 0.45
 export const FILL_LIGHT_POSITION = new THREE.Vector3(25, 25, -25)
 
 // Edge Outline Config
-export const EDGE_COLOR = 0x66666f
-export const EDGE_OPACITY = 0.50
+export const EDGE_COLOR = 0x55555e
+export const EDGE_OPACITY = 0.4
 
 // Ground and Floor Height Config
 export const GROUND_Y = 0.0
