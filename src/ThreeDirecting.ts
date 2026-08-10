@@ -287,6 +287,8 @@ export class ThreeDirecting {
 
   public setIsRecordingMode(active: boolean): void {
     this.isRecordingMode = active
+    this.playbackController.setIsRecordingMode(active)
+    this.playbackController.setLoop(!active)
   }
 
   private updateActorMovement(dt: number): void {

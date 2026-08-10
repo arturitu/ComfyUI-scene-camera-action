@@ -106,6 +106,12 @@ export class PlaybackController {
     return this.isPlaying
   }
 
+  private isRecordingMode: boolean = false
+
+  public setIsRecordingMode(active: boolean): void {
+    this.isRecordingMode = active
+  }
+
   public setLoop(loop: boolean): void {
     this.loop = loop
   }
@@ -120,10 +126,10 @@ export class PlaybackController {
       const prevTime = this.currentTime
       this.currentTime += dt
       if (this.currentTime >= this.maxDuration) {
-        isHardCut = true
-        this.isHardCutPending = true
-        if (this.loop) {
+        if (this.loop && !this.isRecordingMode) {
           this.currentTime = this.currentTime % Math.max(0.001, this.maxDuration)
+          isHardCut = true
+          this.isHardCutPending = true
         } else {
           this.currentTime = this.maxDuration
           this.isPlaying = false
