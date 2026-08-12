@@ -1,6 +1,6 @@
 {
   "type": "cube_scene",
-  "num_assets": 114,
+  "num_assets": 112,
   "nodes": [
     {
       "id": "group_station_building",
@@ -88,13 +88,13 @@
           "name": "Garage Roof Trim",
           "transform": {
             "px": 10.25,
-            "py": 4.6,
+            "py": 4.24,
             "pz": -4.5,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 7,
-            "sy": 0.4,
+            "sy": 0.33,
             "sz": 4.4
           }
         },
@@ -103,15 +103,15 @@
           "type": "block",
           "name": "Rooftop 50s Retro Fin",
           "transform": {
-            "px": 10.5,
-            "py": 4.9,
-            "pz": 1.5,
-            "rx": 0,
-            "ry": 0,
-            "rz": 0,
+            "px": 1.55,
+            "py": 5.62,
+            "pz": 1.51,
+            "rx": 3.14,
+            "ry": -1.56,
+            "rz": 3.14,
             "sx": 0.3,
-            "sy": 1,
-            "sz": 4
+            "sy": 2.18,
+            "sz": 1.94
           }
         },
         {
@@ -191,7 +191,7 @@
             "rz": 0,
             "sx": 8,
             "sy": 0.4,
-            "sz": 9
+            "sz": 8.11
           }
         },
         {
@@ -200,14 +200,14 @@
           "name": "Canopy Retro Edge Band",
           "transform": {
             "px": 3.5,
-            "py": 4.4,
-            "pz": 0.01,
+            "py": 4.58,
+            "pz": 0.09,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 8.2,
-            "sy": 0.2,
-            "sz": 9.2
+            "sy": 0.65,
+            "sz": 8.39
           }
         },
         {
@@ -511,12 +511,12 @@
       "type": "group",
       "name": "Abandoned Pickup Truck with Open Door",
       "transform": {
-        "px": -12.54,
+        "px": -14.6,
         "py": 0,
-        "pz": -13.7,
-        "rx": -3.14,
-        "ry": 1.22,
-        "rz": -3.14,
+        "pz": -8.51,
+        "rx": 0,
+        "ry": 0.52,
+        "rz": 0,
         "sx": 1,
         "sy": 1,
         "sz": 1
@@ -786,14 +786,14 @@
       "name": "Open Outdoor Telephone Booth",
       "transform": {
         "px": -6.84,
-        "py": 0,
-        "pz": -9.24,
+        "py": -0.01,
+        "pz": -10.96,
         "rx": 3.14,
         "ry": -1.57,
         "rz": 3.14,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.12,
+        "sy": 1.12,
+        "sz": 1.12
       },
       "children": [
         {
@@ -946,14 +946,14 @@
           "name": "Phone Booth Roof Cap",
           "transform": {
             "px": 0,
-            "py": 2.55,
+            "py": 2.34,
             "pz": 0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
-            "sx": 1.3,
-            "sy": 0.3,
-            "sz": 1.3
+            "sx": 0.91,
+            "sy": 0.22,
+            "sz": 0.94
           }
         },
         {
@@ -962,7 +962,7 @@
           "name": "TELEPHONE Illuminated Header",
           "transform": {
             "px": 0,
-            "py": 2.3,
+            "py": 2.37,
             "pz": 0,
             "rx": 0,
             "ry": 0,
@@ -1013,12 +1013,12 @@
       "transform": {
         "px": 15.19,
         "py": 0,
-        "pz": -5.39,
+        "pz": -0.06,
         "rx": 0,
         "ry": 1.57,
         "rz": 0,
         "sx": 1,
-        "sy": 1,
+        "sy": 0.74,
         "sz": 1
       },
       "children": [
@@ -1108,13 +1108,13 @@
           "name": "Giant GAS Sign Board Header",
           "transform": {
             "px": 0,
-            "py": 11.5,
+            "py": 11.24,
             "pz": 0,
             "rx": 0,
             "ry": 0,
             "rz": 0,
             "sx": 5.5,
-            "sy": 3.2,
+            "sy": 4.69,
             "sz": 0.5
           }
         },
@@ -1181,7 +1181,7 @@
         "rz": 0,
         "sx": 1,
         "sy": 1,
-        "sz": 1
+        "sz": 0.81
       },
       "children": [
         {
@@ -1567,66 +1567,17 @@
           "type": "group",
           "name": "Saguaro Cactus 1",
           "transform": {
-            "px": -12.57,
+            "px": -0.71,
             "py": 0,
-            "pz": 17.24,
+            "pz": 11.77,
             "rx": 0,
-            "ry": -0.91,
+            "ry": 0.17,
             "rz": 0,
             "sx": 1,
             "sy": 1,
             "sz": 1
           },
-          "children": [
-            {
-              "id": "block_cactus1_stem",
-              "type": "block",
-              "name": "Cactus Trunk Stem",
-              "transform": {
-                "px": 0,
-                "py": 1.25,
-                "pz": 0,
-                "rx": 0,
-                "ry": 0,
-                "rz": 0,
-                "sx": 0.4,
-                "sy": 2.5,
-                "sz": 0.4
-              }
-            },
-            {
-              "id": "block_cactus1_arm_left",
-              "type": "block",
-              "name": "Cactus Arm Left",
-              "transform": {
-                "px": -0.3,
-                "py": 1.5,
-                "pz": 0,
-                "rx": 0,
-                "ry": 0,
-                "rz": 0,
-                "sx": 0.7,
-                "sy": 0.3,
-                "sz": 0.3
-              }
-            },
-            {
-              "id": "block_cactus1_arm_right",
-              "type": "block",
-              "name": "Cactus Arm Right",
-              "transform": {
-                "px": 0.3,
-                "py": 1.8,
-                "pz": 0,
-                "rx": 0,
-                "ry": 0,
-                "rz": 0,
-                "sx": 0.7,
-                "sy": 0.3,
-                "sz": 0.3
-              }
-            }
-          ]
+          "children": []
         },
         {
           "id": "group_desert_cactus_2",
@@ -1865,15 +1816,15 @@
       "type": "group",
       "name": "1950s Serie-Z Flying Saucer UFO",
       "transform": {
-        "px": 12.76,
-        "py": 0,
+        "px": 16.63,
+        "py": -0.02,
         "pz": -12.38,
-        "rx": 0.59,
-        "ry": -0.13,
-        "rz": 0.72,
-        "sx": 0.53,
-        "sy": 0.53,
-        "sz": 0.53
+        "rx": 0.7,
+        "ry": -0.21,
+        "rz": 0.18,
+        "sx": 0.71,
+        "sy": 0.71,
+        "sz": 0.71
       },
       "children": [
         {
@@ -2149,13 +2100,29 @@
           }
         }
       ]
+    },
+    {
+      "id": "block_cactus1_stem",
+      "type": "block",
+      "name": "Cactus Trunk Stem",
+      "transform": {
+        "px": 12.96,
+        "py": 1.25,
+        "pz": -0.64,
+        "rx": -3.14,
+        "ry": 1.4,
+        "rz": -3.14,
+        "sx": 0.65,
+        "sy": 2.5,
+        "sz": 0.4
+      }
     }
   ],
   "selectedPreset": "gas_station.json",
   "spawn_point": {
-    "px": -14.33,
+    "px": -15.895,
     "py": 0,
-    "pz": -15.825,
-    "ry": 0.9
+    "pz": -6.51,
+    "ry": -0.349
   }
 }
