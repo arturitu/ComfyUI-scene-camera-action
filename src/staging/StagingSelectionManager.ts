@@ -6,7 +6,7 @@ export interface SelectionCallbacks {
   onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 }
 
-export class SceneSelectionManager {
+export class StagingSelectionManager {
   private selectedObjects: THREE.Object3D[] = []
   private boxHelpers: THREE.BoxHelper[] = []
   private multiSelectionPivot: THREE.Group | null = null

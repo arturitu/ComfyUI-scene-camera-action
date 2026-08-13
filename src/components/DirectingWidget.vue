@@ -6,7 +6,7 @@
     </div>
     <div v-else class="canvas-wrapper" @mousedown="onCanvasMouseDown">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
 
       <!-- Top Right Floating Capture Button -->
@@ -146,7 +146,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
+import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
 import type { DirectingState } from '../types'
 
@@ -469,7 +469,7 @@ const handleRecordVideo = async () => {
           videoFormData.append('video', videoBlob, `3d_directing_record_${nodeId}.webm`)
           videoFormData.append('filename', `3d_directing_record_${nodeId}.webm`)
 
-          await fetch('/scene_camera_action/upload_video', {
+          await fetch('/ub_3d_studio/upload_video', {
             method: 'POST',
             body: videoFormData
           })
@@ -479,7 +479,7 @@ const handleRecordVideo = async () => {
           imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
           imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
 
-          await fetch('/scene_camera_action/upload_image', {
+          await fetch('/ub_3d_studio/upload_image', {
             method: 'POST',
             body: imageFormData
           })

@@ -27,7 +27,7 @@
 
     <div class="canvas-wrapper">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
       <!-- Edit Mode Toolbar (Left Side) -->
       <div class="canvas-edit-toolbar left">
@@ -102,8 +102,8 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
-import { ThreeScene } from '../ThreeScene'
+import StagingCanvas from './StagingCanvas.vue'
+import { ThreeStaging as ThreeScene } from '../ThreeStaging'
 import type { SceneState } from '../types'
 
 const props = defineProps<{
@@ -150,7 +150,7 @@ const isStateDifferent = (current: any, original: any): boolean => {
 
 const fetchPresetList = async () => {
   try {
-    const res = await fetch('/scene_camera_action/list_presets')
+    const res = await fetch('/ub_3d_studio/list_presets')
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data.files)) {
@@ -159,7 +159,7 @@ const fetchPresetList = async () => {
         if (targetPreset && presetFiles.value.includes(targetPreset)) {
           selectedPreset.value = targetPreset
           try {
-            const pRes = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(targetPreset)}`)
+            const pRes = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(targetPreset)}`)
             if (pRes.ok) {
               const origData = await pRes.json()
               originalPresetState = origData
@@ -203,7 +203,7 @@ const loadPresetFile = async (filename: string) => {
   }
 
   try {
-    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
+    const res = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(filename)}`)
     if (res.ok) {
       const data = await res.json()
       originalPresetState = data
@@ -269,7 +269,7 @@ const saveCurrentPreset = async () => {
   }
 
   try {
-    const res = await fetch('/scene_camera_action/save_preset', {
+    const res = await fetch('/ub_3d_studio/save_preset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

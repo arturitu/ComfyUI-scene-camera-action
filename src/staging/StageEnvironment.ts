@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import * as config from '../threeConfig'
-import { SceneHierarchyManager } from './SceneHierarchyManager'
+import { StagingHierarchyManager } from './StagingHierarchyManager'
 import type { SceneState } from '../types'
 
 export interface StageSetupResult {
@@ -13,10 +13,10 @@ export interface StageSetupResult {
 }
 
 export class StageEnvironment {
-  private hierarchyManager: SceneHierarchyManager
+  private hierarchyManager: StagingHierarchyManager
 
   constructor() {
-    this.hierarchyManager = new SceneHierarchyManager()
+    this.hierarchyManager = new StagingHierarchyManager()
   }
 
   /**
@@ -106,7 +106,7 @@ export class StageEnvironment {
       if (obj instanceof THREE.Mesh) {
         environmentMeshes.push(obj)
       } else {
-        obj.traverse((child) => {
+        obj.traverse((child: THREE.Object3D) => {
           if (child instanceof THREE.Mesh) {
             environmentMeshes.push(child)
           }

@@ -7,7 +7,7 @@ function r2(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100
 }
 
-export class SceneHierarchyManager {
+export class StagingHierarchyManager {
   private meshes: THREE.Mesh[] = []
 
   public getMeshes(): THREE.Mesh[] {

@@ -7,9 +7,9 @@ import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
-import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
-import { StageEnvironment } from './scene/StageEnvironment'
-import { SpawnPointHelper } from './scene/SpawnPointHelper'
+import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
+import { StageEnvironment } from './staging/StageEnvironment'
+import { SpawnPointHelper } from './staging/SpawnPointHelper'
 
 export class ThreeActing {
   private container: HTMLElement

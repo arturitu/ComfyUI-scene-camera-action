@@ -72,6 +72,8 @@ export interface ThreeSceneOptions {
   onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 }
 
+export type ThreeStagingOptions = ThreeSceneOptions
+
 export interface ThreeActingOptions {
   container: HTMLElement
   initialState?: Partial<ActingState>
@@ -84,7 +86,10 @@ export interface SceneAppExposed {
   setState: (state: Partial<SceneState>) => void
   cleanup: () => void
   getThreeScene: () => any
+  getThreeStaging?: () => any
 }
+
+export type StagingAppExposed = SceneAppExposed
 
 export interface ActingAppExposed {
   setState: (state: Partial<ActingState>) => void

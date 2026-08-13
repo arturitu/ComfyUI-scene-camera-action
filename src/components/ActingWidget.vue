@@ -6,7 +6,7 @@
     </div>
     <div v-else class="canvas-wrapper">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
 
       <!-- Top-left Countdown Badge -->
@@ -158,7 +158,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
+import StagingCanvas from './StagingCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
 import type { ActingState } from '../types'
 

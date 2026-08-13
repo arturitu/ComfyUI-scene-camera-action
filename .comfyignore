@@ -1,0 +1,15 @@
+.git/
+.gitignore
+.DS_Store
+node_modules/
+src/
+tsconfig.json
+tsconfig.node.json
+vite.config.mts
+package.json
+package-lock.json
+scratch/
+skills/
+*.jpg
+img.png
+img2.jpg

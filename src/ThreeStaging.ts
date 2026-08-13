@@ -1,14 +1,14 @@
 import * as THREE from 'three'
 import { MapControls } from 'three/addons/controls/MapControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { SceneState, ThreeSceneOptions, CubeTransform } from './types'
+import type { SceneState, ThreeStagingOptions, ThreeSceneOptions, CubeTransform } from './types'
 import * as config from './threeConfig'
-import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
-import { SceneSelectionManager } from './scene/SceneSelectionManager'
-import { StageEnvironment } from './scene/StageEnvironment'
-import { SpawnPointHelper } from './scene/SpawnPointHelper'
+import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
+import { StagingSelectionManager } from './staging/StagingSelectionManager'
+import { StageEnvironment } from './staging/StageEnvironment'
+import { SpawnPointHelper } from './staging/SpawnPointHelper'
 
-export class ThreeScene {
+export class ThreeStaging {
   private container: HTMLElement
   private state: SceneState
   private onStateChange?: (state: SceneState) => void
@@ -16,8 +16,8 @@ export class ThreeScene {
   private onSelectionChange?: (hasSelection: boolean) => void
   private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
 
-  private hierarchyManager: SceneHierarchyManager
-  private selectionManager: SceneSelectionManager
+  private hierarchyManager: StagingHierarchyManager
+  private selectionManager: StagingSelectionManager
   private spawnPointHelper!: SpawnPointHelper
 
   private scene!: THREE.Scene
@@ -40,15 +40,15 @@ export class ThreeScene {
   private resizeAnimationFrameId: number | null = null
   private cachedSceneExtent = 15.0
 
-  constructor(options: ThreeSceneOptions) {
+  constructor(options: ThreeStagingOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onTransformModeChange = options.onTransformModeChange
     this.onSelectionChange = options.onSelectionChange
     this.onSelectionInfoChange = options.onSelectionInfoChange
 
-    this.hierarchyManager = new SceneHierarchyManager()
-    this.selectionManager = new SceneSelectionManager()
+    this.hierarchyManager = new StagingHierarchyManager()
+    this.selectionManager = new StagingSelectionManager()
 
     this.state = {
       type: 'cube_scene',

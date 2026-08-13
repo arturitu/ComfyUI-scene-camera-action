@@ -4,7 +4,7 @@ import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { PlaybackController } from './utils/PlaybackController'
-import { StageEnvironment } from './scene/StageEnvironment'
+import { StageEnvironment } from './staging/StageEnvironment'
 
 export class ThreeDirecting {
   private container: HTMLElement

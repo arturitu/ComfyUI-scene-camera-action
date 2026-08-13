@@ -1,5 +1,5 @@
 import { createApp, type App as VueApp } from 'vue'
-import SceneWidget from './components/SceneWidget.vue'
+import StagingWidget from './components/StagingWidget.vue'
 import ActingWidget from './components/ActingWidget.vue'
 import DirectingWidget from './components/DirectingWidget.vue'
 import type { SceneState, ActingState, DirectingState, SceneAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
@@ -72,7 +72,7 @@ async function updateSceneNodeFromPreset(node: ComfyNode, filename: string): Pro
   if (!filename || filename === 'None') return
 
   try {
-    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
+    const res = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(filename)}`)
     if (res.ok) {
       const data = await res.json()
       const instance = sceneInstances.get(node)
@@ -188,7 +188,7 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
 
   const storedPreset = node.properties?.['selectedPreset'] as string | undefined
 
-  const vueApp = createApp(SceneWidget, {
+  const vueApp = createApp(StagingWidget, {
     initialState: readSceneStateFromNode(node),
     initialPreset: storedPreset,
     onStateChange: (state: SceneState) => {
@@ -800,7 +800,7 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
 // --- Extension Registration ---
 app.registerExtension({
-  name: 'ComfyUI.SceneCameraAction',
+  name: 'ComfyUI.UB3DStudio',
 
   setup() {
     window.addEventListener('error', (e: ErrorEvent) => {
@@ -839,7 +839,7 @@ app.registerExtension({
   nodeCreated(node: ComfyNode) {
     const comfyClass = node.constructor?.comfyClass
 
-    if (comfyClass === 'SceneNode') {
+    if (comfyClass === 'UBStagingNode' || comfyClass === 'SceneNode') {
       hideNodeWidget(node, 'scene_data')
       hideNodeWidget(node, 'num_assets')
 
@@ -895,7 +895,7 @@ app.registerExtension({
           sceneInstances.delete(this)
         }
       }
-    } else if (comfyClass === 'ActingNode') {
+    } else if (comfyClass === 'UBActingNode' || comfyClass === 'ActingNode') {
       hideNodeWidget(node, 'motion_data')
       removeNodeInput(node, 'motion_data')
 
@@ -1028,7 +1028,7 @@ app.registerExtension({
           actingInstances.delete(this)
         }
       }
-    } else if (comfyClass === 'DirectingNode') {
+    } else if (comfyClass === 'UBDirectingNode' || comfyClass === 'DirectingNode') {
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
 
