@@ -166,6 +166,23 @@ export class ThreeActing {
     return json
   }
 
+  public resetRecording(): void {
+    this.isRecording = false
+    this.isPlaying = false
+    this.isPlaybackMode = false
+    this.recordingTime = 0
+    this.trajectory = []
+    this.playbackController.stop()
+    this.playbackController.setTrajectory('')
+    this.state.motion_data = undefined
+    const accumulated = this.getAccumulatedActors()
+    this.state.actors = accumulated
+    this.resetActorPosition()
+    if (this.onStateChange) {
+      this.onStateChange({ ...this.state, motion_data: undefined, actors: accumulated })
+    }
+  }
+
   public buildPreviousActors(actorsRecords: any[]): void {
     const newRecords = actorsRecords || []
     if (this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
@@ -268,25 +285,47 @@ export class ThreeActing {
   }
 
   public loadTrajectory(trajectoryJson: string): void {
-    this.playbackController.setTrajectory(trajectoryJson)
-    this.trajectory = this.playbackController.getTrajectory()
-
     if (trajectoryJson && typeof trajectoryJson === 'string' && trajectoryJson.trim()) {
       try {
         const parsed = JSON.parse(trajectoryJson)
-        if (parsed && Array.isArray(parsed.actors) && parsed.actors.length > 0) {
-          let prevActors = parsed.actors
-          if (this.trajectory.length > 0 && parsed.actors.length > 1) {
-            prevActors = parsed.actors.slice(0, parsed.actors.length - 1)
-          } else if (this.trajectory.length > 0 && parsed.actors.length === 1) {
-            prevActors = []
+        if (parsed && typeof parsed === 'object') {
+          let localTraj = parsed.trajectory || parsed.motion_data
+          if (typeof localTraj === 'string' && localTraj.trim()) {
+            try { localTraj = JSON.parse(localTraj) } catch (e) {}
           }
-          this.buildPreviousActors(prevActors)
+          if (Array.isArray(localTraj)) {
+            this.playbackController.setTrajectory(localTraj)
+          } else if (Array.isArray(parsed.actors) && parsed.actors.length > 0) {
+            const lastActor = parsed.actors[parsed.actors.length - 1]
+            const lastTraj = lastActor?.trajectory || lastActor?.motion_data
+            this.playbackController.setTrajectory(lastTraj || [])
+          } else {
+            this.playbackController.setTrajectory(trajectoryJson)
+          }
+
+          if (Array.isArray(parsed.actors) && parsed.actors.length > 0) {
+            const prevActors = parsed.actors.length > 1 ? parsed.actors.slice(0, parsed.actors.length - 1) : []
+            this.buildPreviousActors(prevActors)
+          }
+          this.trajectory = this.playbackController.getTrajectory()
+
+          if (this.trajectory.length > 0) {
+            this.isPlaybackMode = true
+          } else {
+            this.isPlaybackMode = false
+            if (this.actorController) {
+              this.resetActorPosition()
+            }
+          }
+          return
         }
       } catch (e) {
         console.warn('[ThreeActing] Error parsing actors array from trajectoryJson:', e)
       }
     }
+
+    this.playbackController.setTrajectory(trajectoryJson)
+    this.trajectory = this.playbackController.getTrajectory()
 
     if (this.trajectory.length > 0) {
       this.isPlaybackMode = true
@@ -436,7 +475,7 @@ export class ThreeActing {
 
   private updateActorMovement(dt: number): void {
     // Evaluate previous actors' motion at current playback/recording time
-    const curTime = this.getCurrentTime()
+    const curTime = this.isRecording ? this.recordingTime : this.playbackController.getCurrentTime()
     this.previousActorControllers.forEach(p => {
       p.playbackController.evaluateAt(curTime, p.controller, dt)
     })
@@ -562,6 +601,9 @@ export class ThreeActing {
       this.state.actor_speed = newState.actor_speed
     }
     if (newState.duration !== undefined) {
+      if (this.state.duration !== undefined && this.state.duration !== newState.duration && this.trajectory.length > 0) {
+        this.resetRecording()
+      }
       this.state.duration = newState.duration
     }
     if (newState.motion_data !== undefined) {

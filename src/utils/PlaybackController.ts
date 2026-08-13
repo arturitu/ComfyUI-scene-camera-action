@@ -25,21 +25,35 @@ export class PlaybackController {
         if (Array.isArray(parsed)) {
           this.trajectory = parsed
         } else if (typeof parsed === 'object' && parsed !== null) {
-          if (Array.isArray(parsed.trajectory)) {
+          if (Array.isArray(parsed.actors) && parsed.actors.length > 0) {
+            let longest: MotionFrame[] = []
+            let maxActorDuration = 0
+            parsed.actors.forEach((act: any) => {
+              let actTraj = act.trajectory || act.motion_data
+              if (typeof actTraj === 'string' && actTraj.trim()) {
+                try { actTraj = JSON.parse(actTraj) } catch (e) {}
+              }
+              if (Array.isArray(actTraj) && actTraj.length > 0) {
+                const lastFrameT = actTraj[actTraj.length - 1]?.t || 0
+                if (lastFrameT > maxActorDuration) {
+                  maxActorDuration = lastFrameT
+                }
+                if (actTraj.length > longest.length) {
+                  longest = actTraj
+                }
+              }
+            })
+            this.trajectory = longest
+            if (maxActorDuration > 0) {
+              this.maxDuration = maxActorDuration
+              return
+            }
+          } else if (Array.isArray(parsed.trajectory)) {
             this.trajectory = parsed.trajectory
           } else if (Array.isArray(parsed.motion_data)) {
             this.trajectory = parsed.motion_data
           } else if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim()) {
             this.trajectory = JSON.parse(parsed.motion_data)
-          } else if (Array.isArray(parsed.actors) && parsed.actors.length > 0) {
-            let longest: MotionFrame[] = []
-            parsed.actors.forEach((act: any) => {
-              const actTraj = act.trajectory || act.motion_data
-              if (Array.isArray(actTraj) && actTraj.length > longest.length) {
-                longest = actTraj
-              }
-            })
-            this.trajectory = longest
           } else {
             this.trajectory = []
           }

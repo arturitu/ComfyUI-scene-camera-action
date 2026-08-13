@@ -279,8 +279,6 @@ export class ThreeDirecting {
     // Dynamically adjust fog based on environment stage extent
     this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
     config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent)
-
-    this.buildActor()
   }
   public buildSceneEnvironment(): void {
     this.buildStageEnvironment()
@@ -436,13 +434,6 @@ export class ThreeDirecting {
     this.forceHardCutNextCameraUpdate = false
     this.lastActiveKeyframeId = activeKeyframe.id
     this.lastTargetActorId = targetActorId
-
-    // If paused and no seek/hard-cut was triggered, freeze camera in exact current visual state without jumping
-    if (!isPlaying && !isHardCut && this.lastCameraMode === activeMode) {
-      const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
-      config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget)
-      return
-    }
 
     if (this.lastCameraMode !== activeMode || isHardCut) {
       this.smoothedCameraYaw = rotY
@@ -785,8 +776,16 @@ export class ThreeDirecting {
   }
 
   public getDuration(): number {
-    const maxDuration = this.playbackController.getMaxDuration()
-    return maxDuration > 0 ? maxDuration : 7.0
+    let maxD = 0
+    if (this.actorList && this.actorList.length > 0) {
+      this.actorList.forEach(a => {
+        const dur = a.playbackController.getMaxDuration()
+        if (dur > maxD) maxD = dur
+      })
+    }
+    const mainDur = this.playbackController.getMaxDuration()
+    if (mainDur > maxD) maxD = mainDur
+    return maxD > 0 ? maxD : 7.0
   }
 
   public dispose(): void {

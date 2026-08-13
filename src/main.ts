@@ -133,6 +133,13 @@ function getWidgetValue<T>(node: ComfyNode, name: string, defaultValue: T): T {
   return widget ? (widget.value as T) : defaultValue
 }
 
+function setWidgetValue(node: ComfyNode, name: string, value: any): void {
+  const widget = node.widgets?.find(w => w.name === name)
+  if (widget) {
+    widget.value = value
+  }
+}
+
 function readStoredStageProps(node: ComfyNode): Partial<StageState> | null {
   const raw = node.properties?.[STAGE_PROP_KEY] ?? node.properties?.[SCENE_PROP_KEY]
   if (!raw || typeof raw !== 'object') return null
@@ -365,6 +372,22 @@ function findConnectedActingNode(directingNode: ComfyNode): ComfyNode | null {
   return null
 }
 
+function findRootActingNode(actingNode: ComfyNode): ComfyNode {
+  let currNode: ComfyNode = actingNode
+  const visited = new Set<ComfyNode>()
+
+  while (currNode && !visited.has(currNode)) {
+    visited.add(currNode)
+    const originInfo = findConnectedStageOrActingOrigin(currNode)
+    if (originInfo && originInfo.isActing) {
+      currNode = originInfo.originNode
+    } else {
+      break
+    }
+  }
+  return currNode
+}
+
 function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: Set<ComfyNode> = new Set()): void {
   if (visitedSet.has(actingNode)) return
   visitedSet.add(actingNode)
@@ -379,6 +402,29 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
   if (originInfo) {
     let stageState: SceneState | null = null
     let previousActors: any[] = []
+
+    const rootActingNode = findRootActingNode(actingNode)
+    const rootActingState = readActingStateFromNode(rootActingNode)
+    const masterDuration = rootActingState.duration ?? 7.0
+    const isNestedActing = originInfo.isActing
+
+    const durWidget = actingNode.widgets?.find(w => w.name === 'duration')
+    if (isNestedActing) {
+      setWidgetValue(actingNode, 'duration', masterDuration)
+      if (durWidget) {
+        if (!durWidget.options) durWidget.options = {}
+        durWidget.options.read_only = true
+        ;(durWidget as any).disabled = true
+      }
+    } else {
+      if (durWidget) {
+        if (!durWidget.options) durWidget.options = {}
+        durWidget.options.read_only = false
+        ;(durWidget as any).disabled = false
+      }
+    }
+
+    const effectiveDuration = isNestedActing ? masterDuration : (currentActingState.duration ?? 7.0)
 
     if (!originInfo.isActing) {
       stageState = readSceneStateFromNode(originInfo.originNode) as SceneState
@@ -404,12 +450,14 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        duration: effectiveDuration,
         actors: previousActors
       })
       writeStoredActingProps(actingNode, {
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        duration: effectiveDuration,
         actors: previousActors
       })
 
@@ -423,6 +471,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
       }
       notifyConnectedActingNodes(actingNode, visitedSet)
       notifyConnectedDirectingNodes(actingNode)
+      app.graph?.setDirtyCanvas(true, true)
       return
     }
   }
@@ -433,6 +482,57 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
     actingInst.exposed.setConnectedThreeStage(null)
   }
   notifyConnectedDirectingNodes(actingNode)
+}
+
+function isActingNodeMotionValid(actingNode: ComfyNode): boolean {
+  const actingInst = actingInstances.get(actingNode)
+  const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
+  if (threeActing) {
+    if (typeof threeActing.getTrajectory === 'function') {
+      const traj = threeActing.getTrajectory()
+      if (Array.isArray(traj) && traj.length > 0) return true
+    }
+  }
+  const actingState = readActingStateFromNode(actingNode)
+  const rawBlob = actingState.motion_data
+  if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
+    try {
+      const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true
+        if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true
+      }
+      if (Array.isArray(parsed) && parsed.length > 0) return true
+    } catch {}
+  }
+  return false
+}
+
+function isUpstreamActingChainComplete(startActingNode: ComfyNode): boolean {
+  let currNode: ComfyNode | null = startActingNode
+  const visited = new Set<ComfyNode>()
+
+  while (currNode && !visited.has(currNode)) {
+    visited.add(currNode)
+    const isActing = currNode.constructor?.comfyClass === 'UBActingNode' ||
+                     currNode.constructor?.comfyClass === 'ActingNode' ||
+                     currNode.type === 'UBActingNode' ||
+                     currNode.type === 'ActingNode'
+    if (isActing) {
+      if (!isActingNodeMotionValid(currNode)) {
+        return false
+      }
+      const originInfo = findConnectedStageOrActingOrigin(currNode)
+      if (originInfo && originInfo.isActing) {
+        currNode = originInfo.originNode
+      } else {
+        break
+      }
+    } else {
+      break
+    }
+  }
+  return true
 }
 
 function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
@@ -447,6 +547,16 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
         const directingInst = directingInstances.get(targetNode)
         if (directingInst) {
           if (originNode.constructor?.comfyClass === 'UBActingNode' || originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'UBActingNode' || originNode.type === 'ActingNode') {
+            const chainComplete = isUpstreamActingChainComplete(originNode)
+            if (!chainComplete) {
+              directingInst.exposed.setState({ acting_data: '' })
+              writeStoredDirectingProps(targetNode, { acting_data: '' })
+              if ((directingInst.exposed as any).setConnectedThreeActing) {
+                (directingInst.exposed as any).setConnectedThreeActing(null)
+              }
+              continue
+            }
+
             const actingState = readActingStateFromNode(originNode)
             const actingInst = actingInstances.get(originNode)
             const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
@@ -640,6 +750,9 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
   wire('duration', v => {
     exposed.setState({ duration: Number(v) })
     writeStoredActingProps(node, { duration: Number(v) })
+    notifyConnectedActingNodes(node)
+    notifyConnectedDirectingNodes(node)
+    app.graph?.setDirtyCanvas(true, true)
   })
 
   wire('motion_data', v => {
