@@ -45,6 +45,12 @@ export class ThreeActing {
 
   public isPlaying = false
   private playbackController: PlaybackController
+  private previousActorControllers: Array<{
+    controller: BaseActor
+    playbackController: PlaybackController
+    record: any
+  }> = []
+  private previousActorsData: any[] = []
 
   private debugPanel: DebugPanel | null = null
   private clonedEnvGroup: THREE.Group | null = null
@@ -71,13 +77,19 @@ export class ThreeActing {
       duration: options.initialState?.duration ?? 7.0,
       stage_data: initialStageData,
       scene_data: initialStageData,
-      motion_data: options.initialState?.motion_data
+      motion_data: options.initialState?.motion_data,
+      spawn_point: options.initialState?.spawn_point,
+      actors: options.initialState?.actors ?? []
     }
 
     this.playbackController = new PlaybackController()
 
     this.initThreeJS()
     this.bindEvents()
+
+    if (this.state.actors && this.state.actors.length > 0) {
+      this.buildPreviousActors(this.state.actors)
+    }
 
     if (this.state.motion_data) {
       this.loadTrajectory(this.state.motion_data)
@@ -102,27 +114,97 @@ export class ThreeActing {
     this.isPlaying = false
     this.activeRecordingTargetDuration = this.state.duration ?? 7.0
     this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
+
+    // Reset previous actors to t=0
+    this.previousActorControllers.forEach(p => {
+      p.playbackController.start()
+      p.playbackController.evaluateAt(0, p.controller, 0)
+    })
+  }
+
+  public getAccumulatedActors(): any[] {
+    const upstream = this.previousActorsData || []
+    if (this.trajectory && this.trajectory.length > 0) {
+      const currentActorRecord = {
+        id: `actor_${upstream.length + 1}`,
+        actor_type: this.getActorType(),
+        actor_speed: this.state.actor_speed,
+        spawn_point: this.state.spawn_point,
+        trajectory: this.trajectory
+      }
+      return [...upstream, currentActorRecord]
+    }
+    return [...upstream]
   }
 
   public stopRecording(): string {
     this.isRecording = false
     this.isPlaying = false
     const stageData = this.getStageData()
+    const allActors = this.getAccumulatedActors()
+
     const payload = {
       type: 'acting_motion',
       actor_type: this.getActorType(),
       stage_data: stageData,
       scene_data: stageData,
       trajectory: this.trajectory,
-      motion_data: this.trajectory
+      motion_data: this.trajectory,
+      actors: allActors
     }
     const json = JSON.stringify(payload)
     this.state.motion_data = json
-    this.loadTrajectory(json)
+    this.state.actors = allActors
+    this.playbackController.setTrajectory(JSON.stringify(this.trajectory))
+    if (this.trajectory.length > 0) {
+      this.isPlaybackMode = true
+    }
+
     if (this.onStateChange) {
-      this.onStateChange({ ...this.state })
+      this.onStateChange({ ...this.state, actors: allActors })
     }
     return json
+  }
+
+  public buildPreviousActors(actorsRecords: any[]): void {
+    const newRecords = actorsRecords || []
+    if (this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
+      try {
+        if (JSON.stringify(newRecords) === JSON.stringify(this.previousActorsData)) {
+          return
+        }
+      } catch (e) {}
+    }
+
+    this.previousActorControllers.forEach(p => {
+      this.scene.remove(p.controller.group)
+      p.controller.dispose()
+    })
+    this.previousActorControllers = []
+    this.previousActorsData = newRecords
+
+    this.previousActorsData.forEach((rec) => {
+      let traj = rec.trajectory || rec.motion_data
+      if (typeof traj === 'string' && traj.trim()) {
+        try {
+          const p = JSON.parse(traj)
+          traj = p.trajectory || p.motion_data || p
+        } catch (e) {}
+      }
+      if (!traj || (Array.isArray(traj) && traj.length === 0)) return
+
+      const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
+      const pbCtrl = new PlaybackController()
+      pbCtrl.setTrajectory(traj)
+      pbCtrl.start()
+      pbCtrl.evaluateAt(0, actorCtrl, 0, true)
+      this.scene.add(actorCtrl.group)
+      this.previousActorControllers.push({
+        controller: actorCtrl,
+        playbackController: pbCtrl,
+        record: rec
+      })
+    })
   }
 
   public getTrajectory(): Array<{ t: number; px: number; py: number; pz: number; rx: number; ry: number; rz: number }> {
@@ -188,12 +270,30 @@ export class ThreeActing {
   public loadTrajectory(trajectoryJson: string): void {
     this.playbackController.setTrajectory(trajectoryJson)
     this.trajectory = this.playbackController.getTrajectory()
+
+    if (trajectoryJson && typeof trajectoryJson === 'string' && trajectoryJson.trim()) {
+      try {
+        const parsed = JSON.parse(trajectoryJson)
+        if (parsed && Array.isArray(parsed.actors) && parsed.actors.length > 0) {
+          let prevActors = parsed.actors
+          if (this.trajectory.length > 0 && parsed.actors.length > 1) {
+            prevActors = parsed.actors.slice(0, parsed.actors.length - 1)
+          } else if (this.trajectory.length > 0 && parsed.actors.length === 1) {
+            prevActors = []
+          }
+          this.buildPreviousActors(prevActors)
+        }
+      } catch (e) {
+        console.warn('[ThreeActing] Error parsing actors array from trajectoryJson:', e)
+      }
+    }
+
     if (this.trajectory.length > 0) {
       this.isPlaybackMode = true
     } else {
       this.isPlaybackMode = false
       if (this.actorController) {
-        this.actorController.resetToOrigin()
+        this.resetActorPosition()
       }
     }
   }
@@ -335,6 +435,12 @@ export class ThreeActing {
   }
 
   private updateActorMovement(dt: number): void {
+    // Evaluate previous actors' motion at current playback/recording time
+    const curTime = this.getCurrentTime()
+    this.previousActorControllers.forEach(p => {
+      p.playbackController.evaluateAt(curTime, p.controller, dt)
+    })
+
     if (this.isPlaybackMode) {
       if (this.isPlaying) {
         this.playbackController.update(dt, this.actorController)
@@ -444,6 +550,10 @@ export class ThreeActing {
   }
 
   public setState(newState: Partial<ActingState>): void {
+    if (newState.actors !== undefined) {
+      this.buildPreviousActors(newState.actors)
+      this.state.actors = this.getAccumulatedActors()
+    }
     if (newState.actor_type !== undefined && newState.actor_type !== this.state.actor_type) {
       this.state.actor_type = newState.actor_type
       this.buildActor(newState.actor_type)
@@ -606,7 +716,12 @@ export class ThreeActing {
   }
 
   public getState(): ActingState {
-    return this.state
+    const accumulated = this.getAccumulatedActors()
+    this.state.actors = accumulated
+    return {
+      ...this.state,
+      actors: accumulated
+    }
   }
 
   public getScene(): THREE.Scene {

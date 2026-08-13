@@ -58,8 +58,8 @@ class _DirectingUIOutput(_UIOutput):
 
 
 # Custom IO types for node connections
-StageIO = io.Custom("STAGE")
-ActingIO = io.Custom("ACTING")
+StageIO = io.Custom("*")
+ActingIO = io.Custom("*")
 
 
 CUSTOM_NODE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -91,7 +91,7 @@ def get_staging_stage_files() -> list[str]:
 
 class UBStagingNode(io.ComfyNode):
     CATEGORY = "Unboring 3D Studio"
-    
+
     """
     UB Staging Node
     Configures a 3D stage environment with multiple adjustable 3D assets (cubes).
@@ -156,7 +156,8 @@ class UBActingNode(io.ComfyNode):
 
     """
     UB Acting Node
-    Receives stage data from a Staging node and hosts interactive actor acting.
+    Receives stage data from a Staging node or acting data from a previous Acting node,
+    and hosts interactive actor acting.
     """
 
     @classmethod
@@ -166,12 +167,12 @@ class UBActingNode(io.ComfyNode):
             display_name="UB Acting",
             category="Unboring 3D Studio",
             is_output_node=False,
-            description="Receives a 3D stage from UB Staging and hosts interactive actor acting.",
+            description="Receives a 3D stage from UB Staging or acting data from a previous UB Acting node, hosting interactive actor acting.",
             inputs=[
                 StageIO.Input(
                     "stage",
-                    display_name="Stage",
-                    tooltip="Stage data connection from a UB Staging node",
+                    display_name="Stage / Acting",
+                    tooltip="Connect a UB Staging node or previous UB Acting node for multi-actor chaining",
                     optional=True,
                 ),
                 io.Combo.Input(
@@ -216,14 +217,48 @@ class UBActingNode(io.ComfyNode):
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
-        stage_data = {}
+        stage_input_data = {}
         if isinstance(stage, str) and stage.strip():
             try:
-                stage_data = json.loads(stage)
+                stage_input_data = json.loads(stage)
             except Exception:
-                stage_data = {"raw": stage}
+                stage_input_data = {"raw": stage}
         elif isinstance(stage, dict):
-            stage_data = stage
+            stage_input_data = stage
+
+        stage_data = {}
+        previous_actors = []
+
+        if "nodes" in stage_input_data or "type" in stage_input_data:
+            stage_data = stage_input_data
+        elif "stage_data" in stage_input_data or "actors" in stage_input_data:
+            stage_data = stage_input_data.get("stage_data", {})
+            if "duration" in stage_input_data:
+                try:
+                    duration = float(stage_input_data["duration"])
+                except (ValueError, TypeError):
+                    pass
+
+            if isinstance(stage_input_data.get("actors"), list):
+                previous_actors = stage_input_data["actors"]
+            elif stage_input_data.get("motion_data") or stage_input_data.get("trajectory"):
+                traj = stage_input_data.get("trajectory")
+                if not traj and isinstance(stage_input_data.get("motion_data"), str) and stage_input_data["motion_data"].strip():
+                    try:
+                        parsed_m = json.loads(stage_input_data["motion_data"])
+                        traj = parsed_m.get("trajectory", []) if isinstance(parsed_m, dict) else []
+                    except Exception:
+                        traj = []
+                if not traj and isinstance(stage_input_data.get("motion_data"), list):
+                    traj = stage_input_data["motion_data"]
+
+                previous_actors = [{
+                    "id": "actor_1",
+                    "actor_type": stage_input_data.get("actor_type", "human"),
+                    "actor_speed": stage_input_data.get("actor_speed", 10.0),
+                    "spawn_point": stage_input_data.get("spawn_point"),
+                    "trajectory": traj or []
+                }]
 
         acting_dict = {
             "stage_data": stage_data,
@@ -231,6 +266,7 @@ class UBActingNode(io.ComfyNode):
             "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,
+            "actors": previous_actors,
         }
 
         acting_json = json.dumps(acting_dict)
@@ -297,6 +333,12 @@ class UBDirectingNode(io.ComfyNode):
         if isinstance(acting_data, dict):
             if acting_data.get("trajectory") or acting_data.get("motion_data"):
                 has_motion = True
+            actors = acting_data.get("actors")
+            if isinstance(actors, list) and len(actors) > 0:
+                for act in actors:
+                    if act.get("trajectory") and len(act["trajectory"]) > 0:
+                        has_motion = True
+                        break
 
         if not has_motion:
             raise ValueError("UB Directing: Directing canvas is disabled. Connect an Acting 3D node and record motion first.")

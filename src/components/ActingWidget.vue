@@ -2,7 +2,7 @@
   <div class="three-container">
     <div v-if="!state.scene_data" class="disabled-overlay">
       <div class="disabled-title">Acting Canvas Disabled</div>
-      <div class="disabled-subtitle">Connect a Staging 3D Node to activate.</div>
+      <div class="disabled-subtitle">Connect a Stage or Acting 3D Node to activate.</div>
     </div>
     <div v-else class="canvas-wrapper">
       <div class="canvas-aspect-container">
@@ -86,7 +86,7 @@
         </button>
       </template>
       <template v-else>
-        <div class="hint">Waiting for scene link...</div>
+        <div class="hint">Waiting for stage link...</div>
       </template>
     </div>
 
@@ -174,6 +174,7 @@ const state = reactive<ActingState>({
   duration: props.initialState?.duration ?? 7.0,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
+  actors: props.initialState?.actors ?? []
 })
 
 const isCounting = ref(false)
@@ -312,6 +313,9 @@ const resetToInteractive = () => {
 }
 
 const setState = (newState: Partial<ActingState>) => {
+  if (newState.hasOwnProperty('actors')) {
+    state.actors = newState.actors
+  }
   if (newState.hasOwnProperty('scene_data')) {
     state.scene_data = newState.scene_data as any
   }

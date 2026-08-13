@@ -123,6 +123,20 @@
                   {{ mode.label }}
                 </button>
               </div>
+
+              <!-- Target Actor Selector for Multi-Actor scenes -->
+              <div v-if="availableActors.length > 0" class="popover-target-row">
+                <span class="target-label">Track:</span>
+                <select
+                  :value="kf.actor_target || availableActors[0]?.id"
+                  class="target-select"
+                  @change.stop="changeKeyframeTarget(kf, ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="act in availableActors" :key="act.id" :value="act.id">
+                    {{ act.label }}
+                  </option>
+                </select>
+              </div>
               <div class="popover-arrow"></div>
             </div>
           </div>
@@ -159,6 +173,7 @@ interface Keyframe {
   id: string
   t: number
   mode: string
+  actor_target?: string
 }
 
 const cameraModes: CameraMode[] = [
@@ -189,6 +204,13 @@ let timeFrameId: number | null = null
 let isDraggingPlayhead = false
 let draggingKeyframe: Keyframe | null = null
 
+const availableActors = computed(() => {
+  if (threeDirecting && typeof (threeDirecting as any).getAvailableActors === 'function') {
+    return (threeDirecting as any).getAvailableActors()
+  }
+  return [{ id: 'default', label: 'Scene Target' }]
+})
+
 function parseKeyframes(raw: string): Keyframe[] {
   if (!raw || !raw.trim()) {
     return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
@@ -200,6 +222,7 @@ function parseKeyframes(raw: string): Keyframe[] {
         id: item.id || `kf-${idx}-${Date.now()}`,
         t: Math.max(0, typeof item.t === 'number' ? item.t : 0),
         mode: item.mode || 'Third Person',
+        actor_target: item.actor_target || item.actorTarget || undefined
       })).sort((a, b) => a.t - b.t)
     }
   } catch {}
@@ -333,6 +356,11 @@ const selectKeyframe = (kf: Keyframe) => {
 
 const changeKeyframeMode = (kf: Keyframe, mode: string) => {
   kf.mode = mode
+  syncKeyframes()
+}
+
+const changeKeyframeTarget = (kf: Keyframe, targetId: string) => {
+  kf.actor_target = targetId
   syncKeyframes()
 }
 
@@ -983,6 +1011,36 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
 .mode-pill.active {
   background: #3d4974;
   color: #ffffff;
+  border-color: #00ffcc;
+}
+
+.popover-target-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.target-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #a0a8b8;
+  font-family: monospace;
+}
+
+.target-select {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  color: #ffffff;
+  font-size: 9px;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.target-select:focus {
   border-color: #00ffcc;
 }
 

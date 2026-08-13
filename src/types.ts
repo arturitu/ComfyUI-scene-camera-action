@@ -50,6 +50,14 @@ export interface SpawnPoint {
   ry: number
 }
 
+export interface ActorRecord {
+  id: string
+  actor_type: 'human' | 'car'
+  actor_speed: number
+  spawn_point?: SpawnPoint
+  trajectory: MotionFrame[]
+}
+
 export interface StageState {
   type: string
   num_assets: number
@@ -63,9 +71,11 @@ export interface ActingState {
   actor_type?: 'human' | 'car'
   actor_speed: number
   duration: number
+  spawn_point?: SpawnPoint
   motion_data?: string
   stage_data: StageState
   scene_data?: StageState
+  actors?: ActorRecord[]
 }
 
 export interface ThreeStageOptions {

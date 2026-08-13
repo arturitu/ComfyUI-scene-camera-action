@@ -53,31 +53,55 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
-    const actorType = (this.connectedThreeActing && typeof this.connectedThreeActing.getActorType === 'function')
-      ? this.connectedThreeActing.getActorType()
-      : (this.connectedThreeActing && typeof this.connectedThreeActing.getState === 'function')
-        ? this.connectedThreeActing.getState()?.actor_type
-        : undefined
-    this.buildActor(actorType)
+    if (this.state.acting_data) {
+      this.loadActingData(this.state.acting_data)
+    }
     this.buildSceneEnvironment()
   }
 
-  public loadActingData(actingDataJson: string): void {
-    let parsedActorType: string | undefined
-    if (actingDataJson && actingDataJson.trim()) {
-      try {
-        const parsed = JSON.parse(actingDataJson)
-        if (typeof parsed === 'object' && parsed !== null) {
-          parsedActorType = parsed.actor_type || parsed.actorType || parsed.char_type
-          const stageData = parsed.stage_data || parsed.scene_data
-          if (stageData && !this.connectedThreeActing) {
-            this.buildStageFromData(stageData)
-          }
+  private actorList: Array<{
+    id: string
+    controller: BaseActor
+    playbackController: PlaybackController
+    record: any
+  }> = []
+
+  public getAvailableActors(): Array<{ id: string; label: string }> {
+    if (this.actorList.length === 0) {
+      return [{ id: 'default', label: 'Scene Target' }]
+    }
+    return this.actorList.map((a, idx) => ({
+      id: a.id,
+      label: `Actor ${idx + 1} (${a.record.actor_type || 'human'})`
+    }))
+  }
+
+  public loadActingData(actingDataInput: any): void {
+    let parsedPayload: any = null
+    let rawString = ''
+
+    if (typeof actingDataInput === 'string') {
+      rawString = actingDataInput
+      if (actingDataInput.trim()) {
+        try {
+          parsedPayload = JSON.parse(actingDataInput)
+        } catch (e) {
+          console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
         }
-      } catch (e) {
-        console.warn('[ThreeDirecting] JSON parse error in loadActingData:', e)
       }
-      this.playbackController.setTrajectory(actingDataJson)
+    } else if (typeof actingDataInput === 'object' && actingDataInput !== null) {
+      parsedPayload = actingDataInput
+      try {
+        rawString = JSON.stringify(actingDataInput)
+      } catch (e) { }
+    }
+
+    if (parsedPayload) {
+      const stageData = parsedPayload.stage_data || parsedPayload.scene_data
+      if (stageData && !this.connectedThreeActing) {
+        this.buildStageFromData(stageData)
+      }
+      this.playbackController.setTrajectory(rawString)
       this.playbackController.start()
     } else {
       this.playbackController.setTrajectory('')
@@ -90,15 +114,54 @@ export class ThreeDirecting {
       this.lastSceneDataJson = currentStageJson
       this.buildStageEnvironment()
     }
-    this.buildActor(parsedActorType)
+
+    this.buildActorsFromData(parsedPayload)
 
     if (this.actorController) {
-      if (this.playbackController.getTrajectory().length > 0) {
-        this.playbackController.evaluateAt(0, this.actorController)
-      }
       this.actorPosition.copy(this.actorController.position)
     }
     this.updateCamera()
+  }
+
+  private buildActorsFromData(parsedPayload: any): void {
+    this.actorList.forEach(a => {
+      this.scene.remove(a.controller.group)
+      a.controller.dispose()
+    })
+    this.actorList = []
+
+    let actorsArr: any[] = []
+    if (parsedPayload && Array.isArray(parsedPayload.actors) && parsedPayload.actors.length > 0) {
+      actorsArr = parsedPayload.actors
+    } else if (parsedPayload && (parsedPayload.trajectory || parsedPayload.motion_data)) {
+      const traj = parsedPayload.trajectory || (typeof parsedPayload.motion_data === 'string' ? JSON.parse(parsedPayload.motion_data).trajectory : parsedPayload.motion_data)
+      actorsArr = [{
+        id: 'actor_1',
+        actor_type: parsedPayload.actor_type || 'human',
+        trajectory: traj || []
+      }]
+    }
+
+    actorsArr.forEach((rec, idx) => {
+      const actorId = rec.id || `actor_${idx + 1}`
+      const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
+      const pbCtrl = new PlaybackController()
+      pbCtrl.setTrajectory(JSON.stringify(rec.trajectory || []))
+      pbCtrl.start()
+      this.scene.add(actorCtrl.group)
+      this.actorList.push({
+        id: actorId,
+        controller: actorCtrl,
+        playbackController: pbCtrl,
+        record: rec
+      })
+    })
+
+    if (this.actorList.length > 0) {
+      this.actorController = this.actorList[this.actorList.length - 1].controller
+    } else {
+      this.actorController = null
+    }
   }
 
 
@@ -142,7 +205,6 @@ export class ThreeDirecting {
     const stageSetup = stageEnv.initStage(this.scene)
 
     this.buildSceneEnvironment()
-    this.buildActor()
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -272,16 +334,16 @@ export class ThreeDirecting {
     this.scene.add(this.actorController.group)
   }
 
-  private keyframes: Array<{ id: string; t: number; mode: string }> = []
+  private keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string }> = []
   public isPlaying = true
 
-  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string }>): void {
+  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string }>): void {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
   }
 
-  public getActiveKeyframe(time: number): { id: string; mode: string } {
+  public getActiveKeyframe(time: number): { id: string; mode: string; actor_target?: string } {
     if (!this.keyframes || this.keyframes.length === 0) {
-      return { id: 'default', mode: this.state.camera_mode || 'Third Person' }
+      return { id: 'default', mode: this.state.camera_mode || 'Third Person', actor_target: undefined }
     }
     const sorted = [...this.keyframes].sort((a, b) => a.t - b.t)
     let active = sorted[0]
@@ -292,7 +354,7 @@ export class ThreeDirecting {
         break
       }
     }
-    return { id: active.id, mode: active.mode }
+    return { id: active.id, mode: active.mode, actor_target: active.actor_target }
   }
 
   public getActiveKeyframeMode(time: number): string {
@@ -308,9 +370,19 @@ export class ThreeDirecting {
   }
 
   private updateActorMovement(dt: number): void {
-    if (!this.actorController) return
-    this.playbackController.update(dt, this.actorController)
-    this.actorPosition.copy(this.actorController.position)
+    const curTime = this.playbackController.getCurrentTime()
+    if (this.actorList.length > 0) {
+      this.actorList.forEach(a => {
+        a.playbackController.evaluateAt(curTime, a.controller, dt)
+      })
+      const primaryActor = this.actorList[this.actorList.length - 1].controller
+      if (primaryActor) {
+        this.actorPosition.copy(primaryActor.position)
+      }
+    } else if (this.actorController) {
+      this.playbackController.update(dt, this.actorController)
+      this.actorPosition.copy(this.actorController.position)
+    }
   }
 
   private lastCameraMode: string | null = null
@@ -319,13 +391,26 @@ export class ThreeDirecting {
   private smoothedCameraYaw: number = 0
 
   private updateCamera(dt: number = 0.016): void {
-    if (!this.actorController) return
-
-    const charPos = this.actorPosition
-    const rotY = this.actorController.group.rotation.y
     const currentTime = this.playbackController.getCurrentTime()
     const activeKeyframe = this.getActiveKeyframe(currentTime)
     const activeMode = activeKeyframe.mode
+
+    // Select target actor controller for camera tracking
+    let targetActorCtrl = this.actorController
+    if (activeKeyframe.actor_target && this.actorList.length > 0) {
+      const found = this.actorList.find(a => a.id === activeKeyframe.actor_target)
+      if (found) {
+        targetActorCtrl = found.controller
+      }
+    }
+    if (!targetActorCtrl && this.actorList.length > 0) {
+      targetActorCtrl = this.actorList[0].controller
+    }
+
+    if (!targetActorCtrl) return
+
+    const charPos = targetActorCtrl.position
+    const rotY = targetActorCtrl.group.rotation.y
 
     const isPlaying = this.playbackController.getIsPlaying()
     let isHardCut = this.playbackController.consumeHardCut() || this.forceHardCutNextCameraUpdate
@@ -361,17 +446,17 @@ export class ThreeDirecting {
     const posLerpFactor = 1.0 - Math.exp(-6.0 * Math.max(0.001, dt))
 
     const isFPV = activeMode === 'First Person'
-    this.actorController.setMeshVisibleForFPV(isFPV)
+    targetActorCtrl.setMeshVisibleForFPV(isFPV)
 
     if (isFPV) {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const localOffset = this.actorController.getFPVOffset()
-      const worldOffset = localOffset.clone().applyQuaternion(this.actorController.group.quaternion)
+      const localOffset = targetActorCtrl.getFPVOffset()
+      const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion)
       const fpvCamPos = charPos.clone().add(worldOffset)
-      const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.actorController.group.quaternion)
+      const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(targetActorCtrl.group.quaternion)
       const targetLookAt = fpvCamPos.clone().add(forward)
 
       if (this.lastCameraMode !== 'First Person' || isHardCut) {
@@ -388,7 +473,7 @@ export class ThreeDirecting {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const isCrouch = this.actorController?.isCrouching() ?? false
+      const isCrouch = targetActorCtrl?.isCrouching() ?? false
       const camHeight = isCrouch ? 1.0 : 1.8
       const camDist = isCrouch ? -2.8 : -3.5
       const targetYOffset = isCrouch ? 1.05 : 0.8
@@ -445,7 +530,7 @@ export class ThreeDirecting {
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
-      const isCar = (this.actorController as any)?.getType?.() === 'car'
+      const isCar = (targetActorCtrl as any)?.getType?.() === 'car'
       const fov = 45
       if (this.camera.fov !== fov) {
         this.camera.fov = fov

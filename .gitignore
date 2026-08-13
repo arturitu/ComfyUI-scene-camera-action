@@ -11,3 +11,6 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+
+# Antigravity local rules
+GEMINI.md
