@@ -31,6 +31,15 @@ export class PlaybackController {
             this.trajectory = parsed.motion_data
           } else if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim()) {
             this.trajectory = JSON.parse(parsed.motion_data)
+          } else if (Array.isArray(parsed.actors) && parsed.actors.length > 0) {
+            let longest: MotionFrame[] = []
+            parsed.actors.forEach((act: any) => {
+              const actTraj = act.trajectory || act.motion_data
+              if (Array.isArray(actTraj) && actTraj.length > longest.length) {
+                longest = actTraj
+              }
+            })
+            this.trajectory = longest
           } else {
             this.trajectory = []
           }

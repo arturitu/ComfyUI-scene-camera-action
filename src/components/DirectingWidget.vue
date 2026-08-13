@@ -244,6 +244,7 @@ const hasActingData = computed(() => {
   try {
     const parsed = JSON.parse(state.acting_data)
     if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.actors) && parsed.actors.length > 0) return true
       if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true
       if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true
       if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim().length > 0) {

@@ -460,48 +460,92 @@ def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
 @PromptServer.instance.routes.post("/ub_3d_studio/upload_video")
 @PromptServer.instance.routes.post("/scene_camera_action/upload_video")
 async def upload_video(request):
-    post = await request.post()
-    video_file = post.get("video")
-    custom_filename = post.get("filename")
+    try:
+        post = await request.post()
+        video_file = post.get("video")
+        custom_filename = post.get("filename")
 
-    if video_file:
-        input_dir = folder_paths.get_input_directory()
-        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_record.webm"
-        filepath = os.path.join(input_dir, filename)
+        if video_file:
+            input_dir = folder_paths.get_input_directory()
+            filename = os.path.basename(custom_filename) if isinstance(custom_filename, str) and custom_filename else "3d_directing_record.webm"
+            filepath = os.path.join(input_dir, filename)
 
-        with open(filepath, "wb") as f:
-            f.write(video_file.file.read())
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
 
-        # Automatically convert WebM to QuickTime-compatible H.264 MP4
-        base_name, _ = os.path.splitext(filename)
-        mp4_filename = f"{base_name}.mp4"
-        mp4_filepath = os.path.join(input_dir, mp4_filename)
+            file_bytes = video_file.file.read() if hasattr(video_file, "file") else video_file
+            try:
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+            except Exception:
+                timestamp = int(time.time())
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{timestamp}{ext}"
+                filepath = os.path.join(input_dir, filename)
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
 
-        success_mp4 = convert_webm_to_mp4(filepath, mp4_filepath)
-        final_filename = mp4_filename if success_mp4 else filename
-        final_filepath = mp4_filepath if success_mp4 else filepath
+            # Automatically convert WebM to QuickTime-compatible H.264 MP4
+            base_name, _ = os.path.splitext(filename)
+            mp4_filename = f"{base_name}.mp4"
+            mp4_filepath = os.path.join(input_dir, mp4_filename)
 
-        return web.json_response({"success": True, "filepath": final_filepath, "filename": final_filename})
-    return web.json_response({"success": False, "error": "No video file received"})
+            if os.path.exists(mp4_filepath):
+                try:
+                    os.remove(mp4_filepath)
+                except Exception:
+                    pass
+
+            success_mp4 = convert_webm_to_mp4(filepath, mp4_filepath)
+            final_filename = mp4_filename if success_mp4 else filename
+            final_filepath = mp4_filepath if success_mp4 else filepath
+
+            return web.json_response({"success": True, "filepath": final_filepath, "filename": final_filename})
+        return web.json_response({"success": False, "error": "No video file received"})
+    except Exception as e:
+        print(f"[Unboring3DStudio] Error uploading video: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
 @PromptServer.instance.routes.post("/ub_3d_studio/upload_image")
 @PromptServer.instance.routes.post("/scene_camera_action/upload_image")
 async def upload_image(request):
-    post = await request.post()
-    image_file = post.get("image")
-    custom_filename = post.get("filename")
+    try:
+        post = await request.post()
+        image_file = post.get("image")
+        custom_filename = post.get("filename")
 
-    if image_file:
-        input_dir = folder_paths.get_input_directory()
-        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_stage.png"
-        filepath = os.path.join(input_dir, filename)
+        if image_file:
+            input_dir = folder_paths.get_input_directory()
+            filename = os.path.basename(custom_filename) if isinstance(custom_filename, str) and custom_filename else "3d_directing_stage.png"
+            filepath = os.path.join(input_dir, filename)
 
-        with open(filepath, "wb") as f:
-            f.write(image_file.file.read())
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
 
-        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
-    return web.json_response({"success": False, "error": "No image file received"})
+            file_bytes = image_file.file.read() if hasattr(image_file, "file") else image_file
+            try:
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+            except Exception:
+                timestamp = int(time.time())
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{timestamp}{ext}"
+                filepath = os.path.join(input_dir, filename)
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+
+            return web.json_response({"success": True, "filepath": filepath, "filename": filename})
+        return web.json_response({"success": False, "error": "No image file received"})
+    except Exception as e:
+        print(f"[Unboring3DStudio] Error uploading image: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
 @PromptServer.instance.routes.get("/ub_3d_studio/list_presets")

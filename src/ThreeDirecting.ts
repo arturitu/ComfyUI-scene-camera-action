@@ -339,37 +339,41 @@ export class ThreeDirecting {
 
   public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string }>): void {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
+    this.forceHardCutNextCameraUpdate = true
+    this.updateCamera(0)
   }
 
-  public getActiveKeyframe(time: number): { id: string; mode: string; actor_target?: string } {
-    if (!this.keyframes || this.keyframes.length === 0) {
-      return { id: 'default', mode: this.state.camera_mode || 'Third Person', actor_target: undefined }
+  public getActiveKeyframe(time: number): { id: string; t: number; mode: string; actor_target?: string } {
+    if (this.keyframes.length === 0) {
+      return { id: 'default', t: 0, mode: this.state.camera_mode || 'Third Person' }
     }
-    const sorted = [...this.keyframes].sort((a, b) => a.t - b.t)
-    let active = sorted[0]
-    for (let i = 0; i < sorted.length; i++) {
-      if (time >= sorted[i].t) {
-        active = sorted[i]
+    let active = this.keyframes[0]
+    for (let i = 0; i < this.keyframes.length; i++) {
+      if (this.keyframes[i].t <= time) {
+        active = this.keyframes[i]
       } else {
         break
       }
     }
-    return { id: active.id, mode: active.mode, actor_target: active.actor_target }
+    return active
   }
 
   public getActiveKeyframeMode(time: number): string {
     return this.getActiveKeyframe(time).mode
   }
 
-  public isRecordingMode = false
+  public isRecordingVideo = false
 
   public setIsRecordingMode(active: boolean): void {
-    this.isRecordingMode = active
+    this.isRecordingVideo = active
     this.playbackController.setIsRecordingMode(active)
     this.playbackController.setLoop(!active)
   }
 
   private updateActorMovement(dt: number): void {
+    if (this.playbackController.getIsPlaying()) {
+      this.playbackController.update(dt, this.actorController)
+    }
     const curTime = this.playbackController.getCurrentTime()
     if (this.actorList.length > 0) {
       this.actorList.forEach(a => {
@@ -380,13 +384,13 @@ export class ThreeDirecting {
         this.actorPosition.copy(primaryActor.position)
       }
     } else if (this.actorController) {
-      this.playbackController.update(dt, this.actorController)
       this.actorPosition.copy(this.actorController.position)
     }
   }
 
   private lastCameraMode: string | null = null
   private lastActiveKeyframeId: string | null = null
+  private lastTargetActorId: string | null = null
   private forceHardCutNextCameraUpdate: boolean = false
   private smoothedCameraYaw: number = 0
 
@@ -397,14 +401,17 @@ export class ThreeDirecting {
 
     // Select target actor controller for camera tracking
     let targetActorCtrl = this.actorController
+    let targetActorId = 'default'
     if (activeKeyframe.actor_target && this.actorList.length > 0) {
       const found = this.actorList.find(a => a.id === activeKeyframe.actor_target)
       if (found) {
         targetActorCtrl = found.controller
+        targetActorId = found.id
       }
     }
     if (!targetActorCtrl && this.actorList.length > 0) {
       targetActorCtrl = this.actorList[0].controller
+      targetActorId = this.actorList[0].id
     }
 
     if (!targetActorCtrl) return
@@ -415,16 +422,20 @@ export class ThreeDirecting {
     const isPlaying = this.playbackController.getIsPlaying()
     let isHardCut = this.playbackController.consumeHardCut() || this.forceHardCutNextCameraUpdate
 
-    // Abrupt hard cut on keyframe cut or mode change
+    // Abrupt hard cut on keyframe cut, mode change, or target actor change
     if (this.lastActiveKeyframeId !== null && this.lastActiveKeyframeId !== activeKeyframe.id) {
       isHardCut = true
     }
     if (this.lastCameraMode !== null && this.lastCameraMode !== activeMode) {
       isHardCut = true
     }
+    if (this.lastTargetActorId !== null && this.lastTargetActorId !== targetActorId) {
+      isHardCut = true
+    }
 
     this.forceHardCutNextCameraUpdate = false
     this.lastActiveKeyframeId = activeKeyframe.id
+    this.lastTargetActorId = targetActorId
 
     // If paused and no seek/hard-cut was triggered, freeze camera in exact current visual state without jumping
     if (!isPlaying && !isHardCut && this.lastCameraMode === activeMode) {
