@@ -27,10 +27,10 @@ const _tempRay = new THREE.Ray()
 const _tempEuler = new THREE.Euler()
 
 const LOCAL_PROBES = [
-  { x: -0.38, z: 0.72 },  // Front-Left
-  { x: 0.38, z: 0.72 },   // Front-Right
-  { x: -0.38, z: -0.72 }, // Rear-Left
-  { x: 0.38, z: -0.72 },  // Rear-Right
+  { x: -0.85, z: 1.35 },  // Front-Left
+  { x: 0.85, z: 1.35 },   // Front-Right
+  { x: -0.85, z: -1.35 }, // Rear-Left
+  { x: 0.85, z: -1.35 },  // Rear-Right
   { x: 0.0, z: 0.0 },     // Center
 ]
 
@@ -62,7 +62,7 @@ export class CarActor extends BaseActor {
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return new THREE.Vector3(-0.25, 0.95, -0.1)
+    return new THREE.Vector3(-0.45, 1.15, 0.15)
   }
 
   public override onPlaybackMotion(distMoved: number, angularVel: number, _animName?: string, frameDt: number = 0.016): void {
@@ -71,13 +71,13 @@ export class CarActor extends BaseActor {
     const speedDelta = (currentSpeed - this.prevPlaybackSpeed) / dt
     this.prevPlaybackSpeed = currentSpeed
 
-    const targetSteer = Math.max(-0.45, Math.min(0.45, angularVel * 0.35))
+    const targetSteer = Math.max(-0.38, Math.min(0.38, angularVel * 0.35))
     this.currentSteerAngle += (targetSteer - this.currentSteerAngle) * 0.3
     if (this.frontLeftWheelGroup) this.frontLeftWheelGroup.rotation.y = this.currentSteerAngle
     if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle
 
     if (distMoved > 0.001) {
-      const rollDelta = distMoved / 0.20
+      const rollDelta = distMoved / 0.38
       this.wheelRollingGroup.forEach((w) => {
         w.rotation.x += rollDelta
       })
@@ -135,25 +135,25 @@ export class CarActor extends BaseActor {
       metalness: 0.1,
     })
 
-    // 1. Car Body
-    const bodyGeo = new THREE.BoxGeometry(1.0, 0.4, 1.8)
+    // 1. Car Body (1.90m W x 0.65m H x 4.20m L)
+    const bodyGeo = new THREE.BoxGeometry(1.90, 0.65, 4.20)
     const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat)
-    bodyMesh.position.y = 0.35
+    bodyMesh.position.y = 0.65
     bodyMesh.castShadow = true
     bodyMesh.receiveShadow = true
     this.bodySuspensionGroup.add(bodyMesh)
 
     // 2. Car Cabin
     const cabinShape = new THREE.Shape()
-    cabinShape.moveTo(-0.45, 0.0)
-    cabinShape.lineTo(-0.12, 0.28)
-    cabinShape.lineTo(0.35, 0.28)
-    cabinShape.lineTo(0.45, 0.0)
+    cabinShape.moveTo(-1.00, 0.0)
+    cabinShape.lineTo(-0.25, 0.65)
+    cabinShape.lineTo(0.70, 0.65)
+    cabinShape.lineTo(1.00, 0.0)
     cabinShape.closePath()
 
-    const cabinGeo = new THREE.ExtrudeGeometry(cabinShape, { depth: 0.80, bevelEnabled: false })
+    const cabinGeo = new THREE.ExtrudeGeometry(cabinShape, { depth: 1.60, bevelEnabled: false })
     cabinGeo.rotateY(Math.PI / 2)
-    cabinGeo.translate(-0.40, 0.55, -0.05)
+    cabinGeo.translate(-0.80, 0.98, -0.10)
 
     const cabinMesh = new THREE.Mesh(cabinGeo, bodyMat)
     cabinMesh.castShadow = true
@@ -161,54 +161,54 @@ export class CarActor extends BaseActor {
     this.bodySuspensionGroup.add(cabinMesh)
 
     // 3. Headlights & Brake Lights & Mirrors
-    const headlightGeo = new THREE.BoxGeometry(0.2, 0.1, 0.05)
+    const headlightGeo = new THREE.BoxGeometry(0.35, 0.18, 0.08)
     const headlightMat = new THREE.MeshStandardMaterial({
       color: 0xfff066,
       emissive: 0xfff066,
       emissiveIntensity: 0.8,
     })
     const lightLeft = new THREE.Mesh(headlightGeo, headlightMat)
-    lightLeft.position.set(-0.35, 0.35, 0.91)
+    lightLeft.position.set(-0.65, 0.65, 2.11)
     const lightRight = new THREE.Mesh(headlightGeo, headlightMat)
-    lightRight.position.set(0.35, 0.35, 0.91)
+    lightRight.position.set(0.65, 0.65, 2.11)
     this.bodySuspensionGroup.add(lightLeft, lightRight)
 
-    const brakelightGeo = new THREE.BoxGeometry(0.12, 0.10, 0.03)
+    const brakelightGeo = new THREE.BoxGeometry(0.24, 0.18, 0.05)
     const brakelightMat = new THREE.MeshStandardMaterial({
       color: 0xdc2626,
       emissive: 0xdc2626,
       emissiveIntensity: 0.2,
     })
     const brakeLeft = new THREE.Mesh(brakelightGeo, brakelightMat)
-    brakeLeft.position.set(-0.35, 0.35, -0.91)
+    brakeLeft.position.set(-0.65, 0.65, -2.11)
     const brakeRight = new THREE.Mesh(brakelightGeo, brakelightMat)
-    brakeRight.position.set(0.35, 0.35, -0.91)
+    brakeRight.position.set(0.65, 0.65, -2.11)
     this.bodySuspensionGroup.add(brakeLeft, brakeRight)
 
-    const mirrorGeo = new THREE.BoxGeometry(0.14, 0.08, 0.05)
+    const mirrorGeo = new THREE.BoxGeometry(0.24, 0.14, 0.08)
     const mirrorMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.1 })
     const mirrorLeft = new THREE.Mesh(mirrorGeo, mirrorMat)
-    mirrorLeft.position.set(-0.47, 0.65, 0.20)
+    mirrorLeft.position.set(-1.02, 1.15, 0.40)
     mirrorLeft.castShadow = true
     const mirrorRight = new THREE.Mesh(mirrorGeo, mirrorMat)
-    mirrorRight.position.set(0.47, 0.65, 0.20)
+    mirrorRight.position.set(1.02, 1.15, 0.40)
     mirrorRight.castShadow = true
     this.bodySuspensionGroup.add(mirrorLeft, mirrorRight)
 
     carGroup.add(this.bodySuspensionGroup)
 
-    // 4. Wheels
+    // 4. Wheels (0.38m radius = 0.76m diameter)
     const tireShape = new THREE.Shape()
-    tireShape.absarc(0, 0, 0.20, 0, Math.PI * 2, false)
+    tireShape.absarc(0, 0, 0.38, 0, Math.PI * 2, false)
     const tireHole = new THREE.Path()
-    tireHole.absarc(0, 0, 0.09, 0, Math.PI * 2, true)
+    tireHole.absarc(0, 0, 0.18, 0, Math.PI * 2, true)
     tireShape.holes.push(tireHole)
 
-    const tireGeo = new THREE.ExtrudeGeometry(tireShape, { depth: 0.18, bevelEnabled: false, curveSegments: 16 })
+    const tireGeo = new THREE.ExtrudeGeometry(tireShape, { depth: 0.26, bevelEnabled: false, curveSegments: 16 })
     tireGeo.center()
     const tireMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.6, metalness: 0.1 })
 
-    const hubGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.18, 16)
+    const hubGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.26, 16)
     const hubMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.4, metalness: 0.1 })
 
     this.wheelRollingGroup = []
@@ -233,13 +233,13 @@ export class CarActor extends BaseActor {
     }
 
     this.frontLeftWheelGroup = createWheelAssembly()
-    this.frontLeftWheelGroup.position.set(-0.52, 0.2, 0.55)
+    this.frontLeftWheelGroup.position.set(-0.95, 0.38, 1.30)
     this.frontRightWheelGroup = createWheelAssembly()
-    this.frontRightWheelGroup.position.set(0.52, 0.2, 0.55)
+    this.frontRightWheelGroup.position.set(0.95, 0.38, 1.30)
     this.rearLeftWheelGroup = createWheelAssembly()
-    this.rearLeftWheelGroup.position.set(-0.52, 0.2, -0.55)
+    this.rearLeftWheelGroup.position.set(-0.95, 0.38, -1.30)
     this.rearRightWheelGroup = createWheelAssembly()
-    this.rearRightWheelGroup.position.set(0.52, 0.2, -0.55)
+    this.rearRightWheelGroup.position.set(0.95, 0.38, -1.30)
 
     carGroup.add(
       this.frontLeftWheelGroup,
@@ -248,11 +248,12 @@ export class CarActor extends BaseActor {
       this.rearRightWheelGroup
     )
 
+    // Elevate carGroup so tires rest 100% flush on top of floor Y = 0
     carGroup.position.y = 0.22
     this.group.add(carGroup)
 
     // 5. Car Collider Wireframe Visualizer
-    const colliderGeo = new THREE.BoxGeometry(1.30, 0.65, 2.10)
+    const colliderGeo = new THREE.BoxGeometry(2.00, 1.20, 4.30)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       wireframe: true,
@@ -262,7 +263,7 @@ export class CarActor extends BaseActor {
       opacity: 0.85,
     })
     this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
-    this.colliderWireframe.position.set(0, 0.48, 0)
+    this.colliderWireframe.position.set(0, 0.85, 0)
     this.colliderWireframe.renderOrder = 1000
     this.colliderWireframe.visible = this.showCollider
     this.group.add(this.colliderWireframe)

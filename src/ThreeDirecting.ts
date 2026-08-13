@@ -475,10 +475,11 @@ export class ThreeDirecting {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
+      const isCar = (targetActorCtrl as any)?.getType?.() === 'car'
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const camHeight = isCrouch ? 1.0 : 1.8
-      const camDist = isCrouch ? -2.8 : -3.5
-      const targetYOffset = isCrouch ? 1.05 : 0.8
+      const camHeight = isCar ? 2.2 : (isCrouch ? 1.0 : 1.7)
+      const camDist = isCar ? -6.5 : (isCrouch ? -2.8 : -3.5)
+      const targetYOffset = isCar ? 0.9 : (isCrouch ? 1.05 : 0.8)
 
       const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const targetCamPos = charPos.clone().add(backOffset)
@@ -539,8 +540,8 @@ export class ThreeDirecting {
         this.camera.updateProjectionMatrix()
       }
 
-      const sideVec = isCar ? new THREE.Vector3(-4.8, 1.3, 0.4) : new THREE.Vector3(-4.5, 1.4, 0.4)
-      const targetOffsetY = isCar ? 0.55 : 1.15
+      const sideVec = isCar ? new THREE.Vector3(-6.0, 1.8, 0.5) : new THREE.Vector3(-4.2, 1.3, 0.4)
+      const targetOffsetY = isCar ? 0.90 : 0.95
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const targetCamPos = charPos.clone().add(sideOffset)
       const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)

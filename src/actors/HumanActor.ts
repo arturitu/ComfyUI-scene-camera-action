@@ -77,9 +77,9 @@ export class HumanActor extends BaseActor {
   private isUserJumping: boolean = false
   private airborneTime: number = 0
 
-  // Wireframe collider geometries for standing (2.14m total height) and crouching (1.50m total height)
-  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 1.30, 8, 16)
-  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 0.70, 8, 16)
+  // Wireframe collider geometries for standing (1.79m total height) and crouching (1.30m total height)
+  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.35, 1.09, 8, 16)
+  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.35, 0.60, 8, 16)
 
   constructor() {
     super()
@@ -99,7 +99,7 @@ export class HumanActor extends BaseActor {
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return this.isCrouching() ? new THREE.Vector3(0, 0.95, 0.1) : new THREE.Vector3(0, 1.5, 0.1)
+    return this.isCrouching() ? new THREE.Vector3(0, 0.85, 0.1) : new THREE.Vector3(0, 1.65, 0.1)
   }
 
   public getCurrentAnimationName(): string {
