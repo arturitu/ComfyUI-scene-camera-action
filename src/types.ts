@@ -53,6 +53,7 @@ export interface SpawnPoint {
 export interface ActorRecord {
   id: string
   actor_type: 'human' | 'car'
+  actor_color?: string
   actor_speed: number
   spawn_point?: SpawnPoint
   trajectory: MotionFrame[]
@@ -68,6 +69,7 @@ export type SceneState = StageState
 
 export interface ActingState {
   actor_type?: 'human' | 'car'
+  actor_color?: string
   actor_speed: number
   duration: number
   spawn_point?: SpawnPoint

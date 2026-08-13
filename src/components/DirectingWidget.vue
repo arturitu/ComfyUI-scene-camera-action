@@ -213,7 +213,7 @@ const availableActors = computed(() => {
 
 function parseKeyframes(raw: string): Keyframe[] {
   if (!raw || !raw.trim()) {
-    return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
+    return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1' }]
   }
   try {
     const parsed = JSON.parse(raw)
@@ -222,11 +222,11 @@ function parseKeyframes(raw: string): Keyframe[] {
         id: item.id || `kf-${idx}-${Date.now()}`,
         t: Math.max(0, typeof item.t === 'number' ? item.t : 0),
         mode: item.mode || 'Third Person',
-        actor_target: item.actor_target || item.actorTarget || undefined
+        actor_target: item.actor_target || item.actorTarget || 'actor_1'
       })).sort((a, b) => a.t - b.t)
     }
   } catch {}
-  return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
+  return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1' }]
 }
 
 const isActingNodeConnected = computed(() => {
@@ -696,10 +696,10 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
 /* Recording Overlay */
 .recording-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
   background: rgba(10, 13, 20, 0.85);
   z-index: 50;
   display: flex;

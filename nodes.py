@@ -188,6 +188,13 @@ class UBActingNode(io.ComfyNode):
                     display_name="Actor Speed",
                     tooltip="Movement speed of the 3D actor",
                 ),
+                io.Color.Input(
+                    "actor_color",
+                    default="#F1DFBF",
+                    display_name="Actor Color",
+                    tooltip="Color for the 3D actor mesh",
+                    optional=True,
+                ),
                 io.Float.Input(
                     "duration",
                     default=7.0, min=4.0, max=15.0, step=1.0,
@@ -214,9 +221,29 @@ class UBActingNode(io.ComfyNode):
         stage: str | dict | None = None,
         actor_type: str = "human",
         actor_speed: float = 10.0,
+        actor_color: str | dict | None = "#F1DFBF",
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
+        default_c = "#F1DFBF" if actor_type == "human" else "#0284C7"
+        def sanitize_color(val: str | dict | None) -> str:
+            if isinstance(val, str) and val.strip():
+                s = val.strip()
+                if s.startswith("{") or s.startswith("[") or '"type"' in s:
+                    return default_c
+                if not s.startswith("#") and len(s) in (3, 6, 8):
+                    s = f"#{s}"
+                if s.startswith("#"):
+                    if len(s) == 9:
+                        return s[:7]
+            elif isinstance(val, dict):
+                hex_val = val.get("hex") or val.get("color")
+                if isinstance(hex_val, str) and hex_val.startswith("#"):
+                    return hex_val[:7] if len(hex_val) == 9 else hex_val
+            return default_c
+
+        clean_color = sanitize_color(actor_color)
+
         stage_input_data = {}
         if isinstance(stage, str) and stage.strip():
             try:
@@ -255,6 +282,7 @@ class UBActingNode(io.ComfyNode):
                 previous_actors = [{
                     "id": "actor_1",
                     "actor_type": stage_input_data.get("actor_type", "human"),
+                    "actor_color": sanitize_color(stage_input_data.get("actor_color")),
                     "actor_speed": stage_input_data.get("actor_speed", 10.0),
                     "spawn_point": stage_input_data.get("spawn_point"),
                     "trajectory": traj or []
@@ -263,6 +291,7 @@ class UBActingNode(io.ComfyNode):
         acting_dict = {
             "stage_data": stage_data,
             "actor_type": actor_type,
+            "actor_color": clean_color,
             "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,

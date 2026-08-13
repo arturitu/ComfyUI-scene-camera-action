@@ -201,9 +201,12 @@ const props = defineProps<{
 
 const initialActorType = props.initialState?.actor_type ?? 'human'
 const initialActorSpeed = props.initialState?.actor_speed ?? (initialActorType === 'car' ? 20.0 : 10.0)
+const defaultActorColor = computed(() => initialActorType === 'car' ? '#0284C7' : '#F1DFBF')
+const initialActorColor = props.initialState?.actor_color ?? defaultActorColor.value
 
 const state = reactive<ActingState>({
   actor_type: initialActorType,
+  actor_color: initialActorColor,
   actor_speed: initialActorSpeed,
   duration: props.initialState?.duration ?? 7.0,
   spawn_point: props.initialState?.spawn_point,
@@ -211,6 +214,19 @@ const state = reactive<ActingState>({
   scene_data: props.initialState?.scene_data ?? null as any,
   actors: props.initialState?.actors ?? []
 })
+
+const actorColorVal = computed(() => state.actor_color || (state.actor_type === 'car' ? '#0284C7' : '#F1DFBF'))
+
+const onColorChange = (e: Event) => {
+  const hex = (e.target as HTMLInputElement).value
+  state.actor_color = hex
+  if (props.onStateChange) {
+    props.onStateChange(state)
+  }
+  if (threeActing) {
+    threeActing.setActorColor(hex)
+  }
+}
 
 const isCounting = ref(false)
 const countdownVal = ref<number | null>(null)
@@ -382,6 +398,9 @@ const setState = (newState: Partial<ActingState>) => {
   if (newState.hasOwnProperty('actor_type')) {
     state.actor_type = newState.actor_type as any
   }
+  if (newState.hasOwnProperty('actor_color')) {
+    state.actor_color = newState.actor_color as string
+  }
   if (newState.hasOwnProperty('actor_speed')) {
     state.actor_speed = newState.actor_speed as number
   }
@@ -424,6 +443,12 @@ const cleanup = () => {
 watch(() => state.stage_data || state.scene_data, (newVal) => {
   if (threeActing) {
     threeActing.setState({ stage_data: newVal ?? undefined, scene_data: newVal ?? undefined })
+  }
+})
+
+watch(() => state.actor_color, (newColor) => {
+  if (threeActing && newColor) {
+    threeActing.setActorColor(newColor)
   }
 })
 

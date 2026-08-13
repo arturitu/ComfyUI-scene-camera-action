@@ -149,6 +149,8 @@ export class ThreeDirecting {
     actorsArr.forEach((rec, idx) => {
       const actorId = rec.id || `actor_${idx + 1}`
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
+      const color = rec.actor_color || (rec.actor_type === 'human' ? '#F1DFBF' : '#0284C7')
+      actorCtrl.setActorColor(color)
       const pbCtrl = new PlaybackController()
       let traj = rec.trajectory || rec.motion_data
       if (typeof traj === 'string' && traj.trim()) {
@@ -169,7 +171,7 @@ export class ThreeDirecting {
     })
 
     if (this.actorList.length > 0) {
-      this.actorController = this.actorList[this.actorList.length - 1].controller
+      this.actorController = this.actorList[0].controller
     } else {
       this.actorController = null
     }
@@ -339,6 +341,8 @@ export class ThreeDirecting {
       this.actorController.dispose()
     }
     this.actorController = ActorFactory.create(charType as 'human' | 'car')
+    const color = (charType === 'human' ? '#F1DFBF' : '#0284C7')
+    this.actorController.setActorColor(color)
     this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
     this.scene.add(this.actorController.group)
   }
@@ -415,7 +419,7 @@ export class ThreeDirecting {
     const activeMode = activeKeyframe.mode
 
     // Select target actor controller for camera tracking
-    let targetActorCtrl = this.actorController
+    let targetActorCtrl: BaseActor | null = null
     let targetActorId = 'default'
     if (activeKeyframe.actor_target && this.actorList.length > 0) {
       const found = this.actorList.find(a => a.id === activeKeyframe.actor_target)
@@ -427,6 +431,9 @@ export class ThreeDirecting {
     if (!targetActorCtrl && this.actorList.length > 0) {
       targetActorCtrl = this.actorList[0].controller
       targetActorId = this.actorList[0].id
+    }
+    if (!targetActorCtrl) {
+      targetActorCtrl = this.actorController
     }
 
     if (!targetActorCtrl) return

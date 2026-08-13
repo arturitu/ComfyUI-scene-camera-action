@@ -196,6 +196,39 @@ export class HumanActor extends BaseActor {
     }
   }
 
+  public override actorColor: string = '#F1DFBF'
+
+  public override setActorColor(hexColor: string): void {
+    if (!hexColor) return
+    this.actorColor = hexColor
+    this.applyColorToMesh(hexColor)
+  }
+
+  private applyColorToMesh(hexColor: string): void {
+    if (this.placeholderMesh && this.placeholderMesh.material) {
+      (this.placeholderMesh.material as THREE.MeshStandardMaterial).color.set(hexColor)
+    }
+    if (this.modelGroup) {
+      const c = new THREE.Color(hexColor)
+      this.modelGroup.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach((mat: any) => {
+              if (mat.color) {
+                mat.color.copy(c)
+                mat.needsUpdate = true
+              }
+            })
+          } else if (mesh.material && (mesh.material as any).color) {
+            ;(mesh.material as any).color.copy(c)
+            ;(mesh.material as any).needsUpdate = true
+          }
+        }
+      })
+    }
+  }
+
   private setupHumanModel(assets: CachedHumanAssets): void {
     if (this.isDisposed) return
 
@@ -218,8 +251,23 @@ export class HumanActor extends BaseActor {
     // Elevate model mesh slightly so feet soles sit 100% flush on floor surface Y = 0
     clonedModel.position.y = 0.25
 
+    // Clone materials so each human actor instance has its own unique materials
+    clonedModel.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map(m => m.clone())
+        } else if (mesh.material) {
+          mesh.material = mesh.material.clone()
+        }
+      }
+    })
+
     this.modelGroup = clonedModel
     this.group.add(this.modelGroup)
+
+    // Apply color to loaded human model
+    this.applyColorToMesh(this.actorColor)
 
     // Setup Animation Mixer & Map
     this.animationsMapMap = assets.animations

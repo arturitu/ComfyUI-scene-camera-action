@@ -35,6 +35,16 @@ const LOCAL_PROBES = [
 ]
 
 export class CarActor extends BaseActor {
+  public override actorColor: string = '#0284C7'
+  private bodyMat: THREE.MeshStandardMaterial | null = null
+
+  public override setActorColor(hexColor: string): void {
+    if (!hexColor) return
+    this.actorColor = hexColor
+    if (this.bodyMat) {
+      this.bodyMat.color.set(hexColor)
+    }
+  }
   private currentSpeed: number = 0
   private currentSteerAngle: number = 0
 
@@ -129,11 +139,12 @@ export class CarActor extends BaseActor {
     this.bodySuspensionGroup = new THREE.Group()
 
     // Shared material for main car body & cabin
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0x0284c7,
+    this.bodyMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(this.actorColor),
       roughness: 0.4,
       metalness: 0.1,
     })
+    const bodyMat = this.bodyMat
 
     // 1. Car Body (1.90m W x 0.65m H x 4.20m L)
     const bodyGeo = new THREE.BoxGeometry(1.90, 0.65, 4.20)

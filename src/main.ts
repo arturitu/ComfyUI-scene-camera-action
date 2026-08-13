@@ -629,12 +629,72 @@ function notifyConnectedActingNodes(originNode: ComfyNode, visitedSet: Set<Comfy
   }
 }
 
+function parseCleanHexColor(val: any, defaultColor: string): string {
+  if (!val) return defaultColor
+
+  let rawStr = typeof val === 'string' ? val.trim() : null
+  let obj = typeof val === 'object' && val !== null ? val : null
+
+  if (rawStr && (rawStr.startsWith('{') || rawStr.startsWith('['))) {
+    try {
+      const parsed = JSON.parse(rawStr)
+      if (parsed && typeof parsed === 'object') {
+        obj = parsed
+      }
+    } catch (e) {}
+  }
+
+  if (obj) {
+    const hex = obj.hex || obj.color || obj.value
+    if (typeof hex === 'string' && hex.trim()) {
+      rawStr = hex.trim()
+    }
+  }
+
+  if (rawStr) {
+    // If it's legacy acting motion data JSON, ignore it!
+    if (rawStr.includes('"type"') || rawStr.includes('acting_motion')) {
+      return defaultColor
+    }
+    let s = rawStr
+    if (!s.startsWith('#') && /^[0-9a-fA-F]{3,8}$/.test(s)) {
+      s = `#${s}`
+    }
+    if (s.startsWith('#')) {
+      if (s.length === 9) return s.substring(0, 7)
+      if (s.length === 7 || s.length === 4) return s
+    }
+  }
+
+  return defaultColor
+}
+
+function getWidgetValueByNameOrIndex(node: ComfyNode, name: string, defaultIdx: number, defaultValue: any): any {
+  const w = node.widgets?.find((w: any) => w.name === name)
+  if (w && w.value !== undefined && w.value !== null) {
+    return w.value
+  }
+  if (Array.isArray((node as any).widgets_values)) {
+    const wIdx = node.widgets?.findIndex((w: any) => w.name === name)
+    const targetIdx = (wIdx !== undefined && wIdx >= 0) ? wIdx : defaultIdx
+    const val = (node as any).widgets_values[targetIdx]
+    if (val !== undefined && val !== null) {
+      return val
+    }
+  }
+  return defaultValue
+}
+
 function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
-  const typeVal = getWidgetValue(node, 'actor_type', 'human')
-  const speedVal = getWidgetValue(node, 'actor_speed', 10.0)
-  const durationVal = getWidgetValue(node, 'duration', 7.0)
-  const motionDataVal = getWidgetValue(node, 'motion_data', '')
+  const typeVal = getWidgetValueByNameOrIndex(node, 'actor_type', 0, 'human')
+  const defaultColor = (typeVal as string) === 'car' ? '#0284C7' : '#F1DFBF'
   const storedProps = readStoredActingProps(node)
+
+  const rawColor = storedProps?.actor_color ?? getWidgetValueByNameOrIndex(node, 'actor_color', 2, defaultColor)
+  const cleanColor = parseCleanHexColor(rawColor, defaultColor)
+  const speedVal = getWidgetValueByNameOrIndex(node, 'actor_speed', 1, 10.0)
+  const durationVal = getWidgetValueByNameOrIndex(node, 'duration', 3, 7.0)
+  const motionDataVal = getWidgetValueByNameOrIndex(node, 'motion_data', 4, '')
 
   let extractedActors: any[] | undefined = storedProps?.actors
   if ((!extractedActors || extractedActors.length === 0) && typeof motionDataVal === 'string' && motionDataVal.trim()) {
@@ -648,6 +708,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
 
   return {
     actor_type: (typeVal as string) === 'car' ? 'car' : 'human',
+    actor_color: cleanColor,
     actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : ((typeVal as string) === 'car' ? 20.0 : 10.0),
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
@@ -681,6 +742,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
     currentNode: node,
     initialState: {
       actor_type: stored.actor_type ?? 'human',
+      actor_color: stored.actor_color,
       actor_speed: stored.actor_speed ?? 10.0,
       duration: stored.duration ?? 7.0,
       spawn_point: stored.spawn_point,
@@ -701,6 +763,10 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       const speedWidget = live.widgets?.find(w => w.name === 'actor_speed')
       if (speedWidget && speedWidget.value !== state.actor_speed) {
         speedWidget.value = state.actor_speed
+      }
+      const colorWidget = live.widgets?.find(w => w.name === 'actor_color')
+      if (colorWidget && colorWidget.value !== state.actor_color && state.actor_color) {
+        colorWidget.value = state.actor_color
       }
       const motionWidget = live.widgets?.find(w => w.name === 'motion_data')
       if (motionWidget && motionWidget.value !== state.motion_data) {
@@ -744,10 +810,38 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
       speedWidget.value = targetSpeed
       setWidgetValue(node, 'actor_speed', targetSpeed)
     }
-    exposed.setState({ actor_type: charType, actor_speed: targetSpeed })
-    writeStoredActingProps(node, { actor_type: charType, actor_speed: targetSpeed })
+    const colorWidget = node.widgets?.find(w => w.name === 'actor_color')
+    const targetColor = charType === 'car' ? '#0284C7' : '#F1DFBF'
+    if (colorWidget) {
+      colorWidget.value = targetColor
+      setWidgetValue(node, 'actor_color', targetColor)
+    }
+    exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
+    writeStoredActingProps(node, { actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
     notifyConnectedDirectingNodes(node)
   })
+
+  wire('actor_color', v => {
+    const rawType = getWidgetValue(node, 'actor_type', 'human')
+    const charType = String(rawType) === 'car' ? 'car' : 'human'
+    const defaultColor = charType === 'car' ? '#0284C7' : '#F1DFBF'
+    const cleanColor = parseCleanHexColor(v, defaultColor)
+    exposed.setState({ actor_color: cleanColor })
+    writeStoredActingProps(node, { actor_color: cleanColor })
+    notifyConnectedActingNodes(node)
+    notifyConnectedDirectingNodes(node)
+  })
+
+  // Sync initial widget state immediately after binding and on tick
+  const syncStateNow = () => {
+    const st = readActingStateFromNode(node)
+    if (st.actor_color) {
+      exposed.setState({ actor_color: st.actor_color })
+    }
+  }
+  syncStateNow()
+  setTimeout(syncStateNow, 50)
+  setTimeout(syncStateNow, 300)
 
   wire('actor_speed', v => {
     exposed.setState({ actor_speed: Number(v) })
@@ -794,6 +888,19 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
   instance.widget = widget
   bindActingWidgetCallbacks(node, instance.exposed)
+
+  // Hook onConfigure for workflow graph reloads
+  const origOnConfigure = node.onConfigure
+  node.onConfigure = function (info: any) {
+    origOnConfigure?.call(this, info)
+    setTimeout(() => {
+      const actingInst = actingInstances.get(this)
+      if (actingInst) {
+        const st = readActingStateFromNode(this)
+        actingInst.exposed.setState(st)
+      }
+    }, 10)
+  }
 
   // Sync connection change
   const origOnConnectionsChange = node.onConnectionsChange

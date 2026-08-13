@@ -133,17 +133,15 @@ export class ThreeActing {
 
   public getAccumulatedActors(): any[] {
     const upstream = this.previousActorsData || []
-    if (this.trajectory && this.trajectory.length > 0) {
-      const currentActorRecord = {
-        id: `actor_${upstream.length + 1}`,
-        actor_type: this.getActorType(),
-        actor_speed: this.state.actor_speed,
-        spawn_point: this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
-        trajectory: this.trajectory
-      }
-      return [...upstream, currentActorRecord]
+    const currentActorRecord = {
+      id: `actor_${upstream.length + 1}`,
+      actor_type: this.getActorType(),
+      actor_color: this.state.actor_color || (this.getActorType() === 'human' ? '#F1DFBF' : '#0284C7'),
+      actor_speed: this.state.actor_speed,
+      spawn_point: this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
+      trajectory: this.trajectory || []
     }
-    return [...upstream]
+    return [...upstream, currentActorRecord]
   }
 
   public stopRecording(): string {
@@ -159,6 +157,7 @@ export class ThreeActing {
     const payload = {
       type: 'acting_motion',
       actor_type: this.getActorType(),
+      actor_color: this.state.actor_color || (this.getActorType() === 'human' ? '#F1DFBF' : '#0284C7'),
       stage_data: stageData,
       scene_data: stageData,
       trajectory: this.trajectory,
@@ -167,6 +166,8 @@ export class ThreeActing {
     }
     const json = JSON.stringify(payload)
     this.state.motion_data = json
+    this.state.actors = allActors
+
     this.state.actors = allActors
     this.playbackController.setTrajectory(JSON.stringify(this.trajectory))
     if (this.trajectory.length > 0) {
@@ -196,7 +197,7 @@ export class ThreeActing {
     }
   }
 
-  public buildPreviousActors(actorsRecords: any[]): void {
+  public buildPreviousActors(actorsRecords?: any[]): void {
     const newRecords = actorsRecords || []
     if (this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
       try {
@@ -224,6 +225,8 @@ export class ThreeActing {
       if (!traj || (Array.isArray(traj) && traj.length === 0)) return
 
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
+      const color = rec.actor_color || (rec.actor_type === 'human' ? '#F1DFBF' : '#0284C7')
+      actorCtrl.setActorColor(color)
       const pbCtrl = new PlaybackController()
       pbCtrl.setTrajectory(traj)
       pbCtrl.start()
@@ -440,9 +443,21 @@ export class ThreeActing {
       this.actorController.dispose()
     }
     this.actorController = ActorFactory.create(charType)
+    const color = this.state.actor_color || (charType === 'human' ? '#F1DFBF' : '#0284C7')
+    this.actorController.setActorColor(color)
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
     this.resetActorPosition()
+  }
+
+  public setActorColor(color: string): void {
+    this.state.actor_color = color
+    if (this.actorController) {
+      this.actorController.setActorColor(color)
+    }
+    if (this.onStateChange) {
+      this.onStateChange({ ...this.state, actor_color: color, actors: this.getAccumulatedActors() })
+    }
   }
 
   private getActorFramingOffsets(): { camOffset: THREE.Vector3; targetOffset: THREE.Vector3 } {
@@ -725,6 +740,9 @@ export class ThreeActing {
     if (newState.actor_type !== undefined && newState.actor_type !== this.state.actor_type) {
       this.state.actor_type = newState.actor_type
       this.buildActor(newState.actor_type)
+    }
+    if (newState.actor_color !== undefined) {
+      this.setActorColor(newState.actor_color)
     }
     if (newState.actor_speed !== undefined) {
       this.state.actor_speed = newState.actor_speed

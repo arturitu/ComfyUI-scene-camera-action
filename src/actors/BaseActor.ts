@@ -18,6 +18,12 @@ export abstract class BaseActor {
   public showCollider: boolean = false
 
   public lastSpawnPoint?: SpawnPoint
+  public actorColor: string = '#F1DFBF'
+
+  public setActorColor(hexColor: string): void {
+    if (!hexColor) return
+    this.actorColor = hexColor
+  }
 
   constructor() {
     this.group = new THREE.Group()
