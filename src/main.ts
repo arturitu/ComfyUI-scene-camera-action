@@ -649,7 +649,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
 
   return {
     actor_type: (typeVal as string) === 'car' ? 'car' : 'human',
-    actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(20.0, speedVal)) : 10.0,
+    actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : ((typeVal as string) === 'car' ? 20.0 : 10.0),
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
     scene_data: storedProps?.scene_data ?? (undefined as any),
@@ -737,8 +737,14 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
 
   wire('actor_type', v => {
     const charType = String(v) === 'car' ? 'car' : 'human'
-    exposed.setState({ actor_type: charType })
-    writeStoredActingProps(node, { actor_type: charType })
+    const speedWidget = node.widgets?.find(w => w.name === 'actor_speed')
+    const targetSpeed = charType === 'car' ? 20.0 : 10.0
+    if (speedWidget) {
+      speedWidget.value = targetSpeed
+      setWidgetValue(node, 'actor_speed', targetSpeed)
+    }
+    exposed.setState({ actor_type: charType, actor_speed: targetSpeed })
+    writeStoredActingProps(node, { actor_type: charType, actor_speed: targetSpeed })
     notifyConnectedDirectingNodes(node)
   })
 
@@ -1105,7 +1111,7 @@ app.registerExtension({
         speedWidget.type = 'number'
         if (!speedWidget.options) speedWidget.options = {}
         speedWidget.options.min = 1.0
-        speedWidget.options.max = 20.0
+        speedWidget.options.max = 30.0
         speedWidget.options.step = 1.0
         if (speedWidget.value === 1.0) {
           speedWidget.value = 10.0
@@ -1170,7 +1176,7 @@ app.registerExtension({
           speedWidgetConf.type = 'number'
           if (!speedWidgetConf.options) speedWidgetConf.options = {}
           speedWidgetConf.options.min = 1.0
-          speedWidgetConf.options.max = 20.0
+          speedWidgetConf.options.max = 30.0
           speedWidgetConf.options.step = 1.0
           if (speedWidgetConf.value === 1.0) {
             speedWidgetConf.value = 10.0

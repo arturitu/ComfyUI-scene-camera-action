@@ -7,15 +7,15 @@
       "type": "group",
       "name": "Main Straight Track Limits",
       "transform": {
-        "px": 7.9,
-        "py": -0.14,
-        "pz": -1.86,
+        "px": 9.71,
+        "py": -0.15,
+        "pz": -2.54,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -89,15 +89,15 @@
       "type": "group",
       "name": "Back Straight Track Limits",
       "transform": {
-        "px": -7.08,
-        "py": -0.14,
+        "px": -19.95,
+        "py": -0.15,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -171,15 +171,15 @@
       "type": "group",
       "name": "North Hairpin Curve",
       "transform": {
-        "px": 0.41,
-        "py": -0.14,
+        "px": -5.13,
+        "py": -0.15,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -589,15 +589,15 @@
       "type": "group",
       "name": "South Hairpin Curve",
       "transform": {
-        "px": 0.41,
-        "py": -0.14,
+        "px": -5.13,
+        "py": -0.15,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1007,15 +1007,15 @@
       "type": "group",
       "name": "Main Straight Jump Ramp",
       "transform": {
-        "px": 7.9,
-        "py": -0.14,
-        "pz": -8.31,
+        "px": 9.71,
+        "py": -0.15,
+        "pz": -15.3,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1073,15 +1073,15 @@
       "type": "group",
       "name": "Back Straight Speed Ramp",
       "transform": {
-        "px": -7.08,
-        "py": -0.14,
-        "pz": -3.05,
+        "px": -19.95,
+        "py": -0.15,
+        "pz": -4.9,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1139,15 +1139,15 @@
       "type": "group",
       "name": "Back Straight Chicane",
       "transform": {
-        "px": -7.08,
-        "py": -0.14,
+        "px": -19.95,
+        "py": -0.15,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1189,15 +1189,15 @@
       "type": "group",
       "name": "Start Finish Line Gantry",
       "transform": {
-        "px": 7.9,
-        "py": -0.14,
-        "pz": 8.81,
+        "px": 9.71,
+        "py": -0.15,
+        "pz": 18.59,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1271,15 +1271,15 @@
       "type": "group",
       "name": "Main Grandstand",
       "transform": {
-        "px": 15,
-        "py": -0.14,
+        "px": 23.76,
+        "py": -0.15,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1385,15 +1385,15 @@
       "type": "group",
       "name": "Race Control Tower",
       "transform": {
-        "px": 15.39,
-        "py": -0.14,
-        "pz": 11.31,
+        "px": 24.54,
+        "py": -0.15,
+        "pz": 23.54,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.25,
-        "sy": 1.25,
-        "sz": 1.25
+        "sx": 2.47,
+        "sy": 2.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1467,15 +1467,15 @@
       "type": "block",
       "name": "Sponsor Board",
       "transform": {
-        "px": -6.97,
-        "py": 3.54,
-        "pz": 3.82,
+        "px": -19.74,
+        "py": 7.14,
+        "pz": 8.71,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 6.45,
-        "sy": 1.25,
-        "sz": 0.1
+        "sx": 12.77,
+        "sy": 2.47,
+        "sz": 0.2
       }
     },
     {
@@ -1483,15 +1483,15 @@
       "type": "group",
       "name": "Group_cwy5o",
       "transform": {
-        "px": -7.07,
-        "py": 2.46,
-        "pz": 3.82,
+        "px": -19.93,
+        "py": 5.01,
+        "pz": 8.71,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1.29,
-        "sy": 1.75,
-        "sz": 1.25
+        "sx": 2.56,
+        "sy": 3.47,
+        "sz": 2.47
       },
       "children": [
         {
@@ -1533,15 +1533,15 @@
       "type": "block",
       "name": "Pit Lane Wall",
       "transform": {
-        "px": -10.29,
-        "py": 0.36,
+        "px": -26.31,
+        "py": 0.85,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 0.37,
-        "sy": 1,
-        "sz": 19.97
+        "sx": 0.74,
+        "sy": 1.98,
+        "sz": 39.54
       }
     },
     {
@@ -1549,15 +1549,15 @@
       "type": "block",
       "name": "Garage Main Structure",
       "transform": {
-        "px": -17.96,
-        "py": 2.05,
+        "px": -41.49,
+        "py": 4.19,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 5.62,
-        "sy": 4.37,
-        "sz": 17.48
+        "sx": 11.13,
+        "sy": 8.66,
+        "sz": 34.6
       }
     },
     {
@@ -1565,15 +1565,15 @@
       "type": "block",
       "name": "Garage Door 1",
       "transform": {
-        "px": -15.03,
-        "py": 1.24,
-        "pz": -6.17,
+        "px": -35.69,
+        "py": 2.59,
+        "pz": -11.07,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 0.12,
-        "sy": 2.75,
-        "sz": 3.5
+        "sx": 0.24,
+        "sy": 5.45,
+        "sz": 6.93
       }
     },
     {
@@ -1581,15 +1581,15 @@
       "type": "block",
       "name": "Garage Door 2",
       "transform": {
-        "px": -15.03,
-        "py": 1.24,
+        "px": -35.69,
+        "py": 2.59,
         "pz": -1.17,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 0.12,
-        "sy": 2.75,
-        "sz": 3.5
+        "sx": 0.24,
+        "sy": 5.45,
+        "sz": 6.93
       }
     },
     {
@@ -1597,15 +1597,15 @@
       "type": "block",
       "name": "Garage Door 3",
       "transform": {
-        "px": -15.03,
-        "py": 1.24,
-        "pz": 3.82,
+        "px": -35.69,
+        "py": 2.59,
+        "pz": 8.71,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 0.12,
-        "sy": 2.75,
-        "sz": 3.5
+        "sx": 0.24,
+        "sy": 5.45,
+        "sz": 6.93
       }
     },
     {
@@ -1613,15 +1613,15 @@
       "type": "group",
       "name": "Group_gdzwo",
       "transform": {
-        "px": -12.72,
-        "py": 0.49,
-        "pz": -1.78,
+        "px": -31.12,
+        "py": 1.11,
+        "pz": -2.38,
         "rx": 0,
         "ry": -0.68,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.98,
+        "sy": 1.98,
+        "sz": 1.98
       },
       "children": [
         {
@@ -1663,15 +1663,15 @@
       "type": "group",
       "name": "Group_gdzwo",
       "transform": {
-        "px": -12.64,
-        "py": 0.5,
-        "pz": 3.74,
+        "px": -30.96,
+        "py": 1.13,
+        "pz": 8.55,
         "rx": 0,
         "ry": -0.37,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.98,
+        "sy": 1.98,
+        "sz": 1.98
       },
       "children": [
         {

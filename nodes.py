@@ -184,7 +184,7 @@ class UBActingNode(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "actor_speed",
-                    default=10.0, min=1.0, max=20.0, step=1.0,
+                    default=10.0, min=1.0, max=30.0, step=1.0,
                     display_name="Actor Speed",
                     tooltip="Movement speed of the 3D actor",
                 ),

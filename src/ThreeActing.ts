@@ -69,11 +69,11 @@ export class ThreeActing {
     this.onRecordingFinished = options.onRecordingFinished
     const initialStageData = options.initialState?.stage_data ?? options.initialState?.scene_data ?? { type: 'cube_stage', num_assets: 0, nodes: [] }
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null
-    this.connectedThreeScene = this.connectedThreeStage
+    const defaultSpeed = options.initialState?.actor_speed ?? (options.initialState?.actor_type === 'car' ? 20.0 : 10.0)
 
     this.state = {
       actor_type: options.initialState?.actor_type ?? 'car',
-      actor_speed: options.initialState?.actor_speed ?? 10.0,
+      actor_speed: defaultSpeed,
       duration: options.initialState?.duration ?? 7.0,
       stage_data: initialStageData,
       scene_data: initialStageData,
@@ -397,15 +397,37 @@ export class ThreeActing {
     this.resetActorPosition()
   }
 
+  private getActorFramingOffsets(): { camOffset: THREE.Vector3; targetOffset: THREE.Vector3 } {
+    if (!this.actorController) {
+      return { camOffset: new THREE.Vector3(-8, 4, 0), targetOffset: new THREE.Vector3(0, 0.5, 0) }
+    }
+
+    const bbox = new THREE.Box3().setFromObject(this.actorController.group)
+    const size = new THREE.Vector3()
+    bbox.getSize(size)
+
+    const maxSpan = Math.max(size.x, size.y, size.z, 1.5)
+    const dist = Math.max(8.0, maxSpan * 2.8)
+    const camX = -dist * 0.85
+    const camY = Math.max(3.5, dist * 0.45)
+    const targetY = size.y > 0 ? Math.max(0.5, size.y * 0.45) : 0.5
+
+    return {
+      camOffset: new THREE.Vector3(camX, camY, 0),
+      targetOffset: new THREE.Vector3(0, targetY, 0)
+    }
+  }
+
   public resetActorPosition(): void {
     if (this.actorController) {
       const sceneData = this.getSceneData()
       this.actorController.resetToOrigin(sceneData?.spawn_point)
 
-      // Immediately set camera view targeting actor spawn position
+      // Immediately set camera view dynamically targeting actor size and spawn position
       const pos = this.actorController.position
-      this.camera.position.set(pos.x - 8, pos.y + 4, pos.z)
-      this.actingCameraTarget.set(pos.x, pos.y + 0.5, pos.z)
+      const { camOffset, targetOffset } = this.getActorFramingOffsets()
+      this.camera.position.set(pos.x + camOffset.x, pos.y + camOffset.y, pos.z + camOffset.z)
+      this.actingCameraTarget.set(pos.x + targetOffset.x, pos.y + targetOffset.y, pos.z + targetOffset.z)
       this.camera.lookAt(this.actingCameraTarget)
     }
   }
@@ -563,11 +585,12 @@ export class ThreeActing {
 
     this.updateActorMovement(dt)
 
-    // Camera following actor with smooth lerp
+    // Camera following actor with dynamic framing lerp
     if (this.actorController) {
       const pos = this.actorController.position
-      const idealCamPos = new THREE.Vector3(pos.x - 8, pos.y + 4, pos.z)
-      const idealTarget = new THREE.Vector3(pos.x, pos.y + 0.5, pos.z)
+      const { camOffset, targetOffset } = this.getActorFramingOffsets()
+      const idealCamPos = new THREE.Vector3(pos.x + camOffset.x, pos.y + camOffset.y, pos.z + camOffset.z)
+      const idealTarget = new THREE.Vector3(pos.x + targetOffset.x, pos.y + targetOffset.y, pos.z + targetOffset.z)
 
       this.camera.position.lerp(idealCamPos, 0.12)
       this.actingCameraTarget.lerp(idealTarget, 0.12)

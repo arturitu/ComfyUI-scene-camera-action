@@ -168,9 +168,12 @@ const props = defineProps<{
   currentNode?: any
 }>()
 
+const initialActorType = props.initialState?.actor_type ?? 'human'
+const initialActorSpeed = props.initialState?.actor_speed ?? (initialActorType === 'car' ? 20.0 : 10.0)
+
 const state = reactive<ActingState>({
-  actor_type: props.initialState?.actor_type ?? 'human',
-  actor_speed: props.initialState?.actor_speed ?? 10.0,
+  actor_type: initialActorType,
+  actor_speed: initialActorSpeed,
   duration: props.initialState?.duration ?? 7.0,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
