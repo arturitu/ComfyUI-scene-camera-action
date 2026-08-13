@@ -338,12 +338,13 @@ const setState = (newState: Partial<ActingState>) => {
   }
 }
 
-const setConnectedThreeScene = (threeScene: any) => {
-  currentThreeScene = threeScene
+const setConnectedThreeStage = (threeStage: any) => {
+  currentThreeScene = threeStage
   if (threeActing) {
-    threeActing.setConnectedThreeScene(threeScene)
+    threeActing.setConnectedThreeStage(threeStage)
   }
 }
+const setConnectedThreeScene = setConnectedThreeStage
 
 const cleanup = () => {
   if (recordProgressFrameId !== null) {
@@ -356,9 +357,9 @@ const cleanup = () => {
   }
 }
 
-watch(() => state.scene_data, (newVal) => {
+watch(() => state.stage_data || state.scene_data, (newVal) => {
   if (threeActing) {
-    threeActing.setState({ scene_data: newVal ?? undefined })
+    threeActing.setState({ stage_data: newVal ?? undefined, scene_data: newVal ?? undefined })
   }
 })
 
@@ -399,7 +400,7 @@ onUnmounted(() => {
 
 const getThreeActing = () => threeActing
 
-defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
+defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing })
 </script>
 
 <style scoped>

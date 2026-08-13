@@ -18,15 +18,15 @@ from fractions import Fraction
 from typing_extensions import override
 
 
-class _SceneUIOutput(_UIOutput):
-    """Sends scene state to the UI frontend."""
+class _StageUIOutput(_UIOutput):
+    """Sends stage state to the UI frontend."""
 
-    def __init__(self, scene_dict: dict):
+    def __init__(self, stage_dict: dict):
         super().__init__()
-        self.scene_dict = scene_dict
+        self.stage_dict = stage_dict
 
     def as_dict(self) -> dict:
-        return {"scene_state": self.scene_dict}
+        return {"stage_state": self.stage_dict}
 
 
 class _ActingUIOutput(_UIOutput):
@@ -52,7 +52,7 @@ class _DirectingUIOutput(_UIOutput):
 
 
 # Custom IO types for node connections
-SceneIO = io.Custom("SCENE")
+StageIO = io.Custom("STAGE")
 ActingIO = io.Custom("ACTING")
 
 
@@ -60,7 +60,7 @@ CUSTOM_NODE_DIR = os.path.dirname(os.path.realpath(__file__))
 PRESETS_DIR = os.path.join(CUSTOM_NODE_DIR, "presets")
 
 
-def get_staging_scene_files() -> list[str]:
+def get_staging_stage_files() -> list[str]:
     files = set()
     # 1. Scan presets/ inside custom node directory
     if os.path.exists(PRESETS_DIR):
@@ -68,13 +68,13 @@ def get_staging_scene_files() -> list[str]:
             if f.endswith(".json"):
                 files.add(f)
 
-    # 2. Scan input/staging_scenes/ in ComfyUI input directory
+    # 2. Scan input/staging_stages/ in ComfyUI input directory
     try:
         input_dir = folder_paths.get_input_directory()
         if input_dir:
-            scenes_dir = os.path.join(input_dir, "staging_scenes")
-            if os.path.exists(scenes_dir):
-                for f in os.listdir(scenes_dir):
+            stages_dir = os.path.join(input_dir, "staging_stages")
+            if os.path.exists(stages_dir):
+                for f in os.listdir(stages_dir):
                     if f.endswith(".json"):
                         files.add(f)
     except Exception:
@@ -88,7 +88,7 @@ class UBStagingNode(io.ComfyNode):
     
     """
     UB Staging Node
-    Configures a 3D scene environment with multiple adjustable 3D assets (cubes).
+    Configures a 3D stage environment with multiple adjustable 3D assets (cubes).
     Supports loading preset files, interactive visual editing, and live saving directly inside the 3D widget.
     """
 
@@ -99,18 +99,18 @@ class UBStagingNode(io.ComfyNode):
             display_name="UB Staging",
             category="Unboring 3D Studio",
             is_output_node=False,
-            description="Configures a 3D scene environment with multiple assets.",
+            description="Configures a 3D stage environment with multiple assets.",
             inputs=[
                 io.String.Input(
-                    "scene_data",
+                    "stage_data",
                     default="",
-                    display_name="Scene Data",
-                    tooltip="Serialized JSON data of the scene configurations",
+                    display_name="Stage Data",
+                    tooltip="Serialized JSON data of the stage configurations",
                     optional=True,
                 ),
             ],
             outputs=[
-                SceneIO.Output("scene_data", display_name="Scene Data"),
+                StageIO.Output("stage_data", display_name="Stage Data"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -118,31 +118,31 @@ class UBStagingNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        scene_data: str = "",
+        stage_data: str = "",
     ) -> io.NodeOutput:
-        scene_dict = {}
-        if scene_data.strip():
+        stage_dict = {}
+        if stage_data.strip():
             try:
-                scene_dict = json.loads(scene_data)
+                stage_dict = json.loads(stage_data)
             except Exception:
                 pass
 
-        if not scene_dict:
-            scene_dict = {
-                "type": "cube_scene",
+        if not stage_dict:
+            stage_dict = {
+                "type": "cube_stage",
                 "num_assets": 0,
                 "nodes": [],
             }
 
-        scene_json = json.dumps(scene_dict)
-        return io.NodeOutput(scene_json, ui=_SceneUIOutput(scene_dict))
+        stage_json = json.dumps(stage_dict)
+        return io.NodeOutput(stage_json, ui=_StageUIOutput(stage_dict))
 
     @classmethod
     def fingerprint_inputs(
         cls,
-        scene_data: str = "",
+        stage_data: str = "",
     ):
-        return f"{scene_data}"
+        return f"{stage_data}"
 
 
 class UBActingNode(io.ComfyNode):
@@ -150,7 +150,7 @@ class UBActingNode(io.ComfyNode):
 
     """
     UB Acting Node
-    Receives scene data from a Staging node and hosts interactive actor acting.
+    Receives stage data from a Staging node and hosts interactive actor acting.
     """
 
     @classmethod
@@ -160,12 +160,12 @@ class UBActingNode(io.ComfyNode):
             display_name="UB Acting",
             category="Unboring 3D Studio",
             is_output_node=False,
-            description="Receives a 3D scene from UB Staging and hosts interactive actor acting.",
+            description="Receives a 3D stage from UB Staging and hosts interactive actor acting.",
             inputs=[
-                SceneIO.Input(
-                    "scene",
-                    display_name="Scene",
-                    tooltip="Scene data connection from a UB Staging node",
+                StageIO.Input(
+                    "stage",
+                    display_name="Stage",
+                    tooltip="Stage data connection from a UB Staging node",
                     optional=True,
                 ),
                 io.Combo.Input(
@@ -204,23 +204,23 @@ class UBActingNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        scene: str | dict | None = None,
+        stage: str | dict | None = None,
         actor_type: str = "human",
         actor_speed: float = 10.0,
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
-        scene_data = {}
-        if isinstance(scene, str) and scene.strip():
+        stage_data = {}
+        if isinstance(stage, str) and stage.strip():
             try:
-                scene_data = json.loads(scene)
+                stage_data = json.loads(stage)
             except Exception:
-                scene_data = {"raw": scene}
-        elif isinstance(scene, dict):
-            scene_data = scene
+                stage_data = {"raw": stage}
+        elif isinstance(stage, dict):
+            stage_data = stage
 
         acting_dict = {
-            "scene_data": scene_data,
+            "stage_data": stage_data,
             "actor_type": actor_type,
             "actor_speed": actor_speed,
             "duration": duration,
@@ -342,7 +342,7 @@ class UBDirectingNode(io.ComfyNode):
         elif isinstance(acting, dict):
             acting_data = acting
 
-        scene_data = acting_data.get("scene_data", {})
+        stage_data = acting_data.get("stage_data", acting_data.get("scene_data", {}))
 
         camera_timeline = []
         if directing_data and directing_data.strip():
@@ -352,7 +352,7 @@ class UBDirectingNode(io.ComfyNode):
                 camera_timeline = []
 
         directing_dict = {
-            "scene_data": scene_data,
+            "stage_data": stage_data,
             "acting_data": acting_data,
             "directing_data": camera_timeline,
         }
@@ -476,7 +476,7 @@ async def upload_image(request):
 @PromptServer.instance.routes.get("/ub_3d_studio/list_presets")
 @PromptServer.instance.routes.get("/scene_camera_action/list_presets")
 async def list_presets(request):
-    files = get_staging_scene_files()
+    files = get_staging_stage_files()
     return web.json_response({"files": files})
 
 
@@ -485,13 +485,13 @@ async def list_presets(request):
 async def get_preset(request):
     filename = request.query.get("filename", "")
     if not filename or filename == "None":
-        return web.json_response({"type": "cube_scene", "nodes": []})
+        return web.json_response({"type": "cube_stage", "nodes": []})
 
     filepath = os.path.join(PRESETS_DIR, filename)
     if not os.path.exists(filepath):
         try:
             input_dir = folder_paths.get_input_directory()
-            filepath = os.path.join(input_dir, "staging_scenes", filename)
+            filepath = os.path.join(input_dir, "staging_stages", filename)
         except Exception:
             pass
 
@@ -512,7 +512,7 @@ async def save_preset(request):
     try:
         body = await request.json()
         filename = body.get("filename", "")
-        scene_data = body.get("scene_data", {})
+        stage_data = body.get("stage_data", body.get("scene_data", {}))
 
         if not filename or filename == "None":
             filename = "nueva_escena.json"
@@ -523,7 +523,7 @@ async def save_preset(request):
         filepath = os.path.join(PRESETS_DIR, filename)
 
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(scene_data, f, indent=2)
+            json.dump(stage_data, f, indent=2)
 
         return web.json_response({"success": True, "filename": filename, "filepath": filepath})
     except Exception as e:
@@ -538,6 +538,7 @@ NODE_CLASS_MAPPINGS = {
     "UBStagingNode": UBStagingNode,
     "UBActingNode": UBActingNode,
     "UBDirectingNode": UBDirectingNode,
+    "StageNode": UBStagingNode,
     "SceneNode": UBStagingNode,
     "ActingNode": UBActingNode,
     "DirectingNode": UBDirectingNode,
@@ -547,6 +548,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "UBStagingNode": "UB Staging",
     "UBActingNode": "UB Acting",
     "UBDirectingNode": "UB Directing",
+    "StageNode": "UB Staging",
     "SceneNode": "UB Staging",
     "ActingNode": "UB Acting",
     "DirectingNode": "UB Directing",

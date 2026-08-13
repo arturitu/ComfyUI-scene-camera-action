@@ -75,9 +75,9 @@ export function createBlockMaterial(): THREE.MeshStandardMaterial {
 }
 
 /**
- * Calculates overall spatial extent (bounding size & offset) of scene content objects.
+ * Calculates overall spatial extent (bounding size & offset) of stage content objects.
  */
-export function calculateSceneExtent(
+export function calculateStageExtent(
   target: THREE.Object3D | THREE.Object3D[] | null | undefined
 ): number {
   if (!target) return 15.0
@@ -107,7 +107,7 @@ export function calculateSceneExtent(
   }
 
   if (!hasObjects || bbox.isEmpty()) {
-    return 15.0 // Default baseline scene extent
+    return 15.0 // Default baseline stage extent
   }
 
   const size = new THREE.Vector3()
@@ -121,14 +121,15 @@ export function calculateSceneExtent(
   // Extent covers full span plus center offset from origin
   return Math.max(maxSpan, centerDist + maxSpan / 2, 15.0)
 }
+export const calculateSceneExtent = calculateStageExtent
 
 /**
- * Dynamically updates scene fog and camera far clipping plane based on camera position, target center, and scene extent.
+ * Dynamically updates scene fog and camera far clipping plane based on camera position, target center, and stage extent.
  */
-export function updateSceneFog(
+export function updateStageFog(
   scene: THREE.Scene,
   camera: THREE.PerspectiveCamera,
-  sceneExtent: number,
+  stageExtent: number,
   targetCenter?: THREE.Vector3
 ): { fogNear: number; fogFar: number; cameraFar: number } {
   const center = targetCenter || new THREE.Vector3(0, 0, 0)
@@ -137,8 +138,8 @@ export function updateSceneFog(
   // Near fog starts in front of target center relative to camera distance (25% of camera distance)
   const fogNear = Math.max(1.0, cameraDistance * 0.25)
 
-  // Far fog reaches 100% density past scene extent & camera distance, smoothly fading far floor grid into background gray
-  const fogFar = Math.max(fogNear + 15.0, cameraDistance + Math.max(sceneExtent * 1.0, 15.0))
+  // Far fog reaches 100% density past stage extent & camera distance, smoothly fading far floor grid into background gray
+  const fogFar = Math.max(fogNear + 15.0, cameraDistance + Math.max(stageExtent * 1.0, 15.0))
 
   // Camera far plane extends beyond fog.far so geometry is not clipped before full fog fade
   const cameraFar = Math.max(CAMERA_FAR, fogFar * 1.3)
@@ -158,5 +159,6 @@ export function updateSceneFog(
 
   return { fogNear, fogFar, cameraFar }
 }
+export const updateSceneFog = updateStageFog
 
 

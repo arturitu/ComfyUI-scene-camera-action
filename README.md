@@ -25,14 +25,14 @@ Build your 3D environment, control and record actor movements in real time using
 ### 📦 v0.3.0
 - **Animated 3D Humanoid Model**: Custom 3D human model with bone structure and armature animations.
 - **Configurable Spawn Points**: UI selection for actor starting locations across Staging and Acting nodes.
-- **3D Scene Presets**: Built-in previz tracks (`liberty_beach`, `industrial_ruin`, `warehouse`, `test-collider`).
+- **3D Stage Presets**: Built-in previz tracks (`liberty_beach`, `industrial_ruin`, `warehouse`, `test-collider`).
 
 [![v0.3.0 Preview](v0-3-0.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7491165268455481345/)
 
 ### 📦 v0.2.0
-- **Natural Language 3D Scene Builder (`SKILL.md`)**: Transform prompts or reference images into 3D stage compositions using any AI coding assistant.
+- **Natural Language 3D Stage Builder (`SKILL.md`)**: Transform prompts or reference images into 3D stage compositions using any AI coding assistant.
 - **Multi-Archetype Actor Physics Engine**: Support for Humanoid and Vehicle (`CarActor`) movement physics.
-- **Hierarchical Scene Management**: Grouping (`Group`/`Ungroup`), multi-selection, and transform snapping.
+- **Hierarchical Stage Management**: Grouping (`Group`/`Ungroup`), multi-selection, and transform snapping.
 
 [![v0.2.0 Preview](v0-2-0.jpg)](https://www.linkedin.com/feed/update/urn:li:activity:7488962940134481920/)
 
@@ -46,8 +46,8 @@ Build your 3D environment by placing, editing, grouping, duplicating, and transf
 - **Hierarchical Selection & Grouping**: Select multiple items with `Shift + Click`, group (`Group`) or ungroup (`Ungroup`) complex structures.
 - **3D Transform Gizmos**: Move, rotate, and scale assets on all axes with optional `Shift` snapping.
 - **Asset Duplication (`❐`)**: Instantly clone selected assets or groups.
-- **Preset Loader**: Load built-in 3D scenes or custom JSON presets directly from the UI dropdown.
-- **Output**: Sends `Scene Data` downstream to the Acting node.
+- **Preset Loader**: Load built-in 3D stages or custom JSON presets directly from the UI dropdown.
+- **Output**: Sends `Stage Data` downstream to the Acting node.
 
 ### 2. UB Acting (`UBActingNode`)
 Control your actor in real time and record movement trajectories across the 3D stage:
@@ -55,7 +55,7 @@ Control your actor in real time and record movement trajectories across the 3D s
 - **Real-Time Keyboard Control**: Drive or walk the actor using `WASD` or `Arrow` keys.
 - **Speed & Duration Control**: Adjust actor speed ($1.0 - 20.0$) and recording duration ($4.0\text{s} - 15.0\text{s}$).
 - **Motion Recording**: Record actor locomotion trajectories and auto-play recorded loops.
-- **Output**: Combines scene geometry, actor type, and motion trajectory into `Acting Data` for the Directing node.
+- **Output**: Combines stage geometry, actor type, and motion trajectory into `Acting Data` for the Directing node.
 
 ### 3. UB Directing (`UBDirectingNode`)
 Compose your sequence with live multi-camera cuts along a visual playback timeline:
@@ -67,13 +67,13 @@ Compose your sequence with live multi-camera cuts along a visual playback timeli
 
 ---
 
-## 🤖 Transform Prompts into 3D Scenes (`SKILL.md`)
+## 🤖 Transform Prompts into 3D Stages (`SKILL.md`)
 
-Generate proportioned 3D previz scenes from natural language prompts or reference images using the included `scene-staging-builder` skill with any AI coding agent (**Antigravity**, **Claude Code**, **Codex**, **Cursor**, **Pi**, etc.).
+Generate proportioned 3D previz stages from natural language prompts or reference images using the included `stage-builder` skill with any AI coding agent (**Antigravity**, **Claude Code**, **Codex**, **Cursor**, **Pi**, etc.).
 
-![Natural Language 3D Scene Builder](img2.jpg)
+![Natural Language 3D Stage Builder](img2.jpg)
 
-The [`skills/scene-staging-builder/SKILL.md`](file:///Users/unboring/Documents/antigravity/ComfyUI-scene-camera-action/skills/scene-staging-builder/SKILL.md) instruction set equips AI coding assistants with 3D spatial reasoning to output clean 3D `SceneState` JSON preset files saved to `presets/`.
+The [`skills/stage-builder/SKILL.md`](file:///Users/unboring/Documents/antigravity/ComfyUI-scene-camera-action/skills/stage-builder/SKILL.md) instruction set equips AI coding assistants with 3D spatial reasoning to output clean 3D `StageState` JSON preset files saved to `presets/`.
 
 ---
 

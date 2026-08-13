@@ -121,19 +121,19 @@ def create_spawn_point(
     }
 
 
-def validate_scene_state(scene_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Validates SceneState structure and updates total block count."""
-    if not isinstance(scene_data, dict):
-        scene_data = {}
+def validate_stage_state(stage_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Validates StageState structure and updates total block count."""
+    if not isinstance(stage_data, dict):
+        stage_data = {}
 
-    scene_data["type"] = "cube_scene"
-    nodes = scene_data.get("nodes", [])
+    stage_data["type"] = "cube_stage"
+    nodes = stage_data.get("nodes", [])
     if not isinstance(nodes, list):
         nodes = []
 
-    if "spawn_point" in scene_data and isinstance(scene_data["spawn_point"], dict):
-        sp = scene_data["spawn_point"]
-        scene_data["spawn_point"] = {
+    if "spawn_point" in stage_data and isinstance(stage_data["spawn_point"], dict):
+        sp = stage_data["spawn_point"]
+        stage_data["spawn_point"] = {
             "px": float(sp.get("px", 0.0)),
             "py": float(sp.get("py", 0.0)),
             "pz": float(sp.get("pz", 2.0)),
@@ -156,6 +156,9 @@ def validate_scene_state(scene_data: Dict[str, Any]) -> Dict[str, Any]:
         return node
 
     clean_nodes = [count_and_clean(n) for n in nodes if isinstance(n, dict)]
-    scene_data["nodes"] = clean_nodes
-    scene_data["num_assets"] = block_count
-    return scene_data
+    stage_data["nodes"] = clean_nodes
+    stage_data["num_assets"] = block_count
+    return stage_data
+
+
+validate_scene_state = validate_stage_state

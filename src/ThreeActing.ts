@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { MeshBVH, BVHHelper } from 'three-mesh-bvh'
-import type { ActingState, ThreeActingOptions, CubeTransform, SceneState } from './types'
+import type { ActingState, ThreeActingOptions, CubeTransform, StageState } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
@@ -23,6 +23,7 @@ export class ThreeActing {
   private actorController!: BaseActor
   private animationId: number | null = null
   private isHovered = false
+  private connectedThreeStage: any = null
   private connectedThreeScene: any = null
   private keysPressed: Record<string, boolean> = {}
   private actingCameraTarget = new THREE.Vector3()
@@ -60,13 +61,16 @@ export class ThreeActing {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onRecordingFinished = options.onRecordingFinished
-    this.connectedThreeScene = options.connectedThreeScene ?? null
+    const initialStageData = options.initialState?.stage_data ?? options.initialState?.scene_data ?? { type: 'cube_stage', num_assets: 0, nodes: [] }
+    this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null
+    this.connectedThreeScene = this.connectedThreeStage
 
     this.state = {
       actor_type: options.initialState?.actor_type ?? 'car',
       actor_speed: options.initialState?.actor_speed ?? 10.0,
       duration: options.initialState?.duration ?? 7.0,
-      scene_data: options.initialState?.scene_data ?? { type: 'cube_scene', num_assets: 0, nodes: [] },
+      stage_data: initialStageData,
+      scene_data: initialStageData,
       motion_data: options.initialState?.motion_data
     }
 
@@ -82,9 +86,13 @@ export class ThreeActing {
     this.animate()
   }
 
+  public setConnectedThreeStage(threeStage: any): void {
+    this.connectedThreeStage = threeStage
+    this.connectedThreeScene = threeStage
+    this.buildStageEnvironment()
+  }
   public setConnectedThreeScene(threeScene: any): void {
-    this.connectedThreeScene = threeScene
-    this.buildSceneEnvironment()
+    this.setConnectedThreeStage(threeScene)
   }
 
   public startRecording(): void {
@@ -99,10 +107,12 @@ export class ThreeActing {
   public stopRecording(): string {
     this.isRecording = false
     this.isPlaying = false
+    const stageData = this.getStageData()
     const payload = {
       type: 'acting_motion',
       actor_type: this.getActorType(),
-      scene_data: this.getSceneData(),
+      stage_data: stageData,
+      scene_data: stageData,
       trajectory: this.trajectory,
       motion_data: this.trajectory
     }
@@ -228,124 +238,12 @@ export class ThreeActing {
     stageEnv.initStage(this.scene)
 
     // Build environment and actor
-    this.buildSceneEnvironment()
+    this.buildStageEnvironment()
     this.buildActor(this.state.actor_type)
 
     // Initialize Debug Panel with lil-gui
     this.debugPanel = new DebugPanel(this.container)
     this.debugPanel.attachThreeActing(this)
-  }
-
-  private buildSceneEnvironment(): void {
-    // 1. Cleanup old environment group if present
-    if (this.clonedEnvGroup) {
-      this.scene.remove(this.clonedEnvGroup)
-      this.clonedEnvGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose()
-          if (Array.isArray(child.material)) {
-            child.material.forEach((m) => m.dispose())
-          } else {
-            child.material.dispose()
-          }
-        }
-      })
-      this.clonedEnvGroup = null
-    }
-
-    this.environmentMeshes = []
-    this.clonedEnvGroup = new THREE.Group()
-    this.scene.add(this.clonedEnvGroup)
-
-    let sceneData: any = this.getSceneData()
-    this.state.scene_data = sceneData
-
-    const stageEnv = new StageEnvironment()
-    this.environmentMeshes = stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
-
-    // Dynamically adjust fog based on environment scene extent
-    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
-    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
-
-    // 2. Build BVH Collision Tree
-    const geometries: THREE.BufferGeometry[] = []
-
-    // Add floor box geometry to match vertex layout of boxes (centered at -0.05 height, thin box top at Y=0)
-    const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
-    floorBox.translate(0, -0.05, 0)
-    geometries.push(floorBox)
-
-    // Force full scene graph world matrix evaluation before extracting mesh geometries
-    this.scene.updateMatrixWorld(true)
-
-    if (this.clonedEnvGroup) {
-      this.clonedEnvGroup.updateMatrixWorld(true)
-    }
-
-    // Add all asset meshes geometries transformed to their world positions
-    this.environmentMeshes.forEach((mesh) => {
-      mesh.updateMatrixWorld(true)
-      const geom = mesh.geometry.clone()
-      geom.applyMatrix4(mesh.matrixWorld)
-      geometries.push(geom)
-    })
-
-    if (geometries.length > 0) {
-      const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
-      const newBVH = new MeshBVH(mergedGeom)
-      ;(mergedGeom as any).boundsTree = newBVH
-      this.colliderBVH = newBVH
-
-      // Create collider visualizer (Green Wireframe Mesh of stage geometry)
-      if (this.colliderVisualizer) {
-        this.scene.remove(this.colliderVisualizer)
-          ; (this.colliderVisualizer as THREE.Mesh).geometry?.dispose()
-      }
-      const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
-        color: 0x00ff44,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.6,
-        depthTest: false,
-        depthWrite: false
-      }))
-      colliderMesh.renderOrder = 998
-      this.colliderVisualizer = colliderMesh
-      this.colliderVisualizer.visible = this.displayCollider
-      this.scene.add(this.colliderVisualizer)
-
-      // Create BVH Helper visualizer (Yellow Bounding Boxes of BVH tree nodes)
-      if (this.bvhHelper) {
-        this.scene.remove(this.bvhHelper)
-      }
-      this.bvhHelper = new BVHHelper(colliderMesh, 10)
-      if ((this.bvhHelper as any).color?.set) {
-        ; (this.bvhHelper as any).color.set(0xffff00)
-      }
-      this.bvhHelper.visible = this.displayBVH
-      this.bvhHelper.renderOrder = 999
-      this.bvhHelper.traverse((child: THREE.Object3D) => {
-        if (child instanceof THREE.LineSegments && child.material) {
-          const mats = Array.isArray(child.material) ? child.material : [child.material]
-          mats.forEach((m) => {
-            m.depthTest = false
-            m.depthWrite = false
-            m.transparent = true
-          })
-        }
-      })
-      this.bvhHelper.update()
-      this.scene.add(this.bvhHelper)
-
-      // Clean up cloned geometries
-      geometries.forEach(g => g.dispose())
-    } else {
-      this.colliderBVH = null
-    }
-
-    if (this.actorController && !this.isPlaying && !this.isRecording) {
-      this.resetActorPosition()
-    }
   }
 
   private buildActor(type?: 'human' | 'car'): void {
@@ -536,9 +434,13 @@ export class ThreeActing {
     this.renderer.render(this.scene, this.camera)
   }
 
-  public setSceneData(sceneData: SceneState): void {
-    this.state.scene_data = { ...sceneData }
-    this.buildSceneEnvironment()
+  public setStageData(stageData: StageState): void {
+    this.state.stage_data = { ...stageData }
+    this.state.scene_data = { ...stageData }
+    this.buildStageEnvironment()
+  }
+  public setSceneData(sceneData: StageState): void {
+    this.setStageData(sceneData)
   }
 
   public setState(newState: Partial<ActingState>): void {
@@ -556,10 +458,127 @@ export class ThreeActing {
       this.state.motion_data = newState.motion_data
       this.loadTrajectory(newState.motion_data)
     }
-    if (newState.scene_data !== undefined) {
-      this.state.scene_data = { ...newState.scene_data }
-      this.buildSceneEnvironment()
+    const newStageData = newState.stage_data ?? newState.scene_data
+    if (newStageData !== undefined) {
+      this.state.stage_data = { ...newStageData }
+      this.state.scene_data = { ...newStageData }
+      this.buildStageEnvironment()
     }
+  }
+
+  public buildStageEnvironment(): void {
+    if (this.clonedEnvGroup) {
+      this.scene.remove(this.clonedEnvGroup)
+    }
+
+    this.environmentMeshes = []
+    this.clonedEnvGroup = new THREE.Group()
+    this.clonedEnvGroup.name = 'ClonedStagingEnvironment'
+    this.scene.add(this.clonedEnvGroup)
+
+    let stageData: any = this.getStageData()
+    this.state.stage_data = stageData
+    this.state.scene_data = stageData
+
+    const stageEnv = new StageEnvironment()
+    this.environmentMeshes = stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup)
+
+    this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
+    config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
+
+    // Build BVH Collision Tree
+    const geometries: THREE.BufferGeometry[] = []
+
+    const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
+    floorBox.translate(0, -0.05, 0)
+    geometries.push(floorBox)
+
+    this.scene.updateMatrixWorld(true)
+    if (this.clonedEnvGroup) {
+      this.clonedEnvGroup.updateMatrixWorld(true)
+    }
+
+    this.environmentMeshes.forEach((mesh) => {
+      mesh.updateMatrixWorld(true)
+      const geom = mesh.geometry.clone()
+      geom.applyMatrix4(mesh.matrixWorld)
+      geometries.push(geom)
+    })
+
+    if (geometries.length > 0) {
+      const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
+      const newBVH = new MeshBVH(mergedGeom)
+      ;(mergedGeom as any).boundsTree = newBVH
+      this.colliderBVH = newBVH
+
+      if (this.colliderVisualizer) {
+        this.scene.remove(this.colliderVisualizer)
+        ;(this.colliderVisualizer as THREE.Mesh).geometry?.dispose()
+      }
+      const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
+        color: 0x00ff44,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.6,
+        depthTest: false,
+        depthWrite: false
+      }))
+      colliderMesh.renderOrder = 998
+      this.colliderVisualizer = colliderMesh
+      this.colliderVisualizer.visible = this.displayCollider
+      this.scene.add(this.colliderVisualizer)
+
+      if (this.bvhHelper) {
+        this.scene.remove(this.bvhHelper)
+      }
+      this.bvhHelper = new BVHHelper(colliderMesh, 10)
+      if ((this.bvhHelper as any).color?.set) {
+        ;(this.bvhHelper as any).color.set(0xffff00)
+      }
+      this.bvhHelper.visible = this.displayBVH
+      this.bvhHelper.renderOrder = 999
+      this.bvhHelper.traverse((child: THREE.Object3D) => {
+        if (child instanceof THREE.LineSegments && child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          mats.forEach((m) => {
+            m.depthTest = false
+            m.depthWrite = false
+            m.transparent = true
+          })
+        }
+      })
+      this.bvhHelper.update()
+      this.scene.add(this.bvhHelper)
+
+      geometries.forEach(g => g.dispose())
+    } else {
+      this.colliderBVH = null
+    }
+
+    if (this.actorController && !this.isPlaying && !this.isRecording) {
+      this.resetActorPosition()
+    }
+  }
+  public buildSceneEnvironment(): void {
+    this.buildStageEnvironment()
+  }
+
+  public getStageData(): any {
+    let stageData: any = this.state.stage_data ?? this.state.scene_data
+    const conn = this.connectedThreeStage ?? this.connectedThreeScene
+    if (conn) {
+      if (typeof conn.getState === 'function') {
+        stageData = conn.getState()
+      } else if (typeof conn.readSceneStateFromNode === 'function') {
+        stageData = conn.readSceneStateFromNode()
+      } else if (typeof conn.readStageStateFromNode === 'function') {
+        stageData = conn.readStageStateFromNode()
+      }
+    }
+    return stageData
+  }
+  public getSceneData(): any {
+    return this.getStageData()
   }
 
   public getCurrentTime(): number {
@@ -576,18 +595,6 @@ export class ThreeActing {
       return this.playbackController.getMaxDuration() || (this.state.duration ?? 7.0)
     }
     return this.state.duration ?? 7.0
-  }
-
-  public getSceneData(): any {
-    let sceneData: any = this.state.scene_data
-    if (this.connectedThreeScene) {
-      if (typeof this.connectedThreeScene.getState === 'function') {
-        sceneData = this.connectedThreeScene.getState()
-      } else if (typeof this.connectedThreeScene.readSceneStateFromNode === 'function') {
-        sceneData = this.connectedThreeScene.readSceneStateFromNode()
-      }
-    }
-    return sceneData
   }
 
   public getActorType(): 'human' | 'car' {

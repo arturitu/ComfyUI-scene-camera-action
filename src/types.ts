@@ -23,22 +23,25 @@ export interface MotionFrame {
   anim?: string
 }
 
-export interface SceneBlockNode {
+export interface StageBlockNode {
   id: string
   type: 'block'
   name?: string
   transform: CubeTransform
 }
 
-export interface SceneGroupNode {
+export interface StageGroupNode {
   id: string
   type: 'group'
   name?: string
   transform: CubeTransform
-  children: SceneNode[]
+  children: StageNode[]
 }
 
-export type SceneNode = SceneBlockNode | SceneGroupNode
+export type StageNode = StageBlockNode | StageGroupNode
+export type SceneBlockNode = StageBlockNode
+export type SceneGroupNode = StageGroupNode
+export type SceneNode = StageNode
 
 export interface SpawnPoint {
   px: number
@@ -47,54 +50,60 @@ export interface SpawnPoint {
   ry: number
 }
 
-export interface SceneState {
+export interface StageState {
   type: string
   num_assets: number
-  nodes?: SceneNode[]
+  nodes?: StageNode[]
   selectedPreset?: string
   spawn_point?: SpawnPoint
 }
+export type SceneState = StageState
 
 export interface ActingState {
   actor_type?: 'human' | 'car'
   actor_speed: number
   duration: number
   motion_data?: string
-  scene_data: SceneState
+  stage_data: StageState
+  scene_data?: StageState
 }
 
-export interface ThreeSceneOptions {
+export interface ThreeStageOptions {
   container: HTMLElement
-  initialState?: Partial<SceneState>
-  onStateChange?: (state: SceneState) => void
+  initialState?: Partial<StageState>
+  onStateChange?: (state: StageState) => void
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   onSelectionChange?: (hasSelection: boolean) => void
   onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 }
 
-export type ThreeStagingOptions = ThreeSceneOptions
+export type ThreeSceneOptions = ThreeStageOptions
+export type ThreeStagingOptions = ThreeStageOptions
 
 export interface ThreeActingOptions {
   container: HTMLElement
   initialState?: Partial<ActingState>
   onStateChange?: (state: ActingState) => void
   onRecordingFinished?: (trajectoryJson: string) => void
+  connectedThreeStage?: any
   connectedThreeScene?: any
 }
 
-export interface SceneAppExposed {
-  setState: (state: Partial<SceneState>) => void
+export interface StageAppExposed {
+  setState: (state: Partial<StageState>) => void
   cleanup: () => void
   getThreeScene: () => any
   getThreeStaging?: () => any
 }
 
-export type StagingAppExposed = SceneAppExposed
+export type SceneAppExposed = StageAppExposed
+export type StagingAppExposed = StageAppExposed
 
 export interface ActingAppExposed {
   setState: (state: Partial<ActingState>) => void
   cleanup: () => void
-  setConnectedThreeScene: (threeScene: any) => void
+  setConnectedThreeStage: (threeStage: any) => void
+  setConnectedThreeScene?: (threeScene: any) => void
   getThreeActing?: () => any
 }
 
@@ -119,7 +128,7 @@ export interface DirectingAppExposed {
 export interface CustomNodeInstance {
   container: HTMLElement
   vueApp: VueApp
-  exposed: SceneAppExposed | ActingAppExposed | DirectingAppExposed
+  exposed: StageAppExposed | ActingAppExposed | DirectingAppExposed
   currentNode: ComfyNode
   widget: DOMWidgetInstance | null
   cleanupTimer: number | null

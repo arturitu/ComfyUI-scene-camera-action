@@ -69,8 +69,9 @@ export class ThreeDirecting {
         const parsed = JSON.parse(actingDataJson)
         if (typeof parsed === 'object' && parsed !== null) {
           parsedActorType = parsed.actor_type || parsed.actorType || parsed.char_type
-          if (parsed.scene_data && !this.connectedThreeActing) {
-            this.buildSceneFromData(parsed.scene_data)
+          const stageData = parsed.stage_data || parsed.scene_data
+          if (stageData && !this.connectedThreeActing) {
+            this.buildStageFromData(stageData)
           }
         }
       } catch (e) {
@@ -83,11 +84,11 @@ export class ThreeDirecting {
       this.playbackController.stop()
     }
 
-    const currentSceneData = this.getSceneData()
-    const currentSceneJson = currentSceneData ? JSON.stringify(currentSceneData) : ''
-    if (currentSceneJson !== this.lastSceneDataJson || !this.clonedEnvGroup) {
-      this.lastSceneDataJson = currentSceneJson
-      this.buildSceneEnvironment()
+    const currentStageData = this.getStageData()
+    const currentStageJson = currentStageData ? JSON.stringify(currentStageData) : ''
+    if (currentStageJson !== this.lastSceneDataJson || !this.clonedEnvGroup) {
+      this.lastSceneDataJson = currentStageJson
+      this.buildStageEnvironment()
     }
     this.buildActor(parsedActorType)
 
@@ -155,27 +156,35 @@ export class ThreeDirecting {
     this.resizeObserver.observe(this.container)
   }
 
-  public getSceneData(): any {
+  public getStageData(): any {
     let actingPayload: any = this.state.acting_data
     if (typeof actingPayload === 'string') {
       try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
     }
-    if (actingPayload?.scene_data) {
-      return actingPayload.scene_data
+    if (actingPayload?.stage_data || actingPayload?.scene_data) {
+      return actingPayload.stage_data || actingPayload.scene_data
     }
     if (this.connectedThreeActing) {
+      if (typeof this.connectedThreeActing.getStageData === 'function') {
+        return this.connectedThreeActing.getStageData()
+      }
       if (typeof this.connectedThreeActing.getSceneData === 'function') {
         return this.connectedThreeActing.getSceneData()
       }
       if (typeof this.connectedThreeActing.getState === 'function') {
         const actingState = this.connectedThreeActing.getState()
-        if (actingState?.scene_data) return actingState.scene_data
+        if (actingState?.stage_data || actingState?.scene_data) {
+          return actingState.stage_data || actingState.scene_data
+        }
       }
     }
     return undefined
   }
+  public getSceneData(): any {
+    return this.getStageData()
+  }
 
-  private buildSceneEnvironment(): void {
+  public buildStageEnvironment(): void {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
       this.clonedEnvGroup.traverse((child) => {
@@ -194,10 +203,10 @@ export class ThreeDirecting {
     this.clonedEnvGroup = new THREE.Group()
     this.scene.add(this.clonedEnvGroup)
 
-    const sceneData = this.getSceneData()
+    const stageData = this.getStageData()
 
     const stageEnv = new StageEnvironment()
-    stageEnv.buildObjectsFromData(sceneData, this.clonedEnvGroup)
+    stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup)
 
     if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
       this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)
@@ -205,14 +214,17 @@ export class ThreeDirecting {
       this.cachedEnvBBox.makeEmpty()
     }
 
-    // Dynamically adjust fog based on environment scene extent
-    this.cachedSceneExtent = config.calculateSceneExtent(this.clonedEnvGroup)
-    config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent)
+    // Dynamically adjust fog based on environment stage extent
+    this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
+    config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent)
 
     this.buildActor()
   }
+  public buildSceneEnvironment(): void {
+    this.buildStageEnvironment()
+  }
 
-  private buildSceneFromData(sceneData: any): void {
+  public buildStageFromData(stageData: any): void {
     let actingPayload: any = this.state.acting_data
     if (typeof actingPayload === 'string') {
       try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
@@ -220,9 +232,13 @@ export class ThreeDirecting {
     if (!actingPayload || typeof actingPayload !== 'object') {
       actingPayload = {}
     }
-    actingPayload.scene_data = sceneData
+    actingPayload.stage_data = stageData
+    actingPayload.scene_data = stageData
     this.state.acting_data = actingPayload
-    this.buildSceneEnvironment()
+    this.buildStageEnvironment()
+  }
+  public buildSceneFromData(sceneData: any): void {
+    this.buildStageFromData(sceneData)
   }
 
   private buildActor(type?: string): void {

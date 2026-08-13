@@ -51,7 +51,7 @@ export class ThreeStaging {
     this.selectionManager = new StagingSelectionManager()
 
     this.state = {
-      type: 'cube_scene',
+      type: 'cube_stage',
       num_assets: options.initialState?.num_assets ?? 0,
       nodes: options.initialState?.nodes ?? [],
       spawn_point: options.initialState?.spawn_point ?? { px: 0, py: 0, pz: 2, ry: 0 },

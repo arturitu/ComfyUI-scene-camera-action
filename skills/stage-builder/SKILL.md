@@ -1,19 +1,19 @@
 ---
-name: scene-staging-builder
-description: Turn any natural language description or reference image into a 3D staging scene (graybox/blockout composition) strictly using transformed 3D Box primitives for ComfyUI-scene-camera-action. Agent-guided specification for spatial reasoning, 4-layer scene decomposition, actor-aware layout design, and iterative JSON modification.
+name: stage-builder
+description: Turn any natural language description or reference image into a 3D staging stage (graybox/blockout composition) strictly using transformed 3D Box primitives for ComfyUI-scene-camera-action. Agent-guided specification for spatial reasoning, 4-layer stage decomposition, actor-aware layout design, and iterative JSON modification.
 license: Apache-2.0
 version: 1.1.0
 ---
 
-# scene-staging-builder — 3D Scene & Staging AI Skill
+# stage-builder — 3D Stage & Staging AI Skill
 
-Convert any text prompt, natural language request, or reference image into a clean, proportioned 3D staging scene built **strictly using transformed 3D Box primitives** (`type: 'block'` and `type: 'group'`) for the **ComfyUI-scene-camera-action** ecosystem.
+Convert any text prompt, natural language request, or reference image into a clean, proportioned 3D staging stage built **strictly using transformed 3D Box primitives** (`type: 'block'` and `type: 'group'`) for the **ComfyUI-scene-camera-action** ecosystem.
 
 ---
 
 ## 1. Core Rule: 100% Box Primitive Constraint
 
-Every object, wall, roof, prop, vehicle part, tree, animal limb, or furniture piece in the generated scene **MUST be created using 3D Box primitives** (`type: 'block'`).
+Every object, wall, roof, prop, vehicle part, tree, animal limb, or furniture piece in the generated stage **MUST be created using 3D Box primitives** (`type: 'block'`).
 - Do **NOT** rely on external `.gltf` / `.obj` meshes or non-box shapes.
 - Use spatial scaling (`sx, sy, sz`), rotation (`rx, ry, rz` in radians), positioning (`px, py, pz`), and grouping (`type: 'group'`) to construct any form (slopes, columns, arches, steps, roofs, vehicles, characters, animals).
 
@@ -27,7 +27,7 @@ Every object, wall, roof, prop, vehicle part, tree, animal limb, or furniture pi
 - $Z$: Back (-) to Front / Depth (+)
 
 ### Floor — DO NOT Generate
-The 3D viewport already contains a built-in floor plane and grid at $Y = 0$. **Do NOT add any floor, ground plane, terrain base, or ground slab block** to the generated scene JSON. The floor is always present automatically.
+The 3D viewport already contains a built-in floor plane and grid at $Y = 0$. **Do NOT add any floor, ground plane, terrain base, or ground slab block** to the generated stage JSON. The floor is always present automatically.
 
 ### Ground Alignment Rule
 - Box position $(P_x, P_y, P_z)$ defines the **center** of the box.
@@ -36,15 +36,15 @@ The 3D viewport already contains a built-in floor plane and grid at $Y = 0$. **D
 - **Critical**: Any asset that should sit on the ground (buildings, furniture legs, tree trunks, vehicles, fences, etc.) must have its $P_y$ calculated as $S_y / 2.0$ so its bottom face touches $Y = 0$ exactly. Never place ground-resting objects at $P_y = 0$ unless $S_y = 0$.
 
 ### World Bounds
-- The usable scene area is **100 × 100 meters** centered at the origin, spanning from $(-50, 0, -50)$ to $(50, Y_{max}, 50)$.
+- The usable stage area is **100 × 100 meters** centered at the origin, spanning from $(-50, 0, -50)$ to $(50, Y_{max}, 50)$.
 - Keep all generated assets within this boundary.
-- Typical scenes should use a much smaller region (e.g., 20×20m for an interior, 40×40m for a street block) unless the prompt explicitly requires a large landscape.
+- Typical stages should use a much smaller region (e.g., 20×20m for an interior, 40×40m for a street block) unless the prompt explicitly requires a large landscape.
 
 ---
 
 ## 3. Actor-Aware Spatial Proportions
 
-Since scenes created with this Skill are consumed by **Acting 3D Node** (`ActingNode`), design layouts with realistic scale for interactive actors:
+Since stages created with this Skill are consumed by **Acting 3D Node** (`UBActingNode`), design layouts with realistic scale for interactive actors:
 
 - **Car Actor (`actor_type: 'car'`)**:
   - Road width: Minimum 4.0 units wide (`sx = 4.0`).
@@ -58,7 +58,7 @@ Since scenes created with this Skill are consumed by **Acting 3D Node** (`Acting
 
 ## 4. Blockout Breakdown Pipeline (4-Layer Hierarchy)
 
-When given a text prompt or reference image, decompose the 3D scene into 4 structured layers:
+When given a text prompt or reference image, decompose the 3D stage into 4 structured layers:
 
 ### Layer 1: Environment Base (NO floor needed)
 - Terrain steps, foundation pads, roads, elevated platforms, pedestals.
@@ -78,9 +78,9 @@ When given a text prompt or reference image, decompose the 3D scene into 4 struc
 
 ---
 
-## 5. SceneState Schema Specification & Spawn Point
+## 5. StageState Schema Specification & Spawn Point
 
-Every generated scene MUST strictly adhere to the `SceneState` JSON schema used by `SceneNode` and `ActingNode`.
+Every generated stage MUST strictly adhere to the `StageState` JSON schema used by `UBStagingNode` and `UBActingNode`.
 Generators SHOULD include a `spawn_point` object defining where the 3D actor spawns and its initial heading angle `ry` (in radians).
 
 ### Actor Spawn Point Placement Guidelines & Surface Height Calculation
@@ -95,7 +95,7 @@ Generators SHOULD include a `spawn_point` object defining where the 3D actor spa
 
 ```json
 {
-  "type": "cube_scene",
+  "type": "cube_stage",
   "num_assets": 12,
   "spawn_point": {
     "px": 0.0,
@@ -145,20 +145,20 @@ Generators SHOULD include a `spawn_point` object defining where the 3D actor spa
 ## 6. File Naming Convention
 
 All generated preset JSON filenames **MUST be in English**, using lowercase with underscores:
-- `forest_scene.json`, `urban_street.json`, `living_room.json`, `race_track.json`
+- `forest_stage.json`, `urban_street.json`, `living_room.json`, `race_track.json`
 - Do **NOT** use Spanish, accented characters, or spaces in filenames.
 
 ---
 
 ## 7. Iterative Editing Protocol
 
-When the user requests modifications or adjustments to an existing 3D scene (e.g. *"make the deer bigger"*, *"add a ramp at the end"*, *"move the table 2 meters to the left"*):
+When the user requests modifications or adjustments to an existing 3D stage (e.g. *"make the deer bigger"*, *"add a ramp at the end"*, *"move the table 2 meters to the left"*):
 
-1. **Parse Existing State**: Read and inspect the current `SceneState` JSON.
+1. **Parse Existing State**: Read and inspect the current `StageState` JSON.
 2. **Target Node Identification**: Locate the node or group by its `id` or `name`.
 3. **Apply Delta Modifications**:
    - **Transform Changes**: Update `px, py, pz`, `rx, ry, rz`, or `sx, sy, sz` of the target node.
    - **Additions**: Construct new child `block` or `group` nodes following the 4-layer pipeline and append them to the appropriate parent.
    - **Deletions**: Remove specified nodes from the tree.
 4. **Re-validate Ground Alignment**: Ensure all ground-resting objects maintain $P_y = S_y / 2.0$ and no invalid numbers exist. Do not add floor blocks.
-5. **Output Clean JSON**: Return the updated, fully-valid `SceneState` JSON.
+5. **Output Clean JSON**: Return the updated, fully-valid `StageState` JSON.

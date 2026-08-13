@@ -3,9 +3,9 @@
     <!-- Preset Top Control Bar -->
     <div class="preset-control-bar">
       <div class="preset-selector-group">
-        <span class="preset-label">SCENE:</span>
+        <span class="preset-label">STAGE:</span>
         <select class="preset-select" :value="selectedPreset" @change="onPresetSelectChange">
-          <option value="__NEW__">+ New Scene...</option>
+          <option value="__NEW__">+ New Stage...</option>
           <option v-if="selectedPreset && selectedPreset !== '__NEW__' && !presetFiles.includes(selectedPreset)" :value="selectedPreset">
             {{ selectedPreset }}
           </option>
@@ -16,7 +16,7 @@
         <span v-if="isDirty" class="dirty-badge" title="Unsaved modifications">Modified</span>
       </div>
       <div class="preset-actions">
-        <button class="preset-btn save-btn" title="Save scene to JSON preset" @click.stop="saveCurrentPreset">
+        <button class="preset-btn save-btn" title="Save stage to JSON preset" @click.stop="saveCurrentPreset">
           Save
         </button>
         <button class="preset-btn reset-btn" title="Reset to last saved state" :disabled="!isDirty" @click.stop="resetCurrentPreset">
@@ -115,7 +115,7 @@ const props = defineProps<{
 }>()
 
 const state = reactive<SceneState>({
-  type: 'cube_scene',
+  type: 'cube_stage',
   num_assets: props.initialState?.num_assets ?? 0,
   nodes: props.initialState?.nodes ?? [],
   selectedPreset: props.initialState?.selectedPreset || props.initialPreset || '__NEW__',
@@ -136,7 +136,7 @@ let originalPresetState: Partial<SceneState> | null = null
 const normalizeStateString = (s: any): string => {
   if (!s || typeof s !== 'object') return ''
   return JSON.stringify({
-    type: s.type || 'cube_scene',
+    type: s.type || 'cube_stage',
     num_assets: s.num_assets ?? (s.nodes?.length || 0),
     spawn_point: s.spawn_point || { px: 0, py: 0, pz: 2, ry: 0 },
     nodes: s.nodes || []
@@ -191,7 +191,7 @@ onUnmounted(() => {
 
 const loadPresetFile = async (filename: string) => {
   if (filename === '__NEW__') {
-    const emptyState: SceneState = { type: 'cube_scene', num_assets: 0, nodes: [], selectedPreset: '__NEW__' }
+    const emptyState: SceneState = { type: 'cube_stage', num_assets: 0, nodes: [], selectedPreset: '__NEW__' }
     originalPresetState = emptyState
     setState(emptyState)
     selectedPreset.value = '__NEW__'
