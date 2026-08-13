@@ -16,6 +16,12 @@ from comfy_api.latest import ComfyExtension, io, InputImpl, Types
 from comfy_api.latest._io import _UIOutput
 from fractions import Fraction
 from typing_extensions import override
+import threading
+import time
+
+_pending_captures: dict[str, threading.Event] = {}
+_capture_results: dict[str, dict] = {}
+
 
 
 class _StageUIOutput(_UIOutput):
@@ -236,7 +242,7 @@ class UBDirectingNode(io.ComfyNode):
 
     """
     UB Directing Node
-    Records camera cuts on top of acting motion data and outputs captured video and captured stage overview image.
+    Records camera cuts on top of acting motion data and outputs captured video.
     """
 
     @classmethod
@@ -246,7 +252,7 @@ class UBDirectingNode(io.ComfyNode):
             display_name="UB Directing",
             category="Unboring 3D Studio",
             is_output_node=False,
-            description="Records camera cuts on top of acting data, outputs captured video and stage overview image.",
+            description="Records camera cuts on top of acting data, outputs captured video.",
             inputs=[
                 ActingIO.Input(
                     "acting",
@@ -263,8 +269,7 @@ class UBDirectingNode(io.ComfyNode):
                 ),
             ],
             outputs=[
-                io.Video.Output("captured_video", display_name="Captured Video"),
-                io.Image.Output("captured_first_frame", display_name="Captured First Frame"),
+                io.Video.Output("video", display_name="Captured Video"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -275,63 +280,8 @@ class UBDirectingNode(io.ComfyNode):
         acting: str | dict | None = None,
         directing_data: str = "",
     ) -> io.NodeOutput:
-        node_id = cls.hidden.unique_id
+        node_id = str(cls.hidden.unique_id)
         input_dir = folder_paths.get_input_directory()
-
-        # 1. Load Video (Prioritize QuickTime-compatible H.264 MP4, fallback to WebM)
-        specific_mp4 = f"3d_directing_record_{node_id}.mp4"
-        mp4_path = os.path.join(input_dir, specific_mp4)
-        if not os.path.exists(mp4_path):
-            mp4_path = os.path.join(input_dir, "3d_directing_record.mp4")
-
-        specific_webm = f"3d_directing_record_{node_id}.webm"
-        webm_path = os.path.join(input_dir, specific_webm)
-        if not os.path.exists(webm_path):
-            webm_path = os.path.join(input_dir, "3d_directing_record.webm")
-
-        if not os.path.exists(mp4_path) and os.path.exists(webm_path):
-            convert_webm_to_mp4(webm_path, mp4_path)
-
-        video_path = mp4_path if os.path.exists(mp4_path) else webm_path
-
-        video_output = None
-        if os.path.exists(video_path):
-            try:
-                video_output = InputImpl.VideoFromFile(video_path)
-            except Exception as e:
-                print(f"Error loading video file: {e}")
-
-        if video_output is None:
-            import torch
-            dummy_images = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
-            video_output = InputImpl.VideoFromComponents(
-                Types.VideoComponents(images=dummy_images, audio=None, frame_rate=Fraction(24))
-            )
-
-        # 2. Load Captured Stage Overview Image (Check node-specific file first, then fallback)
-        specific_image = f"3d_directing_stage_{node_id}.png"
-        image_path = os.path.join(input_dir, specific_image)
-        if not os.path.exists(image_path):
-            image_path = os.path.join(input_dir, "3d_directing_stage.png")
-
-        image_tensor = None
-        if os.path.exists(image_path):
-            try:
-                from PIL import Image, ImageOps
-                import numpy as np
-                import torch
-
-                i = Image.open(image_path)
-                i = ImageOps.exif_transpose(i)
-                image = i.convert("RGB")
-                image_np = np.array(image).astype(np.float32) / 255.0
-                image_tensor = torch.from_numpy(image_np)[None,]
-            except Exception as e:
-                print(f"Error loading stage image file: {e}")
-
-        if image_tensor is None:
-            import torch
-            image_tensor = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
 
         acting_data = {}
         if isinstance(acting, str) and acting.strip():
@@ -341,6 +291,51 @@ class UBDirectingNode(io.ComfyNode):
                 acting_data = {"raw": acting}
         elif isinstance(acting, dict):
             acting_data = acting
+
+        # 1. Validate acting motion data before attempting capture
+        has_motion = False
+        if isinstance(acting_data, dict):
+            if acting_data.get("trajectory") or acting_data.get("motion_data"):
+                has_motion = True
+
+        if not has_motion:
+            raise ValueError("UB Directing: Directing canvas is disabled. Connect an Acting 3D node and record motion first.")
+
+        # 2. Trigger auto-capture on frontend via WebSocket signal
+        _capture_results.pop(node_id, None)
+        evt = threading.Event()
+        _pending_captures[node_id] = evt
+        try:
+            PromptServer.instance.send_sync("ub_3d_studio_directing_capture", {"node_id": node_id})
+            # Wait for frontend to record and upload video (max 40 seconds)
+            evt.wait(timeout=40.0)
+        except Exception as e:
+            print(f"[UBDirectingNode] Error waiting for frontend capture: {e}")
+        finally:
+            _pending_captures.pop(node_id, None)
+
+        res = _capture_results.pop(node_id, {})
+        if res.get("error"):
+            raise ValueError(f"UB Directing: {res['error']}")
+
+        # 3. Load Node-Specific Video File (No global fallback to old temp files)
+        specific_mp4 = f"3d_directing_record_{node_id}.mp4"
+        mp4_path = os.path.join(input_dir, specific_mp4)
+        specific_webm = f"3d_directing_record_{node_id}.webm"
+        webm_path = os.path.join(input_dir, specific_webm)
+
+        if not os.path.exists(mp4_path) and os.path.exists(webm_path):
+            convert_webm_to_mp4(webm_path, mp4_path)
+
+        video_path = mp4_path if os.path.exists(mp4_path) else webm_path
+
+        if not os.path.exists(video_path):
+            raise ValueError("UB Directing: No video file was generated. Please ensure active motion recording in UB Acting.")
+
+        try:
+            video_output = InputImpl.VideoFromFile(video_path)
+        except Exception as e:
+            raise ValueError(f"UB Directing: Error reading recorded video file: {e}")
 
         stage_data = acting_data.get("stage_data", acting_data.get("scene_data", {}))
 
@@ -357,7 +352,9 @@ class UBDirectingNode(io.ComfyNode):
             "directing_data": camera_timeline,
         }
 
-        return io.NodeOutput(video_output, image_tensor, ui=_DirectingUIOutput(directing_dict))
+        return io.NodeOutput(video_output, ui=_DirectingUIOutput(directing_dict))
+
+
 
     @classmethod
     def fingerprint_inputs(
@@ -365,16 +362,8 @@ class UBDirectingNode(io.ComfyNode):
         acting=None,
         directing_data: str = "",
     ):
-        node_id = cls.hidden.unique_id
-        input_dir = folder_paths.get_input_directory()
-        mtime = 0.0
+        return time.time()
 
-        for candidate in [f"3d_directing_record_{node_id}.mp4", f"3d_directing_record_{node_id}.webm", f"3d_directing_stage_{node_id}.png"]:
-            path = os.path.join(input_dir, candidate)
-            if os.path.exists(path):
-                mtime = max(mtime, os.path.getmtime(path))
-
-        return f"{acting}_{directing_data}_{mtime}"
 
 
 class UB3DStudioExtension(ComfyExtension):
@@ -528,6 +517,20 @@ async def save_preset(request):
         return web.json_response({"success": True, "filename": filename, "filepath": filepath})
     except Exception as e:
         return web.json_response({"success": False, "error": str(e)}, status=500)
+
+
+@PromptServer.instance.routes.post("/ub_3d_studio/capture_done")
+@PromptServer.instance.routes.post("/scene_camera_action/capture_done")
+async def capture_done(request):
+    try:
+        body = await request.json()
+        node_id = str(body.get("node_id", ""))
+        if node_id in _pending_captures:
+            _pending_captures[node_id].set()
+        return web.json_response({"success": True})
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 
 
 async def comfy_entrypoint():

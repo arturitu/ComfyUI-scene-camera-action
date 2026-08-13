@@ -9,21 +9,14 @@
         <StagingCanvas :init-scene="initScene" />
       </div>
 
-      <!-- Top Right Floating Capture Button -->
-      <div class="directing-top-bar" @mousedown.stop>
-        <button
-          class="capture-btn"
-          :class="{ 'recording': isRecordingVideo }"
-          :disabled="isRecordingVideo"
-          title="Capture video from start of acting"
-          @click="handleRecordVideo"
-        >
-          <span class="rec-dot" v-if="isRecordingVideo"></span>
-          {{ isRecordingVideo ? (videoStatusText || 'Capturing...') : '● Capture' }}
-        </button>
+      <!-- Recording Overlay when Auto-Capturing -->
+      <div v-if="isRecordingVideo" class="recording-overlay" @mousedown.stop.prevent>
+        <div class="recording-spinner"></div>
+        <div class="recording-text">{{ videoStatusText || 'Capturing 3D Video...' }}</div>
       </div>
 
       <!-- Floating Bottom Timeline Bar -->
+
       <div
         class="timeline-bar"
         :class="{ 'disabled-timeline': isRecordingVideo }"
@@ -364,68 +357,28 @@ const syncKeyframes = () => {
 }
 
 const handleRecordVideo = async () => {
-  if (!threeDirecting || isRecordingVideo.value) return
+  if (isRecordingVideo.value) return
+  const nodeId = String(props.currentNode?.id ?? '')
 
-  // Validate that BOTH Captured Video AND Captured First Frame output slots are connected
-  const videoOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_video' || o.name === 'Captured Video'
-  )
-  const stageOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_stage' || o.name === 'Captured Stage' || o.name === 'Captured First Frame' || o.name === 'captured_first_frame'
-  )
-
-  const isVideoConnected = videoOutput?.links && videoOutput.links.length > 0
-  const isStageConnected = stageOutput?.links && stageOutput.links.length > 0
-
-  if (!isVideoConnected || !isStageConnected) {
-    if (props.currentNode) {
-      props.currentNode.has_errors = true
-      if (videoOutput && !isVideoConnected) videoOutput.has_errors = true
-      if (stageOutput && !isStageConnected) stageOutput.has_errors = true
-
-      const comfyApp = (window as any).comfyAPI?.app?.app
-      if (comfyApp && comfyApp.canvas) {
-        comfyApp.canvas.draw(true, true)
-      }
-
-      const missingNames: string[] = []
-      if (!isVideoConnected) missingNames.push("'Captured Video'")
-      if (!isStageConnected) missingNames.push("'Captured First Frame'")
-
-      const validationErrorMsg = {
-        "prompt_id": "validation_error",
-        "node_id": String(props.currentNode.id),
-        "node_type": props.currentNode.type,
-        "executed": [],
-        "exception_message": `Required output connection(s) missing: ${missingNames.join(' and ')}. Connect outputs to proceed.`,
-        "exception_type": "ValueError",
-        "traceback": [],
-        "current_inputs": [],
-        "current_outputs": []
-      }
-
-      if (comfyApp && comfyApp.api && typeof comfyApp.api.dispatchEvent === "function") {
-        comfyApp.api.dispatchEvent(new CustomEvent("execution_error", { detail: validationErrorMsg }))
-      }
-
-      window.setTimeout(() => {
-        if (props.currentNode) {
-          delete props.currentNode.has_errors
-          if (videoOutput) delete videoOutput.has_errors
-          if (stageOutput) delete stageOutput.has_errors
-          if (comfyApp && comfyApp.canvas) {
-            comfyApp.canvas.draw(true, true)
-          }
-        }
-      }, 4000)
-    }
+  if (!hasActingData.value || !threeDirecting) {
+    try {
+      await fetch('/ub_3d_studio/capture_done', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          node_id: nodeId,
+          error: 'Directing canvas is disabled. Connect an Acting 3D node and record motion first.'
+        }),
+      })
+    } catch (e) {}
     return
   }
+
 
   // Hide any open cut popover
   selectedKeyframe.value = null
   isRecordingVideo.value = true
-  videoStatusText.value = 'Capturing...'
+  videoStatusText.value = 'Capturing 3D Video...'
 
   const dur = threeDirecting.getDuration()
 
@@ -434,8 +387,11 @@ const handleRecordVideo = async () => {
   threeDirecting.setIsRecordingMode(true)
   currentTime.value = 0
 
-  // Capture exact first frame image directly from canvas at t=0
-  const stageBlob = await threeDirecting.captureCurrentCanvasSnapshot()
+  // Capture exact first frame snapshot directly from canvas at t=0
+  let stageBlob: Blob | null = null
+  try {
+    stageBlob = await threeDirecting.captureCurrentCanvasSnapshot()
+  } catch (e) {}
 
   threeDirecting.isPlaying = true
   isPlaying.value = true
@@ -449,7 +405,7 @@ const handleRecordVideo = async () => {
     if (threeDirecting) {
       const elapsed = (performance.now() - recordStartTime) / 1000
       const displayT = Math.min(dur, elapsed)
-      videoStatusText.value = `Capturing ${displayT.toFixed(1)}s / ${dur.toFixed(1)}s...`
+      videoStatusText.value = `Capturing 3D Video... ${displayT.toFixed(1)}s / ${dur.toFixed(1)}s`
 
       // Stop cleanly as soon as wall-clock duration is reached OR playback stops
       if (elapsed >= dur || !threeDirecting.isPlaying) {
@@ -462,8 +418,6 @@ const handleRecordVideo = async () => {
           const videoBlob = await threeDirecting.stopRecording()
           threeDirecting.setIsRecordingMode(false)
 
-          const nodeId = props.currentNode?.id ?? 'default'
-
           // 1. Upload Video
           const videoFormData = new FormData()
           videoFormData.append('video', videoBlob, `3d_directing_record_${nodeId}.webm`)
@@ -475,33 +429,49 @@ const handleRecordVideo = async () => {
           })
 
           // 2. Upload Captured Stage Overview Image
-          const imageFormData = new FormData()
-          imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
-          imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
+          if (stageBlob) {
+            const imageFormData = new FormData()
+            imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
+            imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
 
-          await fetch('/ub_3d_studio/upload_image', {
-            method: 'POST',
-            body: imageFormData
-          })
+            await fetch('/ub_3d_studio/upload_image', {
+              method: 'POST',
+              body: imageFormData
+            })
+          }
 
           videoStatusText.value = 'Saved!'
-
-          const comfyApp = (window as any).comfyAPI?.app?.app
-          if (comfyApp && typeof comfyApp.queuePrompt === 'function') {
-            comfyApp.queuePrompt(0)
-          }
         } catch (err) {
-          console.error('Failed to capture and upload video/image:', err)
+          console.error('Failed to capture and upload video:', err)
           threeDirecting.setIsRecordingMode(false)
         } finally {
+          // Notify python backend execution that capture and upload are complete
+          try {
+            await fetch('/ub_3d_studio/capture_done', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ node_id: nodeId }),
+            })
+          } catch (e) {}
+
           window.setTimeout(() => {
             videoStatusText.value = ''
             isRecordingVideo.value = false
-          }, 1000)
+          }, 300)
         }
       }
     }
   }, 50)
+}
+
+const handleWsCaptureEvent = async (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  const targetNodeId = String(detail?.node_id ?? '')
+  const myNodeId = String(props.currentNode?.id ?? '')
+
+  if (targetNodeId && myNodeId && targetNodeId === myNodeId) {
+    await handleRecordVideo()
+  }
 }
 
 const onCanvasMouseDown = () => {
@@ -581,9 +551,17 @@ const onKeyframeMouseDown = (kf: Keyframe, e: MouseEvent) => {
 
 onMounted(() => {
   timeFrameId = requestAnimationFrame(updateTimeLoop)
+  const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
+  if (comfyApi && typeof comfyApi.addEventListener === 'function') {
+    comfyApi.addEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
+  }
 })
 
 onUnmounted(() => {
+  const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
+  if (comfyApi && typeof comfyApi.removeEventListener === 'function') {
+    comfyApi.removeEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
+  }
   if (timeFrameId !== null) {
     cancelAnimationFrame(timeFrameId)
     timeFrameId = null
@@ -593,6 +571,7 @@ onUnmounted(() => {
     threeDirecting = null
   }
 })
+
 
 const setState = (newState: Partial<DirectingState>) => {
   if (newState.hasOwnProperty('acting_data')) {
@@ -685,54 +664,46 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   color: #8c8c9e;
 }
 
-/* Top Right Capture Toolbar */
-.directing-top-bar {
+/* Recording Overlay */
+.recording-overlay {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 25;
-}
-
-.capture-btn {
-  background: rgba(12, 12, 18, 0.85);
-  color: #ff3366;
-  border: 1px solid rgba(255, 51, 102, 0.3);
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 13, 20, 0.85);
+  z-index: 50;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: all;
+  user-select: none;
+  backdrop-filter: blur(4px);
 }
 
-.capture-btn:hover:not(:disabled) {
-  background: rgba(255, 51, 102, 0.2);
-  border-color: #ff3366;
+.recording-text {
   color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.capture-btn.recording {
-  background: #ff3366;
-  color: #ffffff;
-  border-color: #ff3366;
-}
-
-.rec-dot {
-  width: 7px;
-  height: 7px;
-  background: #ffffff;
+.recording-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid rgba(255, 51, 102, 0.2);
+  border-top-color: #ff3366;
   border-radius: 50%;
-  animation: blink 0.8s infinite steps(2, start);
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes blink {
-  from { opacity: 1; }
-  to { opacity: 0.2; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
+
 
 /* Floating Timeline Bar (Bottom Center) */
 .timeline-bar {

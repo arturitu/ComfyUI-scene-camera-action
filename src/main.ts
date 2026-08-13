@@ -2,7 +2,8 @@ import { createApp, type App as VueApp } from 'vue'
 import StagingWidget from './components/StagingWidget.vue'
 import ActingWidget from './components/ActingWidget.vue'
 import DirectingWidget from './components/DirectingWidget.vue'
-import type { SceneState, ActingState, DirectingState, SceneAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
+import type { SceneState, StageState, ActingState, DirectingState, SceneAppExposed, StageAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
+
 
 const { app } = window.comfyAPI.app
 
@@ -1052,15 +1053,6 @@ app.registerExtension({
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
 
-      if (node.outputs) {
-        for (const out of node.outputs) {
-          if (out.name === 'captured_stage' || out.name === 'Captured Stage') {
-            out.name = 'Captured First Frame'
-            if (out.label) out.label = 'Captured First Frame'
-          }
-        }
-      }
-
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createDirectingNodeWidget(node)
@@ -1072,21 +1064,13 @@ app.registerExtension({
         hideNodeWidget(this, 'directing_data')
         removeNodeInput(this, 'directing_data')
 
-        if (this.outputs) {
-          for (const out of this.outputs) {
-            if (out.name === 'captured_stage' || out.name === 'Captured Stage') {
-              out.name = 'Captured First Frame'
-              if (out.label) out.label = 'Captured First Frame'
-            }
-          }
-        }
-
         const instance = directingInstances.get(this)
         if (instance) {
           const state = readDirectingStateFromNode(this)
           instance.exposed.setState(state)
         }
       }
+
 
       const origDirectingOnRemoved = node.onRemoved
       node.onRemoved = function (this: ComfyNode) {

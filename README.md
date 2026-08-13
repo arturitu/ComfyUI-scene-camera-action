@@ -61,9 +61,9 @@ Control your actor in real time and record movement trajectories across the 3D s
 Compose your sequence with live multi-camera cuts along a visual playback timeline:
 - **Smart Multi-Camera Modes**: TPV (Third-Person), FPV (First-Person), Wide (Auto-Framing Master), and Side (Tracking).
 - **Timeline Keyframing**: Add, move, and adjust camera cuts along the playback timeline.
-- **Outputs**:
+- **Output**:
   - **`Captured Video` (`VIDEO`)**: 720p HD recorded video of the directed camera sequence.
-  - **`Captured First Frame` (`IMAGE`)**: 720p stage overview image capturing the exact initial frame ($t = 0.0\text{s}$) camera view.
+
 
 ---
 
