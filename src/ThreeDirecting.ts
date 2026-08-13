@@ -455,9 +455,19 @@ export class ThreeDirecting {
       isHardCut = true
     }
 
+    // Freeze camera at exact current rendered position when paused (unless seek or keyframe change occurred)
+    if (!isPlaying && !isHardCut) {
+      this.forceHardCutNextCameraUpdate = false
+      this.lastActiveKeyframeId = activeKeyframe.id
+      this.lastTargetActorId = targetActorId
+      return
+    }
+
     this.forceHardCutNextCameraUpdate = false
     this.lastActiveKeyframeId = activeKeyframe.id
     this.lastTargetActorId = targetActorId
+
+    const isCarTarget = (targetActorCtrl as any)?.getType?.() === 'car'
 
     if (this.lastCameraMode !== activeMode || isHardCut) {
       this.smoothedCameraYaw = rotY
@@ -465,11 +475,13 @@ export class ThreeDirecting {
       let diffYaw = rotY - this.smoothedCameraYaw
       while (diffYaw < -Math.PI) diffYaw += Math.PI * 2
       while (diffYaw > Math.PI) diffYaw -= Math.PI * 2
-      const yawLerpFactor = 1.0 - Math.exp(-4.5 * Math.max(0.001, dt))
+      const yawSpeed = isCarTarget ? 10.0 : 4.5
+      const yawLerpFactor = 1.0 - Math.exp(-yawSpeed * Math.max(0.001, dt))
       this.smoothedCameraYaw += diffYaw * yawLerpFactor
     }
 
-    const posLerpFactor = 1.0 - Math.exp(-6.0 * Math.max(0.001, dt))
+    const posLerpSpeed = isCarTarget ? 12.0 : 6.0
+    const posLerpFactor = 1.0 - Math.exp(-posLerpSpeed * Math.max(0.001, dt))
 
     const isFPV = activeMode === 'First Person'
     targetActorCtrl.setMeshVisibleForFPV(isFPV)
@@ -499,7 +511,7 @@ export class ThreeDirecting {
         this.camera.fov = 50
         this.camera.updateProjectionMatrix()
       }
-      const isCar = (targetActorCtrl as any)?.getType?.() === 'car'
+      const isCar = isCarTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
       const camHeight = isCar ? 2.2 : (isCrouch ? 1.0 : 1.7)
       const camDist = isCar ? -6.5 : (isCrouch ? -2.8 : -3.5)
@@ -557,14 +569,14 @@ export class ThreeDirecting {
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
     } else if (activeMode === 'Side') {
-      const isCar = (targetActorCtrl as any)?.getType?.() === 'car'
-      const fov = 45
+      const isCar = isCarTarget
+      const fov = isCar ? 42 : 45
       if (this.camera.fov !== fov) {
         this.camera.fov = fov
         this.camera.updateProjectionMatrix()
       }
 
-      const sideVec = isCar ? new THREE.Vector3(-6.0, 1.8, 0.5) : new THREE.Vector3(-4.2, 1.3, 0.4)
+      const sideVec = isCar ? new THREE.Vector3(-6.5, 1.8, 0.0) : new THREE.Vector3(-4.2, 1.3, 0.4)
       const targetOffsetY = isCar ? 0.90 : 0.95
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const targetCamPos = charPos.clone().add(sideOffset)
@@ -796,6 +808,7 @@ export class ThreeDirecting {
       this.actorController.resetAnimation(initialAnim)
     }
     this.lastCameraMode = null
+    this.forceHardCutNextCameraUpdate = true
     this.updateActorMovement(0)
     this.updateCamera()
   }
