@@ -116,6 +116,10 @@ export class ThreeDirecting {
     }
 
     this.buildActorsFromData(parsedPayload)
+    const maxDur = this.getDuration()
+    if (maxDur > 0) {
+      (this.playbackController as any).maxDuration = maxDur
+    }
 
     if (this.actorController) {
       this.actorPosition.copy(this.actorController.position)
@@ -146,7 +150,14 @@ export class ThreeDirecting {
       const actorId = rec.id || `actor_${idx + 1}`
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
       const pbCtrl = new PlaybackController()
-      pbCtrl.setTrajectory(JSON.stringify(rec.trajectory || []))
+      let traj = rec.trajectory || rec.motion_data
+      if (typeof traj === 'string' && traj.trim()) {
+        try {
+          const parsed = JSON.parse(traj)
+          traj = parsed.trajectory || parsed.motion_data || parsed
+        } catch (e) {}
+      }
+      pbCtrl.setTrajectory(traj || [])
       pbCtrl.start()
       this.scene.add(actorCtrl.group)
       this.actorList.push({
@@ -369,19 +380,25 @@ export class ThreeDirecting {
   }
 
   private updateActorMovement(dt: number): void {
-    if (this.playbackController.getIsPlaying()) {
-      this.playbackController.update(dt, this.actorController)
+    const isPlaying = this.playbackController.getIsPlaying()
+    if (isPlaying) {
+      // Avoid evaluating actorController twice if actorList is managing scene actors
+      const targetActor = this.actorList.length > 0 ? null : this.actorController
+      this.playbackController.update(dt, targetActor)
     }
     const curTime = this.playbackController.getCurrentTime()
+    const evalDt = isPlaying ? dt : 0
+
     if (this.actorList.length > 0) {
       this.actorList.forEach(a => {
-        a.playbackController.evaluateAt(curTime, a.controller, dt)
+        a.playbackController.evaluateAt(curTime, a.controller, evalDt)
       })
       const primaryActor = this.actorList[this.actorList.length - 1].controller
       if (primaryActor) {
         this.actorPosition.copy(primaryActor.position)
       }
     } else if (this.actorController) {
+      this.playbackController.evaluateAt(curTime, this.actorController, evalDt)
       this.actorPosition.copy(this.actorController.position)
     }
   }
@@ -730,14 +747,17 @@ export class ThreeDirecting {
 
   public play(): void {
     this.playbackController.play()
+    this.actorList.forEach(a => a.playbackController.play())
   }
 
   public pause(): void {
     this.playbackController.pause()
+    this.actorList.forEach(a => a.playbackController.pause())
   }
 
   public stop(): void {
     this.playbackController.stop()
+    this.actorList.forEach(a => a.playbackController.stop())
     if (this.actorController) {
       const firstFrame = this.playbackController.getTrajectory()[0]
       const initialAnim = firstFrame?.anim
@@ -762,6 +782,7 @@ export class ThreeDirecting {
     const maxDur = this.getDuration()
     const targetT = Math.max(0, Math.min(t, maxDur))
     this.playbackController.setCurrentTime(targetT)
+    this.actorList.forEach(a => a.playbackController.setCurrentTime(targetT))
     if (targetT === 0 && this.actorController) {
       const firstFrame = this.playbackController.getTrajectory()[0]
       const initialAnim = firstFrame?.anim

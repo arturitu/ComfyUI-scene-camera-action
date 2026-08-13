@@ -184,7 +184,6 @@ function readStageStateFromNode(node: ComfyNode): Partial<StageState> {
     type: 'cube_stage',
     num_assets: stored?.num_assets ?? 0,
     nodes: stored?.nodes ?? [],
-    spawn_point: stored?.spawn_point,
   }
 }
 const readSceneStateFromNode = readStageStateFromNode
@@ -652,6 +651,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
     actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : ((typeVal as string) === 'car' ? 20.0 : 10.0),
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
+    spawn_point: storedProps?.spawn_point,
     scene_data: storedProps?.scene_data ?? (undefined as any),
     stage_data: storedProps?.stage_data ?? storedProps?.scene_data ?? (undefined as any),
     actors: extractedActors ?? []
@@ -683,6 +683,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       actor_type: stored.actor_type ?? 'human',
       actor_speed: stored.actor_speed ?? 10.0,
       duration: stored.duration ?? 7.0,
+      spawn_point: stored.spawn_point,
       motion_data: stored.motion_data ?? '',
       scene_data: initialSceneState,
       stage_data: initialSceneState,

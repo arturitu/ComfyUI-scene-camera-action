@@ -63,7 +63,6 @@ export interface StageState {
   num_assets: number
   nodes?: StageNode[]
   selectedPreset?: string
-  spawn_point?: SpawnPoint
 }
 export type SceneState = StageState
 

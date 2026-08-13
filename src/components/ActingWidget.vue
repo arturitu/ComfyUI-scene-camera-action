@@ -27,6 +27,37 @@
         </div>
       </div>
 
+      <!-- Spawn Point Toolbar (Left Side: 3 Buttons) -->
+      <div v-if="!isRecording && !isPlaying && !isCounting && !state.motion_data" class="canvas-edit-toolbar left">
+        <button
+          class="edit-btn"
+          title="Reset Actor to Spawn Point"
+          @click.stop="resetActorToSpawn"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            <circle cx="8" cy="8" r="2" fill="currentColor"/>
+            <path d="M8 0v3M8 13v3M0 8h3M13 8h3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+        <button
+          class="edit-btn"
+          :class="{ 'active': activeSpawnMode === 'translate' }"
+          title="Move Spawn Point (XYZ axes)"
+          @click.stop="toggleSpawnMode('translate')"
+        >
+          ✛
+        </button>
+        <button
+          class="edit-btn"
+          :class="{ 'active': activeSpawnMode === 'rotate' }"
+          title="Rotate Spawn Heading (Y axis)"
+          @click.stop="toggleSpawnMode('rotate')"
+        >
+          ↺
+        </button>
+      </div>
+
       <!-- Controls Overlay (Top Right / Bottom Center) -->
       <div class="acting-toolbar">
         <button
@@ -175,6 +206,7 @@ const state = reactive<ActingState>({
   actor_type: initialActorType,
   actor_speed: initialActorSpeed,
   duration: props.initialState?.duration ?? 7.0,
+  spawn_point: props.initialState?.spawn_point,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
   actors: props.initialState?.actors ?? []
@@ -186,6 +218,24 @@ const isRecording = ref(false)
 const recordingElapsed = ref(0)
 const isPlaying = ref(false)
 const showHelpModal = ref(false)
+const activeSpawnMode = ref<'translate' | 'rotate' | null>(null)
+
+const toggleSpawnMode = (mode: 'translate' | 'rotate') => {
+  if (activeSpawnMode.value === mode) {
+    activeSpawnMode.value = null
+  } else {
+    activeSpawnMode.value = mode
+  }
+  if (threeActing) {
+    threeActing.setSpawnTransformMode(activeSpawnMode.value)
+  }
+}
+
+const resetActorToSpawn = () => {
+  if (threeActing) {
+    threeActing.resetActorPosition()
+  }
+}
 
 const handleEscapeKey = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && showHelpModal.value) {
@@ -228,6 +278,11 @@ const updateRecordProgress = () => {
 
 const startCountdown = () => {
   if (isCounting.value || isRecording.value) return
+  activeSpawnMode.value = null
+  if (threeActing) {
+    threeActing.setSpawnTransformMode(null)
+    threeActing.setCountingState(true)
+  }
 
   if (isPlaying.value) {
     isPlaying.value = false
@@ -305,7 +360,9 @@ const stopPlayback = () => {
 const resetToInteractive = () => {
   isPlaying.value = false
   isRecording.value = false
+  isCounting.value = false
   if (threeActing) {
+    threeActing.setCountingState(false)
     threeActing.setState({ motion_data: '' })
     threeActing.stopPlayback()
   }
@@ -556,6 +613,49 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   background: #ff3366;
   width: 0%;
   transition: width 0.1s linear;
+}
+
+/* Spawn Point Toolbar (Left Side 3 Buttons) Styling */
+.canvas-edit-toolbar {
+  position: absolute;
+  top: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  z-index: 20;
+}
+
+.canvas-edit-toolbar.left {
+  left: 12px;
+}
+
+.edit-btn {
+  background: rgba(12, 12, 18, 0.85);
+  color: #8c8c9e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.edit-btn:hover {
+  background: #2b2b3b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.edit-btn.active {
+  background: #3d4974;
+  color: #ffffff;
+  border-color: #5d6d9e;
 }
 
 /* Acting Toolbar styling */

@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { MeshBVH, BVHHelper } from 'three-mesh-bvh'
-import type { ActingState, ThreeActingOptions, CubeTransform, StageState } from './types'
+import { TransformControls } from 'three/addons/controls/TransformControls.js'
+import type { ActingState, ThreeActingOptions, CubeTransform, StageState, SpawnPoint } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
@@ -29,6 +30,7 @@ export class ThreeActing {
   private actingCameraTarget = new THREE.Vector3()
   private cachedSceneExtent = 15.0
   private spawnPointHelper: SpawnPointHelper | null = null
+  private transformControls!: TransformControls
 
   private colliderBVH: MeshBVH | null = null
   private colliderVisualizer: THREE.Object3D | null = null
@@ -115,6 +117,13 @@ export class ThreeActing {
     this.activeRecordingTargetDuration = this.state.duration ?? 7.0
     this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
 
+    if (this.transformControls) {
+      this.transformControls.detach()
+    }
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.group.visible = false
+    }
+
     // Reset previous actors to t=0
     this.previousActorControllers.forEach(p => {
       p.playbackController.start()
@@ -129,7 +138,7 @@ export class ThreeActing {
         id: `actor_${upstream.length + 1}`,
         actor_type: this.getActorType(),
         actor_speed: this.state.actor_speed,
-        spawn_point: this.state.spawn_point,
+        spawn_point: this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
         trajectory: this.trajectory
       }
       return [...upstream, currentActorRecord]
@@ -142,6 +151,10 @@ export class ThreeActing {
     this.isPlaying = false
     const stageData = this.getStageData()
     const allActors = this.getAccumulatedActors()
+
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.group.visible = true
+    }
 
     const payload = {
       type: 'acting_motion',
@@ -380,6 +393,41 @@ export class ThreeActing {
     this.buildStageEnvironment()
     this.buildActor(this.state.actor_type)
 
+    // Setup Spawn Point Helper & Transform Controls
+    this.spawnPointHelper = new SpawnPointHelper()
+    const initialSp = this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 }
+    this.state.spawn_point = initialSp
+    this.spawnPointHelper.setSpawnPoint(initialSp)
+    this.scene.add(this.spawnPointHelper.group)
+
+    this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
+    this.transformControls.size = 1.8
+    this.transformControls.detach()
+    this.scene.add(this.transformControls.getHelper())
+
+    this.transformControls.addEventListener('dragging-changed', (event: any) => {
+      if (!event.value) {
+        if (this.spawnPointHelper && this.actorController) {
+          const sp = this.spawnPointHelper.getSpawnPoint()
+          this.state.spawn_point = sp
+          this.actorController.resetToOrigin(sp)
+          if (this.onStateChange) {
+            this.onStateChange({ ...this.state })
+          }
+        }
+      }
+    })
+
+    this.transformControls.addEventListener('objectChange', () => {
+      if (this.spawnPointHelper && this.actorController) {
+        const sp = this.spawnPointHelper.getSpawnPoint()
+        this.state.spawn_point = sp
+        // Fast visual sync (X, Y height, Z, and Y-rotation) during active drag
+        this.actorController.group.position.set(sp.px, sp.py, sp.pz)
+        this.actorController.group.rotation.y = sp.ry
+      }
+    })
+
     // Initialize Debug Panel with lil-gui
     this.debugPanel = new DebugPanel(this.container)
     this.debugPanel.attachThreeActing(this)
@@ -418,10 +466,44 @@ export class ThreeActing {
     }
   }
 
+  public setSpawnTransformMode(mode: 'translate' | 'rotate' | null): void {
+    if (!this.transformControls || !this.spawnPointHelper) return
+    if (this.transformControls.object === this.spawnPointHelper.group && this.transformControls.mode === mode) {
+      this.transformControls.detach()
+      return
+    }
+    if (mode === 'translate') {
+      this.transformControls.setMode('translate')
+      this.transformControls.showX = true
+      this.transformControls.showY = true
+      this.transformControls.showZ = true
+      this.transformControls.attach(this.spawnPointHelper.group)
+    } else if (mode === 'rotate') {
+      this.transformControls.setMode('rotate')
+      this.transformControls.showX = false
+      this.transformControls.showY = true
+      this.transformControls.showZ = false
+      this.transformControls.attach(this.spawnPointHelper.group)
+    } else {
+      this.transformControls.detach()
+    }
+  }
+
+  public getSpawnTransformMode(): 'translate' | 'rotate' | null {
+    if (!this.transformControls || !this.transformControls.object) return null
+    return this.transformControls.mode as 'translate' | 'rotate'
+  }
+
   public resetActorPosition(): void {
     if (this.actorController) {
-      const sceneData = this.getSceneData()
-      this.actorController.resetToOrigin(sceneData?.spawn_point)
+      const sp = this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 }
+      this.actorController.resetToOrigin(sp)
+      if (this.spawnPointHelper) {
+        this.spawnPointHelper.setSpawnPoint(sp)
+        if (!this.isRecording) {
+          this.spawnPointHelper.group.visible = true
+        }
+      }
 
       // Immediately set camera view dynamically targeting actor size and spawn position
       const pos = this.actorController.position
@@ -576,8 +658,32 @@ export class ThreeActing {
     this.renderer.setSize(w, h, false)
   }
 
+  private isCountingCountdown: boolean = false
+
+  public setCountingState(counting: boolean): void {
+    this.isCountingCountdown = counting
+    if (counting) {
+      if (this.spawnPointHelper) {
+        this.spawnPointHelper.group.visible = false
+      }
+      if (this.transformControls) {
+        this.transformControls.detach()
+      }
+    }
+  }
+
   private animate(): void {
     this.animationId = requestAnimationFrame(() => this.animate())
+
+    if (this.spawnPointHelper) {
+      const shouldBeVisible = !this.isPlaying && !this.isRecording && !this.isCountingCountdown
+      if (this.spawnPointHelper.group.visible !== shouldBeVisible) {
+        this.spawnPointHelper.group.visible = shouldBeVisible
+        if (!shouldBeVisible && this.transformControls) {
+          this.transformControls.detach()
+        }
+      }
+    }
 
     const time = performance.now()
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)

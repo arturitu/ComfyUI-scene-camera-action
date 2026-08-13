@@ -114,9 +114,15 @@ export class HumanActor extends BaseActor {
     return frame
   }
 
+  private lastRequestedPlaybackAnim: string | null = null
+
   public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016, isHardCut: boolean = false): void {
     const frameDt = Math.max(0, dt)
-    let targetAnim = (animName && animName !== 'None' && this.animationsMapMap.has(animName)) ? animName : 'Idle_A'
+    if (animName && animName !== 'None') {
+      this.lastRequestedPlaybackAnim = animName
+    }
+    const requested = animName || this.lastRequestedPlaybackAnim
+    let targetAnim = (requested && this.animationsMapMap.has(requested)) ? requested : 'Idle_A'
     let animTimeScale = 1.0
 
     const instantSpeed = (frameDt > 0 && !isHardCut) ? distMoved / frameDt : 0
@@ -131,8 +137,13 @@ export class HumanActor extends BaseActor {
     const fadeDuration = isHardCut ? 0 : 0.2
     this.playAnimation(targetAnim, fadeDuration, animTimeScale)
 
-    if (this.mixer && frameDt > 0) {
-      this.mixer.update(frameDt)
+    if (this.mixer) {
+      if (frameDt === 0) {
+        this.mixer.timeScale = 0
+      } else {
+        this.mixer.timeScale = 1.0
+        this.mixer.update(frameDt)
+      }
     }
   }
 
@@ -214,8 +225,9 @@ export class HumanActor extends BaseActor {
     this.animationsMapMap = assets.animations
     this.mixer = new THREE.AnimationMixer(this.modelGroup)
 
-    // Start default animation
-    this.playAnimation('Idle_A', 0)
+    // Start default or last requested animation
+    const initialAnim = this.lastRequestedPlaybackAnim || 'Idle_A'
+    this.playAnimation(initialAnim, 0)
   }
 
   public override resetToOrigin(sp?: SpawnPoint): void {

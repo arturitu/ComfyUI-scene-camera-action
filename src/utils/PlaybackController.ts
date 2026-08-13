@@ -140,15 +140,14 @@ export class PlaybackController {
   }
 
   public update(dt: number, actor: BaseActor | null): void {
-    if (!actor || this.trajectory.length === 0) return
+    if (this.trajectory.length === 0 && this.maxDuration === 0) return
 
     let isHardCut = this.isHardCutPending
     this.isHardCutPending = false
 
     if (this.isPlaying) {
-      const prevTime = this.currentTime
       this.currentTime += dt
-      if (this.currentTime >= this.maxDuration) {
+      if (this.currentTime >= this.maxDuration && this.maxDuration > 0) {
         if (this.loop && !this.isRecordingMode) {
           this.currentTime = this.currentTime % Math.max(0.001, this.maxDuration)
           isHardCut = true
@@ -165,8 +164,10 @@ export class PlaybackController {
     }
     this.lastTime = this.currentTime
 
-    const frameDt = this.isPlaying ? dt : 0
-    this.evaluateAt(this.currentTime, actor, frameDt, isHardCut)
+    if (actor) {
+      const frameDt = this.isPlaying ? dt : 0
+      this.evaluateAt(this.currentTime, actor, frameDt, isHardCut)
+    }
   }
 
   public evaluateAt(t: number, actor: BaseActor, dt: number = 0.016, isHardCut: boolean = false): void {

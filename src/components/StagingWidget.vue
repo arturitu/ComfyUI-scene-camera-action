@@ -55,13 +55,6 @@
             <rect x="5" y="5" width="6" height="6" fill="currentColor"/>
           </svg>
         </button>
-        <button class="edit-btn select-spawn-btn" title="Select Spawn Point" @click.stop="selectSpawnPoint">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
-            <circle cx="8" cy="8" r="2" fill="currentColor"/>
-            <path d="M8 0v3M8 13v3M0 8h3M13 8h3" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-        </button>
         <button class="edit-btn group-btn" title="Group selected assets" @click.stop="groupSelected" :disabled="!canGroup">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M1.5 2A.5.5 0 0 0 1 2.5v4a.5.5 0 0 0 .5.5h4A.5.5 0 0 0 6 6.5v-4A.5.5 0 0 0 5.5 2h-4zm.5 4V3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4V3h3v3h-3zM1.5 9.5a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3z"/>
@@ -138,7 +131,6 @@ const normalizeStateString = (s: any): string => {
   return JSON.stringify({
     type: s.type || 'cube_stage',
     num_assets: s.num_assets ?? (s.nodes?.length || 0),
-    spawn_point: s.spawn_point || { px: 0, py: 0, pz: 2, ry: 0 },
     nodes: s.nodes || []
   })
 }
