@@ -89,11 +89,11 @@ def get_staging_stage_files() -> list[str]:
     return sorted(list(files)) if files else ["None"]
 
 
-class UBStagingNode(io.ComfyNode):
-    CATEGORY = "Unboring 3D Studio"
+class StagingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
 
     """
-    UB Staging Node
+    Staging Node
     Configures a 3D stage environment with multiple adjustable 3D assets (cubes).
     Supports loading preset files, interactive visual editing, and live saving directly inside the 3D widget.
     """
@@ -101,9 +101,9 @@ class UBStagingNode(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="UBStagingNode",
-            display_name="UB Staging",
-            category="Unboring 3D Studio",
+            node_id="StagingNode",
+            display_name="Staging",
+            category="scene-camera-action",
             is_output_node=False,
             description="Configures a 3D stage environment with multiple assets.",
             inputs=[
@@ -151,11 +151,11 @@ class UBStagingNode(io.ComfyNode):
         return f"{stage_data}"
 
 
-class UBActingNode(io.ComfyNode):
-    CATEGORY = "Unboring 3D Studio"
+class ActingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
 
     """
-    UB Acting Node
+    Acting Node
     Receives stage data from a Staging node or acting data from a previous Acting node,
     and hosts interactive actor acting.
     """
@@ -163,16 +163,16 @@ class UBActingNode(io.ComfyNode):
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="UBActingNode",
-            display_name="UB Acting",
-            category="Unboring 3D Studio",
+            node_id="ActingNode",
+            display_name="Acting",
+            category="scene-camera-action",
             is_output_node=False,
-            description="Receives a 3D stage from UB Staging or acting data from a previous UB Acting node, hosting interactive actor acting.",
+            description="Receives a 3D stage from Staging or acting data from a previous Acting node, hosting interactive actor acting.",
             inputs=[
                 StageIO.Input(
                     "stage",
                     display_name="Stage / Acting",
-                    tooltip="Connect a UB Staging node or previous UB Acting node for multi-actor chaining",
+                    tooltip="Connect a Staging node or previous Acting node for multi-actor chaining",
                     optional=True,
                 ),
                 io.Combo.Input(
@@ -302,27 +302,27 @@ class UBActingNode(io.ComfyNode):
         return io.NodeOutput(acting_json, ui=_ActingUIOutput(acting_dict))
 
 
-class UBDirectingNode(io.ComfyNode):
-    CATEGORY = "Unboring 3D Studio"
+class DirectingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
 
     """
-    UB Directing Node
+    Directing Node
     Records camera cuts on top of acting motion data and outputs captured video.
     """
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="UBDirectingNode",
-            display_name="UB Directing",
-            category="Unboring 3D Studio",
+            node_id="DirectingNode",
+            display_name="Directing",
+            category="scene-camera-action",
             is_output_node=False,
             description="Records camera cuts on top of acting data, outputs captured video.",
             inputs=[
                 ActingIO.Input(
                     "acting",
                     display_name="Acting",
-                    tooltip="Acting motion connection from a UB Acting node",
+                    tooltip="Acting motion connection from an Acting node",
                     optional=True,
                 ),
                 io.String.Input(
@@ -370,24 +370,24 @@ class UBDirectingNode(io.ComfyNode):
                         break
 
         if not has_motion:
-            raise ValueError("UB Directing: Directing canvas is disabled. Connect an Acting 3D node and record motion first.")
+            raise ValueError("Directing: Directing canvas is disabled. Connect an Acting node and record motion first.")
 
         # 2. Trigger auto-capture on frontend via WebSocket signal
         _capture_results.pop(node_id, None)
         evt = threading.Event()
         _pending_captures[node_id] = evt
         try:
-            PromptServer.instance.send_sync("ub_3d_studio_directing_capture", {"node_id": node_id})
+            PromptServer.instance.send_sync("scene_camera_action_directing_capture", {"node_id": node_id})
             # Wait for frontend to record and upload video (max 40 seconds)
             evt.wait(timeout=40.0)
         except Exception as e:
-            print(f"[UBDirectingNode] Error waiting for frontend capture: {e}")
+            print(f"[DirectingNode] Error waiting for frontend capture: {e}")
         finally:
             _pending_captures.pop(node_id, None)
 
         res = _capture_results.pop(node_id, {})
         if res.get("error"):
-            raise ValueError(f"UB Directing: {res['error']}")
+            raise ValueError(f"Directing: {res['error']}")
 
         # 3. Load Node-Specific Video File (No global fallback to old temp files)
         specific_mp4 = f"3d_directing_record_{node_id}.mp4"
@@ -401,12 +401,12 @@ class UBDirectingNode(io.ComfyNode):
         video_path = mp4_path if os.path.exists(mp4_path) else webm_path
 
         if not os.path.exists(video_path):
-            raise ValueError("UB Directing: No video file was generated. Please ensure active motion recording in UB Acting.")
+            raise ValueError("Directing: No video file was generated. Please ensure active motion recording in Acting.")
 
         try:
             video_output = InputImpl.VideoFromFile(video_path)
         except Exception as e:
-            raise ValueError(f"UB Directing: Error reading recorded video file: {e}")
+            raise ValueError(f"Directing: Error reading recorded video file: {e}")
 
         stage_data = acting_data.get("stage_data", acting_data.get("scene_data", {}))
 
@@ -437,10 +437,10 @@ class UBDirectingNode(io.ComfyNode):
 
 
 
-class UB3DStudioExtension(ComfyExtension):
+class SceneCameraActionExtension(ComfyExtension):
     @override
     async def get_node_list(self):
-        return [UBStagingNode, UBActingNode, UBDirectingNode]
+        return [StagingNode, ActingNode, DirectingNode]
 
 
 def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
@@ -456,7 +456,7 @@ def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
                 break
 
     if not ffmpeg_bin:
-        print("[Unboring3DStudio] ffmpeg not found, skipping MP4 conversion")
+        print("[SceneCameraAction] ffmpeg not found, skipping MP4 conversion")
         return False
 
     cmd = [
@@ -475,19 +475,19 @@ def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
     try:
         res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
         if res.returncode == 0 and os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 0:
-            print(f"[Unboring3DStudio] Successfully converted {webm_path} -> {mp4_path} (QuickTime H.264/yuv420p)")
+            print(f"[SceneCameraAction] Successfully converted {webm_path} -> {mp4_path} (QuickTime H.264/yuv420p)")
             return True
         else:
-            print(f"[Unboring3DStudio] ffmpeg conversion warning: {res.stderr}")
+            print(f"[SceneCameraAction] ffmpeg conversion warning: {res.stderr}")
             return False
     except Exception as e:
-        print(f"[Unboring3DStudio] Error running ffmpeg: {e}")
+        print(f"[SceneCameraAction] Error running ffmpeg: {e}")
         return False
 
 
 # --- API Routes to receive video, image uploads, and scene presets ---
-@PromptServer.instance.routes.post("/ub_3d_studio/upload_video")
 @PromptServer.instance.routes.post("/scene_camera_action/upload_video")
+@PromptServer.instance.routes.post("/ub_3d_studio/upload_video")
 async def upload_video(request):
     try:
         post = await request.post()
@@ -535,12 +535,12 @@ async def upload_video(request):
             return web.json_response({"success": True, "filepath": final_filepath, "filename": final_filename})
         return web.json_response({"success": False, "error": "No video file received"})
     except Exception as e:
-        print(f"[Unboring3DStudio] Error uploading video: {e}")
+        print(f"[SceneCameraAction] Error uploading video: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.post("/ub_3d_studio/upload_image")
 @PromptServer.instance.routes.post("/scene_camera_action/upload_image")
+@PromptServer.instance.routes.post("/ub_3d_studio/upload_image")
 async def upload_image(request):
     try:
         post = await request.post()
@@ -573,19 +573,19 @@ async def upload_image(request):
             return web.json_response({"success": True, "filepath": filepath, "filename": filename})
         return web.json_response({"success": False, "error": "No image file received"})
     except Exception as e:
-        print(f"[Unboring3DStudio] Error uploading image: {e}")
+        print(f"[SceneCameraAction] Error uploading image: {e}")
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.get("/ub_3d_studio/list_presets")
 @PromptServer.instance.routes.get("/scene_camera_action/list_presets")
+@PromptServer.instance.routes.get("/ub_3d_studio/list_presets")
 async def list_presets(request):
     files = get_staging_stage_files()
     return web.json_response({"files": files})
 
 
-@PromptServer.instance.routes.get("/ub_3d_studio/get_preset")
 @PromptServer.instance.routes.get("/scene_camera_action/get_preset")
+@PromptServer.instance.routes.get("/ub_3d_studio/get_preset")
 async def get_preset(request):
     filename = request.query.get("filename", "")
     if not filename or filename == "None":
@@ -610,8 +610,8 @@ async def get_preset(request):
     return web.json_response({"error": "File not found"}, status=404)
 
 
-@PromptServer.instance.routes.post("/ub_3d_studio/save_preset")
 @PromptServer.instance.routes.post("/scene_camera_action/save_preset")
+@PromptServer.instance.routes.post("/ub_3d_studio/save_preset")
 async def save_preset(request):
     try:
         body = await request.json()
@@ -634,8 +634,8 @@ async def save_preset(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.post("/ub_3d_studio/capture_done")
 @PromptServer.instance.routes.post("/scene_camera_action/capture_done")
+@PromptServer.instance.routes.post("/ub_3d_studio/capture_done")
 async def capture_done(request):
     try:
         body = await request.json()
@@ -649,26 +649,28 @@ async def capture_done(request):
 
 
 async def comfy_entrypoint():
-    return UB3DStudioExtension()
+    return SceneCameraActionExtension()
 
 
 NODE_CLASS_MAPPINGS = {
-    "UBStagingNode": UBStagingNode,
-    "UBActingNode": UBActingNode,
-    "UBDirectingNode": UBDirectingNode,
-    "StageNode": UBStagingNode,
-    "SceneNode": UBStagingNode,
-    "ActingNode": UBActingNode,
-    "DirectingNode": UBDirectingNode,
+    "StagingNode": StagingNode,
+    "ActingNode": ActingNode,
+    "DirectingNode": DirectingNode,
+    "UBStagingNode": StagingNode,
+    "UBActingNode": ActingNode,
+    "UBDirectingNode": DirectingNode,
+    "StageNode": StagingNode,
+    "SceneNode": StagingNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "UBStagingNode": "UB Staging",
-    "UBActingNode": "UB Acting",
-    "UBDirectingNode": "UB Directing",
-    "StageNode": "UB Staging",
-    "SceneNode": "UB Staging",
-    "ActingNode": "UB Acting",
-    "DirectingNode": "UB Directing",
+    "StagingNode": "Staging",
+    "ActingNode": "Acting",
+    "DirectingNode": "Directing",
+    "UBStagingNode": "Staging",
+    "UBActingNode": "Acting",
+    "UBDirectingNode": "Directing",
+    "StageNode": "Staging",
+    "SceneNode": "Staging",
 }
 

@@ -1,7 +1,7 @@
 [project]
-name = "comfyui-ub-3d-studio"
+name = "comfyui-scene-camera-action"
 version = "0.4.0"
-description = "Interactive 3D scene staging, actor acting, and camera directing nodes for ComfyUI by Unboring."
+description = "Interactive 3D scene staging, actor acting, and camera directing nodes for ComfyUI."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
@@ -15,5 +15,5 @@ dependencies = [
 
 [tool.comfy]
 PublisherId = "arturitu"
-DisplayName = "Unboring 3D Studio"
+DisplayName = "ComfyUI Scene Camera Action"
 Icon = "https://unboring.net/icon.png"

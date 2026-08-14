@@ -391,12 +391,12 @@ const handleRecordVideo = async () => {
 
   if (!hasActingData.value || !threeDirecting) {
     try {
-      await fetch('/ub_3d_studio/capture_done', {
+      await fetch('/scene_camera_action/capture_done', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           node_id: nodeId,
-          error: 'Directing canvas is disabled. Connect an Acting 3D node and record motion first.'
+          error: 'Directing canvas is disabled. Connect an Acting node and record motion first.'
         }),
       })
     } catch (e) {}
@@ -452,7 +452,7 @@ const handleRecordVideo = async () => {
           videoFormData.append('video', videoBlob, `3d_directing_record_${nodeId}.webm`)
           videoFormData.append('filename', `3d_directing_record_${nodeId}.webm`)
 
-          await fetch('/ub_3d_studio/upload_video', {
+          await fetch('/scene_camera_action/upload_video', {
             method: 'POST',
             body: videoFormData
           })
@@ -463,7 +463,7 @@ const handleRecordVideo = async () => {
             imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
             imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
 
-            await fetch('/ub_3d_studio/upload_image', {
+            await fetch('/scene_camera_action/upload_image', {
               method: 'POST',
               body: imageFormData
             })
@@ -476,7 +476,7 @@ const handleRecordVideo = async () => {
         } finally {
           // Notify python backend execution that capture and upload are complete
           try {
-            await fetch('/ub_3d_studio/capture_done', {
+            await fetch('/scene_camera_action/capture_done', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ node_id: nodeId }),
@@ -582,6 +582,7 @@ onMounted(() => {
   timeFrameId = requestAnimationFrame(updateTimeLoop)
   const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
   if (comfyApi && typeof comfyApi.addEventListener === 'function') {
+    comfyApi.addEventListener('scene_camera_action_directing_capture', handleWsCaptureEvent)
     comfyApi.addEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
   }
 })
@@ -589,6 +590,7 @@ onMounted(() => {
 onUnmounted(() => {
   const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
   if (comfyApi && typeof comfyApi.removeEventListener === 'function') {
+    comfyApi.removeEventListener('scene_camera_action_directing_capture', handleWsCaptureEvent)
     comfyApi.removeEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
   }
   if (timeFrameId !== null) {

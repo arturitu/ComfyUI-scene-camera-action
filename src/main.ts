@@ -71,12 +71,30 @@ function removeNodeInput(node: ComfyNode, name: string): void {
   }
 }
 
+export function isStagingNode(node: ComfyNode | null | undefined): boolean {
+  if (!node) return false
+  const cls = node.constructor?.comfyClass || node.type
+  return cls === 'StagingNode' || cls === 'UBStagingNode' || cls === 'StageNode' || cls === 'SceneNode'
+}
+
+export function isActingNode(node: ComfyNode | null | undefined): boolean {
+  if (!node) return false
+  const cls = node.constructor?.comfyClass || node.type
+  return cls === 'ActingNode' || cls === 'UBActingNode'
+}
+
+export function isDirectingNode(node: ComfyNode | null | undefined): boolean {
+  if (!node) return false
+  const cls = node.constructor?.comfyClass || node.type
+  return cls === 'DirectingNode' || cls === 'UBDirectingNode'
+}
+
 // --- Helpers for StageNode ---
 async function updateStageNodeFromPreset(node: ComfyNode, filename: string): Promise<void> {
   if (!filename || filename === 'None') return
 
   try {
-    const res = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(filename)}`)
+    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
     if (res.ok) {
       const data = await res.json()
       const instance = stageInstances.get(node)
@@ -108,7 +126,7 @@ function getLinkedInputValue(node: ComfyNode, inputName: string): string | null 
   const originNode = graph.getNodeById?.(link.origin_id)
   if (!originNode) return null
 
-  if (originNode.constructor?.comfyClass === 'UBStagingNode' || originNode.constructor?.comfyClass === 'StageNode' || originNode.constructor?.comfyClass === 'SceneNode' || originNode.type === 'UBStagingNode' || originNode.type === 'StageNode' || originNode.type === 'SceneNode') {
+  if (isStagingNode(originNode)) {
     const state = readStageStateFromNode(originNode)
     if (state) return JSON.stringify(state)
   }
@@ -313,7 +331,7 @@ function writeStoredActingProps(node: ComfyNode, patch: Partial<ActingState>): v
 
 function findConnectedStageOrActingOrigin(actingNode: ComfyNode): { originNode: ComfyNode; isActing: boolean } | null {
   if (!actingNode.inputs || actingNode.inputs.length === 0) return null
-  const inputSlot = actingNode.inputs.find(i => i.name === 'stage' || i.name === 'scene' || i.name === 'acting')
+  const inputSlot = actingNode.inputs.find(i => i.name === 'stage' || i.name === 'scene' || i.name === 'acting' || i.name === 'Stage / Acting')
   if (!inputSlot || inputSlot.link == null) return null
 
   const graph = app.graph
@@ -325,11 +343,10 @@ function findConnectedStageOrActingOrigin(actingNode: ComfyNode): { originNode: 
   const originNode = graph.getNodeById?.(link.origin_id)
   if (!originNode) return null
 
-  const comfyClass = originNode.constructor?.comfyClass || originNode.type
-  if (comfyClass === 'UBStagingNode' || comfyClass === 'StageNode' || comfyClass === 'SceneNode') {
+  if (isStagingNode(originNode)) {
     return { originNode, isActing: false }
   }
-  if (comfyClass === 'UBActingNode' || comfyClass === 'ActingNode') {
+  if (isActingNode(originNode)) {
     return { originNode, isActing: true }
   }
   return null
@@ -355,7 +372,7 @@ const findConnectedSceneNode = findConnectedStageNode
 
 function findConnectedActingNode(directingNode: ComfyNode): ComfyNode | null {
   if (!directingNode.inputs || directingNode.inputs.length === 0) return null
-  const actingInput = directingNode.inputs.find(i => i.name === 'acting')
+  const actingInput = directingNode.inputs.find(i => i.name === 'acting' || i.name === 'Acting')
   if (!actingInput || actingInput.link == null) return null
 
   const graph = app.graph
@@ -365,8 +382,8 @@ function findConnectedActingNode(directingNode: ComfyNode): ComfyNode | null {
   if (!link) return null
 
   const originNode = graph.getNodeById?.(link.origin_id)
-  if (originNode && (originNode.constructor?.comfyClass === 'UBActingNode' || originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'UBActingNode' || originNode.type === 'ActingNode')) {
-    return originNode
+  if (isActingNode(originNode)) {
+    return originNode || null
   }
   return null
 }
@@ -513,11 +530,7 @@ function isUpstreamActingChainComplete(startActingNode: ComfyNode): boolean {
 
   while (currNode && !visited.has(currNode)) {
     visited.add(currNode)
-    const isActing = currNode.constructor?.comfyClass === 'UBActingNode' ||
-                     currNode.constructor?.comfyClass === 'ActingNode' ||
-                     currNode.type === 'UBActingNode' ||
-                     currNode.type === 'ActingNode'
-    if (isActing) {
+    if (isActingNode(currNode)) {
       if (!isActingNodeMotionValid(currNode)) {
         return false
       }
@@ -542,14 +555,14 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
     const link = graph.links[linkId]
     if (link && link.origin_id === originNode.id) {
       const targetNode = graph.getNodeById?.(link.target_id)
-      if (targetNode && (targetNode.constructor?.comfyClass === 'UBDirectingNode' || targetNode.constructor?.comfyClass === 'DirectingNode' || targetNode.type === 'UBDirectingNode' || targetNode.type === 'DirectingNode')) {
-        const directingInst = directingInstances.get(targetNode)
+      if (isDirectingNode(targetNode)) {
+        const directingInst = directingInstances.get(targetNode!)
         if (directingInst) {
-          if (originNode.constructor?.comfyClass === 'UBActingNode' || originNode.constructor?.comfyClass === 'ActingNode' || originNode.type === 'UBActingNode' || originNode.type === 'ActingNode') {
+          if (isActingNode(originNode)) {
             const chainComplete = isUpstreamActingChainComplete(originNode)
             if (!chainComplete) {
               directingInst.exposed.setState({ acting_data: '' })
-              writeStoredDirectingProps(targetNode, { acting_data: '' })
+              writeStoredDirectingProps(targetNode!, { acting_data: '' })
               if ((directingInst.exposed as any).setConnectedThreeActing) {
                 (directingInst.exposed as any).setConnectedThreeActing(null)
               }
@@ -603,7 +616,7 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             }
 
             directingInst.exposed.setState({ acting_data: actingBlob })
-            writeStoredDirectingProps(targetNode, { acting_data: actingBlob })
+            writeStoredDirectingProps(targetNode!, { acting_data: actingBlob })
           }
         }
       }
@@ -620,9 +633,9 @@ function notifyConnectedActingNodes(originNode: ComfyNode, visitedSet: Set<Comfy
     const link = graph.links[linkId]
     if (link && link.origin_id === originNode.id) {
       const targetNode = graph.getNodeById?.(link.target_id)
-      if (targetNode && (targetNode.constructor?.comfyClass === 'UBActingNode' || targetNode.constructor?.comfyClass === 'ActingNode' || targetNode.type === 'UBActingNode' || targetNode.type === 'ActingNode')) {
-        if (!visitedSet.has(targetNode)) {
-          updateActingNodeFromConnectedScene(targetNode, visitedSet)
+      if (isActingNode(targetNode)) {
+        if (!visitedSet.has(targetNode!)) {
+          updateActingNodeFromConnectedScene(targetNode!, visitedSet)
         }
       }
     }
@@ -909,10 +922,10 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
     if (slotType === 1) { // 1 = INPUT
       const input = this.inputs?.[slotIndex]
-      if (input && input.name === 'scene' && !isConnected) {
+      if (input && (input.name === 'stage' || input.name === 'scene' || input.name === 'acting' || input.name === 'Stage / Acting') && !isConnected) {
         const actingInst = actingInstances.get(this)
         if (actingInst) {
-          actingInst.exposed.setState({ scene_data: undefined })
+          actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actors: [] })
         }
         return
       }
@@ -1111,7 +1124,7 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
 
 // --- Extension Registration ---
 app.registerExtension({
-  name: 'ComfyUI.UB3DStudio',
+  name: 'ComfyUI.SceneCameraAction',
 
   setup() {
     window.addEventListener('error', (e: ErrorEvent) => {
@@ -1148,9 +1161,7 @@ app.registerExtension({
   },
 
   nodeCreated(node: ComfyNode) {
-    const comfyClass = node.constructor?.comfyClass || node.type
-
-    if (comfyClass === 'UBStagingNode' || comfyClass === 'StageNode' || comfyClass === 'SceneNode') {
+    if (isStagingNode(node)) {
       hideNodeWidget(node, 'stage_data')
       hideNodeWidget(node, 'scene_data')
       hideNodeWidget(node, 'num_assets')
@@ -1209,7 +1220,7 @@ app.registerExtension({
           sceneInstances.delete(this)
         }
       }
-    } else if (comfyClass === 'UBActingNode' || comfyClass === 'ActingNode') {
+    } else if (isActingNode(node)) {
       hideNodeWidget(node, 'motion_data')
       removeNodeInput(node, 'motion_data')
 
@@ -1342,7 +1353,7 @@ app.registerExtension({
           actingInstances.delete(this)
         }
       }
-    } else if (comfyClass === 'UBDirectingNode' || comfyClass === 'DirectingNode') {
+    } else if (isDirectingNode(node)) {
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
 

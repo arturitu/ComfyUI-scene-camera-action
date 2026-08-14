@@ -1,6 +1,5 @@
-# Node modules & build outputs
+# Node modules & dev build outputs
 node_modules/
-js/
 dist/
 
 # Python

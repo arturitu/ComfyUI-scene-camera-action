@@ -142,7 +142,7 @@ const isStateDifferent = (current: any, original: any): boolean => {
 
 const fetchPresetList = async () => {
   try {
-    const res = await fetch('/ub_3d_studio/list_presets')
+    const res = await fetch('/scene_camera_action/list_presets')
     if (res.ok) {
       const data = await res.json()
       if (Array.isArray(data.files)) {
@@ -151,7 +151,7 @@ const fetchPresetList = async () => {
         if (targetPreset && presetFiles.value.includes(targetPreset)) {
           selectedPreset.value = targetPreset
           try {
-            const pRes = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(targetPreset)}`)
+            const pRes = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(targetPreset)}`)
             if (pRes.ok) {
               const origData = await pRes.json()
               originalPresetState = origData
@@ -195,7 +195,7 @@ const loadPresetFile = async (filename: string) => {
   }
 
   try {
-    const res = await fetch(`/ub_3d_studio/get_preset?filename=${encodeURIComponent(filename)}`)
+    const res = await fetch(`/scene_camera_action/get_preset?filename=${encodeURIComponent(filename)}`)
     if (res.ok) {
       const data = await res.json()
       originalPresetState = data
@@ -261,7 +261,7 @@ const saveCurrentPreset = async () => {
   }
 
   try {
-    const res = await fetch('/ub_3d_studio/save_preset', {
+    const res = await fetch('/scene_camera_action/save_preset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

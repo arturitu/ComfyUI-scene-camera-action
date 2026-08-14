@@ -7,9 +7,16 @@ js_dir = os.path.join(custom_node_dir, "js")
 
 try:
     import nodes
-    nodes.EXTENSION_WEB_DIRS["ComfyUI-UB-3D-Studio"] = js_dir
+    nodes.EXTENSION_WEB_DIRS["ComfyUI-scene-camera-action"] = js_dir
 except Exception:
     pass
 
-__all__ = ["comfy_entrypoint", "NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+WEB_DIRECTORY = "./js"
+
+__all__ = [
+    "comfy_entrypoint",
+    "NODE_CLASS_MAPPINGS",
+    "NODE_DISPLAY_NAME_MAPPINGS",
+    "WEB_DIRECTORY",
+]
 
