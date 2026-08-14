@@ -5,6 +5,8 @@ import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { PlaybackController } from './utils/PlaybackController'
 import { StageEnvironment } from './staging/StageEnvironment'
+import { CameraSpringArm } from './utils/CameraSpringArm'
+import { InstancedStageMesh } from './staging/InstancedStageMesh'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -17,7 +19,9 @@ export class ThreeDirecting {
   private actorController: BaseActor | null = null
   private animationId: number | null = null
   private clonedEnvGroup: THREE.Group | null = null
+  private instancedStageMesh: InstancedStageMesh | null = null
   private connectedThreeActing: any = null
+  private springArm = new CameraSpringArm()
 
   private playbackController = new PlaybackController()
   private actorPosition = new THREE.Vector3(0, config.GROUND_Y, 2)
@@ -32,6 +36,7 @@ export class ThreeDirecting {
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
+
 
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
@@ -160,7 +165,13 @@ export class ThreeDirecting {
         } catch (e) {}
       }
       pbCtrl.setTrajectory(traj || [])
-      pbCtrl.start()
+      const firstFrame = pbCtrl.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      if (initialAnim) {
+        actorCtrl.resetAnimation(initialAnim)
+      }
+      pbCtrl.evaluateAt(0, actorCtrl, 0, true)
+
       this.scene.add(actorCtrl.group)
       this.actorList.push({
         id: actorId,
@@ -275,13 +286,18 @@ export class ThreeDirecting {
       this.clonedEnvGroup = null
     }
 
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose()
+      this.instancedStageMesh = null
+    }
+
     this.clonedEnvGroup = new THREE.Group()
     this.scene.add(this.clonedEnvGroup)
 
     const stageData = this.getStageData()
 
     const stageEnv = new StageEnvironment()
-    stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
+    this.instancedStageMesh = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
 
     if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
       this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)
@@ -471,6 +487,7 @@ export class ThreeDirecting {
 
     if (this.lastCameraMode !== activeMode || isHardCut) {
       this.smoothedCameraYaw = rotY
+      this.springArm.reset()
     } else {
       let diffYaw = rotY - this.smoothedCameraYaw
       while (diffYaw < -Math.PI) diffYaw += Math.PI * 2
@@ -506,6 +523,10 @@ export class ThreeDirecting {
         this.camera.lookAt(targetLookAt)
       }
 
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(1.0)
+      }
+
     } else if (activeMode === 'Third Person') {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50
@@ -518,19 +539,31 @@ export class ThreeDirecting {
       const targetYOffset = isCar ? 0.9 : (isCrouch ? 1.05 : 0.8)
 
       const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
-      const targetCamPos = charPos.clone().add(backOffset)
-      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetYOffset, charPos.z)
+      const idealCamPos = charPos.clone().add(backOffset)
+      const idealLookAt = new THREE.Vector3(charPos.x, charPos.y + targetYOffset, charPos.z)
+
+      const springResult = this.springArm.evaluate(
+        idealLookAt,
+        idealCamPos,
+        this.clonedEnvGroup,
+        dt,
+        isHardCut || this.lastCameraMode !== 'Third Person'
+      )
 
       if (this.lastCameraMode !== 'Third Person' || isHardCut) {
         // Hard cut on initial mode change or timeline loop/seek
-        this.camera.position.copy(targetCamPos)
-        this.tpvTarget.copy(targetLookAt)
+        this.camera.position.copy(springResult.cameraPosition)
+        this.tpvTarget.copy(springResult.targetLookAt)
       } else {
         // Smooth camera follow lerp
-        this.camera.position.lerp(targetCamPos, posLerpFactor)
-        this.tpvTarget.lerp(targetLookAt, posLerpFactor)
+        this.camera.position.lerp(springResult.cameraPosition, posLerpFactor)
+        this.tpvTarget.lerp(springResult.targetLookAt, posLerpFactor)
       }
       this.camera.lookAt(this.tpvTarget)
+
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity)
+      }
 
     } else if (activeMode === 'Wide') {
       const fov = 35
@@ -568,6 +601,10 @@ export class ThreeDirecting {
       }
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
 
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(1.0)
+      }
+
     } else if (activeMode === 'Side') {
       const isCar = isCarTarget
       const fov = isCar ? 42 : 45
@@ -579,19 +616,31 @@ export class ThreeDirecting {
       const sideVec = isCar ? new THREE.Vector3(-6.5, 1.8, 0.0) : new THREE.Vector3(-4.2, 1.3, 0.4)
       const targetOffsetY = isCar ? 0.90 : 0.95
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
-      const targetCamPos = charPos.clone().add(sideOffset)
-      const targetLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
+      const idealCamPos = charPos.clone().add(sideOffset)
+      const idealLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
+
+      const springResult = this.springArm.evaluate(
+        idealLookAt,
+        idealCamPos,
+        this.clonedEnvGroup,
+        dt,
+        isHardCut || this.lastCameraMode !== 'Side'
+      )
 
       if (this.lastCameraMode !== 'Side' || isHardCut) {
         // Hard cut on initial mode change
-        this.camera.position.copy(targetCamPos)
-        this.sideTarget.copy(targetLookAt)
+        this.camera.position.copy(springResult.cameraPosition)
+        this.sideTarget.copy(springResult.targetLookAt)
       } else {
         // Smooth camera follow lerp
-        this.camera.position.lerp(targetCamPos, posLerpFactor)
-        this.sideTarget.lerp(targetLookAt, posLerpFactor)
+        this.camera.position.lerp(springResult.cameraPosition, posLerpFactor)
+        this.sideTarget.lerp(springResult.targetLookAt, posLerpFactor)
       }
       this.camera.lookAt(this.sideTarget)
+
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity)
+      }
     }
 
     const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
@@ -776,12 +825,18 @@ export class ThreeDirecting {
 
   public stop(): void {
     this.playbackController.stop()
-    this.actorList.forEach(a => a.playbackController.stop())
-    if (this.actorController) {
+    this.actorList.forEach(a => {
+      a.playbackController.stop()
+      const firstFrame = a.playbackController.getTrajectory()[0]
+      const initialAnim = firstFrame?.anim
+      a.controller.resetAnimation(initialAnim)
+      a.playbackController.evaluateAt(0, a.controller, 0, true)
+    })
+    if (this.actorController && this.actorList.length === 0) {
       const firstFrame = this.playbackController.getTrajectory()[0]
       const initialAnim = firstFrame?.anim
       this.actorController.resetAnimation(initialAnim)
-      this.playbackController.evaluateAt(0, this.actorController, 0)
+      this.playbackController.evaluateAt(0, this.actorController, 0, true)
       this.actorPosition.copy(this.actorController.position)
     }
   }
@@ -791,18 +846,23 @@ export class ThreeDirecting {
   }
 
   public resetPlayback(): void {
+    this.seekToTime(0)
     this.stop()
-    this.lastCameraMode = null
-    this.updateActorMovement(0)
-    this.updateCamera()
   }
 
   public seekToTime(t: number): void {
     const maxDur = this.getDuration()
     const targetT = Math.max(0, Math.min(t, maxDur))
     this.playbackController.setCurrentTime(targetT)
-    this.actorList.forEach(a => a.playbackController.setCurrentTime(targetT))
-    if (targetT === 0 && this.actorController) {
+    this.actorList.forEach(a => {
+      a.playbackController.setCurrentTime(targetT)
+      if (targetT === 0) {
+        const firstFrame = a.playbackController.getTrajectory()[0]
+        const initialAnim = firstFrame?.anim
+        a.controller.resetAnimation(initialAnim)
+      }
+    })
+    if (targetT === 0 && this.actorController && this.actorList.length === 0) {
       const firstFrame = this.playbackController.getTrajectory()[0]
       const initialAnim = firstFrame?.anim
       this.actorController.resetAnimation(initialAnim)
@@ -844,6 +904,11 @@ export class ThreeDirecting {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect()
       this.resizeObserver = null
+    }
+
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose()
+      this.instancedStageMesh = null
     }
 
     if (this.renderer) {

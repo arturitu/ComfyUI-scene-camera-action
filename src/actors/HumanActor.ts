@@ -134,12 +134,13 @@ export class HumanActor extends BaseActor {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
     }
 
-    const fadeDuration = isHardCut ? 0 : 0.2
+    const fadeDuration = (isHardCut || frameDt === 0) ? 0 : 0.2
     this.playAnimation(targetAnim, fadeDuration, animTimeScale)
 
     if (this.mixer) {
       if (frameDt === 0) {
         this.mixer.timeScale = 0
+        this.mixer.update(0)
       } else {
         this.mixer.timeScale = 1.0
         this.mixer.update(frameDt)
@@ -289,9 +290,6 @@ export class HumanActor extends BaseActor {
     this.currentAnimationName = null
     this.currentAction = null
     this.playAnimation('Idle_A', 0)
-    if (this.mixer) {
-      this.mixer.update(0.001)
-    }
   }
 
   public override resetAnimation(initialAnim?: string): void {
@@ -301,11 +299,11 @@ export class HumanActor extends BaseActor {
     }
     this.currentAnimationName = null
     this.currentAction = null
-    const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : 'Idle_A'
-    this.playAnimation(targetAnim, 0)
-    if (this.mixer) {
-      this.mixer.update(0.001)
+    if (initialAnim && initialAnim !== 'None') {
+      this.lastRequestedPlaybackAnim = initialAnim
     }
+    const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : (this.lastRequestedPlaybackAnim || 'Idle_A')
+    this.playAnimation(targetAnim, 0)
   }
 
   private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {
@@ -324,7 +322,12 @@ export class HumanActor extends BaseActor {
     const newAction = this.mixer.clipAction(clip)
 
     if (this.currentAction && this.currentAction !== newAction) {
-      this.currentAction.fadeOut(fadeDuration)
+      if (fadeDuration > 0) {
+        this.currentAction.fadeOut(fadeDuration)
+      } else {
+        this.currentAction.stop()
+        this.currentAction.setEffectiveWeight(0)
+      }
     }
 
     newAction.reset()
@@ -336,14 +339,19 @@ export class HumanActor extends BaseActor {
       newAction.clampWhenFinished = false
     }
 
-    newAction.fadeIn(fadeDuration)
+    if (fadeDuration > 0) {
+      newAction.fadeIn(fadeDuration)
+    } else {
+      newAction.setEffectiveWeight(1.0)
+      newAction.enabled = true
+    }
     newAction.timeScale = timeScale
     newAction.play()
 
     this.currentAction = newAction
     this.currentAnimationName = animName
 
-    this.mixer.update(0.001)
+    this.mixer.update(0.016)
   }
 
   public updatePhysics(

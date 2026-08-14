@@ -1,108 +1,106 @@
 ---
 name: stage-builder
-description: Turn any natural language description or reference image into a 3D staging stage (graybox/blockout composition) strictly using transformed 3D Box primitives for ComfyUI-scene-camera-action. Agent-guided specification for spatial reasoning, 4-layer stage decomposition, actor-aware layout design, and iterative JSON modification.
+description: Turn any natural language description or reference image into a structured 3D staging environment (graybox/blockout composition) strictly using transformed 3D Box primitives for ComfyUI-scene-camera-action. Features Pre-Spec spatial reasoning, 4-layer stage decomposition, actor-clearance contracts, deterministic validation gates, and iterative JSON modification.
 license: Apache-2.0
-version: 1.1.0
+version: 2.0.0
 ---
 
 # stage-builder — 3D Stage & Staging AI Skill
 
-Convert any text prompt, natural language request, or reference image into a clean, proportioned 3D staging stage built **strictly using transformed 3D Box primitives** (`type: 'block'` and `type: 'group'`) for the **ComfyUI-scene-camera-action** ecosystem.
+Convert any text prompt, natural language request, or reference image into a clean, proportioned 3D staging environment built **strictly using transformed 3D Box primitives** (`type: 'block'` and `type: 'group'`) for the **ComfyUI-scene-camera-action** (`StagingNode`) ecosystem.
 
 ---
 
 ## 1. Core Rule: 100% Box Primitive Constraint
 
-Every object, wall, roof, prop, vehicle part, tree, animal limb, or furniture piece in the generated stage **MUST be created using 3D Box primitives** (`type: 'block'`).
-- Do **NOT** rely on external `.gltf` / `.obj` meshes or non-box shapes.
-- Use spatial scaling (`sx, sy, sz`), rotation (`rx, ry, rz` in radians), positioning (`px, py, pz`), and grouping (`type: 'group'`) to construct any form (slopes, columns, arches, steps, roofs, vehicles, characters, animals).
+Every object, wall, roof, prop, vehicle part, tree, animal limb, staircase, or furniture piece in the generated stage **MUST be constructed using 3D Box primitives** (`type: 'block'`).
+- Do **NOT** reference external `.gltf` / `.obj` meshes or non-box geometries.
+- Use spatial scaling (`sx, sy, sz`), rotation (`rx, ry, rz` in radians), translation (`px, py, pz`), and hierarchical grouping (`type: 'group'`) to assemble any form (slopes, columns, arches, steps, roofs, vehicles, characters, trees).
 
 ---
 
 ## 2. 3D Coordinate System, Ground Alignment & World Bounds
 
-### Axes
-- $X$: Left (-) to Right (+)
+### Axes & Units
+- **Scale**: 1 unit = 1.0 meter.
+- $X$: Screen-Left (-) to Screen-Right (+)
 - $Y$: Vertical height. Ground level is at $Y = 0.0$
-- $Z$: Back (-) to Front / Depth (+)
+- $Z$: Background / North (-) to Foreground / South (+)
 
-### Floor — DO NOT Generate
-The 3D viewport already contains a built-in floor plane and grid at $Y = 0$. **Do NOT add any floor, ground plane, terrain base, or ground slab block** to the generated stage JSON. The floor is always present automatically.
+### Camera-to-World Orientation & Anti-Mirroring Rule
+When mapping from reference images or default isometric/frontal views (camera facing from $+Z$ towards $-Z$):
+- **Viewer / Screen-LEFT is ALWAYS Negative X ($P_x < 0$)**.
+- **Viewer / Screen-RIGHT is ALWAYS Positive X ($P_x > 0$)**.
+- **Viewer / FOREGROUND (closer to camera) is ALWAYS Positive Z ($P_z > 0$)**.
+- **Viewer / BACKGROUND (farther from camera) is ALWAYS Negative Z ($P_z < 0$)**.
+- **Anti-Mirroring Warning (Egocentric Bias)**: When looking at a front-facing building (like a courthouse, house, or character), NEVER use the subject's internal left/right! Always use the **Viewer's Screen Axes**: what appears on the left half of the reference image MUST be placed at $P_x < 0$, and what appears on the right half MUST be placed at $P_x > 0$.
 
-### Ground Alignment Rule
-- Box position $(P_x, P_y, P_z)$ defines the **center** of the box.
-- A block resting directly on the ground level ($Y=0$) with height $S_y$ **MUST** have $P_y = S_y / 2.0$.
-- Example: A wall of height 4.0 resting on the ground has $P_y = 2.0$.
-- **Critical**: Any asset that should sit on the ground (buildings, furniture legs, tree trunks, vehicles, fences, etc.) must have its $P_y$ calculated as $S_y / 2.0$ so its bottom face touches $Y = 0$ exactly. Never place ground-resting objects at $P_y = 0$ unless $S_y = 0$.
+### Built-in Floor — DO NOT Generate
+The 3D viewport contains a built-in floor plane and infinite grid at $Y = 0$. **Do NOT add any floor, ground plane, terrain base plate, or ground slab block** at $Y=0$.
+
+### Ground Alignment Rule ($P_y = S_y / 2.0$)
+- Box position $(P_x, P_y, P_z)$ defines the **geometric center** of the box.
+- Any block resting directly on the ground ($Y=0$) with height $S_y$ **MUST** have $P_y = S_y / 2.0$.
+  - Example: A wall of height 4.0m resting on the ground has $P_y = 2.0$.
+  - Example: A road segment of thickness 0.2m resting on the ground has $P_y = 0.1$.
+- **Critical**: Never place ground-resting objects at $P_y = 0$.
 
 ### World Bounds
 - The usable stage area is **100 × 100 meters** centered at the origin, spanning from $(-50, 0, -50)$ to $(50, Y_{max}, 50)$.
-- Keep all generated assets within this boundary.
-- Typical stages should use a much smaller region (e.g., 20×20m for an interior, 40×40m for a street block) unless the prompt explicitly requires a large landscape.
+- Typical staging sizes:
+  - **Interior / Room**: 10×10m to 20×20m
+  - **Street Block / Intersection**: 30×30m to 50×50m
+  - **Large Landscape / Track**: 60×60m to 90×90m
 
 ---
 
-## 3. Actor-Aware Spatial Proportions
+## 3. Pre-Spec Spatial Reasoning (StageSpec Contract)
 
-Since stages created with this Skill are consumed by **Acting 3D Node** (`UBActingNode`), design layouts with realistic scale for interactive actors:
+Before generating the raw JSON blocks, formulate a mental or structured **StageSpec blueprint**:
 
-- **Car Actor (`actor_type: 'car'`)**:
-  - Road width: Minimum 4.0 units wide (`sx = 4.0`).
-  - Ramp inclines: Slope pitch angle `rx` between $10^\circ$ and $25^\circ$ ($0.17$ to $0.43$ rad).
-  - Clearances: Overpasses and bridges must have $P_y \ge 3.5$ clearance.
-- **Human Actor (`actor_type: 'human'`)**:
-  - Doorway dimensions: Width $\approx 1.2$, Height $\approx 2.2$.
-  - Stair steps: Step height $\approx 0.25$, Depth $\approx 0.5$.
-
----
-
-## 4. Blockout Breakdown Pipeline (4-Layer Hierarchy)
-
-When given a text prompt or reference image, decompose the 3D stage into 4 structured layers:
-
-### Layer 1: Environment Base (NO floor needed)
-- Terrain steps, foundation pads, roads, elevated platforms, pedestals.
-- Do **NOT** generate a ground/floor block — it already exists in the viewport.
-- Form the spatial boundaries for the actors.
-
-### Layer 2: Main Structural Volumes
-- Primary architectural walls, building bodies, vehicle hulls, room enclosures, large furniture frames, hill slopes.
-- Form the overall silhouette and spatial bounds of the subject.
-
-### Layer 3: Secondary Forms & Secondary Props
-- Roof overlays, pillars/columns, doors, windows, tables, chairs, tree trunks + foliage crowns, animal bodies + limbs, wheels, wings, ramp inclines.
-- Group related components into logical `group` nodes (e.g., `House`, `Deer`, `RaceTrackSegment`, `Bed`).
-
-### Layer 4: Accent Details & Highlights
-- Chimneys, handles, trim lines, obstacles, barriers, antlers, lamps, small props.
+1. **Active World Bounds**: Determine bounding box extents $(X_{min}, X_{max}, Z_{min}, Z_{max})$.
+2. **Functional Zoning**: Partition the area into functional corridors (e.g. main roadway, sidewalk, building footprint, open plaza, obstacle zone).
+3. **Actor-Aware Clearance Contracts**:
+   - **Car Corridor (`actor_type: 'car'`)**: Road lanes minimum width $\ge 4.0\text{m}$ (`sx = 4.0`), ramp pitch between $10^\circ$ and $25^\circ$ ($0.17$ to $0.43$ rad), overpass/bridge vertical clearance $P_y \ge 3.5\text{m}$.
+   - **Human Corridor (`actor_type: 'human'`)**: Doorways $\ge 1.2\text{m}$ wide $\times 2.2\text{m}$ high, stair steps $\approx 0.25\text{m}$ height $\times 0.4\text{m}$ depth.
+4. **Anchor & Attachment Hierarchy**: Ensure secondary forms (tabletops, roof tops, foliage) declare exact relative heights ($Y_{top} = P_y + S_y / 2.0$) so parts never float disconnected in mid-air.
 
 ---
 
-## 5. StageState Schema Specification & Spawn Point
+## 4. 4-Pass Staged Sculpting Pipeline
 
-Every generated stage MUST strictly adhere to the `StageState` JSON schema used by `UBStagingNode` and `UBActingNode`.
-Generators SHOULD include a `spawn_point` object defining where the 3D actor spawns and its initial heading angle `ry` (in radians).
+Assemble stages systematically in 4 progressive passes:
 
-### Actor Spawn Point Placement Guidelines & Surface Height Calculation
-- **Car Actor (`actor_type: 'car'`)**: Place spawn point at the start of the road, lane, or track. Set `ry` facing along the direction of travel.
-- **Human Actor (`actor_type: 'human'`)**: Place spawn point at a doorway entrance, pathway start, or key room threshold facing into the main space.
-- **Surface Height Calculation (`py`)**:
-  - **Stage Floor ($Y = 0$)**: If spawning directly on the stage floor, set `py = 0.0`.
-  - **Elevated Platforms / Roads / Slabs / Steps / Bridges**: If spawning on top of a block (or stacked blocks) at location $(P_x, P_z)$, calculate the top surface height $Y_{top}$ of the supporting block:
-    $$Y_{top} = P_{y,\text{block}} + \frac{S_{y,\text{block}}}{2.0}$$
-    *(For stacked blocks or elevated group nodes, $Y_{top}$ is the top surface of the uppermost supporting block)*.
-  - **ALWAYS set `py = Y_top`** (or $Y_{top} + 0.05$) when placing a spawn point over a block so the actor spawns resting directly ON TOP of the surface, preventing the actor from spawning trapped inside or below the block!
+```
+Pass 1: Base & Bounds ───► Pass 2: Structures & Corridors ───► Pass 3: Secondary Props ───► Pass 4: Accents & QA Gates
+```
+
+### Pass 1: Environment Base & Foundation Platforms (NO ground plane)
+- Elevated platforms, curbs, foundation pads, road tracks, terrain steps.
+- Establishes navigable topography and floor level variations.
+
+### Pass 2: Main Structural Volumes & Navigable Corridors
+- Primary architectural walls, building bodies, bridge spans, large slopes.
+- Defines silhouettes, sightlines, and maintains actor clearance corridors.
+
+### Pass 3: Secondary Forms & Compound Props (Grouped)
+- Roofs, pillars, doors, windows, tables, chairs, tree trunks + foliage crowns, vehicles, fences.
+- Encapsulate compound objects into logical `group` nodes (e.g. `House`, `Tree_01`, `Bridge_Arch`, `Dining_Table`).
+
+### Pass 4: Accent Details & Quality Assurance Gates
+- Chimneys, railings, trim lines, obstacles, barriers, small props.
+- Run deterministic validation via `staging_utils.py` to guarantee zero bounds violations, zero floating roots, and exact block counting.
+
+---
+
+## 5. StageState Schema Specification
+
+Stages consumed by `StagingNode` (`UBStagingNode`) adhere to the clean `StageState` JSON schema:
 
 ```json
 {
   "type": "cube_stage",
-  "num_assets": 12,
-  "spawn_point": {
-    "px": 0.0,
-    "py": 0.0,
-    "pz": 5.0,
-    "ry": 0.0
-  },
+  "num_assets": 5,
   "nodes": [
     {
       "id": "group_house_01",
@@ -140,25 +138,72 @@ Generators SHOULD include a `spawn_point` object defining where the 3D actor spa
 }
 ```
 
----
-
-## 6. File Naming Convention
-
-All generated preset JSON filenames **MUST be in English**, using lowercase with underscores:
-- `forest_stage.json`, `urban_street.json`, `living_room.json`, `race_track.json`
-- Do **NOT** use Spanish, accented characters, or spaces in filenames.
+*(Note: Actor spawn points and kinematics belong to `ActingState` / `ActorRecord` and are not stored in `StageState`).*
 
 ---
 
-## 7. Iterative Editing Protocol
+## 6. Procedural Tooling & CLI Reference (`scripts/staging_utils.py`)
 
-When the user requests modifications or adjustments to an existing 3D stage (e.g. *"make the deer bigger"*, *"add a ramp at the end"*, *"move the table 2 meters to the left"*):
+A comprehensive Python helper suite is provided in [`scripts/staging_utils.py`](file:///Users/unboring/Documents/antigravity/ComfyUI-scene-camera-action/skills/stage-builder/scripts/staging_utils.py):
 
-1. **Parse Existing State**: Read and inspect the current `StageState` JSON.
-2. **Target Node Identification**: Locate the node or group by its `id` or `name`.
+### Available Procedural Generators:
+- `create_block_node(name, px, py, pz, sx, sy, sz, rx, ry, rz)`
+- `create_group_node(name, children, px, py, pz, rx, ry, rz, sx, sy, sz)`
+- `generate_curved_track_blocks(start_pos, radius, angle_degrees, segments, road_width)`
+- `generate_staircase_blocks(start_pos, num_steps, step_width, step_height, step_depth, heading_rad)`
+- `generate_ramp_blocks(start_pos, length, height, width, thickness, heading_rad)`
+- `generate_arch_blocks(center_pos, opening_width, opening_height, pillar_width, arch_depth)`
+- `generate_tree_group(pos, trunk_height, trunk_radius, foliage_layers, name)`
+- `generate_building_group(pos, width, depth, height, roof_style, name)`
+- `generate_fence_segment(start_pos, length, height, num_posts, heading_rad, name)`
+
+### Deterministic Quality Gates & Transformations:
+- `validate_stage_state(stage_data)`: Validates schema, cleans invalid structures, and updates `num_assets`.
+- `check_ground_alignment(stage_data)`: Detects root blocks not resting at $P_y = S_y / 2.0$.
+- `fix_ground_alignment(stage_data)`: Auto-corrects near-ground root blocks to $P_y = S_y / 2.0$.
+- `flip_stage_axis(stage_data, axis='x')`: Mirrors entire stage across X or Z axis.
+- `check_world_bounds(stage_data)`: Detects any geometries outside $\pm 50\text{m}$.
+- `inspect_stage(stage_data)`: Generates an ASCII tree report of all groups, blocks, and quality gates.
+
+### CLI Usage:
+```bash
+# Inspect and report on a stage JSON
+python skills/stage-builder/scripts/staging_utils.py presets/gas_station.json --inspect
+
+# Mirror a stage horizontally across X axis (fixes inverted left/right)
+python skills/stage-builder/scripts/staging_utils.py my_stage.json --flip-x -o my_stage.json
+
+# Validate and clean a stage JSON
+python skills/stage-builder/scripts/staging_utils.py my_stage.json --validate -o my_stage.json
+
+# Auto-fix ground alignment on misaligned root blocks
+python skills/stage-builder/scripts/staging_utils.py my_stage.json --fix-ground -o my_stage.json
+
+# Generate a demo procedural stage
+python skills/stage-builder/scripts/staging_utils.py --demo -o presets/procedural_demo.json
+```
+
+---
+
+## 7. File Naming & Preset Storage
+
+- Preset filenames **MUST be in English**, lowercase with underscores:
+  - `urban_intersection.json`, `sci_fi_hangar.json`, `mountain_pass.json`, `cozy_bedroom.json`
+- Custom node presets reside in `presets/` or ComfyUI's `input/staging_stages/`.
+
+---
+
+## 8. Iterative Editing & Modification Protocol
+
+When modifying an existing stage (e.g. *"make the building taller"*, *"add a curved ramp to the left"*, *"add trees along the road"*):
+
+1. **Inspect Existing Stage**: Parse and read the current `StageState` JSON.
+2. **Target Node Identification**: Locate target node by `id` or `name`.
 3. **Apply Delta Modifications**:
-   - **Transform Changes**: Update `px, py, pz`, `rx, ry, rz`, or `sx, sy, sz` of the target node.
-   - **Additions**: Construct new child `block` or `group` nodes following the 4-layer pipeline and append them to the appropriate parent.
-   - **Deletions**: Remove specified nodes from the tree.
-4. **Re-validate Ground Alignment**: Ensure all ground-resting objects maintain $P_y = S_y / 2.0$ and no invalid numbers exist. Do not add floor blocks.
-5. **Output Clean JSON**: Return the updated, fully-valid `StageState` JSON.
+   - **Transforms**: Update `px, py, pz`, `rx, ry, rz`, or `sx, sy, sz`.
+   - **Additions**: Use procedural generator helpers or create new `block`/`group` nodes and append.
+   - **Deletions**: Remove specified nodes from children lists.
+4. **Run Quality Validation Gate**:
+   - Execute `validate_stage_state()` to recalculate `num_assets`.
+   - Verify ground alignment ($P_y = S_y / 2.0$) and world bounds ($[-50, 50]$).
+5. **Output Valid JSON**: Return the clean, complete `StageState` JSON.

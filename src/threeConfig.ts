@@ -161,4 +161,84 @@ export function updateStageFog(
 }
 export const updateSceneFog = updateStageFog
 
+// ==========================================
+// SpringArm Camera Collision & Anti-Occlusion
+// ==========================================
+export const SPRING_ARM_COLLISION_RADIUS = 0.22 // Multi-probe sweep radius around camera
+export const SPRING_ARM_SAFETY_MARGIN = 0.25    // Safety clearance in front of hit obstacles
+export const SPRING_ARM_MIN_DISTANCE = 0.55     // Absolute minimum distance from actor center
+export const SPRING_ARM_OTS_THRESHOLD = 1.25    // Distance threshold to blend into Over-The-Shoulder
+export const SPRING_ARM_ZOOM_IN_SPEED = 26.0    // Fast snap response when obstacle enters
+export const SPRING_ARM_ZOOM_OUT_SPEED = 4.5    // Smooth damped recovery when obstacle clears
 
+/**
+ * Injects a 4x4 screen-space Bayer dither pattern discard logic into a THREE.Material.
+ * This guarantees zero alpha-sorting or depth-buffer artifacts while smoothly fading occluding geometry.
+ */
+export function injectDitherShader(
+  material: THREE.Material,
+  uniformHolder?: { uDitherOpacity: { value: number } }
+): { uDitherOpacity: { value: number } } {
+  const ditherUniform = uniformHolder || { uDitherOpacity: { value: 1.0 } }
+
+  const originalOnBeforeCompile = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer)
+    }
+
+    shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity
+
+    const ditherFunction = `
+      uniform float uDitherOpacity;
+      float getDitherThreshold(vec2 pos) {
+        int x = int(mod(pos.x, 4.0));
+        int y = int(mod(pos.y, 4.0));
+        if (x == 0) {
+          if (y == 0) return 0.0625;
+          if (y == 1) return 0.8125;
+          if (y == 2) return 0.25;
+          return 1.0;
+        } else if (x == 1) {
+          if (y == 0) return 0.5625;
+          if (y == 1) return 0.3125;
+          if (y == 2) return 0.75;
+          return 0.5;
+        } else if (x == 2) {
+          if (y == 0) return 0.1875;
+          if (y == 1) return 0.9375;
+          if (y == 2) return 0.125;
+          return 0.875;
+        } else {
+          if (y == 0) return 0.6875;
+          if (y == 1) return 0.4375;
+          if (y == 2) return 0.625;
+          return 0.375;
+        }
+      }
+    `
+
+    shader.fragmentShader = ditherFunction + '\n' + shader.fragmentShader
+
+    if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        `void main() {
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      )
+    }
+  }
+
+  material.needsUpdate = true
+  return ditherUniform
+}

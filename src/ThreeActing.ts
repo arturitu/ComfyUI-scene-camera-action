@@ -281,7 +281,7 @@ export class ThreeActing {
       const initialAnim = trajectory[0]?.anim
       if (this.actorController) {
         this.actorController.resetAnimation(initialAnim)
-        this.playbackController.evaluateAt(0, this.actorController, 0)
+        this.playbackController.evaluateAt(0, this.actorController, 0, true)
       }
     } else {
       this.isPlaybackMode = false

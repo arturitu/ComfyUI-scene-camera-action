@@ -1,6 +1,7 @@
 # Node modules & dev build outputs
 node_modules/
 dist/
+*.map
 
 # Python
 __pycache__/

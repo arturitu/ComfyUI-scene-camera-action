@@ -33752,6 +33752,70 @@ function updateStageFog(scene, camera, stageExtent, targetCenter) {
   return { fogNear, fogFar, cameraFar };
 }
 const updateSceneFog = updateStageFog;
+const SPRING_ARM_COLLISION_RADIUS = 0.22;
+const SPRING_ARM_SAFETY_MARGIN = 0.25;
+const SPRING_ARM_MIN_DISTANCE = 0.55;
+const SPRING_ARM_OTS_THRESHOLD = 1.25;
+const SPRING_ARM_ZOOM_IN_SPEED = 26;
+const SPRING_ARM_ZOOM_OUT_SPEED = 4.5;
+function injectDitherShader(material, uniformHolder) {
+  const ditherUniform = uniformHolder || { uDitherOpacity: { value: 1 } };
+  const originalOnBeforeCompile = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer2) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer2);
+    }
+    shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity;
+    const ditherFunction = `
+      uniform float uDitherOpacity;
+      float getDitherThreshold(vec2 pos) {
+        int x = int(mod(pos.x, 4.0));
+        int y = int(mod(pos.y, 4.0));
+        if (x == 0) {
+          if (y == 0) return 0.0625;
+          if (y == 1) return 0.8125;
+          if (y == 2) return 0.25;
+          return 1.0;
+        } else if (x == 1) {
+          if (y == 0) return 0.5625;
+          if (y == 1) return 0.3125;
+          if (y == 2) return 0.75;
+          return 0.5;
+        } else if (x == 2) {
+          if (y == 0) return 0.1875;
+          if (y == 1) return 0.9375;
+          if (y == 2) return 0.125;
+          return 0.875;
+        } else {
+          if (y == 0) return 0.6875;
+          if (y == 1) return 0.4375;
+          if (y == 2) return 0.625;
+          return 0.375;
+        }
+      }
+    `;
+    shader.fragmentShader = ditherFunction + "\n" + shader.fragmentShader;
+    if (shader.fragmentShader.includes("#include <dithering_fragment>")) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <dithering_fragment>",
+        `#include <dithering_fragment>
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      );
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "void main() {",
+        `void main() {
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      );
+    }
+  };
+  material.needsUpdate = true;
+  return ditherUniform;
+}
 function r2(val) {
   return Math.round((val + Number.EPSILON) * 100) / 100;
 }
@@ -34324,6 +34388,7 @@ class InstancedStageMesh {
     __publicField(this, "surfaceMaterial");
     __publicField(this, "edgeMaterial");
     __publicField(this, "interleavedBuffer");
+    __publicField(this, "ditherUniform", { uDitherOpacity: { value: 1 } });
     __publicField(this, "capacity", INITIAL_CAPACITY);
     __publicField(this, "_count", 0);
     __publicField(this, "nodeToInstanceMap", /* @__PURE__ */ new Map());
@@ -34338,10 +34403,12 @@ class InstancedStageMesh {
     this.unitBoxGeometry = new BoxGeometry(1, 1, 1);
     this.edgeGeometry = new EdgesGeometry(this.unitBoxGeometry);
     this.surfaceMaterial = createBlockMaterial();
+    injectDitherShader(this.surfaceMaterial, this.ditherUniform);
     this.edgeMaterial = new ShaderMaterial({
       uniforms: {
         diffuse: { value: new Color(EDGE_COLOR) },
         opacity: { value: EDGE_OPACITY },
+        uDitherOpacity: this.ditherUniform.uDitherOpacity,
         ...UniformsLib.fog
       },
       vertexShader: `
@@ -34364,10 +34431,50 @@ class InstancedStageMesh {
         #include <fog_pars_fragment>
         uniform vec3 diffuse;
         uniform float opacity;
+        uniform float uDitherOpacity;
+
+        float getDitherThreshold(vec2 pos) {
+          int x = int(mod(pos.x, 4.0));
+          int y = int(mod(pos.y, 4.0));
+          if (x == 0) {
+            if (y == 0) return 0.0625;
+            if (y == 1) return 0.8125;
+            if (y == 2) return 0.25;
+            return 1.0;
+          } else if (x == 1) {
+            if (y == 0) return 0.5625;
+            if (y == 1) return 0.3125;
+            if (y == 2) return 0.75;
+            return 0.5;
+          } else if (x == 2) {
+            if (y == 0) return 0.1875;
+            if (y == 1) return 0.9375;
+            if (y == 2) return 0.125;
+            return 0.875;
+          } else {
+            if (y == 0) return 0.6875;
+            if (y == 1) return 0.4375;
+            if (y == 2) return 0.625;
+            return 0.375;
+          }
+        }
+
         void main() {
+          if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+            discard;
+          }
           vec4 diffuseColor = vec4(diffuse, opacity);
           gl_FragColor = diffuseColor;
-          #include <fog_fragment>
+
+          #ifdef USE_FOG
+            #ifdef FOG_EXP2
+              float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+            #else
+              float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+            #endif
+            gl_FragColor.a = opacity * (1.0 - fogFactor);
+          #endif
+
           #include <colorspace_fragment>
         }
       `,
@@ -34443,6 +34550,13 @@ class InstancedStageMesh {
   }
   getSurfaceMesh() {
     return this.surfaceMesh;
+  }
+  setDitherOpacity(opacity) {
+    const val = Math.max(0, Math.min(1, opacity));
+    this.ditherUniform.uDitherOpacity.value = val;
+  }
+  getDitherOpacity() {
+    return this.ditherUniform.uDitherOpacity.value;
   }
   get count() {
     return this._count;
@@ -42822,11 +42936,12 @@ const _HumanActor = class _HumanActor extends BaseActor {
     } else if (targetAnim === "Crouch_Walk") {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed));
     }
-    const fadeDuration = isHardCut ? 0 : 0.2;
+    const fadeDuration = isHardCut || frameDt === 0 ? 0 : 0.2;
     this.playAnimation(targetAnim, fadeDuration, animTimeScale);
     if (this.mixer) {
       if (frameDt === 0) {
         this.mixer.timeScale = 0;
+        this.mixer.update(0);
       } else {
         this.mixer.timeScale = 1;
         this.mixer.update(frameDt);
@@ -42945,9 +43060,6 @@ const _HumanActor = class _HumanActor extends BaseActor {
     this.currentAnimationName = null;
     this.currentAction = null;
     this.playAnimation("Idle_A", 0);
-    if (this.mixer) {
-      this.mixer.update(1e-3);
-    }
   }
   resetAnimation(initialAnim) {
     this.filteredSpeed = 0;
@@ -42956,11 +43068,11 @@ const _HumanActor = class _HumanActor extends BaseActor {
     }
     this.currentAnimationName = null;
     this.currentAction = null;
-    const targetAnim = initialAnim && this.animationsMapMap.has(initialAnim) ? initialAnim : "Idle_A";
-    this.playAnimation(targetAnim, 0);
-    if (this.mixer) {
-      this.mixer.update(1e-3);
+    if (initialAnim && initialAnim !== "None") {
+      this.lastRequestedPlaybackAnim = initialAnim;
     }
+    const targetAnim = initialAnim && this.animationsMapMap.has(initialAnim) ? initialAnim : this.lastRequestedPlaybackAnim || "Idle_A";
+    this.playAnimation(targetAnim, 0);
   }
   playAnimation(animName, fadeDuration = 0.2, timeScale = 1, loopOnce = false) {
     if (!this.mixer) return;
@@ -42974,7 +43086,12 @@ const _HumanActor = class _HumanActor extends BaseActor {
     if (!clip) return;
     const newAction = this.mixer.clipAction(clip);
     if (this.currentAction && this.currentAction !== newAction) {
-      this.currentAction.fadeOut(fadeDuration);
+      if (fadeDuration > 0) {
+        this.currentAction.fadeOut(fadeDuration);
+      } else {
+        this.currentAction.stop();
+        this.currentAction.setEffectiveWeight(0);
+      }
     }
     newAction.reset();
     if (loopOnce) {
@@ -42984,12 +43101,17 @@ const _HumanActor = class _HumanActor extends BaseActor {
       newAction.setLoop(LoopRepeat, Infinity);
       newAction.clampWhenFinished = false;
     }
-    newAction.fadeIn(fadeDuration);
+    if (fadeDuration > 0) {
+      newAction.fadeIn(fadeDuration);
+    } else {
+      newAction.setEffectiveWeight(1);
+      newAction.enabled = true;
+    }
     newAction.timeScale = timeScale;
     newAction.play();
     this.currentAction = newAction;
     this.currentAnimationName = animName;
-    this.mixer.update(1e-3);
+    this.mixer.update(0.016);
   }
   updatePhysics(dt, keysPressed, speedMultiplier, colliderBVH, camera) {
     const isW = keysPressed["ArrowUp"] || keysPressed["KeyW"];
@@ -45945,7 +46067,7 @@ class ThreeActing {
       const initialAnim = (_a = trajectory[0]) == null ? void 0 : _a.anim;
       if (this.actorController) {
         this.actorController.resetAnimation(initialAnim);
-        this.playbackController.evaluateAt(0, this.actorController, 0);
+        this.playbackController.evaluateAt(0, this.actorController, 0, true);
       }
     } else {
       this.isPlaybackMode = false;
@@ -46972,6 +47094,136 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   }
 });
 const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-0b101302"]]);
+class CameraSpringArm {
+  constructor() {
+    __publicField(this, "currentDistance", -1);
+    __publicField(this, "currentDitherOpacity", 1);
+    __publicField(this, "raycaster", new Raycaster());
+    __publicField(this, "cameraRight", new Vector3());
+    __publicField(this, "cameraUp", new Vector3());
+    __publicField(this, "boomDir", new Vector3());
+    __publicField(this, "tempVec", new Vector3());
+    __publicField(this, "probeOrigin", new Vector3());
+    __publicField(this, "probeTarget", new Vector3());
+  }
+  reset() {
+    this.currentDistance = -1;
+    this.currentDitherOpacity = 1;
+  }
+  getCurrentDistance() {
+    return this.currentDistance;
+  }
+  getCurrentDitherOpacity() {
+    return this.currentDitherOpacity;
+  }
+  /**
+   * Evaluates collision and computes the obstruction-free camera position.
+   */
+  evaluate(targetLookAt, idealCamPos, obstacleRoot, dt, isHardCut = false) {
+    const idealDistance = targetLookAt.distanceTo(idealCamPos);
+    if (idealDistance < 1e-3) {
+      return {
+        cameraPosition: idealCamPos.clone(),
+        targetLookAt: targetLookAt.clone(),
+        hitObstacle: false,
+        hitDistance: idealDistance,
+        ditherOpacity: 1
+      };
+    }
+    this.boomDir.subVectors(idealCamPos, targetLookAt).normalize();
+    this.cameraUp.set(0, 1, 0);
+    this.cameraRight.crossVectors(this.boomDir, this.cameraUp).normalize();
+    if (this.cameraRight.lengthSq() < 1e-3) {
+      this.cameraRight.set(1, 0, 0);
+    }
+    this.cameraUp.crossVectors(this.cameraRight, this.boomDir).normalize();
+    let closestHitDistance = idealDistance;
+    let hitObstacle = false;
+    if (obstacleRoot && obstacleRoot.visible) {
+      const colliders = [];
+      obstacleRoot.traverse((child) => {
+        if (child.isMesh && child.visible && child.name !== "floor") {
+          colliders.push(child);
+        }
+      });
+      if (colliders.length > 0) {
+        const r = SPRING_ARM_COLLISION_RADIUS;
+        const probeOffsets = [
+          new Vector3(0, 0, 0),
+          this.cameraRight.clone().multiplyScalar(r),
+          this.cameraRight.clone().multiplyScalar(-r),
+          this.cameraUp.clone().multiplyScalar(r * 0.75),
+          this.cameraUp.clone().multiplyScalar(-r * 0.5)
+        ];
+        for (const offset of probeOffsets) {
+          this.probeOrigin.copy(targetLookAt).addScaledVector(offset, 0.4);
+          this.probeTarget.copy(idealCamPos).add(offset);
+          const probeVec = this.tempVec.subVectors(this.probeTarget, this.probeOrigin);
+          const maxProbeDist = probeVec.length();
+          if (maxProbeDist < 1e-3) continue;
+          const probeDir = probeVec.normalize();
+          this.raycaster.set(this.probeOrigin, probeDir);
+          this.raycaster.near = 0.05;
+          this.raycaster.far = maxProbeDist;
+          const hits = this.raycaster.intersectObjects(colliders, false);
+          if (hits.length > 0) {
+            const hit = hits[0];
+            if (hit.distance < closestHitDistance) {
+              closestHitDistance = hit.distance;
+              hitObstacle = true;
+            }
+          }
+        }
+      }
+    }
+    let desiredDistance = idealDistance;
+    if (hitObstacle) {
+      desiredDistance = Math.max(
+        SPRING_ARM_MIN_DISTANCE,
+        closestHitDistance - SPRING_ARM_SAFETY_MARGIN
+      );
+    }
+    if (isHardCut || this.currentDistance < 0) {
+      this.currentDistance = desiredDistance;
+    } else {
+      const isCompressing = desiredDistance < this.currentDistance;
+      const speed = isCompressing ? SPRING_ARM_ZOOM_IN_SPEED : SPRING_ARM_ZOOM_OUT_SPEED;
+      const factor = 1 - Math.exp(-speed * Math.max(1e-3, dt));
+      this.currentDistance += (desiredDistance - this.currentDistance) * factor;
+    }
+    let targetDither = 1;
+    if (hitObstacle && this.currentDistance < SPRING_ARM_OTS_THRESHOLD) {
+      targetDither = Math.max(
+        0.25,
+        (this.currentDistance - SPRING_ARM_MIN_DISTANCE) / (SPRING_ARM_OTS_THRESHOLD - SPRING_ARM_MIN_DISTANCE)
+      );
+    }
+    const ditherFactor = 1 - Math.exp(-15 * Math.max(1e-3, dt));
+    this.currentDitherOpacity += (targetDither - this.currentDitherOpacity) * ditherFactor;
+    const finalCamPos = targetLookAt.clone().addScaledVector(this.boomDir, this.currentDistance);
+    const finalLookAt = targetLookAt.clone();
+    if (this.currentDistance < SPRING_ARM_OTS_THRESHOLD) {
+      const otsAlpha = Math.max(
+        0,
+        Math.min(
+          1,
+          1 - (this.currentDistance - SPRING_ARM_MIN_DISTANCE) / (SPRING_ARM_OTS_THRESHOLD - SPRING_ARM_MIN_DISTANCE)
+        )
+      );
+      const shoulderOffset = this.cameraRight.clone().multiplyScalar(0.28 * otsAlpha);
+      const elevationOffset = this.cameraUp.clone().multiplyScalar(0.12 * otsAlpha);
+      finalCamPos.add(shoulderOffset).add(elevationOffset);
+      finalLookAt.add(shoulderOffset.clone().multiplyScalar(0.5)).add(elevationOffset.clone().multiplyScalar(0.5));
+    }
+    return {
+      cameraPosition: finalCamPos,
+      targetLookAt: finalLookAt,
+      hitObstacle,
+      hitDistance: closestHitDistance,
+      ditherOpacity: this.currentDitherOpacity
+    };
+  }
+}
 class ThreeDirecting {
   constructor(options) {
     __publicField(this, "container");
@@ -46983,7 +47235,9 @@ class ThreeDirecting {
     __publicField(this, "actorController", null);
     __publicField(this, "animationId", null);
     __publicField(this, "clonedEnvGroup", null);
+    __publicField(this, "instancedStageMesh", null);
     __publicField(this, "connectedThreeActing", null);
+    __publicField(this, "springArm", new CameraSpringArm());
     __publicField(this, "playbackController", new PlaybackController());
     __publicField(this, "actorPosition", new Vector3(0, GROUND_Y, 2));
     __publicField(this, "wideTarget", new Vector3(0, 0, 0));
@@ -47116,7 +47370,12 @@ class ThreeDirecting {
         }
       }
       pbCtrl.setTrajectory(traj || []);
-      pbCtrl.start();
+      const firstFrame = pbCtrl.getTrajectory()[0];
+      const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
+      if (initialAnim) {
+        actorCtrl.resetAnimation(initialAnim);
+      }
+      pbCtrl.evaluateAt(0, actorCtrl, 0, true);
       this.scene.add(actorCtrl.group);
       this.actorList.push({
         id: actorId,
@@ -47220,11 +47479,15 @@ class ThreeDirecting {
       });
       this.clonedEnvGroup = null;
     }
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose();
+      this.instancedStageMesh = null;
+    }
     this.clonedEnvGroup = new Group();
     this.scene.add(this.clonedEnvGroup);
     const stageData = this.getStageData();
     const stageEnv = new StageEnvironment();
-    stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
+    this.instancedStageMesh = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
     if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
       this.cachedEnvBBox.setFromObject(this.clonedEnvGroup);
     } else {
@@ -47386,6 +47649,7 @@ class ThreeDirecting {
     const isCarTarget = ((_a = targetActorCtrl == null ? void 0 : targetActorCtrl.getType) == null ? void 0 : _a.call(targetActorCtrl)) === "car";
     if (this.lastCameraMode !== activeMode || isHardCut) {
       this.smoothedCameraYaw = rotY;
+      this.springArm.reset();
     } else {
       let diffYaw = rotY - this.smoothedCameraYaw;
       while (diffYaw < -Math.PI) diffYaw += Math.PI * 2;
@@ -47416,6 +47680,9 @@ class ThreeDirecting {
         this.camera.position.lerp(fpvCamPos, fpvLerpFactor);
         this.camera.lookAt(targetLookAt);
       }
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(1);
+      }
     } else if (activeMode === "Third Person") {
       if (this.camera.fov !== 50) {
         this.camera.fov = 50;
@@ -47427,16 +47694,26 @@ class ThreeDirecting {
       const camDist = isCar ? -6.5 : isCrouch ? -2.8 : -3.5;
       const targetYOffset = isCar ? 0.9 : isCrouch ? 1.05 : 0.8;
       const backOffset = new Vector3(0, camHeight, camDist).applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
-      const targetCamPos = charPos.clone().add(backOffset);
-      const targetLookAt = new Vector3(charPos.x, charPos.y + targetYOffset, charPos.z);
+      const idealCamPos = charPos.clone().add(backOffset);
+      const idealLookAt = new Vector3(charPos.x, charPos.y + targetYOffset, charPos.z);
+      const springResult = this.springArm.evaluate(
+        idealLookAt,
+        idealCamPos,
+        this.clonedEnvGroup,
+        dt,
+        isHardCut || this.lastCameraMode !== "Third Person"
+      );
       if (this.lastCameraMode !== "Third Person" || isHardCut) {
-        this.camera.position.copy(targetCamPos);
-        this.tpvTarget.copy(targetLookAt);
+        this.camera.position.copy(springResult.cameraPosition);
+        this.tpvTarget.copy(springResult.targetLookAt);
       } else {
-        this.camera.position.lerp(targetCamPos, posLerpFactor);
-        this.tpvTarget.lerp(targetLookAt, posLerpFactor);
+        this.camera.position.lerp(springResult.cameraPosition, posLerpFactor);
+        this.tpvTarget.lerp(springResult.targetLookAt, posLerpFactor);
       }
       this.camera.lookAt(this.tpvTarget);
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity);
+      }
     } else if (activeMode === "Wide") {
       const fov2 = 35;
       if (this.camera.fov !== fov2) {
@@ -47463,6 +47740,9 @@ class ThreeDirecting {
         this.camera.position.lerp(idealCamPos, wideLerpFactor);
       }
       this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z);
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(1);
+      }
     } else if (activeMode === "Side") {
       const isCar = isCarTarget;
       const fov2 = isCar ? 42 : 45;
@@ -47473,16 +47753,26 @@ class ThreeDirecting {
       const sideVec = isCar ? new Vector3(-6.5, 1.8, 0) : new Vector3(-4.2, 1.3, 0.4);
       const targetOffsetY = isCar ? 0.9 : 0.95;
       const sideOffset = sideVec.applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
-      const targetCamPos = charPos.clone().add(sideOffset);
-      const targetLookAt = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
+      const idealCamPos = charPos.clone().add(sideOffset);
+      const idealLookAt = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
+      const springResult = this.springArm.evaluate(
+        idealLookAt,
+        idealCamPos,
+        this.clonedEnvGroup,
+        dt,
+        isHardCut || this.lastCameraMode !== "Side"
+      );
       if (this.lastCameraMode !== "Side" || isHardCut) {
-        this.camera.position.copy(targetCamPos);
-        this.sideTarget.copy(targetLookAt);
+        this.camera.position.copy(springResult.cameraPosition);
+        this.sideTarget.copy(springResult.targetLookAt);
       } else {
-        this.camera.position.lerp(targetCamPos, posLerpFactor);
-        this.sideTarget.lerp(targetLookAt, posLerpFactor);
+        this.camera.position.lerp(springResult.cameraPosition, posLerpFactor);
+        this.sideTarget.lerp(springResult.targetLookAt, posLerpFactor);
       }
       this.camera.lookAt(this.sideTarget);
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity);
+      }
     }
     const activeTarget = activeMode === "Wide" ? this.wideTarget : activeMode === "Side" ? this.sideTarget : this.tpvTarget;
     updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget);
@@ -47630,12 +47920,18 @@ class ThreeDirecting {
   }
   stop() {
     this.playbackController.stop();
-    this.actorList.forEach((a) => a.playbackController.stop());
-    if (this.actorController) {
+    this.actorList.forEach((a) => {
+      a.playbackController.stop();
+      const firstFrame = a.playbackController.getTrajectory()[0];
+      const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
+      a.controller.resetAnimation(initialAnim);
+      a.playbackController.evaluateAt(0, a.controller, 0, true);
+    });
+    if (this.actorController && this.actorList.length === 0) {
       const firstFrame = this.playbackController.getTrajectory()[0];
       const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
       this.actorController.resetAnimation(initialAnim);
-      this.playbackController.evaluateAt(0, this.actorController, 0);
+      this.playbackController.evaluateAt(0, this.actorController, 0, true);
       this.actorPosition.copy(this.actorController.position);
     }
   }
@@ -47643,17 +47939,22 @@ class ThreeDirecting {
     return this.playbackController.getIsPlaying();
   }
   resetPlayback() {
+    this.seekToTime(0);
     this.stop();
-    this.lastCameraMode = null;
-    this.updateActorMovement(0);
-    this.updateCamera();
   }
   seekToTime(t) {
     const maxDur = this.getDuration();
     const targetT = Math.max(0, Math.min(t, maxDur));
     this.playbackController.setCurrentTime(targetT);
-    this.actorList.forEach((a) => a.playbackController.setCurrentTime(targetT));
-    if (targetT === 0 && this.actorController) {
+    this.actorList.forEach((a) => {
+      a.playbackController.setCurrentTime(targetT);
+      if (targetT === 0) {
+        const firstFrame = a.playbackController.getTrajectory()[0];
+        const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
+        a.controller.resetAnimation(initialAnim);
+      }
+    });
+    if (targetT === 0 && this.actorController && this.actorList.length === 0) {
       const firstFrame = this.playbackController.getTrajectory()[0];
       const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
       this.actorController.resetAnimation(initialAnim);
@@ -47690,6 +47991,10 @@ class ThreeDirecting {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
+    }
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose();
+      this.instancedStageMesh = null;
     }
     if (this.renderer) {
       this.renderer.dispose();

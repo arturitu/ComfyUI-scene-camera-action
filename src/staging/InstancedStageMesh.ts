@@ -14,6 +14,7 @@ export class InstancedStageMesh {
   private surfaceMaterial!: THREE.MeshStandardMaterial
   private edgeMaterial!: THREE.ShaderMaterial
   private interleavedBuffer!: THREE.InstancedInterleavedBuffer
+  private ditherUniform = { uDitherOpacity: { value: 1.0 } }
 
   private capacity: number = INITIAL_CAPACITY
   private _count: number = 0
@@ -35,11 +36,13 @@ export class InstancedStageMesh {
     this.edgeGeometry = new THREE.EdgesGeometry(this.unitBoxGeometry)
 
     this.surfaceMaterial = config.createBlockMaterial()
+    config.injectDitherShader(this.surfaceMaterial, this.ditherUniform)
 
     this.edgeMaterial = new THREE.ShaderMaterial({
       uniforms: {
         diffuse: { value: new THREE.Color(config.EDGE_COLOR) },
         opacity: { value: config.EDGE_OPACITY },
+        uDitherOpacity: this.ditherUniform.uDitherOpacity,
         ...THREE.UniformsLib.fog,
       },
       vertexShader: `
@@ -62,10 +65,50 @@ export class InstancedStageMesh {
         #include <fog_pars_fragment>
         uniform vec3 diffuse;
         uniform float opacity;
+        uniform float uDitherOpacity;
+
+        float getDitherThreshold(vec2 pos) {
+          int x = int(mod(pos.x, 4.0));
+          int y = int(mod(pos.y, 4.0));
+          if (x == 0) {
+            if (y == 0) return 0.0625;
+            if (y == 1) return 0.8125;
+            if (y == 2) return 0.25;
+            return 1.0;
+          } else if (x == 1) {
+            if (y == 0) return 0.5625;
+            if (y == 1) return 0.3125;
+            if (y == 2) return 0.75;
+            return 0.5;
+          } else if (x == 2) {
+            if (y == 0) return 0.1875;
+            if (y == 1) return 0.9375;
+            if (y == 2) return 0.125;
+            return 0.875;
+          } else {
+            if (y == 0) return 0.6875;
+            if (y == 1) return 0.4375;
+            if (y == 2) return 0.625;
+            return 0.375;
+          }
+        }
+
         void main() {
+          if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+            discard;
+          }
           vec4 diffuseColor = vec4(diffuse, opacity);
           gl_FragColor = diffuseColor;
-          #include <fog_fragment>
+
+          #ifdef USE_FOG
+            #ifdef FOG_EXP2
+              float fogFactor = 1.0 - exp( - fogDensity * fogDensity * vFogDepth * vFogDepth );
+            #else
+              float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
+            #endif
+            gl_FragColor.a = opacity * (1.0 - fogFactor);
+          #endif
+
           #include <colorspace_fragment>
         }
       `,
@@ -74,6 +117,7 @@ export class InstancedStageMesh {
       fog: true,
     })
   }
+
 
   private allocateBuffers(newCapacity: number): void {
     const oldMatrices = this.surfaceMesh ? new Float32Array(this.surfaceMesh.instanceMatrix.array) : null
@@ -160,6 +204,15 @@ export class InstancedStageMesh {
 
   public getSurfaceMesh(): THREE.InstancedMesh {
     return this.surfaceMesh
+  }
+
+  public setDitherOpacity(opacity: number): void {
+    const val = Math.max(0.0, Math.min(1.0, opacity))
+    this.ditherUniform.uDitherOpacity.value = val
+  }
+
+  public getDitherOpacity(): number {
+    return this.ditherUniform.uDitherOpacity.value
   }
 
   public get count(): number {
