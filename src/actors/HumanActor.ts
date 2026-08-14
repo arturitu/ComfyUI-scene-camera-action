@@ -134,7 +134,12 @@ export class HumanActor extends BaseActor {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
     }
 
-    const fadeDuration = (isHardCut || frameDt === 0) ? 0 : 0.2
+    let fadeDuration = 0.15
+    if (isHardCut || frameDt === 0) {
+      fadeDuration = 0
+    } else if (targetAnim.includes('Jump')) {
+      fadeDuration = 0.05
+    }
     this.playAnimation(targetAnim, fadeDuration, animTimeScale)
 
     if (this.mixer) {
@@ -306,7 +311,7 @@ export class HumanActor extends BaseActor {
     this.playAnimation(targetAnim, 0)
   }
 
-  private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {
+  private playAnimation(animName: string, fadeDuration = 0.15, timeScale = 1.0, loopOnce = false): void {
     if (!this.mixer) return
 
     if (this.currentAnimationName === animName) {
@@ -319,18 +324,11 @@ export class HumanActor extends BaseActor {
     const clip = this.animationsMapMap.get(animName)
     if (!clip) return
 
+    const prevAction = this.currentAction
     const newAction = this.mixer.clipAction(clip)
 
-    if (this.currentAction && this.currentAction !== newAction) {
-      if (fadeDuration > 0) {
-        this.currentAction.fadeOut(fadeDuration)
-      } else {
-        this.currentAction.stop()
-        this.currentAction.setEffectiveWeight(0)
-      }
-    }
-
-    newAction.reset()
+    newAction.enabled = true
+    newAction.timeScale = timeScale
     if (loopOnce) {
       newAction.setLoop(THREE.LoopOnce, 1)
       newAction.clampWhenFinished = true
@@ -339,19 +337,27 @@ export class HumanActor extends BaseActor {
       newAction.clampWhenFinished = false
     }
 
-    if (fadeDuration > 0) {
-      newAction.fadeIn(fadeDuration)
-    } else {
+    if (prevAction && prevAction !== newAction && fadeDuration > 0) {
+      newAction.reset()
+      newAction.setEffectiveTimeScale(timeScale)
       newAction.setEffectiveWeight(1.0)
-      newAction.enabled = true
+      newAction.crossFadeFrom(prevAction, fadeDuration, true)
+      newAction.play()
+    } else {
+      if (prevAction && prevAction !== newAction) {
+        prevAction.stop()
+        prevAction.setEffectiveWeight(0)
+      }
+      newAction.reset()
+      newAction.setEffectiveTimeScale(timeScale)
+      newAction.setEffectiveWeight(1.0)
+      newAction.play()
     }
-    newAction.timeScale = timeScale
-    newAction.play()
 
     this.currentAction = newAction
     this.currentAnimationName = animName
 
-    this.mixer.update(0.016)
+    this.mixer.update(0.001)
   }
 
   public updatePhysics(
@@ -570,7 +576,11 @@ export class HumanActor extends BaseActor {
       animTimeScale = 1.0
     }
 
-    this.playAnimation(targetAnimation, 0.2, animTimeScale)
+    let fadeDuration = 0.15
+    if (targetAnimation.includes('Jump')) {
+      fadeDuration = 0.05
+    }
+    this.playAnimation(targetAnimation, fadeDuration, animTimeScale)
 
     // Advance animation mixer
     if (this.mixer) {
