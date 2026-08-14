@@ -105,4 +105,4 @@ Restart your ComfyUI server after installation.
 
 ## 📄 License
 
-MIT License. Built by [@arturitu](https://github.com/arturitu) for creator workflows.
+MIT License. Built by [@arturitu](https://github.com/arturitu) / [Unboring.net](https://unboring.net).

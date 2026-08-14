@@ -1,39 +1,28 @@
 import * as THREE from 'three'
 import type { SceneState, SceneNode, CubeTransform } from '../types'
-import * as config from '../threeConfig'
-import { StageEnvironment } from './StageEnvironment'
+import type { InstancedStageMesh } from './InstancedStageMesh'
 
 function r2(val: number): number {
   return Math.round((val + Number.EPSILON) * 100) / 100
 }
 
 export class StagingHierarchyManager {
-  private meshes: THREE.Mesh[] = []
+  private sharedUnitBoxGeo: THREE.BoxGeometry
+  private sharedInvisibleMat: THREE.MeshBasicMaterial
 
-  public getMeshes(): THREE.Mesh[] {
-    return this.meshes
+  constructor() {
+    this.sharedUnitBoxGeo = new THREE.BoxGeometry(1, 1, 1)
+    this.sharedInvisibleMat = new THREE.MeshBasicMaterial({ visible: false })
   }
 
   public createBlockMesh(transform: CubeTransform): THREE.Mesh {
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    const mesh = new THREE.Mesh(geometry, config.createBlockMaterial())
+    const mesh = new THREE.Mesh(this.sharedUnitBoxGeo, this.sharedInvisibleMat)
+    mesh.userData.isBlock = true
+    mesh.name = 'Block'
 
     mesh.position.set(transform.px, transform.py, transform.pz)
     mesh.rotation.set(transform.rx, transform.ry, transform.rz)
     mesh.scale.set(transform.sx, transform.sy, transform.sz)
-    mesh.castShadow = true
-    mesh.receiveShadow = true
-
-    // Add subtle edge outlines for crisp shape definitions
-    const edgesGeo = new THREE.EdgesGeometry(geometry)
-    const edgeMat = new THREE.LineBasicMaterial({
-      color: config.EDGE_COLOR,
-      transparent: true,
-      opacity: config.EDGE_OPACITY,
-    })
-    const lineEdges = new THREE.LineSegments(edgesGeo, edgeMat)
-    lineEdges.name = '__edge_outline__'
-    mesh.add(lineEdges)
 
     return mesh
   }
@@ -43,10 +32,10 @@ export class StagingHierarchyManager {
       const mesh = this.createBlockMesh(nodeData.transform)
       mesh.uuid = nodeData.id || mesh.uuid
       if (nodeData.name) mesh.name = nodeData.name
-      this.meshes.push(mesh)
       return mesh
     } else {
       const group = new THREE.Group()
+      group.userData.isGroup = true
       group.uuid = nodeData.id || group.uuid
       if (nodeData.name) group.name = nodeData.name
       group.position.set(nodeData.transform.px, nodeData.transform.py, nodeData.transform.pz)
@@ -63,28 +52,56 @@ export class StagingHierarchyManager {
     }
   }
 
+  public getVirtualRootObjects(scene: THREE.Scene): THREE.Object3D[] {
+    return scene.children.filter(child => child.userData.isBlock === true || child.userData.isGroup === true)
+  }
+
+  public getAllVirtualBlocks(sceneOrObjects: THREE.Scene | THREE.Object3D[]): THREE.Mesh[] {
+    const blocks: THREE.Mesh[] = []
+    const roots = Array.isArray(sceneOrObjects) ? sceneOrObjects : sceneOrObjects.children
+
+    roots.forEach(root => {
+      if (root.userData.isBlock === true) {
+        blocks.push(root as THREE.Mesh)
+      } else if (root.userData.isGroup === true) {
+        root.traverse(child => {
+          if (child.userData.isBlock === true) {
+            blocks.push(child as THREE.Mesh)
+          }
+        })
+      }
+    })
+
+    return blocks
+  }
+
   public updateMesh(
     scene: THREE.Scene,
     state: SceneState,
     clearSelectionFn: () => void,
-    transformControlsHelper: THREE.Object3D
+    transformControlsHelper: THREE.Object3D,
+    instancedMesh?: InstancedStageMesh
   ): void {
     clearSelectionFn()
 
     const objectsToRemove: THREE.Object3D[] = []
     scene.children.forEach(child => {
-      if (!StageEnvironment.isStageObject(child, transformControlsHelper)) {
+      if (child.userData.isBlock === true || child.userData.isGroup === true) {
         objectsToRemove.push(child)
       }
     })
     objectsToRemove.forEach(obj => scene.remove(obj))
-    this.meshes = []
 
     if (state.nodes && state.nodes.length > 0) {
       state.nodes.forEach(nodeData => {
         const obj = this.buildNodeFromData(nodeData)
         scene.add(obj)
       })
+    }
+
+    if (instancedMesh) {
+      const virtualBlocks = this.getAllVirtualBlocks(scene)
+      instancedMesh.syncFromVirtualBlocks(virtualBlocks)
     }
 
     this.syncState(scene, state, transformControlsHelper, null)
@@ -95,10 +112,7 @@ export class StagingHierarchyManager {
     transformControlsHelper: THREE.Object3D,
     multiSelectionPivot: THREE.Group | null
   ): SceneNode | null {
-    if (obj.name === '__spawn_point_indicator__' || obj.name === '__spawn_point_mesh__') {
-      return null
-    }
-    if (obj.type === 'Mesh' && obj.name !== 'floor') {
+    if (obj.userData.isBlock === true) {
       const mesh = obj as THREE.Mesh
       return {
         id: mesh.uuid,
@@ -110,7 +124,11 @@ export class StagingHierarchyManager {
           sx: r2(mesh.scale.x), sy: r2(mesh.scale.y), sz: r2(mesh.scale.z)
         }
       }
-    } else if (obj.type === 'Group' && obj !== transformControlsHelper && obj !== multiSelectionPivot) {
+    } else if (
+      obj.userData.isGroup === true &&
+      obj !== transformControlsHelper &&
+      obj !== multiSelectionPivot
+    ) {
       const group = obj as THREE.Group
       const childrenNodes: SceneNode[] = []
       group.children.forEach(child => {
@@ -175,6 +193,7 @@ export class StagingHierarchyManager {
     bbox.getCenter(centerVec)
 
     const group = new THREE.Group()
+    group.userData.isGroup = true
     group.name = 'Group_' + Math.random().toString(36).substring(2, 7)
     group.position.copy(centerVec)
     scene.add(group)
@@ -185,13 +204,13 @@ export class StagingHierarchyManager {
   }
 
   public ungroupSelected(scene: THREE.Scene, selectedObjects: THREE.Object3D[]): THREE.Object3D[] {
-    const groups = selectedObjects.filter(o => o.type === 'Group')
+    const groups = selectedObjects.filter(o => o.userData.isGroup === true || o.type === 'Group')
     if (groups.length === 0) return selectedObjects
 
     const newSelected: THREE.Object3D[] = []
 
     selectedObjects.forEach(obj => {
-      if (obj.type === 'Group') {
+      if (obj.userData.isGroup === true || obj.type === 'Group') {
         const children = [...obj.children]
         children.forEach(child => {
           scene.attach(child)
@@ -206,12 +225,8 @@ export class StagingHierarchyManager {
     return newSelected
   }
 
-  public registerMesh(mesh: THREE.Mesh): void {
-    this.meshes.push(mesh)
-  }
-
-  public unregisterMesh(mesh: THREE.Mesh): void {
-    const idx = this.meshes.indexOf(mesh)
-    if (idx !== -1) this.meshes.splice(idx, 1)
+  public dispose(): void {
+    this.sharedUnitBoxGeo.dispose()
+    this.sharedInvisibleMat.dispose()
   }
 }

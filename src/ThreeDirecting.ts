@@ -281,7 +281,7 @@ export class ThreeDirecting {
     const stageData = this.getStageData()
 
     const stageEnv = new StageEnvironment()
-    stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup)
+    stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
 
     if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
       this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)

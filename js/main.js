@@ -6579,6 +6579,7 @@ const NotEqualCompare = 517;
 const GreaterEqualCompare = 518;
 const AlwaysCompare = 519;
 const StaticDrawUsage = 35044;
+const DynamicDrawUsage = 35048;
 const GLSL3 = "300 es";
 const WebGLCoordinateSystem = 2e3;
 const WebGPUCoordinateSystem = 2001;
@@ -30213,6 +30214,25 @@ class LoaderUtils {
     return path + url;
   }
 }
+class InstancedBufferGeometry extends BufferGeometry {
+  constructor() {
+    super();
+    this.isInstancedBufferGeometry = true;
+    this.type = "InstancedBufferGeometry";
+    this.instanceCount = Infinity;
+  }
+  copy(source) {
+    super.copy(source);
+    this.instanceCount = source.instanceCount;
+    return this;
+  }
+  toJSON() {
+    const data = super.toJSON();
+    data.instanceCount = this.instanceCount;
+    data.isInstancedBufferGeometry = true;
+    return data;
+  }
+}
 class ImageBitmapLoader extends Loader {
   constructor(manager) {
     super(manager);
@@ -31521,6 +31541,29 @@ class AnimationMixer extends EventDispatcher {
       this._deactivateAction(action);
       this._removeInactiveAction(action);
     }
+  }
+}
+class InstancedInterleavedBuffer extends InterleavedBuffer {
+  constructor(array, stride, meshPerAttribute = 1) {
+    super(array, stride);
+    this.isInstancedInterleavedBuffer = true;
+    this.meshPerAttribute = meshPerAttribute;
+  }
+  copy(source) {
+    super.copy(source);
+    this.meshPerAttribute = source.meshPerAttribute;
+    return this;
+  }
+  clone(data) {
+    const ib = super.clone(data);
+    ib.meshPerAttribute = this.meshPerAttribute;
+    return ib;
+  }
+  toJSON(data) {
+    const json = super.toJSON(data);
+    json.isInstancedInterleavedBuffer = true;
+    json.meshPerAttribute = this.meshPerAttribute;
+    return json;
   }
 }
 const _matrix = /* @__PURE__ */ new Matrix4();
@@ -33709,133 +33752,23 @@ function updateStageFog(scene, camera, stageExtent, targetCenter) {
   return { fogNear, fogFar, cameraFar };
 }
 const updateSceneFog = updateStageFog;
-class StageEnvironment {
-  constructor() {
-    __publicField(this, "hierarchyManager");
-    this.hierarchyManager = new StagingHierarchyManager();
-  }
-  /**
-   * Initializes standard stage environment (Lights, Grid, and Floor plane) into targetScene.
-   */
-  initStage(targetScene) {
-    const ambientLight = new AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY);
-    targetScene.add(ambientLight);
-    const hemiLight = new HemisphereLight(
-      HEMI_SKY_COLOR,
-      HEMI_GROUND_COLOR,
-      HEMI_LIGHT_INTENSITY
-    );
-    hemiLight.position.set(0, 50, 0);
-    targetScene.add(hemiLight);
-    const mainLight = new DirectionalLight(MAIN_LIGHT_COLOR, MAIN_LIGHT_INTENSITY);
-    mainLight.position.copy(MAIN_LIGHT_OFFSET);
-    mainLight.castShadow = true;
-    mainLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
-    mainLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
-    mainLight.shadow.bias = SHADOW_BIAS;
-    mainLight.shadow.normalBias = SHADOW_NORMAL_BIAS;
-    const d = SHADOW_FRUSTUM_SIZE;
-    mainLight.shadow.camera.left = -d;
-    mainLight.shadow.camera.right = d;
-    mainLight.shadow.camera.top = d;
-    mainLight.shadow.camera.bottom = -d;
-    mainLight.shadow.camera.near = 0.5;
-    mainLight.shadow.camera.far = 200;
-    targetScene.add(mainLight);
-    targetScene.add(mainLight.target);
-    const fillLight = new DirectionalLight(FILL_LIGHT_COLOR, FILL_LIGHT_INTENSITY);
-    fillLight.position.copy(FILL_LIGHT_POSITION);
-    targetScene.add(fillLight);
-    const gridHelper = new GridHelper(
-      GRID_SIZE,
-      GRID_DIVISIONS,
-      GRID_COLOR_CENTER,
-      GRID_COLOR_GRID
-    );
-    gridHelper.position.y = GRID_Y;
-    targetScene.add(gridHelper);
-    const floorGeo = new PlaneGeometry(100, 100);
-    const floorMat = new MeshStandardMaterial({
-      color: FLOOR_COLOR,
-      roughness: FLOOR_ROUGHNESS,
-      metalness: FLOOR_METALNESS
-    });
-    const floorMesh = new Mesh(floorGeo, floorMat);
-    floorMesh.name = "floor";
-    floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.position.y = FLOOR_Y;
-    floorMesh.receiveShadow = true;
-    targetScene.add(floorMesh);
-    return {
-      ambientLight,
-      hemiLight,
-      mainLight,
-      fillLight,
-      gridHelper,
-      floorMesh
-    };
-  }
-  /**
-   * Builds 3D block mesh hierarchy from sceneData into parentGroup.
-   * Returns array of created environment meshes.
-   */
-  buildObjectsFromData(sceneData, parentGroup) {
-    const environmentMeshes = [];
-    if (!sceneData || !sceneData.nodes) return environmentMeshes;
-    sceneData.nodes.forEach((nodeData) => {
-      const obj = this.hierarchyManager.buildNodeFromData(nodeData);
-      parentGroup.add(obj);
-      if (obj instanceof Mesh) {
-        environmentMeshes.push(obj);
-      } else {
-        obj.traverse((child) => {
-          if (child instanceof Mesh) {
-            environmentMeshes.push(child);
-          }
-        });
-      }
-    });
-    return environmentMeshes;
-  }
-  /**
-   * Helper utility to identify standard stage elements (Lights, Floor, Grid, BoxHelpers, TransformControls).
-   */
-  static isStageObject(object, transformControlsHelper) {
-    if (object.name === "floor" || object.name === "__box_helper__" || object.name === "__spawn_point_indicator__") return true;
-    if (object.type === "AmbientLight" || object.type === "DirectionalLight" || object.type === "HemisphereLight" || object.type === "GridHelper") {
-      return true;
-    }
-    if (transformControlsHelper && object === transformControlsHelper) return true;
-    return false;
-  }
-}
 function r2(val) {
   return Math.round((val + Number.EPSILON) * 100) / 100;
 }
 class StagingHierarchyManager {
   constructor() {
-    __publicField(this, "meshes", []);
-  }
-  getMeshes() {
-    return this.meshes;
+    __publicField(this, "sharedUnitBoxGeo");
+    __publicField(this, "sharedInvisibleMat");
+    this.sharedUnitBoxGeo = new BoxGeometry(1, 1, 1);
+    this.sharedInvisibleMat = new MeshBasicMaterial({ visible: false });
   }
   createBlockMesh(transform) {
-    const geometry = new BoxGeometry(1, 1, 1);
-    const mesh = new Mesh(geometry, createBlockMaterial());
+    const mesh = new Mesh(this.sharedUnitBoxGeo, this.sharedInvisibleMat);
+    mesh.userData.isBlock = true;
+    mesh.name = "Block";
     mesh.position.set(transform.px, transform.py, transform.pz);
     mesh.rotation.set(transform.rx, transform.ry, transform.rz);
     mesh.scale.set(transform.sx, transform.sy, transform.sz);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    const edgesGeo = new EdgesGeometry(geometry);
-    const edgeMat = new LineBasicMaterial({
-      color: EDGE_COLOR,
-      transparent: true,
-      opacity: EDGE_OPACITY
-    });
-    const lineEdges = new LineSegments(edgesGeo, edgeMat);
-    lineEdges.name = "__edge_outline__";
-    mesh.add(lineEdges);
     return mesh;
   }
   buildNodeFromData(nodeData) {
@@ -33843,10 +33776,10 @@ class StagingHierarchyManager {
       const mesh = this.createBlockMesh(nodeData.transform);
       mesh.uuid = nodeData.id || mesh.uuid;
       if (nodeData.name) mesh.name = nodeData.name;
-      this.meshes.push(mesh);
       return mesh;
     } else {
       const group = new Group();
+      group.userData.isGroup = true;
       group.uuid = nodeData.id || group.uuid;
       if (nodeData.name) group.name = nodeData.name;
       group.position.set(nodeData.transform.px, nodeData.transform.py, nodeData.transform.pz);
@@ -33861,29 +33794,48 @@ class StagingHierarchyManager {
       return group;
     }
   }
-  updateMesh(scene, state, clearSelectionFn, transformControlsHelper) {
+  getVirtualRootObjects(scene) {
+    return scene.children.filter((child) => child.userData.isBlock === true || child.userData.isGroup === true);
+  }
+  getAllVirtualBlocks(sceneOrObjects) {
+    const blocks = [];
+    const roots = Array.isArray(sceneOrObjects) ? sceneOrObjects : sceneOrObjects.children;
+    roots.forEach((root) => {
+      if (root.userData.isBlock === true) {
+        blocks.push(root);
+      } else if (root.userData.isGroup === true) {
+        root.traverse((child) => {
+          if (child.userData.isBlock === true) {
+            blocks.push(child);
+          }
+        });
+      }
+    });
+    return blocks;
+  }
+  updateMesh(scene, state, clearSelectionFn, transformControlsHelper, instancedMesh) {
     clearSelectionFn();
     const objectsToRemove = [];
     scene.children.forEach((child) => {
-      if (!StageEnvironment.isStageObject(child, transformControlsHelper)) {
+      if (child.userData.isBlock === true || child.userData.isGroup === true) {
         objectsToRemove.push(child);
       }
     });
     objectsToRemove.forEach((obj) => scene.remove(obj));
-    this.meshes = [];
     if (state.nodes && state.nodes.length > 0) {
       state.nodes.forEach((nodeData) => {
         const obj = this.buildNodeFromData(nodeData);
         scene.add(obj);
       });
     }
+    if (instancedMesh) {
+      const virtualBlocks = this.getAllVirtualBlocks(scene);
+      instancedMesh.syncFromVirtualBlocks(virtualBlocks);
+    }
     this.syncState(scene, state, transformControlsHelper, null);
   }
   serializeObjectToNode(obj, transformControlsHelper, multiSelectionPivot) {
-    if (obj.name === "__spawn_point_indicator__" || obj.name === "__spawn_point_mesh__") {
-      return null;
-    }
-    if (obj.type === "Mesh" && obj.name !== "floor") {
+    if (obj.userData.isBlock === true) {
       const mesh = obj;
       return {
         id: mesh.uuid,
@@ -33901,7 +33853,7 @@ class StagingHierarchyManager {
           sz: r2(mesh.scale.z)
         }
       };
-    } else if (obj.type === "Group" && obj !== transformControlsHelper && obj !== multiSelectionPivot) {
+    } else if (obj.userData.isGroup === true && obj !== transformControlsHelper && obj !== multiSelectionPivot) {
       const group = obj;
       const childrenNodes = [];
       group.children.forEach((child) => {
@@ -33957,6 +33909,7 @@ class StagingHierarchyManager {
     const centerVec = new Vector3();
     bbox.getCenter(centerVec);
     const group = new Group();
+    group.userData.isGroup = true;
     group.name = "Group_" + Math.random().toString(36).substring(2, 7);
     group.position.copy(centerVec);
     scene.add(group);
@@ -33964,11 +33917,11 @@ class StagingHierarchyManager {
     return group;
   }
   ungroupSelected(scene, selectedObjects) {
-    const groups = selectedObjects.filter((o) => o.type === "Group");
+    const groups = selectedObjects.filter((o) => o.userData.isGroup === true || o.type === "Group");
     if (groups.length === 0) return selectedObjects;
     const newSelected = [];
     selectedObjects.forEach((obj) => {
-      if (obj.type === "Group") {
+      if (obj.userData.isGroup === true || obj.type === "Group") {
         const children = [...obj.children];
         children.forEach((child) => {
           scene.attach(child);
@@ -33981,12 +33934,9 @@ class StagingHierarchyManager {
     });
     return newSelected;
   }
-  registerMesh(mesh) {
-    this.meshes.push(mesh);
-  }
-  unregisterMesh(mesh) {
-    const idx = this.meshes.indexOf(mesh);
-    if (idx !== -1) this.meshes.splice(idx, 1);
+  dispose() {
+    this.sharedUnitBoxGeo.dispose();
+    this.sharedInvisibleMat.dispose();
   }
 }
 class StagingSelectionManager {
@@ -34085,14 +34035,14 @@ class StagingSelectionManager {
       }
     }
   }
-  getTopSelectableObject(obj, scene, transformControlsHelper) {
+  getTopSelectableObject(obj, scene, _transformControlsHelper) {
     let curr = obj;
     while (curr && curr.parent && curr.parent !== scene) {
       if (curr.parent.type === "Scene") break;
-      if (curr.parent.name === "floor" || curr.parent === transformControlsHelper) break;
+      if (!curr.parent.userData.isGroup && !curr.parent.userData.isBlock) break;
       curr = curr.parent;
     }
-    if (curr && (curr.type === "Mesh" || curr.type === "Group") && curr.name !== "floor") {
+    if (curr && (curr.userData.isBlock === true || curr.userData.isGroup === true || curr.name === "__spawn_point_indicator__")) {
       return curr;
     }
     return null;
@@ -34160,6 +34110,558 @@ class StagingSelectionManager {
     }
   }
 }
+function mergeGeometries(geometries, useGroups = false) {
+  const isIndexed = geometries[0].index !== null;
+  const attributesUsed = new Set(Object.keys(geometries[0].attributes));
+  const morphAttributesUsed = new Set(Object.keys(geometries[0].morphAttributes));
+  const attributes = {};
+  const morphAttributes = {};
+  const morphTargetsRelative = geometries[0].morphTargetsRelative;
+  const mergedGeometry = new BufferGeometry();
+  let offset = 0;
+  for (let i = 0; i < geometries.length; ++i) {
+    const geometry = geometries[i];
+    let attributesCount = 0;
+    if (isIndexed !== (geometry.index !== null)) {
+      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". All geometries must have compatible attributes; make sure index attribute exists among all geometries, or in none of them.");
+      return null;
+    }
+    for (const name in geometry.attributes) {
+      if (!attributesUsed.has(name)) {
+        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + '. All geometries must have compatible attributes; make sure "' + name + '" attribute exists among all geometries, or in none of them.');
+        return null;
+      }
+      if (attributes[name] === void 0) attributes[name] = [];
+      attributes[name].push(geometry.attributes[name]);
+      attributesCount++;
+    }
+    if (attributesCount !== attributesUsed.size) {
+      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". Make sure all geometries have the same number of attributes.");
+      return null;
+    }
+    if (morphTargetsRelative !== geometry.morphTargetsRelative) {
+      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". .morphTargetsRelative must be consistent throughout all geometries.");
+      return null;
+    }
+    for (const name in geometry.morphAttributes) {
+      if (!morphAttributesUsed.has(name)) {
+        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ".  .morphAttributes must be consistent throughout all geometries.");
+        return null;
+      }
+      if (morphAttributes[name] === void 0) morphAttributes[name] = [];
+      morphAttributes[name].push(geometry.morphAttributes[name]);
+    }
+    if (useGroups) {
+      let count;
+      if (isIndexed) {
+        count = geometry.index.count;
+      } else if (geometry.attributes.position !== void 0) {
+        count = geometry.attributes.position.count;
+      } else {
+        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". The geometry must have either an index or a position attribute");
+        return null;
+      }
+      mergedGeometry.addGroup(offset, count, i);
+      offset += count;
+    }
+  }
+  if (isIndexed) {
+    let indexOffset = 0;
+    const mergedIndex = [];
+    for (let i = 0; i < geometries.length; ++i) {
+      const index = geometries[i].index;
+      for (let j = 0; j < index.count; ++j) {
+        mergedIndex.push(index.getX(j) + indexOffset);
+      }
+      indexOffset += geometries[i].attributes.position.count;
+    }
+    mergedGeometry.setIndex(mergedIndex);
+  }
+  for (const name in attributes) {
+    const mergedAttribute = mergeAttributes(attributes[name]);
+    if (!mergedAttribute) {
+      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + name + " attribute.");
+      return null;
+    }
+    mergedGeometry.setAttribute(name, mergedAttribute);
+  }
+  for (const name in morphAttributes) {
+    const numMorphTargets = morphAttributes[name][0].length;
+    if (numMorphTargets === 0) break;
+    mergedGeometry.morphAttributes = mergedGeometry.morphAttributes || {};
+    mergedGeometry.morphAttributes[name] = [];
+    for (let i = 0; i < numMorphTargets; ++i) {
+      const morphAttributesToMerge = [];
+      for (let j = 0; j < morphAttributes[name].length; ++j) {
+        morphAttributesToMerge.push(morphAttributes[name][j][i]);
+      }
+      const mergedMorphAttribute = mergeAttributes(morphAttributesToMerge);
+      if (!mergedMorphAttribute) {
+        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + name + " morphAttribute.");
+        return null;
+      }
+      mergedGeometry.morphAttributes[name].push(mergedMorphAttribute);
+    }
+  }
+  return mergedGeometry;
+}
+function mergeAttributes(attributes) {
+  let TypedArray;
+  let itemSize;
+  let normalized;
+  let gpuType = -1;
+  let arrayLength = 0;
+  for (let i = 0; i < attributes.length; ++i) {
+    const attribute = attributes[i];
+    if (TypedArray === void 0) TypedArray = attribute.array.constructor;
+    if (TypedArray !== attribute.array.constructor) {
+      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.array must be of consistent array types across matching attributes.");
+      return null;
+    }
+    if (itemSize === void 0) itemSize = attribute.itemSize;
+    if (itemSize !== attribute.itemSize) {
+      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.itemSize must be consistent across matching attributes.");
+      return null;
+    }
+    if (normalized === void 0) normalized = attribute.normalized;
+    if (normalized !== attribute.normalized) {
+      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.normalized must be consistent across matching attributes.");
+      return null;
+    }
+    if (gpuType === -1) gpuType = attribute.gpuType;
+    if (gpuType !== attribute.gpuType) {
+      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.gpuType must be consistent across matching attributes.");
+      return null;
+    }
+    arrayLength += attribute.count * itemSize;
+  }
+  const array = new TypedArray(arrayLength);
+  const result = new BufferAttribute(array, itemSize, normalized);
+  let offset = 0;
+  for (let i = 0; i < attributes.length; ++i) {
+    const attribute = attributes[i];
+    if (attribute.isInterleavedBufferAttribute) {
+      const tupleOffset = offset / itemSize;
+      for (let j = 0, l = attribute.count; j < l; j++) {
+        for (let c = 0; c < itemSize; c++) {
+          const value = attribute.getComponent(j, c);
+          result.setComponent(j + tupleOffset, c, value);
+        }
+      }
+    } else {
+      array.set(attribute.array, offset);
+    }
+    offset += attribute.count * itemSize;
+  }
+  if (gpuType !== void 0) {
+    result.gpuType = gpuType;
+  }
+  return result;
+}
+function toTrianglesDrawMode(geometry, drawMode) {
+  if (drawMode === TrianglesDrawMode) {
+    console.warn("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Geometry already defined as triangles.");
+    return geometry;
+  }
+  if (drawMode === TriangleFanDrawMode || drawMode === TriangleStripDrawMode) {
+    let index = geometry.getIndex();
+    if (index === null) {
+      const indices = [];
+      const position = geometry.getAttribute("position");
+      if (position !== void 0) {
+        for (let i = 0; i < position.count; i++) {
+          indices.push(i);
+        }
+        geometry.setIndex(indices);
+        index = geometry.getIndex();
+      } else {
+        console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Undefined position attribute. Processing not possible.");
+        return geometry;
+      }
+    }
+    const numberOfTriangles = index.count - 2;
+    const newIndices = [];
+    if (drawMode === TriangleFanDrawMode) {
+      for (let i = 1; i <= numberOfTriangles; i++) {
+        newIndices.push(index.getX(0));
+        newIndices.push(index.getX(i));
+        newIndices.push(index.getX(i + 1));
+      }
+    } else {
+      for (let i = 0; i < numberOfTriangles; i++) {
+        if (i % 2 === 0) {
+          newIndices.push(index.getX(i));
+          newIndices.push(index.getX(i + 1));
+          newIndices.push(index.getX(i + 2));
+        } else {
+          newIndices.push(index.getX(i + 2));
+          newIndices.push(index.getX(i + 1));
+          newIndices.push(index.getX(i));
+        }
+      }
+    }
+    if (newIndices.length / 3 !== numberOfTriangles) {
+      console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unable to generate correct amount of triangles.");
+    }
+    const newGeometry = geometry.clone();
+    newGeometry.setIndex(newIndices);
+    newGeometry.clearGroups();
+    return newGeometry;
+  } else {
+    console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unknown draw mode:", drawMode);
+    return geometry;
+  }
+}
+const INITIAL_CAPACITY = 64;
+const ZERO_MATRIX = new Matrix4().set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+class InstancedStageMesh {
+  constructor(initialCapacity = INITIAL_CAPACITY) {
+    __publicField(this, "group");
+    __publicField(this, "surfaceMesh");
+    __publicField(this, "edgeLines");
+    __publicField(this, "edgeGeometry");
+    __publicField(this, "unitBoxGeometry");
+    __publicField(this, "surfaceMaterial");
+    __publicField(this, "edgeMaterial");
+    __publicField(this, "interleavedBuffer");
+    __publicField(this, "capacity", INITIAL_CAPACITY);
+    __publicField(this, "_count", 0);
+    __publicField(this, "nodeToInstanceMap", /* @__PURE__ */ new Map());
+    __publicField(this, "instanceToNodeMap", []);
+    this.capacity = Math.max(INITIAL_CAPACITY, initialCapacity);
+    this.group = new Group();
+    this.group.name = "__instanced_stage_group__";
+    this.initGeometriesAndMaterials();
+    this.allocateBuffers(this.capacity);
+  }
+  initGeometriesAndMaterials() {
+    this.unitBoxGeometry = new BoxGeometry(1, 1, 1);
+    this.edgeGeometry = new EdgesGeometry(this.unitBoxGeometry);
+    this.surfaceMaterial = createBlockMaterial();
+    this.edgeMaterial = new ShaderMaterial({
+      uniforms: {
+        diffuse: { value: new Color(EDGE_COLOR) },
+        opacity: { value: EDGE_OPACITY },
+        ...UniformsLib.fog
+      },
+      vertexShader: `
+        #include <common>
+        #include <fog_pars_vertex>
+        attribute vec4 instanceMatrix0;
+        attribute vec4 instanceMatrix1;
+        attribute vec4 instanceMatrix2;
+        attribute vec4 instanceMatrix3;
+        void main() {
+          mat4 instanceMatrix = mat4(instanceMatrix0, instanceMatrix1, instanceMatrix2, instanceMatrix3);
+          vec4 worldPosition = instanceMatrix * vec4(position, 1.0);
+          vec4 mvPosition = viewMatrix * worldPosition;
+          gl_Position = projectionMatrix * mvPosition;
+          #include <fog_vertex>
+        }
+      `,
+      fragmentShader: `
+        #include <common>
+        #include <fog_pars_fragment>
+        uniform vec3 diffuse;
+        uniform float opacity;
+        void main() {
+          vec4 diffuseColor = vec4(diffuse, opacity);
+          gl_FragColor = diffuseColor;
+          #include <fog_fragment>
+          #include <colorspace_fragment>
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      fog: true
+    });
+  }
+  allocateBuffers(newCapacity) {
+    const oldMatrices = this.surfaceMesh ? new Float32Array(this.surfaceMesh.instanceMatrix.array) : null;
+    const oldCount = this._count;
+    if (this.surfaceMesh) {
+      this.group.remove(this.surfaceMesh);
+      this.surfaceMesh.dispose();
+    }
+    if (this.edgeLines) {
+      this.group.remove(this.edgeLines);
+      this.edgeLines.geometry.dispose();
+    }
+    this.capacity = newCapacity;
+    this.surfaceMesh = new InstancedMesh(this.unitBoxGeometry, this.surfaceMaterial, this.capacity);
+    this.surfaceMesh.name = "__stage_instanced_surface__";
+    this.surfaceMesh.castShadow = true;
+    this.surfaceMesh.receiveShadow = true;
+    this.surfaceMesh.count = oldCount;
+    this.surfaceMesh.instanceMatrix.setUsage(DynamicDrawUsage);
+    const instancedEdgeGeo = new InstancedBufferGeometry();
+    instancedEdgeGeo.index = this.edgeGeometry.index;
+    instancedEdgeGeo.attributes.position = this.edgeGeometry.attributes.position;
+    this.interleavedBuffer = new InstancedInterleavedBuffer(
+      this.surfaceMesh.instanceMatrix.array,
+      16
+    );
+    this.interleavedBuffer.setUsage(DynamicDrawUsage);
+    instancedEdgeGeo.setAttribute("instanceMatrix0", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 0));
+    instancedEdgeGeo.setAttribute("instanceMatrix1", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 4));
+    instancedEdgeGeo.setAttribute("instanceMatrix2", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 8));
+    instancedEdgeGeo.setAttribute("instanceMatrix3", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 12));
+    instancedEdgeGeo.instanceCount = oldCount;
+    this.edgeLines = new LineSegments(instancedEdgeGeo, this.edgeMaterial);
+    this.edgeLines.name = "__stage_instanced_edges__";
+    this.edgeLines.frustumCulled = false;
+    for (let i = 0; i < this.capacity; i++) {
+      this.surfaceMesh.setMatrixAt(i, ZERO_MATRIX);
+    }
+    if (oldMatrices && oldCount > 0) {
+      const copyCount = Math.min(oldCount, this.capacity);
+      for (let i = 0; i < copyCount; i++) {
+        const mat = new Matrix4().fromArray(oldMatrices, i * 16);
+        this.surfaceMesh.setMatrixAt(i, mat);
+      }
+    }
+    this.surfaceMesh.instanceMatrix.needsUpdate = true;
+    this.interleavedBuffer.needsUpdate = true;
+    const isVis = oldCount > 0;
+    this.group.visible = isVis;
+    this.surfaceMesh.visible = isVis;
+    this.edgeLines.visible = isVis;
+    this.group.add(this.surfaceMesh);
+    this.group.add(this.edgeLines);
+  }
+  ensureCapacity(requiredCount) {
+    if (requiredCount > this.capacity) {
+      let nextCap = this.capacity;
+      while (nextCap < requiredCount) {
+        nextCap *= 2;
+      }
+      this.allocateBuffers(nextCap);
+    }
+  }
+  getGroup() {
+    return this.group;
+  }
+  getSurfaceMesh() {
+    return this.surfaceMesh;
+  }
+  get count() {
+    return this._count;
+  }
+  setCount(newCount) {
+    this.ensureCapacity(newCount);
+    this._count = newCount;
+    this.surfaceMesh.count = newCount;
+    this.edgeLines.geometry.instanceCount = newCount;
+    const isVis = newCount > 0;
+    this.group.visible = isVis;
+    this.surfaceMesh.visible = isVis;
+    this.edgeLines.visible = isVis;
+  }
+  setInstance(index, matrix2, virtualNode) {
+    if (index >= this.capacity) {
+      this.ensureCapacity(index + 1);
+    }
+    this.surfaceMesh.setMatrixAt(index, matrix2);
+    if (virtualNode) {
+      this.nodeToInstanceMap.set(virtualNode.uuid, index);
+      this.instanceToNodeMap[index] = virtualNode;
+    }
+  }
+  getInstanceMatrix(index, matrix2) {
+    this.surfaceMesh.getMatrixAt(index, matrix2);
+  }
+  getNodeByInstanceId(instanceId) {
+    if (instanceId < 0 || instanceId >= this._count) return null;
+    return this.instanceToNodeMap[instanceId] || null;
+  }
+  getInstanceIdByNodeUuid(uuid) {
+    return this.nodeToInstanceMap.get(uuid);
+  }
+  updateMatrices() {
+    this.surfaceMesh.instanceMatrix.needsUpdate = true;
+    if (this.interleavedBuffer) {
+      this.interleavedBuffer.needsUpdate = true;
+    }
+    if (this._count > 0) {
+      this.surfaceMesh.computeBoundingBox();
+      this.surfaceMesh.computeBoundingSphere();
+    }
+  }
+  clear() {
+    this._count = 0;
+    this.surfaceMesh.count = 0;
+    this.edgeLines.geometry.instanceCount = 0;
+    for (let i = 0; i < this.capacity; i++) {
+      this.surfaceMesh.setMatrixAt(i, ZERO_MATRIX);
+    }
+    this.group.visible = false;
+    this.surfaceMesh.visible = false;
+    this.edgeLines.visible = false;
+    this.updateMatrices();
+    this.nodeToInstanceMap.clear();
+    this.instanceToNodeMap = [];
+  }
+  syncFromVirtualBlocks(blocks) {
+    if (!blocks || blocks.length === 0) {
+      this.clear();
+      return;
+    }
+    this.ensureCapacity(blocks.length);
+    this.nodeToInstanceMap.clear();
+    this.instanceToNodeMap = new Array(blocks.length);
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i];
+      block.updateWorldMatrix(true, false);
+      this.surfaceMesh.setMatrixAt(i, block.matrixWorld);
+      this.nodeToInstanceMap.set(block.uuid, i);
+      this.instanceToNodeMap[i] = block;
+    }
+    for (let i = blocks.length; i < this.capacity; i++) {
+      this.surfaceMesh.setMatrixAt(i, ZERO_MATRIX);
+    }
+    this.setCount(blocks.length);
+    this.updateMatrices();
+  }
+  getMergedColliderGeometry(includeFloor = true) {
+    const geometries = [];
+    if (includeFloor) {
+      const floorBox = new BoxGeometry(100, 0.1, 100);
+      floorBox.translate(0, -0.05, 0);
+      geometries.push(floorBox);
+    }
+    const mat = new Matrix4();
+    for (let i = 0; i < this._count; i++) {
+      this.surfaceMesh.getMatrixAt(i, mat);
+      const geom = this.unitBoxGeometry.clone();
+      geom.applyMatrix4(mat);
+      geometries.push(geom);
+    }
+    if (geometries.length === 0) return null;
+    return mergeGeometries(geometries);
+  }
+  dispose() {
+    if (this.surfaceMesh) {
+      this.surfaceMesh.dispose();
+    }
+    if (this.edgeLines) {
+      this.edgeLines.geometry.dispose();
+    }
+    if (this.unitBoxGeometry) {
+      this.unitBoxGeometry.dispose();
+    }
+    if (this.edgeGeometry) {
+      this.edgeGeometry.dispose();
+    }
+    if (this.surfaceMaterial) {
+      this.surfaceMaterial.dispose();
+    }
+    if (this.edgeMaterial) {
+      this.edgeMaterial.dispose();
+    }
+    this.nodeToInstanceMap.clear();
+    this.instanceToNodeMap = [];
+  }
+}
+class StageEnvironment {
+  constructor() {
+    __publicField(this, "hierarchyManager");
+    this.hierarchyManager = new StagingHierarchyManager();
+  }
+  /**
+   * Initializes standard stage environment (Lights, Grid, and Floor plane) into targetScene.
+   */
+  initStage(targetScene) {
+    const ambientLight = new AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY);
+    targetScene.add(ambientLight);
+    const hemiLight = new HemisphereLight(
+      HEMI_SKY_COLOR,
+      HEMI_GROUND_COLOR,
+      HEMI_LIGHT_INTENSITY
+    );
+    hemiLight.position.set(0, 50, 0);
+    targetScene.add(hemiLight);
+    const mainLight = new DirectionalLight(MAIN_LIGHT_COLOR, MAIN_LIGHT_INTENSITY);
+    mainLight.position.copy(MAIN_LIGHT_OFFSET);
+    mainLight.castShadow = true;
+    mainLight.shadow.mapSize.width = SHADOW_MAP_WIDTH;
+    mainLight.shadow.mapSize.height = SHADOW_MAP_HEIGHT;
+    mainLight.shadow.bias = SHADOW_BIAS;
+    mainLight.shadow.normalBias = SHADOW_NORMAL_BIAS;
+    const d = SHADOW_FRUSTUM_SIZE;
+    mainLight.shadow.camera.left = -d;
+    mainLight.shadow.camera.right = d;
+    mainLight.shadow.camera.top = d;
+    mainLight.shadow.camera.bottom = -d;
+    mainLight.shadow.camera.near = 0.5;
+    mainLight.shadow.camera.far = 200;
+    targetScene.add(mainLight);
+    targetScene.add(mainLight.target);
+    const fillLight = new DirectionalLight(FILL_LIGHT_COLOR, FILL_LIGHT_INTENSITY);
+    fillLight.position.copy(FILL_LIGHT_POSITION);
+    targetScene.add(fillLight);
+    const gridHelper = new GridHelper(
+      GRID_SIZE,
+      GRID_DIVISIONS,
+      GRID_COLOR_CENTER,
+      GRID_COLOR_GRID
+    );
+    gridHelper.position.y = GRID_Y;
+    targetScene.add(gridHelper);
+    const floorGeo = new PlaneGeometry(100, 100);
+    const floorMat = new MeshStandardMaterial({
+      color: FLOOR_COLOR,
+      roughness: FLOOR_ROUGHNESS,
+      metalness: FLOOR_METALNESS
+    });
+    const floorMesh = new Mesh(floorGeo, floorMat);
+    floorMesh.name = "floor";
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = FLOOR_Y;
+    floorMesh.receiveShadow = true;
+    targetScene.add(floorMesh);
+    return {
+      ambientLight,
+      hemiLight,
+      mainLight,
+      fillLight,
+      gridHelper,
+      floorMesh
+    };
+  }
+  /**
+   * Builds an optimized InstancedStageMesh from sceneData into parentGroup.
+   */
+  buildInstancedStage(sceneData, parentGroup) {
+    const instancedStageMesh = new InstancedStageMesh();
+    if (sceneData && sceneData.nodes && sceneData.nodes.length > 0) {
+      const virtualRoots = [];
+      sceneData.nodes.forEach((nodeData) => {
+        const obj = this.hierarchyManager.buildNodeFromData(nodeData);
+        virtualRoots.push(obj);
+      });
+      const virtualBlocks = this.hierarchyManager.getAllVirtualBlocks(virtualRoots);
+      instancedStageMesh.syncFromVirtualBlocks(virtualBlocks);
+    }
+    parentGroup.add(instancedStageMesh.getGroup());
+    return instancedStageMesh;
+  }
+  /**
+   * Backward-compatible helper to build stage objects into parentGroup.
+   */
+  buildObjectsFromData(sceneData, parentGroup) {
+    const instancedStageMesh = this.buildInstancedStage(sceneData, parentGroup);
+    return [instancedStageMesh.getSurfaceMesh()];
+  }
+  /**
+   * Helper utility to identify standard stage elements (Lights, Floor, Grid, BoxHelpers, TransformControls).
+   */
+  static isStageObject(object, _transformControlsHelper) {
+    if (object.userData.isBlock === true || object.userData.isGroup === true) {
+      return false;
+    }
+    return true;
+  }
+}
 class ThreeStaging {
   constructor(options) {
     __publicField(this, "container");
@@ -34170,6 +34672,7 @@ class ThreeStaging {
     __publicField(this, "onSelectionInfoChange");
     __publicField(this, "hierarchyManager");
     __publicField(this, "selectionManager");
+    __publicField(this, "instancedStageMesh");
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
@@ -34245,6 +34748,8 @@ class ThreeStaging {
     }, false);
     const stageEnv = new StageEnvironment();
     stageEnv.initStage(this.scene);
+    this.instancedStageMesh = new InstancedStageMesh();
+    this.scene.add(this.instancedStageMesh.getGroup());
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
     this.transformControls.size = 2;
     this.transformControls.addEventListener("change", () => this.renderer.render(this.scene, this.camera));
@@ -34261,6 +34766,7 @@ class ThreeStaging {
     });
     this.transformControls.addEventListener("objectChange", () => {
       this.selectionManager.onObjectChange();
+      this.syncInstancedMesh();
       this.syncStateAndNotify();
     });
     this.scene.add(this.transformControls.getHelper());
@@ -34274,17 +34780,20 @@ class ThreeStaging {
     this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
     this.controls.zoomToCursor = true;
   }
+  syncInstancedMesh() {
+    const virtualBlocks = this.hierarchyManager.getAllVirtualBlocks(this.scene);
+    this.instancedStageMesh.syncFromVirtualBlocks(virtualBlocks);
+  }
   updateMesh() {
     var _a;
     this.hierarchyManager.updateMesh(
       this.scene,
       this.state,
       () => this.selectionManager.clearSelectionUI(this.scene, this.transformControls),
-      this.transformControls.getHelper()
+      this.transformControls.getHelper(),
+      this.instancedStageMesh
     );
-    const envObjects = this.scene.children.filter(
-      (child) => !StageEnvironment.isStageObject(child, this.transformControls.getHelper())
-    );
+    const envObjects = this.hierarchyManager.getVirtualRootObjects(this.scene);
     this.cachedSceneExtent = calculateSceneExtent(envObjects);
     updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, (_a = this.controls) == null ? void 0 : _a.target);
     if (this.controls) {
@@ -34317,35 +34826,40 @@ class ThreeStaging {
       cycleInfo
     );
   }
-  getSelectableCandidates(intersects2) {
+  getSelectableCandidatesFromHits(instancedHits, otherHits) {
     const candidates = [];
     const addCandidate = (obj) => {
       if (obj && !candidates.includes(obj)) {
         candidates.push(obj);
       }
     };
-    for (const hit of intersects2) {
+    for (const hit of instancedHits) {
+      if (hit.instanceId !== void 0 && hit.instanceId !== null) {
+        const virtualBlock = this.instancedStageMesh.getNodeByInstanceId(hit.instanceId);
+        if (virtualBlock) {
+          const topObj = this.selectionManager.getTopSelectableObject(virtualBlock, this.scene, this.transformControls.getHelper());
+          if (topObj) {
+            addCandidate(topObj);
+            const chain = [];
+            let curr = virtualBlock;
+            while (curr && curr !== topObj) {
+              if (curr.name !== "__edge_outline__" && curr.name !== "__box_helper__" && curr.name !== "floor") {
+                chain.unshift(curr);
+              }
+              curr = curr.parent;
+            }
+            chain.forEach((c) => addCandidate(c));
+          }
+        }
+      }
+    }
+    for (const hit of otherHits) {
       let mesh = hit.object;
       if (!mesh || !mesh.visible) continue;
-      if (mesh.name === "__box_helper__" || mesh.name === "floor" || mesh.name === "grid" || mesh.name === "helper") {
-        continue;
-      }
-      if (mesh.name === "__edge_outline__") {
-        mesh = mesh.parent;
-      }
-      if (!mesh) continue;
+      if (mesh.name === "__box_helper__" || mesh.name === "floor" || mesh.name === "grid" || mesh.name === "helper") continue;
       const topObj = this.selectionManager.getTopSelectableObject(mesh, this.scene, this.transformControls.getHelper());
       if (topObj) {
         addCandidate(topObj);
-        const chain = [];
-        let curr = mesh;
-        while (curr && curr !== topObj) {
-          if (curr.name !== "__edge_outline__" && curr.name !== "__box_helper__" && curr.name !== "floor") {
-            chain.unshift(curr);
-          }
-          curr = curr.parent;
-        }
-        chain.forEach((c) => addCandidate(c));
       }
     }
     return candidates;
@@ -34354,24 +34868,21 @@ class ThreeStaging {
     const selectedObjects = this.selectionManager.getSelectedObjects();
     const group = this.hierarchyManager.groupSelected(this.scene, selectedObjects);
     if (group) {
+      this.syncInstancedMesh();
       this.selectionManager.setSelectedObjects([group]);
       this.updateSelectionUI();
       this.syncStateAndNotify();
     }
   }
   selectAll() {
-    const topLevelObjects = [];
-    this.scene.children.forEach((child) => {
-      if (child.name !== "floor" && !(child instanceof GridHelper) && child !== this.transformControls.getHelper() && child !== this.selectionManager.getMultiSelectionPivot() && !(child instanceof Light) && child.name !== "__edge_outline__") {
-        topLevelObjects.push(child);
-      }
-    });
+    const topLevelObjects = this.hierarchyManager.getVirtualRootObjects(this.scene);
     this.selectionManager.setSelectedObjects(topLevelObjects);
     this.updateSelectionUI();
   }
   ungroupSelected() {
     const selectedObjects = this.selectionManager.getSelectedObjects();
     const newSelected = this.hierarchyManager.ungroupSelected(this.scene, selectedObjects);
+    this.syncInstancedMesh();
     this.selectionManager.setSelectedObjects(newSelected);
     this.updateSelectionUI();
     this.syncStateAndNotify();
@@ -34388,7 +34899,7 @@ class ThreeStaging {
     const newTransform = { px: px2, py: py2, pz: pz2, rx: 0, ry: 0, rz: 0, sx, sy, sz };
     const newMesh = this.hierarchyManager.createBlockMesh(newTransform);
     this.scene.add(newMesh);
-    this.hierarchyManager.registerMesh(newMesh);
+    this.syncInstancedMesh();
     this.selectionManager.setSelectedObjects([newMesh]);
     const modeToUse = this.transformMode ?? this.lastTransformMode;
     this.setTransformMode(modeToUse);
@@ -34402,21 +34913,13 @@ class ThreeStaging {
     const selectedObjects = this.selectionManager.getSelectedObjects();
     if (selectedObjects.length === 0) return;
     selectedObjects.forEach((obj) => {
-      this.scene.remove(obj);
-      if (obj.type === "Mesh") {
-        const mesh = obj;
-        this.hierarchyManager.unregisterMesh(mesh);
-        mesh.geometry.dispose();
-      } else if (obj.type === "Group") {
-        obj.traverse((child) => {
-          if (child.isMesh) {
-            const m = child;
-            this.hierarchyManager.unregisterMesh(m);
-            m.geometry.dispose();
-          }
-        });
+      if (obj.parent) {
+        obj.parent.remove(obj);
+      } else {
+        this.scene.remove(obj);
       }
     });
+    this.syncInstancedMesh();
     this.selectionManager.setSelectedObjects([]);
     this.updateSelectionUI();
     this.syncStateAndNotify();
@@ -34440,6 +34943,7 @@ class ThreeStaging {
         newSelected.push(dupObj);
       }
     });
+    this.syncInstancedMesh();
     this.selectionManager.setSelectedObjects(newSelected);
     this.updateSelectionUI();
     this.syncStateAndNotify();
@@ -34518,15 +35022,16 @@ class ThreeStaging {
           return;
         }
       }
-      const selectableObjects = [];
+      const instancedIntersects = raycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false);
+      const otherSelectables = [];
       this.scene.children.forEach((child) => {
-        if (!StageEnvironment.isStageObject(child, this.transformControls.getHelper())) {
-          selectableObjects.push(child);
+        if (child.name === "__spawn_point_indicator__" || child.name === "__spawn_point_mesh__") {
+          otherSelectables.push(child);
         }
       });
-      const intersects2 = raycaster.intersectObjects(selectableObjects, true);
-      if (intersects2.length > 0) {
-        const candidates = this.getSelectableCandidates(intersects2);
+      const otherIntersects = otherSelectables.length > 0 ? raycaster.intersectObjects(otherSelectables, true) : [];
+      if (instancedIntersects.length > 0 || otherIntersects.length > 0) {
+        const candidates = this.getSelectableCandidatesFromHits(instancedIntersects, otherIntersects);
         if (candidates.length > 0) {
           const selectedObjects = this.selectionManager.getSelectedObjects();
           if (event.shiftKey) {
@@ -34674,6 +35179,12 @@ class ThreeStaging {
     }
     if (this.transformControls) {
       this.transformControls.dispose();
+    }
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose();
+    }
+    if (this.hierarchyManager) {
+      this.hierarchyManager.dispose();
     }
     if (this.renderer) {
       this.renderer.dispose();
@@ -35177,208 +35688,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   }
 });
 const StagingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-765c1cfe"]]);
-function mergeGeometries(geometries, useGroups = false) {
-  const isIndexed = geometries[0].index !== null;
-  const attributesUsed = new Set(Object.keys(geometries[0].attributes));
-  const morphAttributesUsed = new Set(Object.keys(geometries[0].morphAttributes));
-  const attributes = {};
-  const morphAttributes = {};
-  const morphTargetsRelative = geometries[0].morphTargetsRelative;
-  const mergedGeometry = new BufferGeometry();
-  let offset = 0;
-  for (let i = 0; i < geometries.length; ++i) {
-    const geometry = geometries[i];
-    let attributesCount = 0;
-    if (isIndexed !== (geometry.index !== null)) {
-      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". All geometries must have compatible attributes; make sure index attribute exists among all geometries, or in none of them.");
-      return null;
-    }
-    for (const name in geometry.attributes) {
-      if (!attributesUsed.has(name)) {
-        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + '. All geometries must have compatible attributes; make sure "' + name + '" attribute exists among all geometries, or in none of them.');
-        return null;
-      }
-      if (attributes[name] === void 0) attributes[name] = [];
-      attributes[name].push(geometry.attributes[name]);
-      attributesCount++;
-    }
-    if (attributesCount !== attributesUsed.size) {
-      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". Make sure all geometries have the same number of attributes.");
-      return null;
-    }
-    if (morphTargetsRelative !== geometry.morphTargetsRelative) {
-      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". .morphTargetsRelative must be consistent throughout all geometries.");
-      return null;
-    }
-    for (const name in geometry.morphAttributes) {
-      if (!morphAttributesUsed.has(name)) {
-        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ".  .morphAttributes must be consistent throughout all geometries.");
-        return null;
-      }
-      if (morphAttributes[name] === void 0) morphAttributes[name] = [];
-      morphAttributes[name].push(geometry.morphAttributes[name]);
-    }
-    if (useGroups) {
-      let count;
-      if (isIndexed) {
-        count = geometry.index.count;
-      } else if (geometry.attributes.position !== void 0) {
-        count = geometry.attributes.position.count;
-      } else {
-        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed with geometry at index " + i + ". The geometry must have either an index or a position attribute");
-        return null;
-      }
-      mergedGeometry.addGroup(offset, count, i);
-      offset += count;
-    }
-  }
-  if (isIndexed) {
-    let indexOffset = 0;
-    const mergedIndex = [];
-    for (let i = 0; i < geometries.length; ++i) {
-      const index = geometries[i].index;
-      for (let j = 0; j < index.count; ++j) {
-        mergedIndex.push(index.getX(j) + indexOffset);
-      }
-      indexOffset += geometries[i].attributes.position.count;
-    }
-    mergedGeometry.setIndex(mergedIndex);
-  }
-  for (const name in attributes) {
-    const mergedAttribute = mergeAttributes(attributes[name]);
-    if (!mergedAttribute) {
-      console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + name + " attribute.");
-      return null;
-    }
-    mergedGeometry.setAttribute(name, mergedAttribute);
-  }
-  for (const name in morphAttributes) {
-    const numMorphTargets = morphAttributes[name][0].length;
-    if (numMorphTargets === 0) break;
-    mergedGeometry.morphAttributes = mergedGeometry.morphAttributes || {};
-    mergedGeometry.morphAttributes[name] = [];
-    for (let i = 0; i < numMorphTargets; ++i) {
-      const morphAttributesToMerge = [];
-      for (let j = 0; j < morphAttributes[name].length; ++j) {
-        morphAttributesToMerge.push(morphAttributes[name][j][i]);
-      }
-      const mergedMorphAttribute = mergeAttributes(morphAttributesToMerge);
-      if (!mergedMorphAttribute) {
-        console.error("THREE.BufferGeometryUtils: .mergeGeometries() failed while trying to merge the " + name + " morphAttribute.");
-        return null;
-      }
-      mergedGeometry.morphAttributes[name].push(mergedMorphAttribute);
-    }
-  }
-  return mergedGeometry;
-}
-function mergeAttributes(attributes) {
-  let TypedArray;
-  let itemSize;
-  let normalized;
-  let gpuType = -1;
-  let arrayLength = 0;
-  for (let i = 0; i < attributes.length; ++i) {
-    const attribute = attributes[i];
-    if (TypedArray === void 0) TypedArray = attribute.array.constructor;
-    if (TypedArray !== attribute.array.constructor) {
-      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.array must be of consistent array types across matching attributes.");
-      return null;
-    }
-    if (itemSize === void 0) itemSize = attribute.itemSize;
-    if (itemSize !== attribute.itemSize) {
-      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.itemSize must be consistent across matching attributes.");
-      return null;
-    }
-    if (normalized === void 0) normalized = attribute.normalized;
-    if (normalized !== attribute.normalized) {
-      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.normalized must be consistent across matching attributes.");
-      return null;
-    }
-    if (gpuType === -1) gpuType = attribute.gpuType;
-    if (gpuType !== attribute.gpuType) {
-      console.error("THREE.BufferGeometryUtils: .mergeAttributes() failed. BufferAttribute.gpuType must be consistent across matching attributes.");
-      return null;
-    }
-    arrayLength += attribute.count * itemSize;
-  }
-  const array = new TypedArray(arrayLength);
-  const result = new BufferAttribute(array, itemSize, normalized);
-  let offset = 0;
-  for (let i = 0; i < attributes.length; ++i) {
-    const attribute = attributes[i];
-    if (attribute.isInterleavedBufferAttribute) {
-      const tupleOffset = offset / itemSize;
-      for (let j = 0, l = attribute.count; j < l; j++) {
-        for (let c = 0; c < itemSize; c++) {
-          const value = attribute.getComponent(j, c);
-          result.setComponent(j + tupleOffset, c, value);
-        }
-      }
-    } else {
-      array.set(attribute.array, offset);
-    }
-    offset += attribute.count * itemSize;
-  }
-  if (gpuType !== void 0) {
-    result.gpuType = gpuType;
-  }
-  return result;
-}
-function toTrianglesDrawMode(geometry, drawMode) {
-  if (drawMode === TrianglesDrawMode) {
-    console.warn("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Geometry already defined as triangles.");
-    return geometry;
-  }
-  if (drawMode === TriangleFanDrawMode || drawMode === TriangleStripDrawMode) {
-    let index = geometry.getIndex();
-    if (index === null) {
-      const indices = [];
-      const position = geometry.getAttribute("position");
-      if (position !== void 0) {
-        for (let i = 0; i < position.count; i++) {
-          indices.push(i);
-        }
-        geometry.setIndex(indices);
-        index = geometry.getIndex();
-      } else {
-        console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Undefined position attribute. Processing not possible.");
-        return geometry;
-      }
-    }
-    const numberOfTriangles = index.count - 2;
-    const newIndices = [];
-    if (drawMode === TriangleFanDrawMode) {
-      for (let i = 1; i <= numberOfTriangles; i++) {
-        newIndices.push(index.getX(0));
-        newIndices.push(index.getX(i));
-        newIndices.push(index.getX(i + 1));
-      }
-    } else {
-      for (let i = 0; i < numberOfTriangles; i++) {
-        if (i % 2 === 0) {
-          newIndices.push(index.getX(i));
-          newIndices.push(index.getX(i + 1));
-          newIndices.push(index.getX(i + 2));
-        } else {
-          newIndices.push(index.getX(i + 2));
-          newIndices.push(index.getX(i + 1));
-          newIndices.push(index.getX(i));
-        }
-      }
-    }
-    if (newIndices.length / 3 !== numberOfTriangles) {
-      console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unable to generate correct amount of triangles.");
-    }
-    const newGeometry = geometry.clone();
-    newGeometry.setIndex(newIndices);
-    newGeometry.clearGroups();
-    return newGeometry;
-  } else {
-    console.error("THREE.BufferGeometryUtils.toTrianglesDrawMode(): Unknown draw mode:", drawMode);
-    return geometry;
-  }
-}
 const CENTER = 0;
 const AVERAGE = 1;
 const SAH = 2;
@@ -46060,25 +46369,12 @@ class ThreeActing {
     this.state.stage_data = stageData;
     this.state.scene_data = stageData;
     const stageEnv = new StageEnvironment();
-    this.environmentMeshes = stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup);
+    const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
+    this.environmentMeshes = [instancedStage.getSurfaceMesh()];
     this.cachedSceneExtent = calculateStageExtent(this.clonedEnvGroup);
     updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget);
-    const geometries = [];
-    const floorBox = new BoxGeometry(100, 0.1, 100);
-    floorBox.translate(0, -0.05, 0);
-    geometries.push(floorBox);
-    this.scene.updateMatrixWorld(true);
-    if (this.clonedEnvGroup) {
-      this.clonedEnvGroup.updateMatrixWorld(true);
-    }
-    this.environmentMeshes.forEach((mesh) => {
-      mesh.updateMatrixWorld(true);
-      const geom = mesh.geometry.clone();
-      geom.applyMatrix4(mesh.matrixWorld);
-      geometries.push(geom);
-    });
-    if (geometries.length > 0) {
-      const mergedGeom = mergeGeometries(geometries);
+    const mergedGeom = instancedStage.getMergedColliderGeometry(true);
+    if (mergedGeom) {
       const newBVH = new MeshBVH(mergedGeom);
       mergedGeom.boundsTree = newBVH;
       this.colliderBVH = newBVH;
@@ -46119,7 +46415,6 @@ class ThreeActing {
       });
       this.bvhHelper.update();
       this.scene.add(this.bvhHelper);
-      geometries.forEach((g) => g.dispose());
     } else {
       this.colliderBVH = null;
     }
@@ -46929,7 +47224,7 @@ class ThreeDirecting {
     this.scene.add(this.clonedEnvGroup);
     const stageData = this.getStageData();
     const stageEnv = new StageEnvironment();
-    stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup);
+    stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
     if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
       this.cachedEnvBBox.setFromObject(this.clonedEnvGroup);
     } else {

@@ -1,12 +1,12 @@
 import * as THREE from 'three'
 import { MapControls } from 'three/addons/controls/MapControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { SceneState, ThreeStagingOptions, ThreeSceneOptions, CubeTransform } from './types'
+import type { SceneState, ThreeStagingOptions, CubeTransform } from './types'
 import * as config from './threeConfig'
 import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
 import { StagingSelectionManager } from './staging/StagingSelectionManager'
 import { StageEnvironment } from './staging/StageEnvironment'
-import { SpawnPointHelper } from './staging/SpawnPointHelper'
+import { InstancedStageMesh } from './staging/InstancedStageMesh'
 
 export class ThreeStaging {
   private container: HTMLElement
@@ -14,10 +14,11 @@ export class ThreeStaging {
   private onStateChange?: (state: SceneState) => void
   private onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   private onSelectionChange?: (hasSelection: boolean) => void
-  private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
+  private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 
   private hierarchyManager: StagingHierarchyManager
   private selectionManager: StagingSelectionManager
+  private instancedStageMesh!: InstancedStageMesh
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -105,6 +106,10 @@ export class ThreeStaging {
     const stageEnv = new StageEnvironment()
     stageEnv.initStage(this.scene)
 
+    // Instanced Stage Mesh Container
+    this.instancedStageMesh = new InstancedStageMesh()
+    this.scene.add(this.instancedStageMesh.getGroup())
+
     // TransformControls
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
     this.transformControls.size = 2.0
@@ -125,6 +130,7 @@ export class ThreeStaging {
 
     this.transformControls.addEventListener('objectChange', () => {
       this.selectionManager.onObjectChange()
+      this.syncInstancedMesh()
       this.syncStateAndNotify()
     })
 
@@ -144,18 +150,22 @@ export class ThreeStaging {
     this.controls.zoomToCursor = true
   }
 
+  private syncInstancedMesh(): void {
+    const virtualBlocks = this.hierarchyManager.getAllVirtualBlocks(this.scene)
+    this.instancedStageMesh.syncFromVirtualBlocks(virtualBlocks)
+  }
+
   private updateMesh(): void {
     this.hierarchyManager.updateMesh(
       this.scene,
       this.state,
       () => this.selectionManager.clearSelectionUI(this.scene, this.transformControls),
-      this.transformControls.getHelper()
+      this.transformControls.getHelper(),
+      this.instancedStageMesh
     )
 
     // Dynamically adjust fog and camera range based on overall scene extent
-    const envObjects = this.scene.children.filter(
-      (child) => !StageEnvironment.isStageObject(child, this.transformControls.getHelper())
-    )
+    const envObjects = this.hierarchyManager.getVirtualRootObjects(this.scene)
     this.cachedSceneExtent = config.calculateSceneExtent(envObjects)
     config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.controls?.target)
     if (this.controls) {
@@ -192,7 +202,7 @@ export class ThreeStaging {
     )
   }
 
-  public getSelectableCandidates(intersects: THREE.Intersection[]): THREE.Object3D[] {
+  public getSelectableCandidatesFromHits(instancedHits: THREE.Intersection[], otherHits: THREE.Intersection[]): THREE.Object3D[] {
     const candidates: THREE.Object3D[] = []
     const addCandidate = (obj: THREE.Object3D | null) => {
       if (obj && !candidates.includes(obj)) {
@@ -200,31 +210,36 @@ export class ThreeStaging {
       }
     }
 
-    for (const hit of intersects) {
+    for (const hit of instancedHits) {
+      if (hit.instanceId !== undefined && hit.instanceId !== null) {
+        const virtualBlock = this.instancedStageMesh.getNodeByInstanceId(hit.instanceId)
+        if (virtualBlock) {
+          const topObj = this.selectionManager.getTopSelectableObject(virtualBlock, this.scene, this.transformControls.getHelper())
+          if (topObj) {
+            addCandidate(topObj)
+
+            const chain: THREE.Object3D[] = []
+            let curr: THREE.Object3D | null = virtualBlock
+            while (curr && curr !== topObj) {
+              if (curr.name !== '__edge_outline__' && curr.name !== '__box_helper__' && curr.name !== 'floor') {
+                chain.unshift(curr)
+              }
+              curr = curr.parent
+            }
+            chain.forEach(c => addCandidate(c))
+          }
+        }
+      }
+    }
+
+    for (const hit of otherHits) {
       let mesh: THREE.Object3D | null = hit.object
       if (!mesh || !mesh.visible) continue
-
-      if (mesh.name === '__box_helper__' || mesh.name === 'floor' || mesh.name === 'grid' || mesh.name === 'helper') {
-        continue
-      }
-      if (mesh.name === '__edge_outline__') {
-        mesh = mesh.parent
-      }
-      if (!mesh) continue
+      if (mesh.name === '__box_helper__' || mesh.name === 'floor' || mesh.name === 'grid' || mesh.name === 'helper') continue
 
       const topObj = this.selectionManager.getTopSelectableObject(mesh, this.scene, this.transformControls.getHelper())
       if (topObj) {
         addCandidate(topObj)
-
-        const chain: THREE.Object3D[] = []
-        let curr: THREE.Object3D | null = mesh
-        while (curr && curr !== topObj) {
-          if (curr.name !== '__edge_outline__' && curr.name !== '__box_helper__' && curr.name !== 'floor') {
-            chain.unshift(curr)
-          }
-          curr = curr.parent
-        }
-        chain.forEach(c => addCandidate(c))
       }
     }
 
@@ -235,6 +250,7 @@ export class ThreeStaging {
     const selectedObjects = this.selectionManager.getSelectedObjects()
     const group = this.hierarchyManager.groupSelected(this.scene, selectedObjects)
     if (group) {
+      this.syncInstancedMesh()
       this.selectionManager.setSelectedObjects([group])
       this.updateSelectionUI()
       this.syncStateAndNotify()
@@ -242,19 +258,7 @@ export class ThreeStaging {
   }
 
   public selectAll(): void {
-    const topLevelObjects: THREE.Object3D[] = []
-    this.scene.children.forEach((child) => {
-      if (
-        child.name !== 'floor' &&
-        !(child instanceof THREE.GridHelper) &&
-        child !== this.transformControls.getHelper() &&
-        child !== this.selectionManager.getMultiSelectionPivot() &&
-        !(child instanceof THREE.Light) &&
-        child.name !== '__edge_outline__'
-      ) {
-        topLevelObjects.push(child)
-      }
-    })
+    const topLevelObjects = this.hierarchyManager.getVirtualRootObjects(this.scene)
     this.selectionManager.setSelectedObjects(topLevelObjects)
     this.updateSelectionUI()
   }
@@ -262,6 +266,7 @@ export class ThreeStaging {
   public ungroupSelected(): void {
     const selectedObjects = this.selectionManager.getSelectedObjects()
     const newSelected = this.hierarchyManager.ungroupSelected(this.scene, selectedObjects)
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects(newSelected)
     this.updateSelectionUI()
     this.syncStateAndNotify()
@@ -281,7 +286,7 @@ export class ThreeStaging {
     const newTransform: CubeTransform = { px, py, pz, rx: 0, ry: 0, rz: 0, sx, sy, sz }
     const newMesh = this.hierarchyManager.createBlockMesh(newTransform)
     this.scene.add(newMesh)
-    this.hierarchyManager.registerMesh(newMesh)
+    this.syncInstancedMesh()
 
     this.selectionManager.setSelectedObjects([newMesh])
     const modeToUse = this.transformMode ?? this.lastTransformMode
@@ -299,22 +304,14 @@ export class ThreeStaging {
     if (selectedObjects.length === 0) return
 
     selectedObjects.forEach(obj => {
-      this.scene.remove(obj)
-      if (obj.type === 'Mesh') {
-        const mesh = obj as THREE.Mesh
-        this.hierarchyManager.unregisterMesh(mesh)
-        mesh.geometry.dispose()
-      } else if (obj.type === 'Group') {
-        obj.traverse(child => {
-          if ((child as THREE.Mesh).isMesh) {
-            const m = child as THREE.Mesh
-            this.hierarchyManager.unregisterMesh(m)
-            m.geometry.dispose()
-          }
-        })
+      if (obj.parent) {
+        obj.parent.remove(obj)
+      } else {
+        this.scene.remove(obj)
       }
     })
 
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects([])
     this.updateSelectionUI()
     this.syncStateAndNotify()
@@ -342,6 +339,7 @@ export class ThreeStaging {
       }
     })
 
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects(newSelected)
     this.updateSelectionUI()
     this.syncStateAndNotify()
@@ -438,18 +436,23 @@ export class ThreeStaging {
         }
       }
 
-      // Collect selectable objects
-      const selectableObjects: THREE.Object3D[] = []
+      // 1. Raycast against InstancedMesh
+      const instancedIntersects = raycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false)
+
+      // 2. Raycast against other non-block objects (e.g. spawn points)
+      const otherSelectables: THREE.Object3D[] = []
       this.scene.children.forEach(child => {
-        if (!StageEnvironment.isStageObject(child, this.transformControls.getHelper())) {
-          selectableObjects.push(child)
+        if (
+          child.name === '__spawn_point_indicator__' ||
+          child.name === '__spawn_point_mesh__'
+        ) {
+          otherSelectables.push(child)
         }
       })
+      const otherIntersects = otherSelectables.length > 0 ? raycaster.intersectObjects(otherSelectables, true) : []
 
-      const intersects = raycaster.intersectObjects(selectableObjects, true)
-
-      if (intersects.length > 0) {
-        const candidates = this.getSelectableCandidates(intersects)
+      if (instancedIntersects.length > 0 || otherIntersects.length > 0) {
+        const candidates = this.getSelectableCandidatesFromHits(instancedIntersects, otherIntersects)
 
         if (candidates.length > 0) {
           const selectedObjects = this.selectionManager.getSelectedObjects()
@@ -616,6 +619,14 @@ export class ThreeStaging {
 
     if (this.transformControls) {
       this.transformControls.dispose()
+    }
+
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose()
+    }
+
+    if (this.hierarchyManager) {
+      this.hierarchyManager.dispose()
     }
 
     if (this.renderer) {

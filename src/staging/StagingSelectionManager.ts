@@ -126,14 +126,14 @@ export class StagingSelectionManager {
     }
   }
 
-  public getTopSelectableObject(obj: THREE.Object3D, scene: THREE.Scene, transformControlsHelper: THREE.Object3D): THREE.Object3D | null {
+  public getTopSelectableObject(obj: THREE.Object3D, scene: THREE.Scene, _transformControlsHelper?: THREE.Object3D): THREE.Object3D | null {
     let curr: THREE.Object3D | null = obj
     while (curr && curr.parent && curr.parent !== scene) {
       if (curr.parent.type === 'Scene') break
-      if (curr.parent.name === 'floor' || curr.parent === transformControlsHelper) break
+      if (!curr.parent.userData.isGroup && !curr.parent.userData.isBlock) break
       curr = curr.parent
     }
-    if (curr && (curr.type === 'Mesh' || curr.type === 'Group') && curr.name !== 'floor') {
+    if (curr && (curr.userData.isBlock === true || curr.userData.isGroup === true || curr.name === '__spawn_point_indicator__')) {
       return curr
     }
     return null

@@ -780,32 +780,16 @@ export class ThreeActing {
     this.state.scene_data = stageData
 
     const stageEnv = new StageEnvironment()
-    this.environmentMeshes = stageEnv.buildObjectsFromData(stageData, this.clonedEnvGroup)
+    const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
+    this.environmentMeshes = [instancedStage.getSurfaceMesh()]
 
     this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
     config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
 
     // Build BVH Collision Tree
-    const geometries: THREE.BufferGeometry[] = []
+    const mergedGeom = instancedStage.getMergedColliderGeometry(true)
 
-    const floorBox = new THREE.BoxGeometry(100, 0.1, 100)
-    floorBox.translate(0, -0.05, 0)
-    geometries.push(floorBox)
-
-    this.scene.updateMatrixWorld(true)
-    if (this.clonedEnvGroup) {
-      this.clonedEnvGroup.updateMatrixWorld(true)
-    }
-
-    this.environmentMeshes.forEach((mesh) => {
-      mesh.updateMatrixWorld(true)
-      const geom = mesh.geometry.clone()
-      geom.applyMatrix4(mesh.matrixWorld)
-      geometries.push(geom)
-    })
-
-    if (geometries.length > 0) {
-      const mergedGeom = BufferGeometryUtils.mergeGeometries(geometries)
+    if (mergedGeom) {
       const newBVH = new MeshBVH(mergedGeom)
       ;(mergedGeom as any).boundsTree = newBVH
       this.colliderBVH = newBVH
@@ -848,8 +832,6 @@ export class ThreeActing {
       })
       this.bvhHelper.update()
       this.scene.add(this.bvhHelper)
-
-      geometries.forEach(g => g.dispose())
     } else {
       this.colliderBVH = null
     }
