@@ -1,0 +1,4183 @@
+{
+  "type": "cube_stage",
+  "num_assets": 243,
+  "nodes": [
+    {
+      "id": "group_1462",
+      "type": "group",
+      "name": "Zone 1 - Central Park & Sidewalks",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_93987",
+          "type": "block",
+          "name": "West Street Sidewalk",
+          "transform": {
+            "px": -27.33,
+            "py": 0.1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 11.85,
+            "sy": 0.2,
+            "sz": 60
+          }
+        },
+        {
+          "id": "block_10738",
+          "type": "block",
+          "name": "East Street Sidewalk",
+          "transform": {
+            "px": 27.5,
+            "py": 0.1,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 15.03,
+            "sy": 0.2,
+            "sz": 45.44
+          }
+        },
+        {
+          "id": "block_77706",
+          "type": "block",
+          "name": "North Street Sidewalk",
+          "transform": {
+            "px": 0,
+            "py": 0.1,
+            "pz": -26.54,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 25.1,
+            "sy": 0.2,
+            "sz": 15.36
+          }
+        },
+        {
+          "id": "block_36987",
+          "type": "block",
+          "name": "South Street Sidewalk",
+          "transform": {
+            "px": -9.85,
+            "py": 0.1,
+            "pz": 27.9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 14.44,
+            "sy": 0.2,
+            "sz": 13.5
+          }
+        },
+        {
+          "id": "block_78151",
+          "type": "block",
+          "name": "Park Perimeter Curb",
+          "transform": {
+            "px": 0,
+            "py": 0.1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 24,
+            "sy": 0.2,
+            "sz": 24
+          }
+        },
+        {
+          "id": "block_30462",
+          "type": "block",
+          "name": "Central Park Green Lawn",
+          "transform": {
+            "px": 0,
+            "py": 0.15,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 0.1,
+            "sz": 22
+          }
+        },
+        {
+          "id": "block_30345",
+          "type": "block",
+          "name": "Park Y-Path North Stem",
+          "transform": {
+            "px": 0,
+            "py": 0.22,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 0.05,
+            "sz": 11
+          }
+        },
+        {
+          "id": "block_66149",
+          "type": "block",
+          "name": "Park Y-Path South-West Fork",
+          "transform": {
+            "px": -5.5,
+            "py": 0.22,
+            "pz": 5.5,
+            "rx": 0,
+            "ry": -0.79,
+            "rz": 0,
+            "sx": 2.6,
+            "sy": 0.05,
+            "sz": 15.56
+          }
+        },
+        {
+          "id": "block_76948",
+          "type": "block",
+          "name": "Park Y-Path South-East Fork",
+          "transform": {
+            "px": 5.5,
+            "py": 0.22,
+            "pz": 5.5,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 2.6,
+            "sy": 0.05,
+            "sz": 15.56
+          }
+        },
+        {
+          "id": "block_30133",
+          "type": "block",
+          "name": "Monument Stepped Base",
+          "transform": {
+            "px": 0,
+            "py": 0.45,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.2,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_76753",
+          "type": "block",
+          "name": "Town Memorial Plaque",
+          "transform": {
+            "px": 0,
+            "py": 0.95,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.7,
+            "sz": 1
+          }
+        },
+        {
+          "id": "block_68669",
+          "type": "block",
+          "name": "US Flagpole Mast",
+          "transform": {
+            "px": 0,
+            "py": 4.9,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 8.5,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_58938",
+          "type": "block",
+          "name": "US Flag Fabric Banner",
+          "transform": {
+            "px": 0.89,
+            "py": 8.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.74,
+            "sy": 0.99,
+            "sz": 0.06
+          }
+        },
+        {
+          "id": "group_4209",
+          "type": "group",
+          "name": "Grand Historic Town Oak",
+          "transform": {
+            "px": -3.84,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_28299",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": -6,
+                "py": 2.7,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.7,
+                "sy": 5,
+                "sz": 0.7
+              }
+            },
+            {
+              "id": "block_36090",
+              "type": "block",
+              "name": "Foliage Tier 1",
+              "transform": {
+                "px": -6,
+                "py": 4.3,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 5.5,
+                "sy": 1.2,
+                "sz": 5.5
+              }
+            },
+            {
+              "id": "block_20429",
+              "type": "block",
+              "name": "Foliage Tier 2",
+              "transform": {
+                "px": -6,
+                "py": 5.07,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0.79,
+                "rz": 0,
+                "sx": 4.29,
+                "sy": 0.94,
+                "sz": 4.29
+              }
+            },
+            {
+              "id": "block_47236",
+              "type": "block",
+              "name": "Foliage Tier 3",
+              "transform": {
+                "px": -6,
+                "py": 5.64,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 3.08,
+                "sy": 0.67,
+                "sz": 3.08
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_2866",
+          "type": "group",
+          "name": "North-East Park Tree",
+          "transform": {
+            "px": 2.87,
+            "py": 0,
+            "pz": -3.36,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_55814",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": 6,
+                "py": 1.8,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 3.2,
+                "sz": 0.4
+              }
+            },
+            {
+              "id": "block_91301",
+              "type": "block",
+              "name": "Foliage Tier 1",
+              "transform": {
+                "px": 6,
+                "py": 3.04,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 3.2,
+                "sy": 1.2,
+                "sz": 3.2
+              }
+            },
+            {
+              "id": "block_42471",
+              "type": "block",
+              "name": "Foliage Tier 2",
+              "transform": {
+                "px": 6,
+                "py": 3.81,
+                "pz": -5,
+                "rx": 0,
+                "ry": 0.79,
+                "rz": 0,
+                "sx": 2.5,
+                "sy": 0.94,
+                "sz": 2.5
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_3700",
+          "type": "group",
+          "name": "South Fork Park Tree",
+          "transform": {
+            "px": 5.12,
+            "py": 0,
+            "pz": 1.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_39184",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": 0,
+                "py": 1.6,
+                "pz": 8.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.35,
+                "sy": 2.8,
+                "sz": 0.35
+              }
+            },
+            {
+              "id": "block_61758",
+              "type": "block",
+              "name": "Foliage Tier 1",
+              "transform": {
+                "px": 0,
+                "py": 2.76,
+                "pz": 8.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2.6,
+                "sy": 1.2,
+                "sz": 2.6
+              }
+            },
+            {
+              "id": "block_26794",
+              "type": "block",
+              "name": "Foliage Tier 2",
+              "transform": {
+                "px": 0,
+                "py": 3.53,
+                "pz": 8.5,
+                "rx": 0,
+                "ry": 0.79,
+                "rz": 0,
+                "sx": 2.03,
+                "sy": 0.94,
+                "sz": 2.03
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_9913",
+          "type": "group",
+          "name": "Lamppost NW",
+          "transform": {
+            "px": 0,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_94196",
+              "type": "block",
+              "name": "Base Plinth",
+              "transform": {
+                "px": -11.5,
+                "py": 0.45,
+                "pz": -11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.5,
+                "sy": 0.5,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_27652",
+              "type": "block",
+              "name": "Vertical Shaft",
+              "transform": {
+                "px": -11.5,
+                "py": 2.7,
+                "pz": -11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.18,
+                "sy": 4.2,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_93135",
+              "type": "block",
+              "name": "Gooseneck Arm",
+              "transform": {
+                "px": -11.5,
+                "py": 4.9,
+                "pz": -11.15,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.14,
+                "sy": 0.22,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_63583",
+              "type": "block",
+              "name": "Lamp Fixture",
+              "transform": {
+                "px": -11.5,
+                "py": 4.7,
+                "pz": -10.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 0.3,
+                "sz": 0.4
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_9923",
+          "type": "group",
+          "name": "Lamppost NE",
+          "transform": {
+            "px": 0,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_29709",
+              "type": "block",
+              "name": "Base Plinth",
+              "transform": {
+                "px": 11.5,
+                "py": 0.45,
+                "pz": -11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.5,
+                "sy": 0.5,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_34360",
+              "type": "block",
+              "name": "Vertical Shaft",
+              "transform": {
+                "px": 11.5,
+                "py": 2.7,
+                "pz": -11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.18,
+                "sy": 4.2,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_83635",
+              "type": "block",
+              "name": "Gooseneck Arm",
+              "transform": {
+                "px": 11.5,
+                "py": 4.9,
+                "pz": -11.15,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.14,
+                "sy": 0.22,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_67307",
+              "type": "block",
+              "name": "Lamp Fixture",
+              "transform": {
+                "px": 11.5,
+                "py": 4.7,
+                "pz": -10.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 0.3,
+                "sz": 0.4
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_9959",
+          "type": "group",
+          "name": "Lamppost SW",
+          "transform": {
+            "px": 0,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_40731",
+              "type": "block",
+              "name": "Base Plinth",
+              "transform": {
+                "px": -11.5,
+                "py": 0.45,
+                "pz": 11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.5,
+                "sy": 0.5,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_70297",
+              "type": "block",
+              "name": "Vertical Shaft",
+              "transform": {
+                "px": -11.5,
+                "py": 2.7,
+                "pz": 11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.18,
+                "sy": 4.2,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_72403",
+              "type": "block",
+              "name": "Gooseneck Arm",
+              "transform": {
+                "px": -11.5,
+                "py": 4.9,
+                "pz": 11.85,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.14,
+                "sy": 0.22,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_49233",
+              "type": "block",
+              "name": "Lamp Fixture",
+              "transform": {
+                "px": -11.5,
+                "py": 4.7,
+                "pz": 12.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 0.3,
+                "sz": 0.4
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_6326",
+          "type": "group",
+          "name": "Lamppost SE",
+          "transform": {
+            "px": 0,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_36107",
+              "type": "block",
+              "name": "Base Plinth",
+              "transform": {
+                "px": 11.5,
+                "py": 0.45,
+                "pz": 11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.5,
+                "sy": 0.5,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_60015",
+              "type": "block",
+              "name": "Vertical Shaft",
+              "transform": {
+                "px": 11.5,
+                "py": 2.7,
+                "pz": 11.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.18,
+                "sy": 4.2,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_89518",
+              "type": "block",
+              "name": "Gooseneck Arm",
+              "transform": {
+                "px": 11.5,
+                "py": 4.9,
+                "pz": 11.85,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.14,
+                "sy": 0.22,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_27802",
+              "type": "block",
+              "name": "Lamp Fixture",
+              "transform": {
+                "px": 11.5,
+                "py": 4.7,
+                "pz": 12.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 0.3,
+                "sz": 0.4
+              }
+            }
+          ]
+        },
+        {
+          "id": "block_38305",
+          "type": "block",
+          "name": "Bench North-West Seat",
+          "transform": {
+            "px": -2.1,
+            "py": 0.38,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 0.12,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_43231",
+          "type": "block",
+          "name": "Bench North-West Backrest",
+          "transform": {
+            "px": -2.35,
+            "py": 0.83,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.08,
+            "sy": 0.45,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_43023",
+          "type": "block",
+          "name": "Bench North-East Seat",
+          "transform": {
+            "px": 2.1,
+            "py": 0.38,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 0.12,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_15815",
+          "type": "block",
+          "name": "Bench North-East Backrest",
+          "transform": {
+            "px": 2.35,
+            "py": 0.83,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 0.08,
+            "sy": 0.45,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_39982",
+          "type": "block",
+          "name": "Bench South-West Seat",
+          "transform": {
+            "px": -6.77,
+            "py": 0.38,
+            "pz": 4.23,
+            "rx": 0,
+            "ry": -0.79,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 0.12,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_10758",
+          "type": "block",
+          "name": "Bench South-West Backrest",
+          "transform": {
+            "px": -6.95,
+            "py": 0.83,
+            "pz": 4.05,
+            "rx": 0,
+            "ry": -0.79,
+            "rz": 0,
+            "sx": 0.08,
+            "sy": 0.45,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_17082",
+          "type": "block",
+          "name": "Bench South-East Seat",
+          "transform": {
+            "px": 6.77,
+            "py": 0.38,
+            "pz": 4.23,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 0.12,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_20165",
+          "type": "block",
+          "name": "Bench South-East Backrest",
+          "transform": {
+            "px": 6.88,
+            "py": 0.83,
+            "pz": 4.05,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 0.08,
+            "sy": 0.45,
+            "sz": 2.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_8530",
+      "type": "group",
+      "name": "Zone 2 - Courthouse & Clock Tower Landmark",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_13342",
+          "type": "block",
+          "name": "Courthouse Base Slab",
+          "transform": {
+            "px": 0,
+            "py": 0.5,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 22,
+            "sy": 1,
+            "sz": 11
+          }
+        },
+        {
+          "id": "block_45102",
+          "type": "block",
+          "name": "Step 1",
+          "transform": {
+            "px": 0,
+            "py": 0.09,
+            "pz": -20.78,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_93598",
+          "type": "block",
+          "name": "Step 2",
+          "transform": {
+            "px": 0,
+            "py": 0.26,
+            "pz": -21.14,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_96481",
+          "type": "block",
+          "name": "Step 3",
+          "transform": {
+            "px": 0,
+            "py": 0.43,
+            "pz": -21.5,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_87860",
+          "type": "block",
+          "name": "Step 4",
+          "transform": {
+            "px": 0,
+            "py": 0.6,
+            "pz": -21.86,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_54139",
+          "type": "block",
+          "name": "Step 5",
+          "transform": {
+            "px": 0,
+            "py": 0.77,
+            "pz": -22.22,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_70088",
+          "type": "block",
+          "name": "Step 6",
+          "transform": {
+            "px": 0,
+            "py": 0.94,
+            "pz": -22.58,
+            "rx": 0,
+            "ry": 3.14,
+            "rz": 0,
+            "sx": 11.5,
+            "sy": 0.17,
+            "sz": 0.36
+          }
+        },
+        {
+          "id": "block_74817",
+          "type": "block",
+          "name": "Central Hall Red Brick Hull",
+          "transform": {
+            "px": 0,
+            "py": 4.75,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 13,
+            "sy": 7.5,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_44159",
+          "type": "block",
+          "name": "West Wing Structure",
+          "transform": {
+            "px": -8.8,
+            "py": 4,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 6,
+            "sz": 8.5
+          }
+        },
+        {
+          "id": "block_99995",
+          "type": "block",
+          "name": "East Wing Structure",
+          "transform": {
+            "px": 8.8,
+            "py": 4,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 6,
+            "sz": 8.5
+          }
+        },
+        {
+          "id": "block_49933",
+          "type": "block",
+          "name": "West Wing Parapet North",
+          "transform": {
+            "px": -8.8,
+            "py": 7.2,
+            "pz": -32,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 0.45,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_73999",
+          "type": "block",
+          "name": "West Wing Parapet South",
+          "transform": {
+            "px": -8.8,
+            "py": 7.2,
+            "pz": -24,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 0.45,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_71862",
+          "type": "block",
+          "name": "West Wing Parapet Outer",
+          "transform": {
+            "px": -11,
+            "py": 7.2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 8.5
+          }
+        },
+        {
+          "id": "block_16137",
+          "type": "block",
+          "name": "West Wing Roof Deck",
+          "transform": {
+            "px": -8.8,
+            "py": 6.9,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4,
+            "sy": 0.2,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_35063",
+          "type": "block",
+          "name": "East Wing Parapet North",
+          "transform": {
+            "px": 8.8,
+            "py": 7.2,
+            "pz": -32,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 0.45,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_61550",
+          "type": "block",
+          "name": "East Wing Parapet South",
+          "transform": {
+            "px": 8.8,
+            "py": 7.2,
+            "pz": -24,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 0.45,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_70088",
+          "type": "block",
+          "name": "East Wing Parapet Outer",
+          "transform": {
+            "px": 11,
+            "py": 7.2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 8.5
+          }
+        },
+        {
+          "id": "block_57745",
+          "type": "block",
+          "name": "East Wing Roof Deck",
+          "transform": {
+            "px": 8.8,
+            "py": 6.9,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4,
+            "sy": 0.2,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_57036",
+          "type": "block",
+          "name": "Pillar Plinth 1",
+          "transform": {
+            "px": -4.5,
+            "py": 1.2,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_44908",
+          "type": "block",
+          "name": "Pillar Column 1",
+          "transform": {
+            "px": -4.5,
+            "py": 4.5,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 6.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_63134",
+          "type": "block",
+          "name": "Pillar Capital 1",
+          "transform": {
+            "px": -4.5,
+            "py": 7.9,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_68164",
+          "type": "block",
+          "name": "Pillar Plinth 2",
+          "transform": {
+            "px": -1.5,
+            "py": 1.2,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_72970",
+          "type": "block",
+          "name": "Pillar Column 2",
+          "transform": {
+            "px": -1.5,
+            "py": 4.5,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 6.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_15852",
+          "type": "block",
+          "name": "Pillar Capital 2",
+          "transform": {
+            "px": -1.5,
+            "py": 7.9,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_73128",
+          "type": "block",
+          "name": "Pillar Plinth 3",
+          "transform": {
+            "px": 1.5,
+            "py": 1.2,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_70967",
+          "type": "block",
+          "name": "Pillar Column 3",
+          "transform": {
+            "px": 1.5,
+            "py": 4.5,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 6.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_39061",
+          "type": "block",
+          "name": "Pillar Capital 3",
+          "transform": {
+            "px": 1.5,
+            "py": 7.9,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_34437",
+          "type": "block",
+          "name": "Pillar Plinth 4",
+          "transform": {
+            "px": 4.5,
+            "py": 1.2,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_53506",
+          "type": "block",
+          "name": "Pillar Column 4",
+          "transform": {
+            "px": 4.5,
+            "py": 4.5,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 6.4,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_11605",
+          "type": "block",
+          "name": "Pillar Capital 4",
+          "transform": {
+            "px": 4.5,
+            "py": 7.9,
+            "pz": -22.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.4,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_92940",
+          "type": "block",
+          "name": "Portico Architrave Beam",
+          "transform": {
+            "px": 0,
+            "py": 8.3,
+            "pz": -23.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12.2,
+            "sy": 0.5,
+            "sz": 3.8
+          }
+        },
+        {
+          "id": "block_14879",
+          "type": "block",
+          "name": "Central Hall Left Slope",
+          "transform": {
+            "px": -3.25,
+            "py": 9.8,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.42,
+            "sx": 7.12,
+            "sy": 0.35,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_10334",
+          "type": "block",
+          "name": "Central Hall Right Slope",
+          "transform": {
+            "px": 3.25,
+            "py": 9.8,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.42,
+            "sx": 7.12,
+            "sy": 0.35,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_98805",
+          "type": "block",
+          "name": "Central Hall Roof Ridge Beam",
+          "transform": {
+            "px": 0,
+            "py": 11.2,
+            "pz": -28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.3,
+            "sz": 9.7
+          }
+        },
+        {
+          "id": "block_61040",
+          "type": "block",
+          "name": "Rear Attic Gable Wall Tier 1",
+          "transform": {
+            "px": 0,
+            "py": 8.76,
+            "pz": -32.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.6,
+            "sy": 0.52,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_80846",
+          "type": "block",
+          "name": "Rear Attic Gable Wall Tier 2",
+          "transform": {
+            "px": 0,
+            "py": 9.28,
+            "pz": -32.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 7.2,
+            "sy": 0.52,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_42063",
+          "type": "block",
+          "name": "Rear Attic Gable Wall Tier 3",
+          "transform": {
+            "px": 0,
+            "py": 9.8,
+            "pz": -32.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.8,
+            "sy": 0.52,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_32032",
+          "type": "block",
+          "name": "Rear Attic Gable Wall Tier 4",
+          "transform": {
+            "px": 0,
+            "py": 10.32,
+            "pz": -32.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.4,
+            "sy": 0.52,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_73709",
+          "type": "block",
+          "name": "Rear Attic Gable Wall Tier 5",
+          "transform": {
+            "px": 0,
+            "py": 10.84,
+            "pz": -32.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.52,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_11064",
+          "type": "block",
+          "name": "Pediment Tympanum Tier 1",
+          "transform": {
+            "px": 0,
+            "py": 8.79,
+            "pz": -23.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8.55,
+            "sy": 0.58,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_31710",
+          "type": "block",
+          "name": "Pediment Tympanum Tier 2",
+          "transform": {
+            "px": 0,
+            "py": 9.36,
+            "pz": -23.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.7,
+            "sy": 0.58,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_82699",
+          "type": "block",
+          "name": "Pediment Tympanum Tier 3",
+          "transform": {
+            "px": 0,
+            "py": 9.94,
+            "pz": -23.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.85,
+            "sy": 0.58,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_11889",
+          "type": "block",
+          "name": "Pediment Tympanum Tier 4",
+          "transform": {
+            "px": 0,
+            "py": 10.51,
+            "pz": -23.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.58,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_22970",
+          "type": "block",
+          "name": "Pediment Left Cornice Rake",
+          "transform": {
+            "px": -3.1,
+            "py": 9.8,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.44,
+            "sx": 6.8,
+            "sy": 0.45,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_86522",
+          "type": "block",
+          "name": "Pediment Right Cornice Rake",
+          "transform": {
+            "px": 3.1,
+            "py": 9.8,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.44,
+            "sx": 6.8,
+            "sy": 0.45,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_14813",
+          "type": "block",
+          "name": "Pediment Apex Peak Cap",
+          "transform": {
+            "px": 0,
+            "py": 11.3,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_96366",
+          "type": "block",
+          "name": "Clock Pediment Mounting Base",
+          "transform": {
+            "px": 0,
+            "py": 8.85,
+            "pz": -23.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.2,
+            "sy": 0.5,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_28333",
+          "type": "block",
+          "name": "Clock Outer Dial Ring",
+          "transform": {
+            "px": 0,
+            "py": 9.85,
+            "pz": -23.15,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.4,
+            "sy": 2.4,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_87369",
+          "type": "block",
+          "name": "Clock Face White Dial",
+          "transform": {
+            "px": 0,
+            "py": 9.85,
+            "pz": -23,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 2,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_72207",
+          "type": "block",
+          "name": "Clock Hour Hand (10)",
+          "transform": {
+            "px": -0.28,
+            "py": 10.1,
+            "pz": -22.92,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.52,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 0.06
+          }
+        },
+        {
+          "id": "block_50661",
+          "type": "block",
+          "name": "Clock Minute Hand (04)",
+          "transform": {
+            "px": 0.2,
+            "py": 10.25,
+            "pz": -22.92,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.4,
+            "sx": 0.08,
+            "sy": 0.7,
+            "sz": 0.06
+          }
+        },
+        {
+          "id": "block_27789",
+          "type": "block",
+          "name": "Clock Center Pin",
+          "transform": {
+            "px": 0,
+            "py": 9.85,
+            "pz": -22.88,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.2,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_10331",
+          "type": "block",
+          "name": "Pediment Apex Weather Vane Base",
+          "transform": {
+            "px": 0,
+            "py": 11.8,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 0.8,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_38606",
+          "type": "block",
+          "name": "Weather Vane Directional Finial",
+          "transform": {
+            "px": 0,
+            "py": 12.2,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_85658",
+          "type": "block",
+          "name": "Lightning Conductor Terminal Tip",
+          "transform": {
+            "px": 0,
+            "py": 12.5,
+            "pz": -23.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.4,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_53600",
+          "type": "block",
+          "name": "Main Entry Door Frame",
+          "transform": {
+            "px": 0,
+            "py": 2.4,
+            "pz": -23,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 3,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_97608",
+          "type": "block",
+          "name": "Main Entry Double Doors",
+          "transform": {
+            "px": 0,
+            "py": 2.2,
+            "pz": -22.9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.2,
+            "sy": 2.6,
+            "sz": 0.12
+          }
+        },
+        {
+          "id": "block_77010",
+          "type": "block",
+          "name": "Courthouse Left Shrub",
+          "transform": {
+            "px": -7.2,
+            "py": 0.8,
+            "pz": -22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 1.2,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_48694",
+          "type": "block",
+          "name": "Courthouse Right Shrub",
+          "transform": {
+            "px": 7.2,
+            "py": 0.8,
+            "pz": -22,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 1.2,
+            "sz": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_4597",
+      "type": "group",
+      "name": "Zone 3 - West Commercial Street (7 Building Plots)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_84504",
+          "type": "block",
+          "name": "West Plot 1 - North Corner Body",
+          "transform": {
+            "px": -28,
+            "py": 4.5,
+            "pz": -25.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 9,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_86750",
+          "type": "block",
+          "name": "West Plot 1 - Cornice",
+          "transform": {
+            "px": -28,
+            "py": 9.2,
+            "pz": -25.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.7,
+            "sy": 0.4,
+            "sz": 7.7
+          }
+        },
+        {
+          "id": "block_63161",
+          "type": "block",
+          "name": "West Plot 2 - Bank of America Hull",
+          "transform": {
+            "px": -28,
+            "py": 5.5,
+            "pz": -17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 11,
+            "sz": 8
+          }
+        },
+        {
+          "id": "block_64042",
+          "type": "block",
+          "name": "West Plot 2 - Bank Cornice",
+          "transform": {
+            "px": -28,
+            "py": 11.2,
+            "pz": -17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.9,
+            "sy": 0.5,
+            "sz": 8.4
+          }
+        },
+        {
+          "id": "block_30869",
+          "type": "block",
+          "name": "West Plot 2 - Bank Header Sign",
+          "transform": {
+            "px": -23.1,
+            "py": 4.6,
+            "pz": -17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.7,
+            "sz": 7.4
+          }
+        },
+        {
+          "id": "block_83695",
+          "type": "block",
+          "name": "West Plot 2 - Bank Glass Storefront",
+          "transform": {
+            "px": -23.15,
+            "py": 2.2,
+            "pz": -17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.18,
+            "sy": 3.2,
+            "sz": 7.2
+          }
+        },
+        {
+          "id": "block_32720",
+          "type": "block",
+          "name": "West Plot 3 - Travel Service Hull",
+          "transform": {
+            "px": -28,
+            "py": 4.2,
+            "pz": -8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 8.4,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_57032",
+          "type": "block",
+          "name": "West Plot 3 - Travel Sign Header",
+          "transform": {
+            "px": -23.1,
+            "py": 4.1,
+            "pz": -8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.6,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_36357",
+          "type": "block",
+          "name": "West Plot 3 - Awning",
+          "transform": {
+            "px": -22.6,
+            "py": 3.1,
+            "pz": -8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.25,
+            "sx": 1.2,
+            "sy": 0.18,
+            "sz": 6.5
+          }
+        },
+        {
+          "id": "block_70255",
+          "type": "block",
+          "name": "West Plot 4 - Mansard Townhouse Body",
+          "transform": {
+            "px": -28,
+            "py": 3.8,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 7.6,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_17930",
+          "type": "block",
+          "name": "West Plot 4 - Mansard Slate Roof",
+          "transform": {
+            "px": -28,
+            "py": 8.6,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9,
+            "sy": 1.8,
+            "sz": 7.1
+          }
+        },
+        {
+          "id": "block_15443",
+          "type": "block",
+          "name": "West Plot 4 - Dormer Window 1",
+          "transform": {
+            "px": -23.1,
+            "py": 8.6,
+            "pz": -2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 1.1,
+            "sz": 1
+          }
+        },
+        {
+          "id": "block_82669",
+          "type": "block",
+          "name": "West Plot 4 - Dormer Window 2",
+          "transform": {
+            "px": -23.1,
+            "py": 8.6,
+            "pz": 2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.6,
+            "sy": 1.1,
+            "sz": 1
+          }
+        },
+        {
+          "id": "block_29135",
+          "type": "block",
+          "name": "West Plot 5 - Lous Cafe Hull",
+          "transform": {
+            "px": -28,
+            "py": 3.4,
+            "pz": 8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 6.8,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_22943",
+          "type": "block",
+          "name": "West Plot 5 - Striped Awning",
+          "transform": {
+            "px": -22.4,
+            "py": 3.4,
+            "pz": 8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.3,
+            "sx": 1.9,
+            "sy": 0.25,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_89171",
+          "type": "block",
+          "name": "West Plot 5 - Header Sign",
+          "transform": {
+            "px": -23.1,
+            "py": 4.6,
+            "pz": 8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.7,
+            "sz": 6.5
+          }
+        },
+        {
+          "id": "block_25659",
+          "type": "block",
+          "name": "West Plot 5 - Storefront Glass",
+          "transform": {
+            "px": -23.15,
+            "py": 1.7,
+            "pz": 8.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.18,
+            "sy": 2.4,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_60115",
+          "type": "block",
+          "name": "West Plot 6 - Western Auto Body",
+          "transform": {
+            "px": -28,
+            "py": 3.6,
+            "pz": 17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 7.2,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_33500",
+          "type": "block",
+          "name": "West Plot 6 - Stepped Parapet",
+          "transform": {
+            "px": -23.2,
+            "py": 7.6,
+            "pz": 17,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.45,
+            "sy": 1,
+            "sz": 7.6
+          }
+        },
+        {
+          "id": "block_35308",
+          "type": "block",
+          "name": "West Plot 6 - Blue Awning",
+          "transform": {
+            "px": -22.6,
+            "py": 3.1,
+            "pz": 17,
+            "rx": 0,
+            "ry": 0,
+            "rz": -0.2,
+            "sx": 1.2,
+            "sy": 0.18,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_98149",
+          "type": "block",
+          "name": "West Plot 7 - South Corner Body",
+          "transform": {
+            "px": -28,
+            "py": 3.6,
+            "pz": 25.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 7.2,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_13367",
+          "type": "block",
+          "name": "West Plot 7 - Roof Parapet",
+          "transform": {
+            "px": -28,
+            "py": 7.4,
+            "pz": 25.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.7,
+            "sy": 0.45,
+            "sz": 7.7
+          }
+        },
+        {
+          "id": "group_8087",
+          "type": "group",
+          "name": "Light Blue Sedan on West St",
+          "transform": {
+            "px": 0.72,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_25474",
+              "type": "block",
+              "name": "Chassis",
+              "transform": {
+                "px": -20.8,
+                "py": 0.35,
+                "pz": -14,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2,
+                "sy": 0.4,
+                "sz": 4.6
+              }
+            },
+            {
+              "id": "block_10255",
+              "type": "block",
+              "name": "Cabin Roof",
+              "transform": {
+                "px": -20.8,
+                "py": 0.85,
+                "pz": -14.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.65,
+                "sy": 0.6,
+                "sz": 2.4
+              }
+            },
+            {
+              "id": "block_58978",
+              "type": "block",
+              "name": "Front Hood",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": -12.6,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.5
+              }
+            },
+            {
+              "id": "block_15238",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": -15.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.3
+              }
+            },
+            {
+              "id": "block_62082",
+              "type": "block",
+              "name": "Front Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": -11.65,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_28892",
+              "type": "block",
+              "name": "Rear Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": -16.25,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_60569",
+              "type": "block",
+              "name": "Wheel FL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": -12.7,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_60242",
+              "type": "block",
+              "name": "Wheel FR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": -12.7,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_34524",
+              "type": "block",
+              "name": "Wheel RL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": -15.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_35297",
+              "type": "block",
+              "name": "Wheel RR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": -15.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_1367",
+          "type": "group",
+          "name": "Mint Green Coupe on West St",
+          "transform": {
+            "px": 0.76,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_37462",
+              "type": "block",
+              "name": "Chassis",
+              "transform": {
+                "px": -20.8,
+                "py": 0.35,
+                "pz": -3,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2,
+                "sy": 0.4,
+                "sz": 4.6
+              }
+            },
+            {
+              "id": "block_10510",
+              "type": "block",
+              "name": "Cabin Roof",
+              "transform": {
+                "px": -20.8,
+                "py": 0.85,
+                "pz": -3.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.65,
+                "sy": 0.6,
+                "sz": 2.4
+              }
+            },
+            {
+              "id": "block_45117",
+              "type": "block",
+              "name": "Front Hood",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": -1.6,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.5
+              }
+            },
+            {
+              "id": "block_48605",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": -4.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.3
+              }
+            },
+            {
+              "id": "block_20623",
+              "type": "block",
+              "name": "Front Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": -0.65,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_88525",
+              "type": "block",
+              "name": "Rear Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": -5.25,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_50222",
+              "type": "block",
+              "name": "Wheel FL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": -1.7,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_37968",
+              "type": "block",
+              "name": "Wheel FR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": -1.7,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_38938",
+              "type": "block",
+              "name": "Wheel RL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": -4.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_19137",
+              "type": "block",
+              "name": "Wheel RR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": -4.2,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_5841",
+          "type": "group",
+          "name": "Pink Station Wagon on West St",
+          "transform": {
+            "px": 0.96,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_58667",
+              "type": "block",
+              "name": "Chassis",
+              "transform": {
+                "px": -20.8,
+                "py": 0.35,
+                "pz": 11,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2,
+                "sy": 0.4,
+                "sz": 4.6
+              }
+            },
+            {
+              "id": "block_65948",
+              "type": "block",
+              "name": "Cabin Roof",
+              "transform": {
+                "px": -20.8,
+                "py": 0.85,
+                "pz": 10.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.65,
+                "sy": 0.6,
+                "sz": 2.4
+              }
+            },
+            {
+              "id": "block_29968",
+              "type": "block",
+              "name": "Front Hood",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": 12.4,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.5
+              }
+            },
+            {
+              "id": "block_86864",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": -20.8,
+                "py": 0.52,
+                "pz": 9.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.3
+              }
+            },
+            {
+              "id": "block_28900",
+              "type": "block",
+              "name": "Front Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": 13.35,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_54842",
+              "type": "block",
+              "name": "Rear Chrome Bumper",
+              "transform": {
+                "px": -20.8,
+                "py": 0.28,
+                "pz": 8.75,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_97825",
+              "type": "block",
+              "name": "Wheel FL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": 12.3,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_68002",
+              "type": "block",
+              "name": "Wheel FR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": 12.3,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_12387",
+              "type": "block",
+              "name": "Wheel RL",
+              "transform": {
+                "px": -21.75,
+                "py": 0.28,
+                "pz": 9.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_94865",
+              "type": "block",
+              "name": "Wheel RR",
+              "transform": {
+                "px": -19.85,
+                "py": 0.28,
+                "pz": 9.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_6063",
+      "type": "group",
+      "name": "Zone 4 - East Commercial Street (5 Building Plots)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_69250",
+          "type": "block",
+          "name": "East Plot 1 - Art Deco Building Hull",
+          "transform": {
+            "px": 28,
+            "py": 4.8,
+            "pz": -23.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 9.6,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_76976",
+          "type": "block",
+          "name": "East Plot 1 - Stepped Parapet",
+          "transform": {
+            "px": 23.2,
+            "py": 10,
+            "pz": -23.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 1,
+            "sz": 7.7
+          }
+        },
+        {
+          "id": "block_13985",
+          "type": "block",
+          "name": "East Plot 1 - Vertical Pilaster 1",
+          "transform": {
+            "px": 23.1,
+            "py": 5,
+            "pz": -26.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 9,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_85917",
+          "type": "block",
+          "name": "East Plot 1 - Vertical Pilaster 2",
+          "transform": {
+            "px": 23.1,
+            "py": 5,
+            "pz": -20.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 9,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_58726",
+          "type": "block",
+          "name": "East Plot 1 - Storefront Windows",
+          "transform": {
+            "px": 23.15,
+            "py": 1.8,
+            "pz": -23.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2.6,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_79866",
+          "type": "block",
+          "name": "East Plot 2 - Striped Store Hull",
+          "transform": {
+            "px": 28,
+            "py": 3.8,
+            "pz": -15.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 7.6,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_18343",
+          "type": "block",
+          "name": "East Plot 2 - Cornice",
+          "transform": {
+            "px": 28,
+            "py": 7.8,
+            "pz": -15.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.7,
+            "sy": 0.4,
+            "sz": 7.7
+          }
+        },
+        {
+          "id": "block_60194",
+          "type": "block",
+          "name": "East Plot 2 - Striped Fabric Awning",
+          "transform": {
+            "px": 22.4,
+            "py": 3.1,
+            "pz": -15.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0.28,
+            "sx": 1.8,
+            "sy": 0.22,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_90928",
+          "type": "block",
+          "name": "East Plot 2 - Storefront Display Windows",
+          "transform": {
+            "px": 23.15,
+            "py": 1.6,
+            "pz": -15.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2.2,
+            "sz": 6.6
+          }
+        },
+        {
+          "id": "block_97025",
+          "type": "block",
+          "name": "East Plot 3 - Sporting Goods Hull",
+          "transform": {
+            "px": 28,
+            "py": 4,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 8,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_10142",
+          "type": "block",
+          "name": "East Plot 3 - Header Sign",
+          "transform": {
+            "px": 23.1,
+            "py": 3.6,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.6,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_19943",
+          "type": "block",
+          "name": "East Plot 3 - Classic Cornice",
+          "transform": {
+            "px": 28,
+            "py": 8.2,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.7,
+            "sy": 0.45,
+            "sz": 7.7
+          }
+        },
+        {
+          "id": "block_24418",
+          "type": "block",
+          "name": "East Plot 3 - Storefront Glass",
+          "transform": {
+            "px": 23.15,
+            "py": 1.6,
+            "pz": -7.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 2.2,
+            "sz": 6.6
+          }
+        },
+        {
+          "id": "block_78443",
+          "type": "block",
+          "name": "East Plot 4 - Gaynors Boutique Hull",
+          "transform": {
+            "px": 28,
+            "py": 3.4,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9.5,
+            "sy": 6.8,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_33691",
+          "type": "block",
+          "name": "East Plot 4 - Purple-Blue Facade Band",
+          "transform": {
+            "px": 23.1,
+            "py": 1.8,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 3,
+            "sz": 7
+          }
+        },
+        {
+          "id": "block_91619",
+          "type": "block",
+          "name": "East Plot 4 - Header Board",
+          "transform": {
+            "px": 23.05,
+            "py": 3.5,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.5,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_38055",
+          "type": "block",
+          "name": "East Plot 5 - Essex Auditorium Hull",
+          "transform": {
+            "px": 28.5,
+            "py": 5,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 10.5,
+            "sy": 10,
+            "sz": 9
+          }
+        },
+        {
+          "id": "block_50356",
+          "type": "block",
+          "name": "East Plot 5 - Dark Sloped Roof",
+          "transform": {
+            "px": 28.5,
+            "py": 10.2,
+            "pz": 9,
+            "rx": 0.12,
+            "ry": 0,
+            "rz": 0,
+            "sx": 10,
+            "sy": 0.7,
+            "sz": 8.6
+          }
+        },
+        {
+          "id": "block_81366",
+          "type": "block",
+          "name": "East Plot 5 - Movie Poster 6.5",
+          "transform": {
+            "px": 23.2,
+            "py": 2.2,
+            "pz": 6.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 1.6,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_34051",
+          "type": "block",
+          "name": "East Plot 5 - Movie Poster 9.0",
+          "transform": {
+            "px": 23.2,
+            "py": 2.2,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 1.6,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_67884",
+          "type": "block",
+          "name": "East Plot 5 - Movie Poster 11.5",
+          "transform": {
+            "px": 23.2,
+            "py": 2.2,
+            "pz": 11.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 1.6,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_62688",
+          "type": "block",
+          "name": "Essex Turret Shaft",
+          "transform": {
+            "px": 22.8,
+            "py": 8.82,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 5.62,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_23003",
+          "type": "block",
+          "name": "Essex Turret Balcony",
+          "transform": {
+            "px": 22.8,
+            "py": 11.8,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.3,
+            "sy": 0.5,
+            "sz": 3.3
+          }
+        },
+        {
+          "id": "block_17753",
+          "type": "block",
+          "name": "Essex Conical Spire 1",
+          "transform": {
+            "px": 22.8,
+            "py": 12.5,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 1,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_29316",
+          "type": "block",
+          "name": "Essex Conical Spire 2",
+          "transform": {
+            "px": 22.8,
+            "py": 13.5,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 2,
+            "sy": 1,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_97916",
+          "type": "block",
+          "name": "Essex Conical Spire 3",
+          "transform": {
+            "px": 22.8,
+            "py": 14.3,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 1.1,
+            "sy": 0.7,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_13289",
+          "type": "block",
+          "name": "Essex Spire Tip Finial",
+          "transform": {
+            "px": 22.8,
+            "py": 14.9,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.5,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_78411",
+          "type": "block",
+          "name": "Essex Porch Platform Base",
+          "transform": {
+            "px": 22.5,
+            "py": 0.23,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.2,
+            "sy": 0.45,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_93811",
+          "type": "block",
+          "name": "Essex Entrance Step 1",
+          "transform": {
+            "px": 21.25,
+            "py": 0.3,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.15,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_69022",
+          "type": "block",
+          "name": "Essex Entrance Step 2",
+          "transform": {
+            "px": 20.9,
+            "py": 0.15,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.15,
+            "sz": 7.9
+          }
+        },
+        {
+          "id": "block_69299",
+          "type": "block",
+          "name": "Essex Entrance Step 3",
+          "transform": {
+            "px": 20.55,
+            "py": 0.05,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.1,
+            "sz": 8.3
+          }
+        },
+        {
+          "id": "block_42941",
+          "type": "block",
+          "name": "Essex Porch Pillar 6.2",
+          "transform": {
+            "px": 21.8,
+            "py": 2.45,
+            "pz": 6.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 4,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_85840",
+          "type": "block",
+          "name": "Essex Porch Pillar 8.1",
+          "transform": {
+            "px": 21.8,
+            "py": 2.45,
+            "pz": 8.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 4,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_78794",
+          "type": "block",
+          "name": "Essex Porch Pillar 9.9",
+          "transform": {
+            "px": 21.8,
+            "py": 2.45,
+            "pz": 9.9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 4,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_29541",
+          "type": "block",
+          "name": "Essex Porch Pillar 11.8",
+          "transform": {
+            "px": 21.8,
+            "py": 2.45,
+            "pz": 11.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 4,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_90181",
+          "type": "block",
+          "name": "Essex Porch Canopy Slab",
+          "transform": {
+            "px": 22.5,
+            "py": 4.65,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.4,
+            "sy": 0.4,
+            "sz": 7.6
+          }
+        },
+        {
+          "id": "block_62644",
+          "type": "block",
+          "name": "Air Conditioned Blue Banner",
+          "transform": {
+            "px": 21.25,
+            "py": 4.25,
+            "pz": 9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 0.4,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_76278",
+          "type": "block",
+          "name": "Essex North Marquee Signboard",
+          "transform": {
+            "px": 21.6,
+            "py": 5.75,
+            "pz": 7.35,
+            "rx": 0,
+            "ry": -0.45,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 1.8,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "block_79858",
+          "type": "block",
+          "name": "Essex North Header Lettering",
+          "transform": {
+            "px": 21.6,
+            "py": 6.8,
+            "pz": 7.35,
+            "rx": 0,
+            "ry": -0.45,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.4,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "block_50800",
+          "type": "block",
+          "name": "Essex South Marquee Signboard",
+          "transform": {
+            "px": 21.6,
+            "py": 5.75,
+            "pz": 10.65,
+            "rx": 0,
+            "ry": 0.45,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 1.8,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "block_82714",
+          "type": "block",
+          "name": "Essex South Header Lettering",
+          "transform": {
+            "px": 21.6,
+            "py": 6.8,
+            "pz": 10.65,
+            "rx": 0,
+            "ry": 0.45,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.4,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "block_98669",
+          "type": "block",
+          "name": "Essex Marquee North Roof Cap",
+          "transform": {
+            "px": 21.6,
+            "py": 6.7,
+            "pz": 7.35,
+            "rx": 0,
+            "ry": -0.45,
+            "rz": 0,
+            "sx": 0.45,
+            "sy": 0.15,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "block_42777",
+          "type": "block",
+          "name": "Essex Marquee South Roof Cap",
+          "transform": {
+            "px": 21.6,
+            "py": 6.7,
+            "pz": 10.65,
+            "rx": 0,
+            "ry": 0.45,
+            "rz": 0,
+            "sx": 0.45,
+            "sy": 0.15,
+            "sz": 3.67
+          }
+        },
+        {
+          "id": "group_4108",
+          "type": "group",
+          "name": "Classic Dark Blue Sedan at Essex",
+          "transform": {
+            "px": -2.2,
+            "py": 0,
+            "pz": -11.67,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_28549",
+              "type": "block",
+              "name": "Chassis",
+              "transform": {
+                "px": 20.8,
+                "py": 0.35,
+                "pz": 9,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2,
+                "sy": 0.4,
+                "sz": 4.6
+              }
+            },
+            {
+              "id": "block_81860",
+              "type": "block",
+              "name": "Cabin Roof",
+              "transform": {
+                "px": 20.8,
+                "py": 0.85,
+                "pz": 8.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.65,
+                "sy": 0.6,
+                "sz": 2.4
+              }
+            },
+            {
+              "id": "block_43865",
+              "type": "block",
+              "name": "Front Hood",
+              "transform": {
+                "px": 20.8,
+                "py": 0.52,
+                "pz": 10.4,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.5
+              }
+            },
+            {
+              "id": "block_65760",
+              "type": "block",
+              "name": "Trunk",
+              "transform": {
+                "px": 20.8,
+                "py": 0.52,
+                "pz": 7.5,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.8,
+                "sy": 0.3,
+                "sz": 1.3
+              }
+            },
+            {
+              "id": "block_13694",
+              "type": "block",
+              "name": "Front Chrome Bumper",
+              "transform": {
+                "px": 20.8,
+                "py": 0.28,
+                "pz": 11.35,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_61890",
+              "type": "block",
+              "name": "Rear Chrome Bumper",
+              "transform": {
+                "px": 20.8,
+                "py": 0.28,
+                "pz": 6.75,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 1.9,
+                "sy": 0.22,
+                "sz": 0.18
+              }
+            },
+            {
+              "id": "block_15736",
+              "type": "block",
+              "name": "Wheel FL",
+              "transform": {
+                "px": 19.85,
+                "py": 0.28,
+                "pz": 10.3,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_64689",
+              "type": "block",
+              "name": "Wheel FR",
+              "transform": {
+                "px": 21.75,
+                "py": 0.28,
+                "pz": 10.3,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_37602",
+              "type": "block",
+              "name": "Wheel RL",
+              "transform": {
+                "px": 19.85,
+                "py": 0.28,
+                "pz": 7.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            },
+            {
+              "id": "block_72187",
+              "type": "block",
+              "name": "Wheel RR",
+              "transform": {
+                "px": 21.75,
+                "py": 0.28,
+                "pz": 7.8,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.22,
+                "sy": 0.55,
+                "sz": 0.55
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_5676",
+      "type": "group",
+      "name": "Zone 5 - South Commercial Row (3 Building Plots)",
+      "transform": {
+        "px": 0,
+        "py": 0,
+        "pz": 0,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_50485",
+          "type": "block",
+          "name": "Roys Records 3-Story Hull",
+          "transform": {
+            "px": -10,
+            "py": 5.5,
+            "pz": 28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12,
+            "sy": 11,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_90010",
+          "type": "block",
+          "name": "Roys Records Blue Storefront",
+          "transform": {
+            "px": -10,
+            "py": 2.2,
+            "pz": 23.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 11.4,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_85964",
+          "type": "block",
+          "name": "Roys Records Sign Header",
+          "transform": {
+            "px": -10,
+            "py": 4.3,
+            "pz": 23.05,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 10.6,
+            "sy": 0.7,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_55806",
+          "type": "block",
+          "name": "Roys Vertical Neon Sign Blade",
+          "transform": {
+            "px": -4.5,
+            "py": 7,
+            "pz": 23,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.7,
+            "sy": 2.6,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_39071",
+          "type": "block",
+          "name": "Lyon Estates Large Billboard",
+          "transform": {
+            "px": -3.8,
+            "py": 7.8,
+            "pz": 28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.18,
+            "sy": 3.4,
+            "sz": 8
+          }
+        },
+        {
+          "id": "block_34199",
+          "type": "block",
+          "name": "Rooftop Terrace Sun Umbrella",
+          "transform": {
+            "px": -12.5,
+            "py": 12.2,
+            "pz": 26,
+            "rx": 0,
+            "ry": 0.79,
+            "rz": 0,
+            "sx": 2.2,
+            "sy": 0.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_29457",
+          "type": "block",
+          "name": "Umbrella Pole",
+          "transform": {
+            "px": -12.5,
+            "py": 11.4,
+            "pz": 26,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 1.6,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_76194",
+          "type": "block",
+          "name": "Terrace Cafe Table",
+          "transform": {
+            "px": -12.5,
+            "py": 11.3,
+            "pz": 26,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 0.45,
+            "sz": 1
+          }
+        },
+        {
+          "id": "block_91213",
+          "type": "block",
+          "name": "Terrace Perimeter Railing",
+          "transform": {
+            "px": -10,
+            "py": 11.5,
+            "pz": 23.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 11.6,
+            "sy": 0.7,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_51577",
+          "type": "block",
+          "name": "Texaco Service Station Building",
+          "transform": {
+            "px": 7,
+            "py": 2.8,
+            "pz": 29.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 9,
+            "sy": 5.6,
+            "sz": 7.5
+          }
+        },
+        {
+          "id": "block_98365",
+          "type": "block",
+          "name": "Texaco Rollup Bay Door",
+          "transform": {
+            "px": 9.2,
+            "py": 1.8,
+            "pz": 25.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 3.6,
+            "sy": 3.6,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_93786",
+          "type": "block",
+          "name": "Texaco Office Window & Door",
+          "transform": {
+            "px": 5,
+            "py": 1.6,
+            "pz": 25.65,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 2.4,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_51799",
+          "type": "block",
+          "name": "Texaco Canopy White Roof",
+          "transform": {
+            "px": 7,
+            "py": 4.2,
+            "pz": 22.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8.5,
+            "sy": 0.35,
+            "sz": 6.2
+          }
+        },
+        {
+          "id": "block_80048",
+          "type": "block",
+          "name": "Texaco Canopy Red Trim Fascia",
+          "transform": {
+            "px": 7,
+            "py": 4.15,
+            "pz": 22.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8.7,
+            "sy": 0.15,
+            "sz": 6.4
+          }
+        },
+        {
+          "id": "block_38063",
+          "type": "block",
+          "name": "Texaco Canopy Left Decorative Fin",
+          "transform": {
+            "px": 3,
+            "py": 4.7,
+            "pz": 22.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.7,
+            "sz": 5.8
+          }
+        },
+        {
+          "id": "block_27841",
+          "type": "block",
+          "name": "Texaco Canopy Right Sign Fin",
+          "transform": {
+            "px": 11,
+            "py": 4.7,
+            "pz": 22.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 0.7,
+            "sz": 5.8
+          }
+        },
+        {
+          "id": "block_32705",
+          "type": "block",
+          "name": "Texaco Canopy Support Post West",
+          "transform": {
+            "px": 4.8,
+            "py": 2.1,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 4.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_30838",
+          "type": "block",
+          "name": "Texaco Canopy Support Post East",
+          "transform": {
+            "px": 9.2,
+            "py": 2.1,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 4.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_65771",
+          "type": "block",
+          "name": "Texaco Concrete Pump Island",
+          "transform": {
+            "px": 7,
+            "py": 0.12,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.8,
+            "sy": 0.24,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_81664",
+          "type": "block",
+          "name": "Texaco Vintage Gas Pump 1 Body",
+          "transform": {
+            "px": 5.6,
+            "py": 1,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.65,
+            "sy": 1.5,
+            "sz": 0.55
+          }
+        },
+        {
+          "id": "block_90599",
+          "type": "block",
+          "name": "Texaco Gas Pump 1 Meter Dial",
+          "transform": {
+            "px": 5.6,
+            "py": 1.25,
+            "pz": 20.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.45,
+            "sy": 0.45,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_50041",
+          "type": "block",
+          "name": "Texaco Gas Pump 1 Top Globe",
+          "transform": {
+            "px": 5.6,
+            "py": 1.9,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.35,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_56793",
+          "type": "block",
+          "name": "Texaco Vintage Gas Pump 2 Body",
+          "transform": {
+            "px": 8.4,
+            "py": 1,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.65,
+            "sy": 1.5,
+            "sz": 0.55
+          }
+        },
+        {
+          "id": "block_40983",
+          "type": "block",
+          "name": "Texaco Gas Pump 2 Meter Dial",
+          "transform": {
+            "px": 8.4,
+            "py": 1.25,
+            "pz": 20.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.45,
+            "sy": 0.45,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_84340",
+          "type": "block",
+          "name": "Texaco Gas Pump 2 Top Globe",
+          "transform": {
+            "px": 8.4,
+            "py": 1.9,
+            "pz": 20.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.35,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_69681",
+          "type": "block",
+          "name": "Texaco Star Sign Steel Pole",
+          "transform": {
+            "px": 2.2,
+            "py": 3.2,
+            "pz": 18.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 6.4,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_78855",
+          "type": "block",
+          "name": "Texaco Star Logo Disc",
+          "transform": {
+            "px": 2.2,
+            "py": 5.8,
+            "pz": 18.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 1.6,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_28947",
+          "type": "block",
+          "name": "Auto Workshop Main Body",
+          "transform": {
+            "px": 24,
+            "py": 3.5,
+            "pz": 28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12,
+            "sy": 7,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_14207",
+          "type": "block",
+          "name": "Workshop Rollup Garage Door",
+          "transform": {
+            "px": 24,
+            "py": 1.8,
+            "pz": 23.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.5,
+            "sy": 3.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_55569",
+          "type": "block",
+          "name": "Industrial Brick Chimney",
+          "transform": {
+            "px": 28.5,
+            "py": 5.2,
+            "pz": 30.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 4.8,
+            "sz": 1
+          }
+        },
+        {
+          "id": "block_46549",
+          "type": "block",
+          "name": "Workshop Roof Parapet",
+          "transform": {
+            "px": 24,
+            "py": 7.2,
+            "pz": 28,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 12.2,
+            "sy": 0.45,
+            "sz": 9.7
+          }
+        }
+      ]
+    },
+    {
+      "id": "node_fw9nqk3",
+      "type": "block",
+      "name": "South Street Sidewalk",
+      "transform": {
+        "px": 23.72,
+        "py": 0.1,
+        "pz": 28.7,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 14.44,
+        "sy": 0.2,
+        "sz": 13.5
+      }
+    }
+  ],
+  "selectedPreset": "courthouse_square.json"
+}

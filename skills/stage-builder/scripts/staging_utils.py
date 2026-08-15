@@ -1,11 +1,11 @@
 """
 Helper utilities for stage-builder AI Skill (ComfyUI-scene-camera-action)
 
-Provides:
-- Strict mathematical & spatial validation gates (ground alignment, world bounds, floating blocks, actor clearances)
-- Procedural shape generators for compound 3D box primitives (ramps, curves, stairs, arches, trees, buildings, fences)
-- Hierarchy inspector and ASCII reporting
-- Command-line interface for stage JSON validation and repair
+Core Mathematical & Validation Engine:
+- Domain-agnostic 3D box primitive builders and coordinate arithmetic.
+- 5 universal pure geometric generators (segments, linear arrays, radial arcs, stepped inclines, sloped ramps).
+- Deterministic Quality Gates (schema validation, world boundaries, ground alignment, hierarchy inspection, mirroring).
+- Command-line interface for stage JSON validation, repair, and inspection.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 # ==============================================================================
-# 1. CORE PRIMITIVE BUILDERS
+# 1. CORE PRIMITIVE BUILDERS & ARITHMETIC
 # ==============================================================================
 
 def create_block_node(
@@ -86,67 +86,140 @@ def calculate_ground_center_y(sy: float) -> float:
 
 
 # ==============================================================================
-# 2. PROCEDURAL COMPOUND SHAPE GENERATORS
+# 2. 5 UNIVERSAL PURE GEOMETRIC GENERATORS
 # ==============================================================================
 
-def generate_curved_track_blocks(
-    start_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    radius: float = 12.0,
-    angle_degrees: float = 90.0,
-    segments: int = 8,
-    road_width: float = 4.0,
-    road_thickness: float = 0.2
-) -> List[Dict[str, Any]]:
-    """Generates an array of rotated blocks forming a smooth curved track."""
-    blocks = []
-    angle_rad = math.radians(angle_degrees)
-    step_angle = angle_rad / max(1, segments)
+def create_segment_between(
+    name: str,
+    p1: Tuple[float, float],
+    p2: Tuple[float, float],
+    width: float,
+    height: float,
+    y_center: float,
+    node_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    1. VECTOR SEGMENT: Creates a linear block connecting 2D points p1=(x1, z1) to p2=(x2, z2).
+    Automatically computes exact length, midpoint position, and Three.js Euler Ry heading angle
+    using math.atan2(dx, dz), eliminating manual rotation errors.
+    """
+    x1, z1 = float(p1[0]), float(p1[1])
+    x2, z2 = float(p2[0]), float(p2[1])
+    dx = x2 - x1
+    dz = z2 - z1
+    length = math.sqrt(dx * dx + dz * dz)
+    mx = (x1 + x2) / 2.0
+    mz = (z1 + z2) / 2.0
+    ry = math.atan2(dx, dz)
+    return create_block_node(
+        name=name,
+        px=mx, py=y_center, pz=mz,
+        sx=width, sy=height, sz=length,
+        ry=ry,
+        node_id=node_id
+    )
 
-    start_x, start_y, start_z = start_pos
-    segment_length = (2 * math.pi * radius * (abs(angle_degrees) / 360.0)) / max(1, segments) + 0.1
+
+def generate_linear_array(
+    name_prefix: str,
+    start_pos: Tuple[float, float, float],
+    count: int,
+    step_vector: Tuple[float, float, float],
+    block_size: Tuple[float, float, float],
+    rotation: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+) -> List[Dict[str, Any]]:
+    """
+    2. LINEAR ARRAY: Generates an array of N identical blocks distributed along a 3D step vector.
+    Used for columns, pillars, fence posts, street curbs, barriers, sleepers, lights.
+    """
+    blocks = []
+    sx_b, sy_b, sz_b = block_size
+    rx_r, ry_r, rz_r = rotation
+    x0, y0, z0 = start_pos
+    dx, dy, dz = step_vector
+
+    for i in range(max(1, count)):
+        px = x0 + i * dx
+        py = y0 + i * dy
+        pz = z0 + i * dz
+        blocks.append(
+            create_block_node(
+                name=f"{name_prefix} {i+1}",
+                px=px, py=py, pz=pz,
+                sx=sx_b, sy=sy_b, sz=sz_b,
+                rx=rx_r, ry=ry_r, rz=rz_r
+            )
+        )
+    return blocks
+
+
+def generate_radial_arc(
+    name_prefix: str,
+    center_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
+    radius: float = 10.0,
+    start_angle_deg: float = 0.0,
+    end_angle_deg: float = 90.0,
+    segments: int = 8,
+    block_width: float = 2.0,
+    block_height: float = 0.5,
+    block_thickness: float = 0.5
+) -> List[Dict[str, Any]]:
+    """
+    3. RADIAL ARC: Generates an array of rotated blocks forming a smooth circular curve or full circle.
+    Used for curved roads, circular towers, colosseums, semicircular plazas, arches, arenas.
+    """
+    blocks = []
+    start_rad = math.radians(start_angle_deg)
+    end_rad = math.radians(end_angle_deg)
+    total_angle = end_rad - start_rad
+    step_angle = total_angle / max(1, segments)
+
+    cx0, cy0, cz0 = center_pos
+    arc_length = (abs(total_angle) * radius) / max(1, segments) + 0.05
 
     for i in range(segments):
-        curr_angle = i * step_angle
-        mid_angle = curr_angle + step_angle / 2.0
-
-        cx = start_x + radius * (1.0 - math.cos(mid_angle))
-        cz = start_z + radius * math.sin(mid_angle)
-        cy = start_y + road_thickness / 2.0
+        mid_angle = start_rad + (i + 0.5) * step_angle
+        # Tangent position on circumference
+        px = cx0 + radius * math.sin(mid_angle)
+        pz = cz0 + radius * math.cos(mid_angle)
+        py = cy0 + (block_height / 2.0)
 
         blocks.append(
             create_block_node(
-                name=f"Curved Segment {i+1}",
-                px=cx, py=cy, pz=cz,
-                sx=road_width, sy=road_thickness, sz=segment_length,
+                name=f"{name_prefix} Segment {i+1}",
+                px=px, py=py, pz=pz,
+                sx=block_width, sy=block_height, sz=arc_length,
                 ry=mid_angle
             )
         )
     return blocks
 
 
-def generate_staircase_blocks(
+def generate_stepped_incline(
+    name_prefix: str,
     start_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    num_steps: int = 8,
-    step_width: float = 1.4,
-    step_height: float = 0.25,
+    num_steps: int = 6,
+    step_width: float = 2.0,
+    step_height: float = 0.2,
     step_depth: float = 0.4,
     heading_rad: float = 0.0
 ) -> List[Dict[str, Any]]:
-    """Generates an aligned staircase formed by individual step blocks."""
+    """
+    4. STEPPED INCLINE: Generates a staircase, tiered seating, terraced terrain, or stepped wall.
+    Calculates accumulated Y elevation and forward displacement along heading_rad.
+    """
     blocks = []
     start_x, start_y, start_z = start_pos
 
-    for i in range(num_steps):
-        # Step center Y: accumulated previous step heights + half of current step height
+    for i in range(max(1, num_steps)):
         cy = start_y + (i * step_height) + (step_height / 2.0)
-        # Step offset along depth (Z)
         forward_dist = i * step_depth + (step_depth / 2.0)
         cx = start_x + forward_dist * math.sin(heading_rad)
         cz = start_z + forward_dist * math.cos(heading_rad)
 
         blocks.append(
             create_block_node(
-                name=f"Step {i+1}",
+                name=f"{name_prefix} Step {i+1}",
                 px=cx, py=cy, pz=cz,
                 sx=step_width, sy=step_height, sz=step_depth,
                 ry=heading_rad
@@ -155,7 +228,8 @@ def generate_staircase_blocks(
     return blocks
 
 
-def generate_ramp_blocks(
+def generate_sloped_ramp(
+    name: str,
     start_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
     length: float = 10.0,
     height: float = 2.5,
@@ -163,222 +237,31 @@ def generate_ramp_blocks(
     thickness: float = 0.2,
     heading_rad: float = 0.0
 ) -> Dict[str, Any]:
-    """Generates a continuous angled ramp block."""
+    """
+    5. SLOPED RAMP: Generates a continuous angled planar ramp/wedge with automatic pitch (Rx) and heading (Ry).
+    Used for roadway ramps, roofs, slides, conveyor inclines, vehicle jump pads.
+    """
     pitch_angle = -math.atan2(height, length)  # rx tilt angle
     hypotenuse_length = math.sqrt(length**2 + height**2)
 
     start_x, start_y, start_z = start_pos
-    # Center of the ramp in world space
     mid_forward = length / 2.0
     cx = start_x + mid_forward * math.sin(heading_rad)
     cy = start_y + (height / 2.0)
     cz = start_z + mid_forward * math.cos(heading_rad)
 
     return create_block_node(
-        name="Ramp Incline",
+        name=name,
         px=cx, py=cy, pz=cz,
         sx=width, sy=thickness, sz=hypotenuse_length,
         rx=pitch_angle, ry=heading_rad, rz=0.0
     )
 
 
-def generate_arch_blocks(
-    center_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    opening_width: float = 2.4,
-    opening_height: float = 3.0,
-    pillar_width: float = 0.5,
-    arch_depth: float = 0.8,
-    lintel_thickness: float = 0.4
-) -> Dict[str, Any]:
-    """Generates an architectural archway (left pillar, right pillar, top lintel) inside a group."""
-    cx, cy, cz = center_pos
-    pillar_height = opening_height
-    pillar_py = cy + (pillar_height / 2.0)
-
-    left_x = cx - (opening_width / 2.0 + pillar_width / 2.0)
-    right_x = cx + (opening_width / 2.0 + pillar_width / 2.0)
-
-    left_pillar = create_block_node(
-        "Left Pillar",
-        px=left_x, py=pillar_py, pz=cz,
-        sx=pillar_width, sy=pillar_height, sz=arch_depth
-    )
-    right_pillar = create_block_node(
-        "Right Pillar",
-        px=right_x, py=pillar_py, pz=cz,
-        sx=pillar_width, sy=pillar_height, sz=arch_depth
-    )
-
-    total_width = opening_width + 2 * pillar_width
-    lintel_py = cy + opening_height + (lintel_thickness / 2.0)
-    lintel = create_block_node(
-        "Top Lintel",
-        px=cx, py=lintel_py, pz=cz,
-        sx=total_width, sy=lintel_thickness, sz=arch_depth
-    )
-
-    return create_group_node(
-        name="Archway",
-        children=[left_pillar, right_pillar, lintel],
-        px=0.0, py=0.0, pz=0.0
-    )
-
-
-def generate_tree_group(
-    pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    trunk_height: float = 3.0,
-    trunk_radius: float = 0.4,
-    foliage_layers: int = 3,
-    base_foliage_size: float = 2.2,
-    name: str = "Tree"
-) -> Dict[str, Any]:
-    """Generates a stylized tree group composed of a trunk and tiered foliage boxes."""
-    px, py, pz = pos
-    children = []
-
-    # 1. Trunk
-    trunk_py = py + (trunk_height / 2.0)
-    trunk = create_block_node(
-        "Trunk",
-        px=px, py=trunk_py, pz=pz,
-        sx=trunk_radius, sy=trunk_height, sz=trunk_radius
-    )
-    children.append(trunk)
-
-    # 2. Foliage layers
-    current_y = py + trunk_height * 0.7
-    for i in range(foliage_layers):
-        scale_factor = 1.0 - (i * 0.22)
-        layer_size = max(0.8, base_foliage_size * scale_factor)
-        layer_height = max(0.6, 1.2 * scale_factor)
-        layer_py = current_y + (layer_height / 2.0)
-
-        # Alternating slight rotation for organic feel
-        rot_y = 0.785 if (i % 2 == 1) else 0.0
-
-        foliage = create_block_node(
-            f"Foliage Tier {i+1}",
-            px=px, py=layer_py, pz=pz,
-            sx=layer_size, sy=layer_height, sz=layer_size,
-            ry=rot_y
-        )
-        children.append(foliage)
-        current_y += layer_height * 0.75
-
-    return create_group_node(name=name, children=children)
-
-
-def generate_building_group(
-    pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    width: float = 6.0,
-    depth: float = 8.0,
-    height: float = 4.0,
-    roof_style: str = "flat",  # "flat", "hipped", "shed"
-    name: str = "Building"
-) -> Dict[str, Any]:
-    """Generates a complete building with main body, roof, and doorway framing."""
-    bx, by, bz = pos
-    children = []
-
-    # 1. Main structure body
-    main_py = by + (height / 2.0)
-    body = create_block_node(
-        "Main Structure",
-        px=bx, py=main_py, pz=bz,
-        sx=width, sy=height, sz=depth
-    )
-    children.append(body)
-
-    # 2. Roof
-    roof_py = by + height
-    if roof_style == "hipped":
-        roof = create_block_node(
-            "Hipped Roof",
-            px=bx, py=roof_py + 0.6, pz=bz,
-            sx=width * 0.85, sy=1.2, sz=depth * 0.85,
-            rx=0.0, ry=0.785, rz=0.0
-        )
-        children.append(roof)
-    elif roof_style == "shed":
-        roof = create_block_node(
-            "Shed Roof",
-            px=bx, py=roof_py + 0.3, pz=bz,
-            sx=width + 0.4, sy=0.2, sz=depth + 0.4,
-            rx=0.15, ry=0.0, rz=0.0
-        )
-        children.append(roof)
-    else:  # flat with parapet
-        parapet = create_block_node(
-            "Roof Parapet",
-            px=bx, py=roof_py + 0.2, pz=bz,
-            sx=width + 0.2, sy=0.4, sz=depth + 0.2
-        )
-        children.append(parapet)
-
-    # 3. Door trim accent
-    door_w, door_h = 1.2, 2.2
-    door_pz = bz + (depth / 2.0) + 0.05
-    door_frame = create_block_node(
-        "Doorway Accent",
-        px=bx, py=by + (door_h / 2.0), pz=door_pz,
-        sx=door_w, sy=door_h, sz=0.15
-    )
-    children.append(door_frame)
-
-    return create_group_node(name=name, children=children)
-
-
-def generate_fence_segment(
-    start_pos: Tuple[float, float, float] = (0.0, 0.0, 0.0),
-    length: float = 6.0,
-    height: float = 1.2,
-    num_posts: int = 4,
-    heading_rad: float = 0.0,
-    name: str = "Fence"
-) -> Dict[str, Any]:
-    """Generates a fence group composed of vertical posts and horizontal rails."""
-    sx, sy, sz = start_pos
-    children = []
-
-    post_spacing = length / max(1, num_posts - 1)
-    post_w = 0.15
-
-    for i in range(num_posts):
-        dist = i * post_spacing
-        px = sx + dist * math.sin(heading_rad)
-        pz = sz + dist * math.cos(heading_rad)
-        py = sy + (height / 2.0)
-
-        children.append(
-            create_block_node(
-                f"Post {i+1}",
-                px=px, py=py, pz=pz,
-                sx=post_w, sy=height, sz=post_w,
-                ry=heading_rad
-            )
-        )
-
-    # 2 Horizontal rails (lower & upper)
-    mid_dist = length / 2.0
-    mid_x = sx + mid_dist * math.sin(heading_rad)
-    mid_z = sz + mid_dist * math.cos(heading_rad)
-    rail_thickness = 0.08
-
-    rail_low = create_block_node(
-        "Lower Rail",
-        px=mid_x, py=sy + height * 0.35, pz=mid_z,
-        sx=rail_thickness, sy=rail_thickness, sz=length,
-        ry=heading_rad
-    )
-    rail_high = create_block_node(
-        "Upper Rail",
-        px=mid_x, py=sy + height * 0.8, pz=mid_z,
-        sx=rail_thickness, sy=rail_thickness, sz=length,
-        ry=heading_rad
-    )
-    children.extend([rail_low, rail_high])
-
-    return create_group_node(name=name, children=children)
+# Compatibility aliases
+generate_staircase_blocks = generate_stepped_incline
+generate_curved_track_blocks = generate_radial_arc
+generate_ramp_blocks = generate_sloped_ramp
 
 
 # ==============================================================================
@@ -389,14 +272,13 @@ def validate_stage_state(stage_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Validates and cleans StageState structure.
     - Ensures stage type is 'cube_stage'.
-    - Recursively removes invalid nodes and counts total 'block' primitives.
+    - Recursively cleans nodes, sanitizes transforms, and counts total 'block' primitives.
     - Strips legacy 'spawn_point' if present (spawn points belong to ActingState).
     """
     if not isinstance(stage_data, dict):
         stage_data = {}
 
     stage_data["type"] = "cube_stage"
-    # Remove obsolete spawn_point from stage state if present
     if "spawn_point" in stage_data:
         del stage_data["spawn_point"]
 
@@ -415,7 +297,6 @@ def validate_stage_state(stage_data: Dict[str, Any]) -> Dict[str, Any]:
         node_id = str(node.get("id", f"node_{random.randint(1000, 9999)}"))
         node_name = str(node.get("name", node_id))
 
-        # Validate transform
         raw_tf = node.get("transform", {})
         if not isinstance(raw_tf, dict):
             raw_tf = {}
@@ -470,8 +351,8 @@ def validate_stage_state(stage_data: Dict[str, Any]) -> Dict[str, Any]:
 
 def check_world_bounds(stage_data: Dict[str, Any], max_boundary: float = 50.0) -> List[str]:
     """
-    Checks if all block positions and extents reside within [-max_boundary, max_boundary].
-    Returns a list of warning/error messages.
+    Checks if all block positions reside within [-max_boundary, max_boundary]
+    and do not sink below ground level (Y < 0).
     """
     issues = []
 
@@ -480,9 +361,7 @@ def check_world_bounds(stage_data: Dict[str, Any], max_boundary: float = 50.0) -
         px = tf.get("px", 0.0)
         pz = tf.get("pz", 0.0)
         py = tf.get("py", 0.0)
-        sx = tf.get("sx", 1.0)
         sy = tf.get("sy", 1.0)
-        sz = tf.get("sz", 1.0)
 
         world_px = px + (parent_tf.get("px", 0.0) if parent_tf else 0.0)
         world_pz = pz + (parent_tf.get("pz", 0.0) if parent_tf else 0.0)
@@ -510,7 +389,6 @@ def check_world_bounds(stage_data: Dict[str, Any], max_boundary: float = 50.0) -
 def check_ground_alignment(stage_data: Dict[str, Any], tolerance: float = 0.05) -> List[Dict[str, Any]]:
     """
     Checks root-level blocks to verify if bottom face rests at Y=0 (Py == Sy / 2.0).
-    Returns list of misaligned nodes.
     """
     misaligned = []
     for node in stage_data.get("nodes", []):
@@ -534,8 +412,7 @@ def check_ground_alignment(stage_data: Dict[str, Any], tolerance: float = 0.05) 
 
 def fix_ground_alignment(stage_data: Dict[str, Any]) -> Tuple[Dict[str, Any], int]:
     """
-    Automatically aligns root-level blocks whose bottom face is near ground to Py = Sy / 2.0.
-    Returns (updated_stage_data, count_of_fixes).
+    Automatically aligns root-level ground blocks to Py = Sy / 2.0.
     """
     fixed_count = 0
     for node in stage_data.get("nodes", []):
@@ -544,7 +421,6 @@ def fix_ground_alignment(stage_data: Dict[str, Any]) -> Tuple[Dict[str, Any], in
             py = tf.get("py", 0.0)
             sy = tf.get("sy", 1.0)
             expected_py = round(sy / 2.0, 4)
-            # If resting near ground within [-1.0, 1.0] and not intended as elevated slab
             if abs(py - expected_py) > 0.001 and abs(py - expected_py) < 1.5:
                 tf["py"] = expected_py
                 fixed_count += 1
@@ -553,7 +429,7 @@ def fix_ground_alignment(stage_data: Dict[str, Any]) -> Tuple[Dict[str, Any], in
 
 def inspect_stage(stage_data: Dict[str, Any]) -> str:
     """
-    Generates a structured ASCII report of the stage hierarchy, bounds, and stats.
+    Generates a structured ASCII inspection report of stage hierarchy, bounds, and stats.
     """
     clean_stage = validate_stage_state(stage_data)
     total_blocks = clean_stage.get("num_assets", 0)
@@ -638,37 +514,16 @@ validate_scene_state = validate_stage_state
 # ==============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Stage Builder Utilities & Quality Gates")
+    parser = argparse.ArgumentParser(description="Stage Builder Universal Utilities & Quality Gates")
     parser.add_argument("file", nargs="?", help="Path to StageState JSON file")
     parser.add_argument("--inspect", action="store_true", help="Print ASCII inspection report")
     parser.add_argument("--validate", action="store_true", help="Validate and clean JSON structure")
     parser.add_argument("--fix-ground", action="store_true", help="Auto-fix root ground alignment")
     parser.add_argument("--flip-x", action="store_true", help="Mirror stage along X axis (inverts left/right)")
     parser.add_argument("--flip-z", action="store_true", help="Mirror stage along Z axis (inverts front/back)")
-    parser.add_argument("--demo", action="store_true", help="Generate a demo procedural stage")
     parser.add_argument("-o", "--output", help="Save output to file")
 
     args = parser.parse_args()
-
-    if args.demo:
-        print("[INFO] Generating Demo Stage using Procedural Generators...")
-        demo_nodes = [
-            generate_building_group((0.0, 0.0, -10.0), width=6.0, depth=6.0, height=3.5, roof_style="hipped", name="Main House"),
-            generate_tree_group((-8.0, 0.0, -5.0), trunk_height=3.0, name="Front Left Tree"),
-            generate_tree_group((8.0, 0.0, -5.0), trunk_height=3.5, name="Front Right Tree"),
-            generate_arch_blocks((0.0, 0.0, 5.0), opening_width=3.0, opening_height=2.8),
-            generate_fence_segment((-12.0, 0.0, 10.0), length=24.0, height=1.0, num_posts=7, name="Front Perimeter Fence")
-        ]
-        demo_stage = validate_stage_state({
-            "type": "cube_stage",
-            "nodes": demo_nodes
-        })
-        print(inspect_stage(demo_stage))
-        if args.output:
-            with open(args.output, "w", encoding="utf-8") as f:
-                json.dump(demo_stage, f, indent=2)
-            print(f"[SUCCESS] Demo stage written to {args.output}")
-        return
 
     if not args.file:
         parser.print_help()

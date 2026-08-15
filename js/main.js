@@ -45888,7 +45888,7 @@ class ThreeActing {
     __publicField(this, "onRecordingFinished");
     __publicField(this, "isPlaybackMode", false);
     __publicField(this, "isCountingCountdown", false);
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     this.container = options.container;
     this.onStateChange = options.onStateChange;
     this.onRecordingFinished = options.onRecordingFinished;
@@ -45896,14 +45896,15 @@ class ThreeActing {
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null;
     const defaultSpeed = ((_c = options.initialState) == null ? void 0 : _c.actor_speed) ?? (((_d = options.initialState) == null ? void 0 : _d.actor_type) === "car" ? 20 : 10);
     this.state = {
-      actor_type: ((_e = options.initialState) == null ? void 0 : _e.actor_type) ?? "car",
+      actor_type: ((_e = options.initialState) == null ? void 0 : _e.actor_type) ?? "human",
+      actor_color: (_f = options.initialState) == null ? void 0 : _f.actor_color,
       actor_speed: defaultSpeed,
-      duration: ((_f = options.initialState) == null ? void 0 : _f.duration) ?? 7,
+      duration: ((_g = options.initialState) == null ? void 0 : _g.duration) ?? 7,
       stage_data: initialStageData,
       scene_data: initialStageData,
-      motion_data: (_g = options.initialState) == null ? void 0 : _g.motion_data,
-      spawn_point: (_h = options.initialState) == null ? void 0 : _h.spawn_point,
-      actors: ((_i = options.initialState) == null ? void 0 : _i.actors) ?? []
+      motion_data: (_h = options.initialState) == null ? void 0 : _h.motion_data,
+      spawn_point: (_i = options.initialState) == null ? void 0 : _i.spawn_point,
+      actors: ((_j = options.initialState) == null ? void 0 : _j.actors) ?? []
     };
     this.playbackController = new PlaybackController();
     this.initThreeJS();
@@ -48972,6 +48973,7 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        actor_color: currentActingState.actor_color,
         duration: effectiveDuration,
         actors: previousActors
       });
@@ -48979,6 +48981,7 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        actor_color: currentActingState.actor_color,
         duration: effectiveDuration,
         actors: previousActors
       });
@@ -48996,8 +48999,8 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
       return;
     }
   }
-  actingInst.exposed.setState({ scene_data: void 0, stage_data: void 0, actor_type: charType, actors: [] });
-  writeStoredActingProps(actingNode, { scene_data: void 0, stage_data: void 0, actor_type: charType, actors: [] });
+  actingInst.exposed.setState({ scene_data: void 0, stage_data: void 0, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] });
+  writeStoredActingProps(actingNode, { scene_data: void 0, stage_data: void 0, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] });
   if (actingInst.exposed.setConnectedThreeStage) {
     actingInst.exposed.setConnectedThreeStage(null);
   }

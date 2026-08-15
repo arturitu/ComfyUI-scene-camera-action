@@ -466,6 +466,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        actor_color: currentActingState.actor_color,
         duration: effectiveDuration,
         actors: previousActors
       })
@@ -473,6 +474,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
         scene_data: stageState,
         stage_data: stageState,
         actor_type: charType,
+        actor_color: currentActingState.actor_color,
         duration: effectiveDuration,
         actors: previousActors
       })
@@ -492,8 +494,8 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
     }
   }
 
-  actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actor_type: charType, actors: [] })
-  writeStoredActingProps(actingNode, { scene_data: undefined, stage_data: undefined, actor_type: charType, actors: [] })
+  actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] })
+  writeStoredActingProps(actingNode, { scene_data: undefined, stage_data: undefined, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] })
   if (actingInst.exposed.setConnectedThreeStage) {
     actingInst.exposed.setConnectedThreeStage(null)
   }

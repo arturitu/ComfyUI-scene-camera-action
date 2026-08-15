@@ -74,7 +74,8 @@ export class ThreeActing {
     const defaultSpeed = options.initialState?.actor_speed ?? (options.initialState?.actor_type === 'car' ? 20.0 : 10.0)
 
     this.state = {
-      actor_type: options.initialState?.actor_type ?? 'car',
+      actor_type: options.initialState?.actor_type ?? 'human',
+      actor_color: options.initialState?.actor_color,
       actor_speed: defaultSpeed,
       duration: options.initialState?.duration ?? 7.0,
       stage_data: initialStageData,
