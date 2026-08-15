@@ -363,16 +363,16 @@ export class ThreeDirecting {
     this.scene.add(this.actorController.group)
   }
 
-  private keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string }> = []
+  private keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string; fov?: number }> = []
   public isPlaying = true
 
-  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string }>): void {
+  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string; fov?: number }>): void {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
     this.forceHardCutNextCameraUpdate = true
     this.updateCamera(0)
   }
 
-  public getActiveKeyframe(time: number): { id: string; t: number; mode: string; actor_target?: string } {
+  public getActiveKeyframe(time: number): { id: string; t: number; mode: string; actor_target?: string; fov?: number } {
     if (this.keyframes.length === 0) {
       return { id: 'default', t: 0, mode: this.state.camera_mode || 'Third Person' }
     }
@@ -500,14 +500,25 @@ export class ThreeDirecting {
     const posLerpSpeed = isCarTarget ? 12.0 : 6.0
     const posLerpFactor = 1.0 - Math.exp(-posLerpSpeed * Math.max(0.001, dt))
 
+    // Determine target FOV for active keyframe and mode
+    let targetFov = activeKeyframe.fov
+    if (targetFov === undefined) {
+      if (activeMode === 'Side' && isCarTarget) {
+        targetFov = 42
+      } else {
+        targetFov = config.getDefaultCameraFov(activeMode)
+      }
+    }
+
+    if (this.camera.fov !== targetFov) {
+      this.camera.fov = targetFov
+      this.camera.updateProjectionMatrix()
+    }
+
     const isFPV = activeMode === 'First Person'
     targetActorCtrl.setMeshVisibleForFPV(isFPV)
 
     if (isFPV) {
-      if (this.camera.fov !== 50) {
-        this.camera.fov = 50
-        this.camera.updateProjectionMatrix()
-      }
       const localOffset = targetActorCtrl.getFPVOffset()
       const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion)
       const fpvCamPos = charPos.clone().add(worldOffset)
@@ -528,10 +539,6 @@ export class ThreeDirecting {
       }
 
     } else if (activeMode === 'Third Person') {
-      if (this.camera.fov !== 50) {
-        this.camera.fov = 50
-        this.camera.updateProjectionMatrix()
-      }
       const isCar = isCarTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
       const camHeight = isCar ? 2.2 : (isCrouch ? 1.0 : 1.7)
@@ -566,40 +573,23 @@ export class ThreeDirecting {
       }
 
     } else if (activeMode === 'Wide') {
-      const fov = 35
-      if (this.camera.fov !== fov) {
-        this.camera.fov = fov
-        this.camera.updateProjectionMatrix()
-      }
+      const isCar = isCarTarget
+      const targetOffsetY = isCar ? 0.9 : 0.85
+      const actorCenter = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
 
-      // Reuse cached bounding box of active stage environment
-      let center = charPos.clone()
-      let size = new THREE.Vector3(12, 6, 12)
-
-      if (!this.cachedEnvBBox.isEmpty()) {
-        this.cachedEnvBBox.getCenter(this.cachedBBoxCenter)
-        this.cachedEnvBBox.getSize(this.cachedBBoxSize)
-
-        // Blend stage center with actor position (70% scene center, 30% actor position)
-        center.copy(this.cachedBBoxCenter).lerp(charPos, 0.3)
-        size.copy(this.cachedBBoxSize)
-      }
-
-      const maxSpan = Math.max(size.x, size.z, 10.0)
-      const dist = Math.max(12.0, (maxSpan / 2.0) / Math.tan((fov * Math.PI / 180) / 2.0) * 0.75)
-
-      // Cinematic elevated corner angle offset relative to scene bounds
-      const idealCamPos = center.clone().add(new THREE.Vector3(-dist * 0.7, dist * 0.5, dist * 0.7))
+      const baseDist = 14.5
+      // Elevated corner angle offset focused directly on the actor
+      const idealCamPos = actorCenter.clone().add(new THREE.Vector3(-baseDist * 0.7, baseDist * 0.55, baseDist * 0.7))
 
       if (this.lastCameraMode !== 'Wide' || isHardCut) {
-        this.wideTarget.copy(center)
+        this.wideTarget.copy(actorCenter)
         this.camera.position.copy(idealCamPos)
       } else {
-        const wideLerpFactor = 1.0 - Math.exp(-3.0 * Math.max(0.001, dt))
-        this.wideTarget.lerp(center, wideLerpFactor)
+        const wideLerpFactor = 1.0 - Math.exp(-6.0 * Math.max(0.001, dt))
+        this.wideTarget.lerp(actorCenter, wideLerpFactor)
         this.camera.position.lerp(idealCamPos, wideLerpFactor)
       }
-      this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z)
+      this.camera.lookAt(this.wideTarget)
 
       if (this.instancedStageMesh) {
         this.instancedStageMesh.setDitherOpacity(1.0)
@@ -607,12 +597,6 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Side') {
       const isCar = isCarTarget
-      const fov = isCar ? 42 : 45
-      if (this.camera.fov !== fov) {
-        this.camera.fov = fov
-        this.camera.updateProjectionMatrix()
-      }
-
       const sideVec = isCar ? new THREE.Vector3(-6.5, 1.8, 0.0) : new THREE.Vector3(-4.2, 1.3, 0.4)
       const targetOffsetY = isCar ? 0.90 : 0.95
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)

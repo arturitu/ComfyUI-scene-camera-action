@@ -10,6 +10,27 @@ export const CAMERA_MIN_DISTANCE = 1.5
 export const CAMERA_MAX_DISTANCE = 65.0
 export const MAX_PAN = 42.0
 
+export interface CameraFovRange {
+  min: number
+  max: number
+  default: number
+}
+
+export const CAMERA_FOV_CONFIG: Record<string, CameraFovRange> = {
+  'Wide': { min: 10, max: 60, default: 35 },
+  'Third Person': { min: 25, max: 85, default: 50 },
+  'Side': { min: 20, max: 80, default: 45 },
+  'First Person': { min: 40, max: 100, default: 50 },
+}
+
+export function getCameraFovConfig(mode: string): CameraFovRange {
+  return CAMERA_FOV_CONFIG[mode] || { min: 20, max: 90, default: 50 }
+}
+
+export function getDefaultCameraFov(mode: string): number {
+  return getCameraFovConfig(mode).default
+}
+
 // Fog Config
 export const FOG_NEAR = 1
 export const FOG_FAR = 160

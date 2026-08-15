@@ -137,6 +137,36 @@
                   </option>
                 </select>
               </div>
+
+              <!-- FOV Slider Row -->
+              <div class="popover-fov-row">
+                <div class="fov-label-row">
+                  <span class="fov-label">FOV:</span>
+                  <span class="fov-value">{{ getKeyframeFov(kf) }}°</span>
+                  <button
+                    class="fov-reset-btn"
+                    title="Reset to default FOV"
+                    @click.stop="resetKeyframeFov(kf)"
+                  >
+                    ↺
+                  </button>
+                </div>
+                <div class="fov-slider-container">
+                  <span class="fov-bound-label">{{ getFovConfig(kf.mode).min }}°</span>
+                  <input
+                    type="range"
+                    :min="getFovConfig(kf.mode).min"
+                    :max="getFovConfig(kf.mode).max"
+                    step="1"
+                    :value="getKeyframeFov(kf)"
+                    class="fov-slider"
+                    @input.stop="changeKeyframeFov(kf, Number(($event.target as HTMLInputElement).value))"
+                    @mousedown.stop
+                  />
+                  <span class="fov-bound-label">{{ getFovConfig(kf.mode).max }}°</span>
+                </div>
+              </div>
+
               <div class="popover-arrow"></div>
             </div>
           </div>
@@ -155,6 +185,7 @@
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
+import { CAMERA_FOV_CONFIG, getCameraFovConfig, getDefaultCameraFov } from '../threeConfig'
 import type { DirectingState } from '../types'
 
 const props = defineProps<{
@@ -174,6 +205,7 @@ interface Keyframe {
   t: number
   mode: string
   actor_target?: string
+  fov?: number
 }
 
 const cameraModes: CameraMode[] = [
@@ -213,7 +245,7 @@ const availableActors = computed(() => {
 
 function parseKeyframes(raw: string): Keyframe[] {
   if (!raw || !raw.trim()) {
-    return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1' }]
+    return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
   }
   try {
     const parsed = JSON.parse(raw)
@@ -222,11 +254,12 @@ function parseKeyframes(raw: string): Keyframe[] {
         id: item.id || `kf-${idx}-${Date.now()}`,
         t: Math.max(0, typeof item.t === 'number' ? item.t : 0),
         mode: item.mode || 'Third Person',
-        actor_target: item.actor_target || item.actorTarget || 'actor_1'
+        actor_target: item.actor_target || item.actorTarget || 'actor_1',
+        fov: typeof item.fov === 'number' ? item.fov : undefined,
       })).sort((a, b) => a.t - b.t)
     }
   } catch {}
-  return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1' }]
+  return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
 }
 
 const isActingNodeConnected = computed(() => {
@@ -336,6 +369,7 @@ const addKeyframe = () => {
     id: `kf-${Date.now()}`,
     t: curT,
     mode: activeMode,
+    fov: getDefaultCameraFov(activeMode),
   }
 
   keyframes.value.push(newKf)
@@ -355,9 +389,51 @@ const selectKeyframe = (kf: Keyframe) => {
   currentTime.value = kf.t
 }
 
-const changeKeyframeMode = (kf: Keyframe, mode: string) => {
-  kf.mode = mode
+const getFovConfig = (mode: string) => {
+  return getCameraFovConfig(mode)
+}
+
+const getKeyframeFov = (kf: Keyframe): number => {
+  if (typeof kf.fov === 'number') return kf.fov
+  return getDefaultCameraFov(kf.mode)
+}
+
+const changeKeyframeFov = (kf: Keyframe, fov: number) => {
+  const cfg = getCameraFovConfig(kf.mode)
+  const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(fov)))
+  kf.fov = clamped
   syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const resetKeyframeFov = (kf: Keyframe) => {
+  kf.fov = getDefaultCameraFov(kf.mode)
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const changeKeyframeMode = (kf: Keyframe, mode: string) => {
+  const oldMode = kf.mode
+  const oldDefault = getDefaultCameraFov(oldMode)
+  const isUsingDefault = kf.fov === undefined || kf.fov === oldDefault
+
+  kf.mode = mode
+
+  if (isUsingDefault) {
+    kf.fov = getDefaultCameraFov(mode)
+  } else if (typeof kf.fov === 'number') {
+    const newCfg = getCameraFovConfig(mode)
+    kf.fov = Math.max(newCfg.min, Math.min(newCfg.max, kf.fov))
+  }
+
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
 }
 
 const changeKeyframeTarget = (kf: Keyframe, targetId: string) => {
@@ -931,7 +1007,8 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   bottom: 26px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
+  width: 184px;
+  box-sizing: border-box;
   background: rgba(18, 20, 28, 0.95);
   border: 1px solid rgba(0, 255, 204, 0.5);
   border-radius: 6px;
@@ -1021,7 +1098,7 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .target-label {
@@ -1045,6 +1122,119 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
 
 .target-select:focus {
   border-color: #00ffcc;
+}
+
+/* FOV Slider Row in Popover */
+.popover-fov-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.fov-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+}
+
+.fov-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #a0a8b8;
+}
+
+.fov-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: #00ffcc;
+  min-width: 28px;
+}
+
+.fov-reset-btn {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #c0c5d0;
+  font-size: 10px;
+  border-radius: 3px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.fov-reset-btn:hover {
+  background: rgba(0, 255, 204, 0.2);
+  color: #00ffcc;
+  border-color: #00ffcc;
+}
+
+.fov-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fov-bound-label {
+  font-size: 9px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: center;
+}
+
+.fov-slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.fov-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00ffcc;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 255, 204, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.fov-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.fov-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00ffcc;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 4px rgba(0, 255, 204, 0.6);
 }
 
 .popover-arrow {

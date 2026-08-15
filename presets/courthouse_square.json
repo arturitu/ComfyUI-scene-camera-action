@@ -7,15 +7,15 @@
       "type": "group",
       "name": "Zone 1 - Central Park & Sidewalks",
       "transform": {
-        "px": 0,
+        "px": -0.34,
         "py": 0,
-        "pz": 0,
+        "pz": -0.24,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.39,
+        "sy": 1.39,
+        "sz": 1.39
       },
       "children": [
         {
@@ -903,15 +903,15 @@
       "type": "group",
       "name": "Zone 2 - Courthouse & Clock Tower Landmark",
       "transform": {
-        "px": 0,
+        "px": -0.34,
         "py": 0,
-        "pz": 0,
+        "pz": -0.24,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.39,
+        "sy": 1.39,
+        "sz": 1.39
       },
       "children": [
         {
@@ -1865,15 +1865,15 @@
       "type": "group",
       "name": "Zone 3 - West Commercial Street (7 Building Plots)",
       "transform": {
-        "px": 0,
+        "px": -0.34,
         "py": 0,
-        "pz": 0,
+        "pz": -0.24,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.39,
+        "sy": 1.39,
+        "sz": 1.39
       },
       "children": [
         {
@@ -2769,15 +2769,15 @@
       "type": "group",
       "name": "Zone 4 - East Commercial Street (5 Building Plots)",
       "transform": {
-        "px": 0,
+        "px": -0.34,
         "py": 0,
-        "pz": 0,
+        "pz": -0.24,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.39,
+        "sy": 1.39,
+        "sz": 1.39
       },
       "children": [
         {
@@ -3653,15 +3653,15 @@
       "type": "group",
       "name": "Zone 5 - South Commercial Row (3 Building Plots)",
       "transform": {
-        "px": 0,
+        "px": -0.34,
         "py": 0,
-        "pz": 0,
+        "pz": -0.24,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 1,
-        "sy": 1,
-        "sz": 1
+        "sx": 1.39,
+        "sy": 1.39,
+        "sz": 1.39
       },
       "children": [
         {
@@ -4167,15 +4167,15 @@
       "type": "block",
       "name": "South Street Sidewalk",
       "transform": {
-        "px": 23.72,
-        "py": 0.1,
-        "pz": 28.7,
+        "px": 32.52,
+        "py": 0.14,
+        "pz": 39.52,
         "rx": 0,
         "ry": 0,
         "rz": 0,
-        "sx": 14.44,
-        "sy": 0.2,
-        "sz": 13.5
+        "sx": 20,
+        "sy": 0.28,
+        "sz": 18.7
       }
     }
   ],

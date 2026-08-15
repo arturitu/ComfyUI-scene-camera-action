@@ -33655,6 +33655,18 @@ const CAMERA_FAR = 200;
 const CAMERA_MIN_DISTANCE = 1.5;
 const CAMERA_MAX_DISTANCE = 65;
 const MAX_PAN = 42;
+const CAMERA_FOV_CONFIG = {
+  "Wide": { min: 10, max: 60, default: 35 },
+  "Third Person": { min: 25, max: 85, default: 50 },
+  "Side": { min: 20, max: 80, default: 45 },
+  "First Person": { min: 40, max: 100, default: 50 }
+};
+function getCameraFovConfig(mode) {
+  return CAMERA_FOV_CONFIG[mode] || { min: 20, max: 90, default: 50 };
+}
+function getDefaultCameraFov(mode) {
+  return getCameraFovConfig(mode).default;
+}
 const FOG_NEAR = 1;
 const FOG_FAR = 160;
 const GRID_SIZE = 100;
@@ -46698,19 +46710,19 @@ const _hoisted_19$1 = {
   key: 2,
   class: "time-counter-overlay"
 };
-const _hoisted_20 = { class: "controls-modal-card" };
-const _hoisted_21 = { class: "modal-header" };
-const _hoisted_22 = { class: "modal-title-group" };
-const _hoisted_23 = { class: "modal-body" };
-const _hoisted_24 = {
+const _hoisted_20$1 = { class: "controls-modal-card" };
+const _hoisted_21$1 = { class: "modal-header" };
+const _hoisted_22$1 = { class: "modal-title-group" };
+const _hoisted_23$1 = { class: "modal-body" };
+const _hoisted_24$1 = {
   key: 0,
   class: "controls-list"
 };
-const _hoisted_25 = {
+const _hoisted_25$1 = {
   key: 1,
   class: "controls-list"
 };
-const _hoisted_26 = { class: "modal-footer" };
+const _hoisted_26$1 = { class: "modal-footer" };
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ActingWidget",
   props: {
@@ -47072,9 +47084,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           class: "controls-modal-backdrop",
           onClick: _cache2[5] || (_cache2[5] = withModifiers(($event) => showHelpModal.value = false, ["self"]))
         }, [
-          createBaseVNode("div", _hoisted_20, [
-            createBaseVNode("div", _hoisted_21, [
-              createBaseVNode("div", _hoisted_22, [
+          createBaseVNode("div", _hoisted_20$1, [
+            createBaseVNode("div", _hoisted_21$1, [
+              createBaseVNode("div", _hoisted_22$1, [
                 _cache2[12] || (_cache2[12] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
                 createBaseVNode("span", {
                   class: normalizeClass(["actor-type-badge", state.actor_type])
@@ -47086,14 +47098,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 title: "Close"
               }, "✕")
             ]),
-            createBaseVNode("div", _hoisted_23, [
-              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_24, [..._cache2[13] || (_cache2[13] = [
+            createBaseVNode("div", _hoisted_23$1, [
+              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_24$1, [..._cache2[13] || (_cache2[13] = [
                 createStaticVNode('<div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>W</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>▲</kbd></div><span class="action-desc" data-v-0b101302>Accelerate</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>S</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>▼</kbd></div><span class="action-desc" data-v-0b101302>Brake / Reverse</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>A</kbd> <kbd data-v-0b101302>D</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>◀</kbd> <kbd data-v-0b101302>▶</kbd></div><span class="action-desc" data-v-0b101302>Steer Left / Right</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Space</kbd></div><span class="action-desc" data-v-0b101302>Handbrake</span></div>', 4)
-              ])])) : (openBlock(), createElementBlock("div", _hoisted_25, [..._cache2[14] || (_cache2[14] = [
+              ])])) : (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[14] || (_cache2[14] = [
                 createStaticVNode('<div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>W</kbd> <kbd data-v-0b101302>A</kbd> <kbd data-v-0b101302>S</kbd> <kbd data-v-0b101302>D</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>Arrows</kbd></div><span class="action-desc" data-v-0b101302>Move</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Shift</kbd> + Move</div><span class="action-desc" data-v-0b101302>Sprint (Fast Run)</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>C</kbd></div><span class="action-desc" data-v-0b101302>Crouch / Crouch Walk</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Space</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>J</kbd></div><span class="action-desc" data-v-0b101302>Jump</span></div>', 4)
               ])]))
             ]),
-            createBaseVNode("div", _hoisted_26, [
+            createBaseVNode("div", _hoisted_26$1, [
               createBaseVNode("button", {
                 class: "modal-ok-btn",
                 onClick: _cache2[4] || (_cache2[4] = ($event) => showHelpModal.value = false)
@@ -47672,13 +47684,21 @@ class ThreeDirecting {
     }
     const posLerpSpeed = isCarTarget ? 12 : 6;
     const posLerpFactor = 1 - Math.exp(-posLerpSpeed * Math.max(1e-3, dt));
+    let targetFov = activeKeyframe.fov;
+    if (targetFov === void 0) {
+      if (activeMode === "Side" && isCarTarget) {
+        targetFov = 42;
+      } else {
+        targetFov = getDefaultCameraFov(activeMode);
+      }
+    }
+    if (this.camera.fov !== targetFov) {
+      this.camera.fov = targetFov;
+      this.camera.updateProjectionMatrix();
+    }
     const isFPV = activeMode === "First Person";
     targetActorCtrl.setMeshVisibleForFPV(isFPV);
     if (isFPV) {
-      if (this.camera.fov !== 50) {
-        this.camera.fov = 50;
-        this.camera.updateProjectionMatrix();
-      }
       const localOffset = targetActorCtrl.getFPVOffset();
       const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion);
       const fpvCamPos = charPos.clone().add(worldOffset);
@@ -47696,10 +47716,6 @@ class ThreeDirecting {
         this.instancedStageMesh.setDitherOpacity(1);
       }
     } else if (activeMode === "Third Person") {
-      if (this.camera.fov !== 50) {
-        this.camera.fov = 50;
-        this.camera.updateProjectionMatrix();
-      }
       const isCar = isCarTarget;
       const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
       const camHeight = isCar ? 2.2 : isCrouch ? 1 : 1.7;
@@ -47727,41 +47743,25 @@ class ThreeDirecting {
         this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity);
       }
     } else if (activeMode === "Wide") {
-      const fov2 = 35;
-      if (this.camera.fov !== fov2) {
-        this.camera.fov = fov2;
-        this.camera.updateProjectionMatrix();
-      }
-      let center = charPos.clone();
-      let size = new Vector3(12, 6, 12);
-      if (!this.cachedEnvBBox.isEmpty()) {
-        this.cachedEnvBBox.getCenter(this.cachedBBoxCenter);
-        this.cachedEnvBBox.getSize(this.cachedBBoxSize);
-        center.copy(this.cachedBBoxCenter).lerp(charPos, 0.3);
-        size.copy(this.cachedBBoxSize);
-      }
-      const maxSpan = Math.max(size.x, size.z, 10);
-      const dist = Math.max(12, maxSpan / 2 / Math.tan(fov2 * Math.PI / 180 / 2) * 0.75);
-      const idealCamPos = center.clone().add(new Vector3(-dist * 0.7, dist * 0.5, dist * 0.7));
+      const isCar = isCarTarget;
+      const targetOffsetY = isCar ? 0.9 : 0.85;
+      const actorCenter = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
+      const baseDist = 14.5;
+      const idealCamPos = actorCenter.clone().add(new Vector3(-baseDist * 0.7, baseDist * 0.55, baseDist * 0.7));
       if (this.lastCameraMode !== "Wide" || isHardCut) {
-        this.wideTarget.copy(center);
+        this.wideTarget.copy(actorCenter);
         this.camera.position.copy(idealCamPos);
       } else {
-        const wideLerpFactor = 1 - Math.exp(-3 * Math.max(1e-3, dt));
-        this.wideTarget.lerp(center, wideLerpFactor);
+        const wideLerpFactor = 1 - Math.exp(-6 * Math.max(1e-3, dt));
+        this.wideTarget.lerp(actorCenter, wideLerpFactor);
         this.camera.position.lerp(idealCamPos, wideLerpFactor);
       }
-      this.camera.lookAt(this.wideTarget.x, this.wideTarget.y + 0.5, this.wideTarget.z);
+      this.camera.lookAt(this.wideTarget);
       if (this.instancedStageMesh) {
         this.instancedStageMesh.setDitherOpacity(1);
       }
     } else if (activeMode === "Side") {
       const isCar = isCarTarget;
-      const fov2 = isCar ? 42 : 45;
-      if (this.camera.fov !== fov2) {
-        this.camera.fov = fov2;
-        this.camera.updateProjectionMatrix();
-      }
       const sideVec = isCar ? new Vector3(-6.5, 1.8, 0) : new Vector3(-4.2, 1.3, 0.4);
       const targetOffsetY = isCar ? 0.9 : 0.95;
       const sideOffset = sideVec.applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
@@ -48048,7 +48048,15 @@ const _hoisted_16 = {
 };
 const _hoisted_17 = ["value", "onChange"];
 const _hoisted_18 = ["value"];
-const _hoisted_19 = { class: "time-display" };
+const _hoisted_19 = { class: "popover-fov-row" };
+const _hoisted_20 = { class: "fov-label-row" };
+const _hoisted_21 = { class: "fov-value" };
+const _hoisted_22 = ["onClick"];
+const _hoisted_23 = { class: "fov-slider-container" };
+const _hoisted_24 = { class: "fov-bound-label" };
+const _hoisted_25 = ["min", "max", "value", "onInput"];
+const _hoisted_26 = { class: "fov-bound-label" };
+const _hoisted_27 = { class: "time-display" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "DirectingWidget",
   props: {
@@ -48091,7 +48099,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     function parseKeyframes(raw) {
       if (!raw || !raw.trim()) {
-        return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1" }];
+        return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1", fov: getDefaultCameraFov("Third Person") }];
       }
       try {
         const parsed = JSON.parse(raw);
@@ -48100,12 +48108,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             id: item.id || `kf-${idx}-${Date.now()}`,
             t: Math.max(0, typeof item.t === "number" ? item.t : 0),
             mode: item.mode || "Third Person",
-            actor_target: item.actor_target || item.actorTarget || "actor_1"
+            actor_target: item.actor_target || item.actorTarget || "actor_1",
+            fov: typeof item.fov === "number" ? item.fov : void 0
           })).sort((a, b) => a.t - b.t);
         }
       } catch {
       }
-      return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1" }];
+      return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1", fov: getDefaultCameraFov("Third Person") }];
     }
     const isActingNodeConnected = computed(() => {
       if (threeDirecting && threeDirecting.connectedThreeActing) return true;
@@ -48204,7 +48213,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       const newKf = {
         id: `kf-${Date.now()}`,
         t: curT,
-        mode: activeMode
+        mode: activeMode,
+        fov: getDefaultCameraFov(activeMode)
       };
       keyframes.value.push(newKf);
       keyframes.value.sort((a, b) => a.t - b.t);
@@ -48221,9 +48231,44 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
       currentTime.value = kf.t;
     };
-    const changeKeyframeMode = (kf, mode) => {
-      kf.mode = mode;
+    const getFovConfig = (mode) => {
+      return getCameraFovConfig(mode);
+    };
+    const getKeyframeFov = (kf) => {
+      if (typeof kf.fov === "number") return kf.fov;
+      return getDefaultCameraFov(kf.mode);
+    };
+    const changeKeyframeFov = (kf, fov2) => {
+      const cfg = getCameraFovConfig(kf.mode);
+      const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(fov2)));
+      kf.fov = clamped;
       syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
+    };
+    const resetKeyframeFov = (kf) => {
+      kf.fov = getDefaultCameraFov(kf.mode);
+      syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
+    };
+    const changeKeyframeMode = (kf, mode) => {
+      const oldMode = kf.mode;
+      const oldDefault = getDefaultCameraFov(oldMode);
+      const isUsingDefault = kf.fov === void 0 || kf.fov === oldDefault;
+      kf.mode = mode;
+      if (isUsingDefault) {
+        kf.fov = getDefaultCameraFov(mode);
+      } else if (typeof kf.fov === "number") {
+        const newCfg = getCameraFovConfig(mode);
+        kf.fov = Math.max(newCfg.min, Math.min(newCfg.max, kf.fov));
+      }
+      syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
     };
     const changeKeyframeTarget = (kf, targetId) => {
       kf.actor_target = targetId;
@@ -48459,7 +48504,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache2) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         !hasActingData.value ? (openBlock(), createElementBlock("div", _hoisted_2, [
-          _cache2[3] || (_cache2[3] = createBaseVNode("div", { class: "disabled-title" }, "Directing Canvas Disabled", -1)),
+          _cache2[4] || (_cache2[4] = createBaseVNode("div", { class: "disabled-title" }, "Directing Canvas Disabled", -1)),
           createBaseVNode("div", _hoisted_3, toDisplayString(disabledSubtitle.value), 1)
         ])) : (openBlock(), createElementBlock("div", {
           key: 1,
@@ -48475,12 +48520,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             onMousedown: _cache2[0] || (_cache2[0] = withModifiers(() => {
             }, ["stop", "prevent"]))
           }, [
-            _cache2[4] || (_cache2[4] = createBaseVNode("div", { class: "recording-spinner" }, null, -1)),
+            _cache2[5] || (_cache2[5] = createBaseVNode("div", { class: "recording-spinner" }, null, -1)),
             createBaseVNode("div", _hoisted_5, toDisplayString(videoStatusText.value || "Capturing 3D Video..."), 1)
           ], 32)) : createCommentVNode("", true),
           createBaseVNode("div", {
             class: normalizeClass(["timeline-bar", { "disabled-timeline": isRecordingVideo.value }]),
-            onMousedown: _cache2[2] || (_cache2[2] = withModifiers(() => {
+            onMousedown: _cache2[3] || (_cache2[3] = withModifiers(() => {
             }, ["stop"]))
           }, [
             createBaseVNode("button", {
@@ -48501,11 +48546,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 disabled: isRecordingVideo.value,
                 title: "Add cut at current position",
                 onClick: addKeyframe
-              }, [..._cache2[5] || (_cache2[5] = [
+              }, [..._cache2[6] || (_cache2[6] = [
                 createBaseVNode("span", { class: "diamond-icon" }, "◇", -1),
                 createBaseVNode("span", { class: "plus-icon" }, "+", -1)
               ])], 8, _hoisted_9),
-              _cache2[6] || (_cache2[6] = createBaseVNode("div", { class: "add-kf-tooltip" }, "Add cut", -1))
+              _cache2[7] || (_cache2[7] = createBaseVNode("div", { class: "add-kf-tooltip" }, "Add cut", -1))
             ]),
             createBaseVNode("div", {
               ref_key: "trackRef",
@@ -48513,7 +48558,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               class: "timeline-track",
               onMousedown: withModifiers(onTrackMouseDown, ["stop"])
             }, [
-              _cache2[11] || (_cache2[11] = createBaseVNode("div", { class: "track-line" }, null, -1)),
+              _cache2[13] || (_cache2[13] = createBaseVNode("div", { class: "track-line" }, null, -1)),
               createBaseVNode("div", {
                 class: "track-fill",
                 style: normalizeStyle({ width: progressPercent.value + "%" })
@@ -48521,7 +48566,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               createBaseVNode("div", {
                 class: "playhead",
                 style: normalizeStyle({ left: progressPercent.value + "%" })
-              }, [..._cache2[7] || (_cache2[7] = [
+              }, [..._cache2[8] || (_cache2[8] = [
                 createBaseVNode("div", { class: "playhead-line" }, null, -1)
               ])], 4),
               (openBlock(true), createElementBlock(Fragment, null, renderList(keyframes.value, (kf) => {
@@ -48533,14 +48578,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   title: `${kf.t.toFixed(1)}s: ${kf.mode}`,
                   onMousedown: withModifiers(($event) => onKeyframeMouseDown(kf), ["stop"])
                 }, [
-                  _cache2[10] || (_cache2[10] = createBaseVNode("div", { class: "diamond-marker" }, null, -1)),
+                  _cache2[12] || (_cache2[12] = createBaseVNode("div", { class: "diamond-marker" }, null, -1)),
                   ((_b2 = selectedKeyframe.value) == null ? void 0 : _b2.id) === kf.id && !isPlaying.value && !isRecordingVideo.value ? (openBlock(), createElementBlock("div", {
                     key: 0,
                     class: normalizeClass(["keyframe-popover", {
                       "align-left": kf.t / duration.value < 0.2,
                       "align-right": kf.t / duration.value > 0.8
                     }]),
-                    onMousedown: _cache2[1] || (_cache2[1] = withModifiers(() => {
+                    onMousedown: _cache2[2] || (_cache2[2] = withModifiers(() => {
                     }, ["stop"]))
                   }, [
                     createBaseVNode("div", _hoisted_11, [
@@ -48562,7 +48607,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }), 64))
                     ]),
                     availableActors.value.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_16, [
-                      _cache2[8] || (_cache2[8] = createBaseVNode("span", { class: "target-label" }, "Track:", -1)),
+                      _cache2[9] || (_cache2[9] = createBaseVNode("span", { class: "target-label" }, "Track:", -1)),
                       createBaseVNode("select", {
                         value: kf.actor_target || ((_c2 = availableActors.value[0]) == null ? void 0 : _c2.id),
                         class: "target-select",
@@ -48576,19 +48621,45 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }), 128))
                       ], 40, _hoisted_17)
                     ])) : createCommentVNode("", true),
-                    _cache2[9] || (_cache2[9] = createBaseVNode("div", { class: "popover-arrow" }, null, -1))
+                    createBaseVNode("div", _hoisted_19, [
+                      createBaseVNode("div", _hoisted_20, [
+                        _cache2[10] || (_cache2[10] = createBaseVNode("span", { class: "fov-label" }, "FOV:", -1)),
+                        createBaseVNode("span", _hoisted_21, toDisplayString(getKeyframeFov(kf)) + "°", 1),
+                        createBaseVNode("button", {
+                          class: "fov-reset-btn",
+                          title: "Reset to default FOV",
+                          onClick: withModifiers(($event) => resetKeyframeFov(kf), ["stop"])
+                        }, " ↺ ", 8, _hoisted_22)
+                      ]),
+                      createBaseVNode("div", _hoisted_23, [
+                        createBaseVNode("span", _hoisted_24, toDisplayString(getFovConfig(kf.mode).min) + "°", 1),
+                        createBaseVNode("input", {
+                          type: "range",
+                          min: getFovConfig(kf.mode).min,
+                          max: getFovConfig(kf.mode).max,
+                          step: "1",
+                          value: getKeyframeFov(kf),
+                          class: "fov-slider",
+                          onInput: withModifiers(($event) => changeKeyframeFov(kf, Number($event.target.value)), ["stop"]),
+                          onMousedown: _cache2[1] || (_cache2[1] = withModifiers(() => {
+                          }, ["stop"]))
+                        }, null, 40, _hoisted_25),
+                        createBaseVNode("span", _hoisted_26, toDisplayString(getFovConfig(kf.mode).max) + "°", 1)
+                      ])
+                    ]),
+                    _cache2[11] || (_cache2[11] = createBaseVNode("div", { class: "popover-arrow" }, null, -1))
                   ], 34)) : createCommentVNode("", true)
                 ], 46, _hoisted_10);
               }), 128))
             ], 544),
-            createBaseVNode("div", _hoisted_19, toDisplayString(formattedTime.value), 1)
+            createBaseVNode("div", _hoisted_27, toDisplayString(formattedTime.value), 1)
           ], 34)
         ], 32))
       ]);
     };
   }
 });
-const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9363e2f3"]]);
+const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c97b68b8"]]);
 const { app } = window.comfyAPI.app;
 (() => {
   const cssUrl = new URL(

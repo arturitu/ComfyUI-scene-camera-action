@@ -118,6 +118,14 @@ export interface ActingAppExposed {
   getThreeActing?: () => any
 }
 
+export interface DirectingKeyframe {
+  id: string
+  t: number
+  mode: string
+  actor_target?: string
+  fov?: number
+}
+
 export interface DirectingState {
   camera_mode: string
   acting_data?: string
