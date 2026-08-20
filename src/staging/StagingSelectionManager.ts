@@ -3,10 +3,10 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js'
 
 export interface SelectionCallbacks {
   onSelectionChange?: (hasSelection: boolean) => void
-  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
+  onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 }
 
-export class SceneSelectionManager {
+export class StagingSelectionManager {
   private selectedObjects: THREE.Object3D[] = []
   private boxHelpers: THREE.BoxHelper[] = []
   private multiSelectionPivot: THREE.Group | null = null
@@ -50,7 +50,8 @@ export class SceneSelectionManager {
     transformControls: TransformControls,
     transformMode: 'translate' | 'rotate' | 'scale' | null,
     lastTransformMode: 'translate' | 'rotate' | 'scale',
-    callbacks: SelectionCallbacks
+    callbacks: SelectionCallbacks,
+    cycleInfo?: { index: number; total: number }
   ): void {
     this.clearSelectionUI(scene, transformControls)
 
@@ -62,7 +63,7 @@ export class SceneSelectionManager {
     if (count === 0) {
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(false)
       if (callbacks.onSelectionInfoChange) {
-        callbacks.onSelectionInfoChange({ selectedCount: 0, hasGroupSelected: false, canGroup: false, canUngroup: false })
+        callbacks.onSelectionInfoChange({ selectedCount: 0, hasGroupSelected: false, canGroup: false, canUngroup: false, cycleInfo: undefined })
       }
       return
     }
@@ -71,7 +72,13 @@ export class SceneSelectionManager {
 
     if (count === 1) {
       const target = this.selectedObjects[0]
-      const isSpawnPoint = target.name === '__spawn_point_indicator__'
+      const isSpawnPoint = target.name === '__spawn_point_indicator__' || target.name === '__spawn_point_mesh__'
+      if (!isSpawnPoint) {
+        const helper = new THREE.BoxHelper(target, 0x4a90e2)
+        helper.name = '__box_helper__'
+        scene.add(helper)
+        this.boxHelpers.push(helper)
+      }
       if (transformControls) {
         transformControls.setMode(modeToUse)
         if (isSpawnPoint && modeToUse === 'rotate') {
@@ -87,7 +94,7 @@ export class SceneSelectionManager {
       }
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(true)
       if (callbacks.onSelectionInfoChange) {
-        callbacks.onSelectionInfoChange({ selectedCount: 1, hasGroupSelected: target.type === 'Group', canGroup: false, canUngroup: target.type === 'Group' })
+        callbacks.onSelectionInfoChange({ selectedCount: 1, hasGroupSelected: target.type === 'Group', canGroup: false, canUngroup: target.type === 'Group', cycleInfo })
       }
     } else {
       // Multi-selection (2+ items): show BoxHelpers and attach TransformControls to multiSelectionPivot
@@ -114,19 +121,19 @@ export class SceneSelectionManager {
 
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(true)
       if (callbacks.onSelectionInfoChange) {
-        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup: true, canUngroup: canUngroup })
+        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup: true, canUngroup: canUngroup, cycleInfo })
       }
     }
   }
 
-  public getTopSelectableObject(obj: THREE.Object3D, scene: THREE.Scene, transformControlsHelper: THREE.Object3D): THREE.Object3D | null {
+  public getTopSelectableObject(obj: THREE.Object3D, scene: THREE.Scene, _transformControlsHelper?: THREE.Object3D): THREE.Object3D | null {
     let curr: THREE.Object3D | null = obj
     while (curr && curr.parent && curr.parent !== scene) {
       if (curr.parent.type === 'Scene') break
-      if (curr.parent.name === 'floor' || curr.parent === transformControlsHelper) break
+      if (!curr.parent.userData.isGroup && !curr.parent.userData.isBlock) break
       curr = curr.parent
     }
-    if (curr && (curr.type === 'Mesh' || curr.type === 'Group') && curr.name !== 'floor') {
+    if (curr && (curr.userData.isBlock === true || curr.userData.isGroup === true || curr.name === '__spawn_point_indicator__')) {
       return curr
     }
     return null

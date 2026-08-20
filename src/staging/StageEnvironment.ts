@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import * as config from '../threeConfig'
-import { SceneHierarchyManager } from './SceneHierarchyManager'
+import { StagingHierarchyManager } from './StagingHierarchyManager'
+import { InstancedStageMesh } from './InstancedStageMesh'
 import type { SceneState } from '../types'
 
 export interface StageSetupResult {
@@ -13,17 +14,16 @@ export interface StageSetupResult {
 }
 
 export class StageEnvironment {
-  private hierarchyManager: SceneHierarchyManager
+  private hierarchyManager: StagingHierarchyManager
 
   constructor() {
-    this.hierarchyManager = new SceneHierarchyManager()
+    this.hierarchyManager = new StagingHierarchyManager()
   }
 
   /**
    * Initializes standard stage environment (Lights, Grid, and Floor plane) into targetScene.
    */
   public initStage(targetScene: THREE.Scene): StageSetupResult {
-
     // 1. Lights Setup
     const ambientLight = new THREE.AmbientLight(config.AMBIENT_LIGHT_COLOR, config.AMBIENT_LIGHT_INTENSITY)
     targetScene.add(ambientLight)
@@ -93,44 +93,44 @@ export class StageEnvironment {
   }
 
   /**
-   * Builds 3D block mesh hierarchy from sceneData into parentGroup.
-   * Returns array of created environment meshes.
+   * Builds an optimized InstancedStageMesh from sceneData into parentGroup.
+   */
+  public buildInstancedStage(
+    sceneData: Partial<SceneState> | undefined,
+    parentGroup: THREE.Group
+  ): InstancedStageMesh {
+    const instancedStageMesh = new InstancedStageMesh()
+
+    if (sceneData && sceneData.nodes && sceneData.nodes.length > 0) {
+      const virtualRoots: THREE.Object3D[] = []
+      sceneData.nodes.forEach(nodeData => {
+        const obj = this.hierarchyManager.buildNodeFromData(nodeData)
+        virtualRoots.push(obj)
+      })
+
+      const virtualBlocks = this.hierarchyManager.getAllVirtualBlocks(virtualRoots)
+      instancedStageMesh.syncFromVirtualBlocks(virtualBlocks)
+    }
+
+    parentGroup.add(instancedStageMesh.getGroup())
+    return instancedStageMesh
+  }
+
+  /**
+   * Backward-compatible helper to build stage objects into parentGroup.
    */
   public buildObjectsFromData(sceneData: Partial<SceneState> | undefined, parentGroup: THREE.Group): THREE.Mesh[] {
-    const environmentMeshes: THREE.Mesh[] = []
-    if (!sceneData || !sceneData.nodes) return environmentMeshes
-
-    sceneData.nodes.forEach((nodeData) => {
-      const obj = this.hierarchyManager.buildNodeFromData(nodeData)
-      parentGroup.add(obj)
-      if (obj instanceof THREE.Mesh) {
-        environmentMeshes.push(obj)
-      } else {
-        obj.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            environmentMeshes.push(child)
-          }
-        })
-      }
-    })
-
-    return environmentMeshes
+    const instancedStageMesh = this.buildInstancedStage(sceneData, parentGroup)
+    return [instancedStageMesh.getSurfaceMesh()]
   }
 
   /**
    * Helper utility to identify standard stage elements (Lights, Floor, Grid, BoxHelpers, TransformControls).
    */
-  public static isStageObject(object: THREE.Object3D, transformControlsHelper?: THREE.Object3D): boolean {
-    if (object.name === 'floor' || object.name === '__box_helper__' || object.name === '__spawn_point_indicator__') return true
-    if (
-      object.type === 'AmbientLight' ||
-      object.type === 'DirectionalLight' ||
-      object.type === 'HemisphereLight' ||
-      object.type === 'GridHelper'
-    ) {
-      return true
+  public static isStageObject(object: THREE.Object3D, _transformControlsHelper?: THREE.Object3D): boolean {
+    if (object.userData.isBlock === true || object.userData.isGroup === true) {
+      return false
     }
-    if (transformControlsHelper && object === transformControlsHelper) return true
-    return false
+    return true
   }
 }

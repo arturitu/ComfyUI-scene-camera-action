@@ -1,11 +1,13 @@
 """
-ComfyUI Scene Camera Action Nodes
-Custom nodes for 3D scene setup and actor acting within ComfyUI.
+Unboring 3D Studio Nodes (ComfyUI-UB-3D-Studio)
+Interactive 3D scene staging, actor acting, and camera directing nodes for ComfyUI.
 """
 
 from __future__ import annotations
 import json
 import os
+import shutil
+import subprocess
 from aiohttp import web
 from server import PromptServer
 import folder_paths
@@ -14,17 +16,23 @@ from comfy_api.latest import ComfyExtension, io, InputImpl, Types
 from comfy_api.latest._io import _UIOutput
 from fractions import Fraction
 from typing_extensions import override
+import threading
+import time
+
+_pending_captures: dict[str, threading.Event] = {}
+_capture_results: dict[str, dict] = {}
 
 
-class _SceneUIOutput(_UIOutput):
-    """Sends scene state to the UI frontend."""
 
-    def __init__(self, scene_dict: dict):
+class _StageUIOutput(_UIOutput):
+    """Sends stage state to the UI frontend."""
+
+    def __init__(self, stage_dict: dict):
         super().__init__()
-        self.scene_dict = scene_dict
+        self.stage_dict = stage_dict
 
     def as_dict(self) -> dict:
-        return {"scene_state": self.scene_dict}
+        return {"stage_state": self.stage_dict}
 
 
 class _ActingUIOutput(_UIOutput):
@@ -50,15 +58,15 @@ class _DirectingUIOutput(_UIOutput):
 
 
 # Custom IO types for node connections
-SceneIO = io.Custom("SCENE")
-ActingIO = io.Custom("ACTING")
+StageIO = io.Custom("*")
+ActingIO = io.Custom("*")
 
 
 CUSTOM_NODE_DIR = os.path.dirname(os.path.realpath(__file__))
 PRESETS_DIR = os.path.join(CUSTOM_NODE_DIR, "presets")
 
 
-def get_staging_scene_files() -> list[str]:
+def get_staging_stage_files() -> list[str]:
     files = set()
     # 1. Scan presets/ inside custom node directory
     if os.path.exists(PRESETS_DIR):
@@ -66,13 +74,13 @@ def get_staging_scene_files() -> list[str]:
             if f.endswith(".json"):
                 files.add(f)
 
-    # 2. Scan input/staging_scenes/ in ComfyUI input directory
+    # 2. Scan input/staging_stages/ in ComfyUI input directory
     try:
         input_dir = folder_paths.get_input_directory()
         if input_dir:
-            scenes_dir = os.path.join(input_dir, "staging_scenes")
-            if os.path.exists(scenes_dir):
-                for f in os.listdir(scenes_dir):
+            stages_dir = os.path.join(input_dir, "staging_stages")
+            if os.path.exists(stages_dir):
+                for f in os.listdir(stages_dir):
                     if f.endswith(".json"):
                         files.add(f)
     except Exception:
@@ -81,32 +89,34 @@ def get_staging_scene_files() -> list[str]:
     return sorted(list(files)) if files else ["None"]
 
 
-class SceneNode(io.ComfyNode):
+class StagingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
+
     """
-    Scene Node / Staging 3D Node
-    Configures a 3D scene environment with multiple adjustable 3D assets (cubes).
+    Staging Node
+    Configures a 3D stage environment with multiple adjustable 3D assets (cubes).
     Supports loading preset files, interactive visual editing, and live saving directly inside the 3D widget.
     """
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
-            node_id="SceneNode",
-            display_name="Staging 3D Node",
-            category="SceneCameraAction",
+            node_id="StagingNode",
+            display_name="Staging",
+            category="scene-camera-action",
             is_output_node=False,
-            description="Configures a 3D scene environment with multiple assets.",
+            description="Configures a 3D stage environment with multiple assets.",
             inputs=[
                 io.String.Input(
-                    "scene_data",
+                    "stage_data",
                     default="",
-                    display_name="Scene Data",
-                    tooltip="Serialized JSON data of the scene configurations",
+                    display_name="Stage Data",
+                    tooltip="Serialized JSON data of the stage configurations",
                     optional=True,
                 ),
             ],
             outputs=[
-                SceneIO.Output("scene_data", display_name="Scene Data"),
+                StageIO.Output("stage_data", display_name="Stage Data"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -114,52 +124,55 @@ class SceneNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        scene_data: str = "",
+        stage_data: str = "",
     ) -> io.NodeOutput:
-        scene_dict = {}
-        if scene_data.strip():
+        stage_dict = {}
+        if stage_data.strip():
             try:
-                scene_dict = json.loads(scene_data)
+                stage_dict = json.loads(stage_data)
             except Exception:
                 pass
 
-        if not scene_dict:
-            scene_dict = {
-                "type": "cube_scene",
+        if not stage_dict:
+            stage_dict = {
+                "type": "cube_stage",
                 "num_assets": 0,
                 "nodes": [],
             }
 
-        scene_json = json.dumps(scene_dict)
-        return io.NodeOutput(scene_json, ui=_SceneUIOutput(scene_dict))
+        stage_json = json.dumps(stage_dict)
+        return io.NodeOutput(stage_json, ui=_StageUIOutput(stage_dict))
 
     @classmethod
     def fingerprint_inputs(
         cls,
-        scene_data: str = "",
+        stage_data: str = "",
     ):
-        return f"{scene_data}"
+        return f"{stage_data}"
 
 
 class ActingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
+
     """
     Acting Node
-    Receives scene data from a SceneNode and hosts interactive actor acting.
+    Receives stage data from a Staging node or acting data from a previous Acting node,
+    and hosts interactive actor acting.
     """
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
             node_id="ActingNode",
-            display_name="Acting 3D Node",
-            category="SceneCameraAction",
+            display_name="Acting",
+            category="scene-camera-action",
             is_output_node=False,
-            description="Receives a 3D scene from SceneNode and hosts interactive actor acting.",
+            description="Receives a 3D stage from Staging or acting data from a previous Acting node, hosting interactive actor acting.",
             inputs=[
-                SceneIO.Input(
-                    "scene",
-                    display_name="Scene",
-                    tooltip="Scene data connection from a SceneNode",
+                StageIO.Input(
+                    "stage",
+                    display_name="Stage / Acting",
+                    tooltip="Connect a Staging node or previous Acting node for multi-actor chaining",
                     optional=True,
                 ),
                 io.Combo.Input(
@@ -171,9 +184,16 @@ class ActingNode(io.ComfyNode):
                 ),
                 io.Float.Input(
                     "actor_speed",
-                    default=10.0, min=1.0, max=20.0, step=1.0,
+                    default=10.0, min=1.0, max=30.0, step=1.0,
                     display_name="Actor Speed",
                     tooltip="Movement speed of the 3D actor",
+                ),
+                io.Color.Input(
+                    "actor_color",
+                    default="#F1DFBF",
+                    display_name="Actor Color",
+                    tooltip="Color for the 3D actor mesh",
+                    optional=True,
                 ),
                 io.Float.Input(
                     "duration",
@@ -198,27 +218,84 @@ class ActingNode(io.ComfyNode):
     @classmethod
     def execute(
         cls,
-        scene: str | dict | None = None,
+        stage: str | dict | None = None,
         actor_type: str = "human",
         actor_speed: float = 10.0,
+        actor_color: str | dict | None = "#F1DFBF",
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
-        scene_data = {}
-        if isinstance(scene, str) and scene.strip():
+        default_c = "#F1DFBF" if actor_type == "human" else "#0284C7"
+        def sanitize_color(val: str | dict | None) -> str:
+            if isinstance(val, str) and val.strip():
+                s = val.strip()
+                if s.startswith("{") or s.startswith("[") or '"type"' in s:
+                    return default_c
+                if not s.startswith("#") and len(s) in (3, 6, 8):
+                    s = f"#{s}"
+                if s.startswith("#"):
+                    if len(s) == 9:
+                        return s[:7]
+            elif isinstance(val, dict):
+                hex_val = val.get("hex") or val.get("color")
+                if isinstance(hex_val, str) and hex_val.startswith("#"):
+                    return hex_val[:7] if len(hex_val) == 9 else hex_val
+            return default_c
+
+        clean_color = sanitize_color(actor_color)
+
+        stage_input_data = {}
+        if isinstance(stage, str) and stage.strip():
             try:
-                scene_data = json.loads(scene)
+                stage_input_data = json.loads(stage)
             except Exception:
-                scene_data = {"raw": scene}
-        elif isinstance(scene, dict):
-            scene_data = scene
+                stage_input_data = {"raw": stage}
+        elif isinstance(stage, dict):
+            stage_input_data = stage
+
+        stage_data = {}
+        previous_actors = []
+
+        if "nodes" in stage_input_data or "type" in stage_input_data:
+            stage_data = stage_input_data
+        elif "stage_data" in stage_input_data or "actors" in stage_input_data:
+            stage_data = stage_input_data.get("stage_data", {})
+            if "duration" in stage_input_data:
+                try:
+                    duration = float(stage_input_data["duration"])
+                except (ValueError, TypeError):
+                    pass
+
+            if isinstance(stage_input_data.get("actors"), list):
+                previous_actors = stage_input_data["actors"]
+            elif stage_input_data.get("motion_data") or stage_input_data.get("trajectory"):
+                traj = stage_input_data.get("trajectory")
+                if not traj and isinstance(stage_input_data.get("motion_data"), str) and stage_input_data["motion_data"].strip():
+                    try:
+                        parsed_m = json.loads(stage_input_data["motion_data"])
+                        traj = parsed_m.get("trajectory", []) if isinstance(parsed_m, dict) else []
+                    except Exception:
+                        traj = []
+                if not traj and isinstance(stage_input_data.get("motion_data"), list):
+                    traj = stage_input_data["motion_data"]
+
+                previous_actors = [{
+                    "id": "actor_1",
+                    "actor_type": stage_input_data.get("actor_type", "human"),
+                    "actor_color": sanitize_color(stage_input_data.get("actor_color")),
+                    "actor_speed": stage_input_data.get("actor_speed", 10.0),
+                    "spawn_point": stage_input_data.get("spawn_point"),
+                    "trajectory": traj or []
+                }]
 
         acting_dict = {
-            "scene_data": scene_data,
+            "stage_data": stage_data,
             "actor_type": actor_type,
+            "actor_color": clean_color,
             "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,
+            "actors": previous_actors,
         }
 
         acting_json = json.dumps(acting_dict)
@@ -226,24 +303,26 @@ class ActingNode(io.ComfyNode):
 
 
 class DirectingNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
+
     """
     Directing Node
-    Records camera cuts on top of acting motion data and outputs captured video and captured stage overview image.
+    Records camera cuts on top of acting motion data and outputs captured video.
     """
 
     @classmethod
     def define_schema(cls):
         return io.Schema(
             node_id="DirectingNode",
-            display_name="Directing 3D Node",
-            category="SceneCameraAction",
+            display_name="Directing",
+            category="scene-camera-action",
             is_output_node=False,
-            description="Records camera cuts on top of acting data, outputs captured video and stage overview image.",
+            description="Records camera cuts on top of acting data, outputs captured video.",
             inputs=[
                 ActingIO.Input(
                     "acting",
                     display_name="Acting",
-                    tooltip="Acting motion connection from an ActingNode",
+                    tooltip="Acting motion connection from an Acting node",
                     optional=True,
                 ),
                 io.String.Input(
@@ -255,8 +334,7 @@ class DirectingNode(io.ComfyNode):
                 ),
             ],
             outputs=[
-                io.Video.Output("captured_video", display_name="Captured Video"),
-                io.Image.Output("captured_stage", display_name="Captured Stage"),
+                io.Video.Output("video", display_name="Captured Video"),
             ],
             hidden=[io.Hidden.unique_id],
         )
@@ -267,53 +345,8 @@ class DirectingNode(io.ComfyNode):
         acting: str | dict | None = None,
         directing_data: str = "",
     ) -> io.NodeOutput:
-        node_id = cls.hidden.unique_id
+        node_id = str(cls.hidden.unique_id)
         input_dir = folder_paths.get_input_directory()
-
-        # 1. Load Video (Check node-specific file first, then fallback to global)
-        specific_video = f"3d_directing_record_{node_id}.webm"
-        video_path = os.path.join(input_dir, specific_video)
-        if not os.path.exists(video_path):
-            video_path = os.path.join(input_dir, "3d_directing_record.webm")
-
-        video_output = None
-        if os.path.exists(video_path):
-            try:
-                video_output = InputImpl.VideoFromFile(video_path)
-            except Exception as e:
-                print(f"Error loading video file: {e}")
-
-        if video_output is None:
-            import torch
-            dummy_images = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
-            video_output = InputImpl.VideoFromComponents(
-                Types.VideoComponents(images=dummy_images, audio=None, frame_rate=Fraction(24))
-            )
-
-        # 2. Load Captured Stage Overview Image (Check node-specific file first, then fallback)
-        specific_image = f"3d_directing_stage_{node_id}.png"
-        image_path = os.path.join(input_dir, specific_image)
-        if not os.path.exists(image_path):
-            image_path = os.path.join(input_dir, "3d_directing_stage.png")
-
-        image_tensor = None
-        if os.path.exists(image_path):
-            try:
-                from PIL import Image, ImageOps
-                import numpy as np
-                import torch
-
-                i = Image.open(image_path)
-                i = ImageOps.exif_transpose(i)
-                image = i.convert("RGB")
-                image_np = np.array(image).astype(np.float32) / 255.0
-                image_tensor = torch.from_numpy(image_np)[None,]
-            except Exception as e:
-                print(f"Error loading stage image file: {e}")
-
-        if image_tensor is None:
-            import torch
-            image_tensor = torch.zeros((1, 64, 64, 3), dtype=torch.float32)
 
         acting_data = {}
         if isinstance(acting, str) and acting.strip():
@@ -324,7 +357,58 @@ class DirectingNode(io.ComfyNode):
         elif isinstance(acting, dict):
             acting_data = acting
 
-        scene_data = acting_data.get("scene_data", {})
+        # 1. Validate acting motion data before attempting capture
+        has_motion = False
+        if isinstance(acting_data, dict):
+            if acting_data.get("trajectory") or acting_data.get("motion_data"):
+                has_motion = True
+            actors = acting_data.get("actors")
+            if isinstance(actors, list) and len(actors) > 0:
+                for act in actors:
+                    if act.get("trajectory") and len(act["trajectory"]) > 0:
+                        has_motion = True
+                        break
+
+        if not has_motion:
+            raise ValueError("Directing: Directing canvas is disabled. Connect an Acting node and record motion first.")
+
+        # 2. Trigger auto-capture on frontend via WebSocket signal
+        _capture_results.pop(node_id, None)
+        evt = threading.Event()
+        _pending_captures[node_id] = evt
+        try:
+            PromptServer.instance.send_sync("scene_camera_action_directing_capture", {"node_id": node_id})
+            # Wait for frontend to record and upload video (max 40 seconds)
+            evt.wait(timeout=40.0)
+        except Exception as e:
+            print(f"[DirectingNode] Error waiting for frontend capture: {e}")
+        finally:
+            _pending_captures.pop(node_id, None)
+
+        res = _capture_results.pop(node_id, {})
+        if res.get("error"):
+            raise ValueError(f"Directing: {res['error']}")
+
+        # 3. Load Node-Specific Video File (No global fallback to old temp files)
+        specific_mp4 = f"3d_directing_record_{node_id}.mp4"
+        mp4_path = os.path.join(input_dir, specific_mp4)
+        specific_webm = f"3d_directing_record_{node_id}.webm"
+        webm_path = os.path.join(input_dir, specific_webm)
+
+        if not os.path.exists(mp4_path) and os.path.exists(webm_path):
+            convert_webm_to_mp4(webm_path, mp4_path)
+
+        video_path = mp4_path if os.path.exists(mp4_path) else webm_path
+
+        if not os.path.exists(video_path):
+            raise ValueError("Directing: No video file was generated. Please ensure active motion recording in Acting.")
+
+        try:
+            video_output = InputImpl.VideoFromFile(video_path)
+        except Exception as e:
+            raise ValueError(f"Directing: Error reading recorded video file: {e}")
+
+        stage_data = acting_data.get("stage_data", acting_data.get("scene_data", {}))
 
         camera_timeline = []
         if directing_data and directing_data.strip():
@@ -334,12 +418,14 @@ class DirectingNode(io.ComfyNode):
                 camera_timeline = []
 
         directing_dict = {
-            "scene_data": scene_data,
+            "stage_data": stage_data,
             "acting_data": acting_data,
             "directing_data": camera_timeline,
         }
 
-        return io.NodeOutput(video_output, image_tensor, ui=_DirectingUIOutput(directing_dict))
+        return io.NodeOutput(video_output, ui=_DirectingUIOutput(directing_dict))
+
+
 
     @classmethod
     def fingerprint_inputs(
@@ -347,78 +433,169 @@ class DirectingNode(io.ComfyNode):
         acting=None,
         directing_data: str = "",
     ):
-        node_id = cls.hidden.unique_id
-        input_dir = folder_paths.get_input_directory()
-        mtime = 0.0
+        return time.time()
 
-        for candidate in [f"3d_directing_record_{node_id}.webm", f"3d_directing_stage_{node_id}.png"]:
-            path = os.path.join(input_dir, candidate)
-            if os.path.exists(path):
-                mtime = max(mtime, os.path.getmtime(path))
-
-        return f"{acting}_{directing_data}_{mtime}"
 
 
 class SceneCameraActionExtension(ComfyExtension):
     @override
     async def get_node_list(self):
-        return [SceneNode, ActingNode, DirectingNode]
+        return [StagingNode, ActingNode, DirectingNode]
+
+
+def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
+    """
+    Converts WebM video to a QuickTime-compatible MP4 (H.264, YUV420P, faststart).
+    QuickTime Player on macOS requires H.264 with yuv420p pixel format and even dimensions.
+    """
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin:
+        for fallback in ["/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/usr/bin/ffmpeg"]:
+            if os.path.exists(fallback):
+                ffmpeg_bin = fallback
+                break
+
+    if not ffmpeg_bin:
+        print("[SceneCameraAction] ffmpeg not found, skipping MP4 conversion")
+        return False
+
+    cmd = [
+        ffmpeg_bin, "-y",
+        "-i", webm_path,
+        "-c:v", "libx264",
+        "-crf", "17",
+        "-pix_fmt", "yuv420p",
+        "-profile:v", "main",
+        "-level", "4.0",
+        "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+        "-preset", "fast",
+        "-movflags", "+faststart",
+        mp4_path
+    ]
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=60)
+        if res.returncode == 0 and os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 0:
+            print(f"[SceneCameraAction] Successfully converted {webm_path} -> {mp4_path} (QuickTime H.264/yuv420p)")
+            return True
+        else:
+            print(f"[SceneCameraAction] ffmpeg conversion warning: {res.stderr}")
+            return False
+    except Exception as e:
+        print(f"[SceneCameraAction] Error running ffmpeg: {e}")
+        return False
 
 
 # --- API Routes to receive video, image uploads, and scene presets ---
 @PromptServer.instance.routes.post("/scene_camera_action/upload_video")
+@PromptServer.instance.routes.post("/ub_3d_studio/upload_video")
 async def upload_video(request):
-    post = await request.post()
-    video_file = post.get("video")
-    custom_filename = post.get("filename")
+    try:
+        post = await request.post()
+        video_file = post.get("video")
+        custom_filename = post.get("filename")
 
-    if video_file:
-        input_dir = folder_paths.get_input_directory()
-        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_record.webm"
-        filepath = os.path.join(input_dir, filename)
+        if video_file:
+            input_dir = folder_paths.get_input_directory()
+            filename = os.path.basename(custom_filename) if isinstance(custom_filename, str) and custom_filename else "3d_directing_record.webm"
+            filepath = os.path.join(input_dir, filename)
 
-        with open(filepath, "wb") as f:
-            f.write(video_file.file.read())
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
 
-        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
-    return web.json_response({"success": False, "error": "No video file received"})
+            file_bytes = video_file.file.read() if hasattr(video_file, "file") else video_file
+            try:
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+            except Exception:
+                timestamp = int(time.time())
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{timestamp}{ext}"
+                filepath = os.path.join(input_dir, filename)
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+
+            # Automatically convert WebM to QuickTime-compatible H.264 MP4
+            base_name, _ = os.path.splitext(filename)
+            mp4_filename = f"{base_name}.mp4"
+            mp4_filepath = os.path.join(input_dir, mp4_filename)
+
+            if os.path.exists(mp4_filepath):
+                try:
+                    os.remove(mp4_filepath)
+                except Exception:
+                    pass
+
+            success_mp4 = convert_webm_to_mp4(filepath, mp4_filepath)
+            final_filename = mp4_filename if success_mp4 else filename
+            final_filepath = mp4_filepath if success_mp4 else filepath
+
+            return web.json_response({"success": True, "filepath": final_filepath, "filename": final_filename})
+        return web.json_response({"success": False, "error": "No video file received"})
+    except Exception as e:
+        print(f"[SceneCameraAction] Error uploading video: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
 @PromptServer.instance.routes.post("/scene_camera_action/upload_image")
+@PromptServer.instance.routes.post("/ub_3d_studio/upload_image")
 async def upload_image(request):
-    post = await request.post()
-    image_file = post.get("image")
-    custom_filename = post.get("filename")
+    try:
+        post = await request.post()
+        image_file = post.get("image")
+        custom_filename = post.get("filename")
 
-    if image_file:
-        input_dir = folder_paths.get_input_directory()
-        filename = os.path.basename(custom_filename) if custom_filename else "3d_directing_stage.png"
-        filepath = os.path.join(input_dir, filename)
+        if image_file:
+            input_dir = folder_paths.get_input_directory()
+            filename = os.path.basename(custom_filename) if isinstance(custom_filename, str) and custom_filename else "3d_directing_stage.png"
+            filepath = os.path.join(input_dir, filename)
 
-        with open(filepath, "wb") as f:
-            f.write(image_file.file.read())
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
 
-        return web.json_response({"success": True, "filepath": filepath, "filename": filename})
-    return web.json_response({"success": False, "error": "No image file received"})
+            file_bytes = image_file.file.read() if hasattr(image_file, "file") else image_file
+            try:
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+            except Exception:
+                timestamp = int(time.time())
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{timestamp}{ext}"
+                filepath = os.path.join(input_dir, filename)
+                with open(filepath, "wb") as f:
+                    f.write(file_bytes)
+
+            return web.json_response({"success": True, "filepath": filepath, "filename": filename})
+        return web.json_response({"success": False, "error": "No image file received"})
+    except Exception as e:
+        print(f"[SceneCameraAction] Error uploading image: {e}")
+        return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
 @PromptServer.instance.routes.get("/scene_camera_action/list_presets")
+@PromptServer.instance.routes.get("/ub_3d_studio/list_presets")
 async def list_presets(request):
-    files = get_staging_scene_files()
+    files = get_staging_stage_files()
     return web.json_response({"files": files})
 
 
 @PromptServer.instance.routes.get("/scene_camera_action/get_preset")
+@PromptServer.instance.routes.get("/ub_3d_studio/get_preset")
 async def get_preset(request):
     filename = request.query.get("filename", "")
     if not filename or filename == "None":
-        return web.json_response({"type": "cube_scene", "nodes": []})
+        return web.json_response({"type": "cube_stage", "nodes": []})
 
     filepath = os.path.join(PRESETS_DIR, filename)
     if not os.path.exists(filepath):
         try:
             input_dir = folder_paths.get_input_directory()
-            filepath = os.path.join(input_dir, "staging_scenes", filename)
+            filepath = os.path.join(input_dir, "staging_stages", filename)
         except Exception:
             pass
 
@@ -434,11 +611,12 @@ async def get_preset(request):
 
 
 @PromptServer.instance.routes.post("/scene_camera_action/save_preset")
+@PromptServer.instance.routes.post("/ub_3d_studio/save_preset")
 async def save_preset(request):
     try:
         body = await request.json()
         filename = body.get("filename", "")
-        scene_data = body.get("scene_data", {})
+        stage_data = body.get("stage_data", body.get("scene_data", {}))
 
         if not filename or filename == "None":
             filename = "nueva_escena.json"
@@ -449,11 +627,25 @@ async def save_preset(request):
         filepath = os.path.join(PRESETS_DIR, filename)
 
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(scene_data, f, indent=2)
+            json.dump(stage_data, f, indent=2)
 
         return web.json_response({"success": True, "filename": filename, "filepath": filepath})
     except Exception as e:
         return web.json_response({"success": False, "error": str(e)}, status=500)
+
+
+@PromptServer.instance.routes.post("/scene_camera_action/capture_done")
+@PromptServer.instance.routes.post("/ub_3d_studio/capture_done")
+async def capture_done(request):
+    try:
+        body = await request.json()
+        node_id = str(body.get("node_id", ""))
+        if node_id in _pending_captures:
+            _pending_captures[node_id].set()
+        return web.json_response({"success": True})
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
 
 
 async def comfy_entrypoint():
@@ -461,14 +653,24 @@ async def comfy_entrypoint():
 
 
 NODE_CLASS_MAPPINGS = {
-    "SceneNode": SceneNode,
+    "StagingNode": StagingNode,
     "ActingNode": ActingNode,
     "DirectingNode": DirectingNode,
+    "UBStagingNode": StagingNode,
+    "UBActingNode": ActingNode,
+    "UBDirectingNode": DirectingNode,
+    "StageNode": StagingNode,
+    "SceneNode": StagingNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "SceneNode": "Staging 3D Node",
-    "ActingNode": "Acting 3D Node",
-    "DirectingNode": "Directing 3D Node",
+    "StagingNode": "Staging",
+    "ActingNode": "Acting",
+    "DirectingNode": "Directing",
+    "UBStagingNode": "Staging",
+    "UBActingNode": "Acting",
+    "UBDirectingNode": "Directing",
+    "StageNode": "Staging",
+    "SceneNode": "Staging",
 }
 

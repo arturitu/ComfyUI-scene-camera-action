@@ -26,7 +26,7 @@ export class SpawnPointHelper {
     this.fillMaterial = new THREE.MeshBasicMaterial({
       color: fillColor,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.20,
       depthTest: true,
       side: THREE.DoubleSide
     })
@@ -75,15 +75,15 @@ export class SpawnPointHelper {
 
     this.group.add(arrowGroup)
 
-    // 4. Vertical Marker Pole & Avatar Head (for easy click selection from all camera angles)
-    const poleGeom = new THREE.CylinderGeometry(0.04, 0.04, 1.4, 16)
-    poleGeom.translate(0, 0.7, 0)
+    // 4. Vertical Marker Pole & Avatar Head (Taller: 2.3m height so head sticks out above actors)
+    const poleGeom = new THREE.CylinderGeometry(0.04, 0.04, 2.2, 16)
+    poleGeom.translate(0, 1.1, 0)
     const poleMesh = new THREE.Mesh(poleGeom, this.mainMaterial)
     poleMesh.name = '__spawn_point_mesh__'
     this.group.add(poleMesh)
 
-    const headGeom = new THREE.SphereGeometry(0.2, 16, 16)
-    headGeom.translate(0, 1.5, 0)
+    const headGeom = new THREE.SphereGeometry(0.22, 16, 16)
+    headGeom.translate(0, 2.3, 0)
     const headMesh = new THREE.Mesh(headGeom, this.mainMaterial)
     headMesh.name = '__spawn_point_mesh__'
     this.group.add(headMesh)

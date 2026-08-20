@@ -18,6 +18,7 @@ interface ComfyNode {
   size: [number, number]
   widgets?: ComfyWidget[]
   inputs?: ComfyInput[]
+  outputs?: Array<{ name: string; label?: string; links?: number[] }>
   properties?: Record<string, unknown>
   graph?: {
     links?: Record<number, { origin_id: number; origin_slot: number; target_id: number; target_slot: number }>

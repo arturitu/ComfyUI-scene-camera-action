@@ -77,9 +77,9 @@ export class HumanActor extends BaseActor {
   private isUserJumping: boolean = false
   private airborneTime: number = 0
 
-  // Wireframe collider geometries for standing (2.14m total height) and crouching (1.50m total height)
-  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 1.30, 8, 16)
-  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.42, 0.70, 8, 16)
+  // Wireframe collider geometries for standing (1.79m total height) and crouching (1.30m total height)
+  private standingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.35, 1.09, 8, 16)
+  private crouchingWireframeGeo: THREE.CapsuleGeometry = new THREE.CapsuleGeometry(0.35, 0.60, 8, 16)
 
   constructor() {
     super()
@@ -99,7 +99,7 @@ export class HumanActor extends BaseActor {
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return this.isCrouching() ? new THREE.Vector3(0, 0.95, 0.1) : new THREE.Vector3(0, 1.5, 0.1)
+    return this.isCrouching() ? new THREE.Vector3(0, 0.85, 0.1) : new THREE.Vector3(0, 1.65, 0.1)
   }
 
   public getCurrentAnimationName(): string {
@@ -114,12 +114,18 @@ export class HumanActor extends BaseActor {
     return frame
   }
 
-  public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016): void {
+  private lastRequestedPlaybackAnim: string | null = null
+
+  public override onPlaybackMotion(distMoved: number, _diffY: number, animName?: string, dt: number = 0.016, isHardCut: boolean = false): void {
     const frameDt = Math.max(0, dt)
-    let targetAnim = (animName && animName !== 'None' && this.animationsMapMap.has(animName)) ? animName : 'Idle_A'
+    if (animName && animName !== 'None') {
+      this.lastRequestedPlaybackAnim = animName
+    }
+    const requested = animName || this.lastRequestedPlaybackAnim
+    let targetAnim = (requested && this.animationsMapMap.has(requested)) ? requested : 'Idle_A'
     let animTimeScale = 1.0
 
-    const instantSpeed = frameDt > 0 ? distMoved / frameDt : 0
+    const instantSpeed = (frameDt > 0 && !isHardCut) ? distMoved / frameDt : 0
     if (targetAnim === 'Walk') {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
     } else if (targetAnim === 'Sprint') {
@@ -128,10 +134,22 @@ export class HumanActor extends BaseActor {
       animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
     }
 
-    this.playAnimation(targetAnim, 0.2, animTimeScale)
+    let fadeDuration = 0.15
+    if (isHardCut || frameDt === 0) {
+      fadeDuration = 0
+    } else if (targetAnim.includes('Jump')) {
+      fadeDuration = 0.05
+    }
+    this.playAnimation(targetAnim, fadeDuration, animTimeScale)
 
-    if (this.mixer && frameDt > 0) {
-      this.mixer.update(frameDt)
+    if (this.mixer) {
+      if (frameDt === 0) {
+        this.mixer.timeScale = 0
+        this.mixer.update(0)
+      } else {
+        this.mixer.timeScale = 1.0
+        this.mixer.update(frameDt)
+      }
     }
   }
 
@@ -184,6 +202,39 @@ export class HumanActor extends BaseActor {
     }
   }
 
+  public override actorColor: string = '#F1DFBF'
+
+  public override setActorColor(hexColor: string): void {
+    if (!hexColor) return
+    this.actorColor = hexColor
+    this.applyColorToMesh(hexColor)
+  }
+
+  private applyColorToMesh(hexColor: string): void {
+    if (this.placeholderMesh && this.placeholderMesh.material) {
+      (this.placeholderMesh.material as THREE.MeshStandardMaterial).color.set(hexColor)
+    }
+    if (this.modelGroup) {
+      const c = new THREE.Color(hexColor)
+      this.modelGroup.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach((mat: any) => {
+              if (mat.color) {
+                mat.color.copy(c)
+                mat.needsUpdate = true
+              }
+            })
+          } else if (mesh.material && (mesh.material as any).color) {
+            ;(mesh.material as any).color.copy(c)
+            ;(mesh.material as any).needsUpdate = true
+          }
+        }
+      })
+    }
+  }
+
   private setupHumanModel(assets: CachedHumanAssets): void {
     if (this.isDisposed) return
 
@@ -206,15 +257,31 @@ export class HumanActor extends BaseActor {
     // Elevate model mesh slightly so feet soles sit 100% flush on floor surface Y = 0
     clonedModel.position.y = 0.25
 
+    // Clone materials so each human actor instance has its own unique materials
+    clonedModel.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh
+        if (Array.isArray(mesh.material)) {
+          mesh.material = mesh.material.map(m => m.clone())
+        } else if (mesh.material) {
+          mesh.material = mesh.material.clone()
+        }
+      }
+    })
+
     this.modelGroup = clonedModel
     this.group.add(this.modelGroup)
+
+    // Apply color to loaded human model
+    this.applyColorToMesh(this.actorColor)
 
     // Setup Animation Mixer & Map
     this.animationsMapMap = assets.animations
     this.mixer = new THREE.AnimationMixer(this.modelGroup)
 
-    // Start default animation
-    this.playAnimation('Idle_A', 0)
+    // Start default or last requested animation
+    const initialAnim = this.lastRequestedPlaybackAnim || 'Idle_A'
+    this.playAnimation(initialAnim, 0)
   }
 
   public override resetToOrigin(sp?: SpawnPoint): void {
@@ -228,9 +295,6 @@ export class HumanActor extends BaseActor {
     this.currentAnimationName = null
     this.currentAction = null
     this.playAnimation('Idle_A', 0)
-    if (this.mixer) {
-      this.mixer.update(0.001)
-    }
   }
 
   public override resetAnimation(initialAnim?: string): void {
@@ -240,14 +304,14 @@ export class HumanActor extends BaseActor {
     }
     this.currentAnimationName = null
     this.currentAction = null
-    const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : 'Idle_A'
-    this.playAnimation(targetAnim, 0)
-    if (this.mixer) {
-      this.mixer.update(0.001)
+    if (initialAnim && initialAnim !== 'None') {
+      this.lastRequestedPlaybackAnim = initialAnim
     }
+    const targetAnim = (initialAnim && this.animationsMapMap.has(initialAnim)) ? initialAnim : (this.lastRequestedPlaybackAnim || 'Idle_A')
+    this.playAnimation(targetAnim, 0)
   }
 
-  private playAnimation(animName: string, fadeDuration = 0.2, timeScale = 1.0, loopOnce = false): void {
+  private playAnimation(animName: string, fadeDuration = 0.15, timeScale = 1.0, loopOnce = false): void {
     if (!this.mixer) return
 
     if (this.currentAnimationName === animName) {
@@ -260,13 +324,11 @@ export class HumanActor extends BaseActor {
     const clip = this.animationsMapMap.get(animName)
     if (!clip) return
 
+    const prevAction = this.currentAction
     const newAction = this.mixer.clipAction(clip)
 
-    if (this.currentAction && this.currentAction !== newAction) {
-      this.currentAction.fadeOut(fadeDuration)
-    }
-
-    newAction.reset()
+    newAction.enabled = true
+    newAction.timeScale = timeScale
     if (loopOnce) {
       newAction.setLoop(THREE.LoopOnce, 1)
       newAction.clampWhenFinished = true
@@ -275,9 +337,22 @@ export class HumanActor extends BaseActor {
       newAction.clampWhenFinished = false
     }
 
-    newAction.fadeIn(fadeDuration)
-    newAction.timeScale = timeScale
-    newAction.play()
+    if (prevAction && prevAction !== newAction && fadeDuration > 0) {
+      newAction.reset()
+      newAction.setEffectiveTimeScale(timeScale)
+      newAction.setEffectiveWeight(1.0)
+      newAction.crossFadeFrom(prevAction, fadeDuration, true)
+      newAction.play()
+    } else {
+      if (prevAction && prevAction !== newAction) {
+        prevAction.stop()
+        prevAction.setEffectiveWeight(0)
+      }
+      newAction.reset()
+      newAction.setEffectiveTimeScale(timeScale)
+      newAction.setEffectiveWeight(1.0)
+      newAction.play()
+    }
 
     this.currentAction = newAction
     this.currentAnimationName = animName
@@ -356,7 +431,7 @@ export class HumanActor extends BaseActor {
       while (diff > Math.PI) diff -= Math.PI * 2
 
       // Dynamic turn speed scales with linear speed so fast movement turns tighter and quicker
-      const dynamicTurnSpeed = 12.0 + (speed * 2.5)
+      const dynamicTurnSpeed = 6.5 + (speed * 2.0)
       const lerpFactor = 1.0 - Math.exp(-dynamicTurnSpeed * Math.max(0.001, dt))
       this.rotationY += diff * lerpFactor
 
@@ -501,7 +576,11 @@ export class HumanActor extends BaseActor {
       animTimeScale = 1.0
     }
 
-    this.playAnimation(targetAnimation, 0.2, animTimeScale)
+    let fadeDuration = 0.15
+    if (targetAnimation.includes('Jump')) {
+      fadeDuration = 0.05
+    }
+    this.playAnimation(targetAnimation, fadeDuration, animTimeScale)
 
     // Advance animation mixer
     if (this.mixer) {

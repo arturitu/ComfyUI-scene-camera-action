@@ -10,6 +10,27 @@ export const CAMERA_MIN_DISTANCE = 1.5
 export const CAMERA_MAX_DISTANCE = 65.0
 export const MAX_PAN = 42.0
 
+export interface CameraFovRange {
+  min: number
+  max: number
+  default: number
+}
+
+export const CAMERA_FOV_CONFIG: Record<string, CameraFovRange> = {
+  'Wide': { min: 10, max: 60, default: 35 },
+  'Third Person': { min: 25, max: 85, default: 50 },
+  'Side': { min: 20, max: 80, default: 45 },
+  'First Person': { min: 40, max: 100, default: 50 },
+}
+
+export function getCameraFovConfig(mode: string): CameraFovRange {
+  return CAMERA_FOV_CONFIG[mode] || { min: 20, max: 90, default: 50 }
+}
+
+export function getDefaultCameraFov(mode: string): number {
+  return getCameraFovConfig(mode).default
+}
+
 // Fog Config
 export const FOG_NEAR = 1
 export const FOG_FAR = 160
@@ -47,8 +68,8 @@ export const FILL_LIGHT_INTENSITY = 0.45
 export const FILL_LIGHT_POSITION = new THREE.Vector3(25, 25, -25)
 
 // Edge Outline Config
-export const EDGE_COLOR = 0x66666f
-export const EDGE_OPACITY = 0.50
+export const EDGE_COLOR = 0x55555e
+export const EDGE_OPACITY = 0.4
 
 // Ground and Floor Height Config
 export const GROUND_Y = 0.0
@@ -75,9 +96,9 @@ export function createBlockMaterial(): THREE.MeshStandardMaterial {
 }
 
 /**
- * Calculates overall spatial extent (bounding size & offset) of scene content objects.
+ * Calculates overall spatial extent (bounding size & offset) of stage content objects.
  */
-export function calculateSceneExtent(
+export function calculateStageExtent(
   target: THREE.Object3D | THREE.Object3D[] | null | undefined
 ): number {
   if (!target) return 15.0
@@ -107,7 +128,7 @@ export function calculateSceneExtent(
   }
 
   if (!hasObjects || bbox.isEmpty()) {
-    return 15.0 // Default baseline scene extent
+    return 15.0 // Default baseline stage extent
   }
 
   const size = new THREE.Vector3()
@@ -121,14 +142,15 @@ export function calculateSceneExtent(
   // Extent covers full span plus center offset from origin
   return Math.max(maxSpan, centerDist + maxSpan / 2, 15.0)
 }
+export const calculateSceneExtent = calculateStageExtent
 
 /**
- * Dynamically updates scene fog and camera far clipping plane based on camera position, target center, and scene extent.
+ * Dynamically updates scene fog and camera far clipping plane based on camera position, target center, and stage extent.
  */
-export function updateSceneFog(
+export function updateStageFog(
   scene: THREE.Scene,
   camera: THREE.PerspectiveCamera,
-  sceneExtent: number,
+  stageExtent: number,
   targetCenter?: THREE.Vector3
 ): { fogNear: number; fogFar: number; cameraFar: number } {
   const center = targetCenter || new THREE.Vector3(0, 0, 0)
@@ -137,8 +159,8 @@ export function updateSceneFog(
   // Near fog starts in front of target center relative to camera distance (25% of camera distance)
   const fogNear = Math.max(1.0, cameraDistance * 0.25)
 
-  // Far fog reaches 100% density past scene extent & camera distance, smoothly fading far floor grid into background gray
-  const fogFar = Math.max(fogNear + 15.0, cameraDistance + Math.max(sceneExtent * 1.0, 15.0))
+  // Far fog reaches 100% density past stage extent & camera distance, smoothly fading far floor grid into background gray
+  const fogFar = Math.max(fogNear + 15.0, cameraDistance + Math.max(stageExtent * 1.0, 15.0))
 
   // Camera far plane extends beyond fog.far so geometry is not clipped before full fog fade
   const cameraFar = Math.max(CAMERA_FAR, fogFar * 1.3)
@@ -158,5 +180,86 @@ export function updateSceneFog(
 
   return { fogNear, fogFar, cameraFar }
 }
+export const updateSceneFog = updateStageFog
 
+// ==========================================
+// SpringArm Camera Collision & Anti-Occlusion
+// ==========================================
+export const SPRING_ARM_COLLISION_RADIUS = 0.22 // Multi-probe sweep radius around camera
+export const SPRING_ARM_SAFETY_MARGIN = 0.25    // Safety clearance in front of hit obstacles
+export const SPRING_ARM_MIN_DISTANCE = 0.55     // Absolute minimum distance from actor center
+export const SPRING_ARM_OTS_THRESHOLD = 1.25    // Distance threshold to blend into Over-The-Shoulder
+export const SPRING_ARM_ZOOM_IN_SPEED = 26.0    // Fast snap response when obstacle enters
+export const SPRING_ARM_ZOOM_OUT_SPEED = 4.5    // Smooth damped recovery when obstacle clears
 
+/**
+ * Injects a 4x4 screen-space Bayer dither pattern discard logic into a THREE.Material.
+ * This guarantees zero alpha-sorting or depth-buffer artifacts while smoothly fading occluding geometry.
+ */
+export function injectDitherShader(
+  material: THREE.Material,
+  uniformHolder?: { uDitherOpacity: { value: number } }
+): { uDitherOpacity: { value: number } } {
+  const ditherUniform = uniformHolder || { uDitherOpacity: { value: 1.0 } }
+
+  const originalOnBeforeCompile = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer)
+    }
+
+    shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity
+
+    const ditherFunction = `
+      uniform float uDitherOpacity;
+      float getDitherThreshold(vec2 pos) {
+        int x = int(mod(pos.x, 4.0));
+        int y = int(mod(pos.y, 4.0));
+        if (x == 0) {
+          if (y == 0) return 0.0625;
+          if (y == 1) return 0.8125;
+          if (y == 2) return 0.25;
+          return 1.0;
+        } else if (x == 1) {
+          if (y == 0) return 0.5625;
+          if (y == 1) return 0.3125;
+          if (y == 2) return 0.75;
+          return 0.5;
+        } else if (x == 2) {
+          if (y == 0) return 0.1875;
+          if (y == 1) return 0.9375;
+          if (y == 2) return 0.125;
+          return 0.875;
+        } else {
+          if (y == 0) return 0.6875;
+          if (y == 1) return 0.4375;
+          if (y == 2) return 0.625;
+          return 0.375;
+        }
+      }
+    `
+
+    shader.fragmentShader = ditherFunction + '\n' + shader.fragmentShader
+
+    if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        `void main() {
+        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          discard;
+        }`
+      )
+    }
+  }
+
+  material.needsUpdate = true
+  return ditherUniform
+}
