@@ -21,14 +21,16 @@ Build your 3D environment, control and record actor movements in real time using
 - **Universal Stage Builder**: Universal 3D geometric engine with 5 core primitives and new presets (`courthouse_square`, `gas_station`).
 - **Vue.js Architecture**: Modernized modular reactive UI components (`StagingWidget`, `ActingWidget`, `DirectingWidget`).
 
-<video src="v0-4-0.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/2d03f9fe-42a2-4472-9543-373252dcf670
+
 
 ### 📦 Shipped - v0.3.0: Animated Humanoid
 - **Animated 3D Humanoid Model**: Custom 3D human model with bone structure and armature animations.
 - **Configurable Spawn Points**: UI selection for actor starting locations across Staging and Acting nodes.
 - **3D Scene Presets**: Built-in previz tracks (`liberty_beach`, `industrial_ruin`, `warehouse`, `test-collider`).
 
-<video src="v0-3-0.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/590b10b8-fe3f-4f4b-b1be-99f3fc646010
+
 👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7491165268455481345/)
 
 ### 📦 Shipped - v0.2.0: Car Actor
@@ -36,21 +38,23 @@ Build your 3D environment, control and record actor movements in real time using
 - **Multi-Archetype Actor Physics Engine**: Support for Humanoid and Vehicle (`CarActor`) movement physics.
 - **Hierarchical Scene Management**: Grouping (`Group`/`Ungroup`), multi-selection, and transform snapping.
 
-<video src="v0-2-0.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/fc99bde7-7900-4fb1-9181-6c82dc451373
+
 👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7488962940134481920/)
 
 ### 📦 Shipped - v0.1.0: Starting Point
 - **Initial PoC Custom Nodes**: Proof-of-concept custom nodes (`Staging`, `Acting`, `Directing`).
 - **Basic 3D Prev-viz**: Asset placement, single capsule actor control, and multi-camera timeline cuts.
 
-<video src="v0-1-0.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/fde67050-c33d-406c-87e5-64b9d0544381
+
 👉 [*See it in action on LinkedIn*](https://www.linkedin.com/feed/update/urn:li:activity:7486069273581400064/)
 
 ---
 
 ## 🛠️ Workflow Nodes Breakdown (`scene-camera-action`)
 
-<video src="breadkdown.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/dd5c0d21-573a-467f-9d4b-1218e2c90cac
 
 ### 1. Staging (`StagingNode`)
 Build your 3D environment by placing, editing, grouping, duplicating, and transforming 3D assets:
