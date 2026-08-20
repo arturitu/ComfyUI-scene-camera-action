@@ -47650,6 +47650,17 @@ class ThreeDirecting {
     if (!targetActorCtrl) return;
     const charPos = targetActorCtrl.position;
     const rotY = targetActorCtrl.group.rotation.y;
+    const isFPV = activeMode === "First Person";
+    if (this.actorList.length > 0) {
+      this.actorList.forEach((a) => {
+        const isThisActorFPV = isFPV && (a.controller === targetActorCtrl || a.id === targetActorId);
+        a.controller.setMeshVisibleForFPV(isThisActorFPV);
+      });
+    }
+    if (this.actorController) {
+      const isPrimaryFPV = isFPV && this.actorController === targetActorCtrl;
+      this.actorController.setMeshVisibleForFPV(isPrimaryFPV);
+    }
     const isPlaying = this.playbackController.getIsPlaying();
     let isHardCut = this.playbackController.consumeHardCut() || this.forceHardCutNextCameraUpdate;
     if (this.lastActiveKeyframeId !== null && this.lastActiveKeyframeId !== activeKeyframe.id) {
@@ -47696,8 +47707,6 @@ class ThreeDirecting {
       this.camera.fov = targetFov;
       this.camera.updateProjectionMatrix();
     }
-    const isFPV = activeMode === "First Person";
-    targetActorCtrl.setMeshVisibleForFPV(isFPV);
     if (isFPV) {
       const localOffset = targetActorCtrl.getFPVOffset();
       const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion);
