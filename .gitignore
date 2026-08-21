@@ -1,7 +1,7 @@
-# Node modules & build outputs
+# Node modules & dev build outputs
 node_modules/
-js/
 dist/
+*.map
 
 # Python
 __pycache__/
@@ -11,3 +11,6 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+
+# Antigravity local rules
+GEMINI.md

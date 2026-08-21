@@ -1,0 +1,2128 @@
+{
+  "type": "cube_stage",
+  "num_assets": 112,
+  "nodes": [
+    {
+      "id": "group_station_building",
+      "type": "group",
+      "name": "1950s Gas Station Building",
+      "transform": {
+        "px": 1.19,
+        "py": 0,
+        "pz": -1.36,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_station_foundation",
+          "type": "block",
+          "name": "Concrete Foundation Slab",
+          "transform": {
+            "px": 9,
+            "py": 0.1,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 10,
+            "sy": 0.2,
+            "sz": 14
+          }
+        },
+        {
+          "id": "block_office_main",
+          "type": "block",
+          "name": "Main Office Building",
+          "transform": {
+            "px": 10.5,
+            "py": 2.1,
+            "pz": 1.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 3.8,
+            "sz": 7
+          }
+        },
+        {
+          "id": "block_garage_bay",
+          "type": "block",
+          "name": "Attached Service Garage Bay",
+          "transform": {
+            "px": 10.25,
+            "py": 2.3,
+            "pz": -4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6.5,
+            "sy": 4.2,
+            "sz": 4
+          }
+        },
+        {
+          "id": "block_office_roof_facia",
+          "type": "block",
+          "name": "Office Streamline Facia",
+          "transform": {
+            "px": 10.5,
+            "py": 4.2,
+            "pz": 1.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6.6,
+            "sy": 0.4,
+            "sz": 7.6
+          }
+        },
+        {
+          "id": "block_garage_roof_facia",
+          "type": "block",
+          "name": "Garage Roof Trim",
+          "transform": {
+            "px": 10.25,
+            "py": 4.24,
+            "pz": -4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 7,
+            "sy": 0.33,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_roof_retro_fin",
+          "type": "block",
+          "name": "Rooftop 50s Retro Fin",
+          "transform": {
+            "px": 1.55,
+            "py": 5.62,
+            "pz": 1.51,
+            "rx": 3.14,
+            "ry": -1.56,
+            "rz": 3.14,
+            "sx": 0.3,
+            "sy": 2.18,
+            "sz": 1.94
+          }
+        },
+        {
+          "id": "block_window_front_1",
+          "type": "block",
+          "name": "Front Display Window Left",
+          "transform": {
+            "px": 7.4,
+            "py": 2,
+            "pz": 3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 2,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_window_front_2",
+          "type": "block",
+          "name": "Front Display Window Right",
+          "transform": {
+            "px": 7.4,
+            "py": 2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 2,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_front_door",
+          "type": "block",
+          "name": "Store Front Entrance Door",
+          "transform": {
+            "px": 7.4,
+            "py": 1.3,
+            "pz": 4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 2.2,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_garage_door_panel",
+          "type": "block",
+          "name": "Garage Roll-Up Bay Door",
+          "transform": {
+            "px": 6.9,
+            "py": 1.8,
+            "pz": -4.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 3.2,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_canopy_roof_slab",
+          "type": "block",
+          "name": "Canopy Overhang Roof Slab",
+          "transform": {
+            "px": 3.5,
+            "py": 4.2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8,
+            "sy": 0.4,
+            "sz": 8.11
+          }
+        },
+        {
+          "id": "block_canopy_edge_trim",
+          "type": "block",
+          "name": "Canopy Retro Edge Band",
+          "transform": {
+            "px": 3.5,
+            "py": 4.58,
+            "pz": 0.09,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8.2,
+            "sy": 0.65,
+            "sz": 8.39
+          }
+        },
+        {
+          "id": "block_canopy_column_south",
+          "type": "block",
+          "name": "Canopy Steel Column South",
+          "transform": {
+            "px": 0.5,
+            "py": 2.1,
+            "pz": 3.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 4,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_canopy_column_north",
+          "type": "block",
+          "name": "Canopy Steel Column North",
+          "transform": {
+            "px": 0.5,
+            "py": 2.1,
+            "pz": -3.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 4,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_pump_island",
+      "type": "group",
+      "name": "Fuel Pump Island",
+      "transform": {
+        "px": 1.19,
+        "py": 0,
+        "pz": -1.14,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_island_curb",
+          "type": "block",
+          "name": "Concrete Island Curb Base",
+          "transform": {
+            "px": 0.5,
+            "py": 0.15,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 0.3,
+            "sz": 8
+          }
+        },
+        {
+          "id": "block_bollard_south",
+          "type": "block",
+          "name": "Safety Bollard South",
+          "transform": {
+            "px": 0.5,
+            "py": 0.75,
+            "pz": 3.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.9,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_bollard_north",
+          "type": "block",
+          "name": "Safety Bollard North",
+          "transform": {
+            "px": 0.5,
+            "py": 0.75,
+            "pz": -3.7,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.25,
+            "sy": 0.9,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "group_fuel_pump_01",
+          "type": "group",
+          "name": "Vintage 50s Fuel Pump 1 (South)",
+          "transform": {
+            "px": 0.5,
+            "py": 0.3,
+            "pz": 2.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pump1_base",
+              "type": "block",
+              "name": "Pump 1 Base Stand",
+              "transform": {
+                "px": 0,
+                "py": 0.15,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.8,
+                "sy": 0.3,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_pump1_dispenser",
+              "type": "block",
+              "name": "Pump 1 Red Main Body",
+              "transform": {
+                "px": 0,
+                "py": 1.1,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.7,
+                "sy": 1.6,
+                "sz": 0.7
+              }
+            },
+            {
+              "id": "block_pump1_meter_face",
+              "type": "block",
+              "name": "Pump 1 Meter Glass Window",
+              "transform": {
+                "px": 0,
+                "py": 1.5,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.74,
+                "sy": 0.4,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_pump1_globe_top",
+              "type": "block",
+              "name": "Pump 1 Retro Globe Topper",
+              "transform": {
+                "px": 0,
+                "py": 2.13,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.45,
+                "sy": 0.45,
+                "sz": 0.45
+              }
+            },
+            {
+              "id": "block_pump1_nozzle_hook",
+              "type": "block",
+              "name": "Pump 1 Hose & Nozzle Assembly",
+              "transform": {
+                "px": 0.4,
+                "py": 1,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.8,
+                "sz": 0.15
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_fuel_pump_02",
+          "type": "group",
+          "name": "Vintage 50s Fuel Pump 2 (North)",
+          "transform": {
+            "px": 0.5,
+            "py": 0.3,
+            "pz": -2.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pump2_base",
+              "type": "block",
+              "name": "Pump 2 Base Stand",
+              "transform": {
+                "px": 0,
+                "py": 0.15,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.8,
+                "sy": 0.3,
+                "sz": 0.8
+              }
+            },
+            {
+              "id": "block_pump2_dispenser",
+              "type": "block",
+              "name": "Pump 2 Blue Main Body",
+              "transform": {
+                "px": 0,
+                "py": 1.1,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.7,
+                "sy": 1.6,
+                "sz": 0.7
+              }
+            },
+            {
+              "id": "block_pump2_meter_face",
+              "type": "block",
+              "name": "Pump 2 Meter Glass Window",
+              "transform": {
+                "px": 0,
+                "py": 1.5,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.74,
+                "sy": 0.4,
+                "sz": 0.5
+              }
+            },
+            {
+              "id": "block_pump2_globe_top",
+              "type": "block",
+              "name": "Pump 2 Retro Globe Topper",
+              "transform": {
+                "px": 0,
+                "py": 2.13,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.45,
+                "sy": 0.45,
+                "sz": 0.45
+              }
+            },
+            {
+              "id": "block_pump2_nozzle_hook",
+              "type": "block",
+              "name": "Pump 2 Hose & Nozzle Assembly",
+              "transform": {
+                "px": -0.4,
+                "py": 1,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.8,
+                "sz": 0.15
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_abandoned_truck",
+      "type": "group",
+      "name": "Abandoned Pickup Truck with Open Door",
+      "transform": {
+        "px": -14.6,
+        "py": 0,
+        "pz": -8.51,
+        "rx": 0,
+        "ry": 0.52,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_truck_chassis",
+          "type": "block",
+          "name": "Truck Chassis Frame",
+          "transform": {
+            "px": 0,
+            "py": 0.45,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.1,
+            "sy": 0.3,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_truck_hood",
+          "type": "block",
+          "name": "Front Engine Hood & Grille",
+          "transform": {
+            "px": 0,
+            "py": 0.85,
+            "pz": 1.6,
+            "rx": -0.05,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.9,
+            "sy": 0.7,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_truck_bumper",
+          "type": "block",
+          "name": "Front Heavy Bumper",
+          "transform": {
+            "px": 0,
+            "py": 0.45,
+            "pz": 2.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.1,
+            "sy": 0.3,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_truck_cab_lower",
+          "type": "block",
+          "name": "Cabin Main Body Shell",
+          "transform": {
+            "px": 0,
+            "py": 0.9,
+            "pz": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 0.8,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_truck_cab_roof",
+          "type": "block",
+          "name": "Cabin Vintage Roof Top",
+          "transform": {
+            "px": 0,
+            "py": 1.65,
+            "pz": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.9,
+            "sy": 0.7,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_truck_windshield",
+          "type": "block",
+          "name": "Windshield Glass Frame",
+          "transform": {
+            "px": 0,
+            "py": 1.3,
+            "pz": 0.75,
+            "rx": -0.2,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.7,
+            "sy": 0.6,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_truck_driver_door_open",
+          "type": "block",
+          "name": "Driver Closed Door",
+          "transform": {
+            "px": -1,
+            "py": 0.9,
+            "pz": 0.1,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 0.8,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_truck_passenger_door",
+          "type": "block",
+          "name": "Open Passenger Door",
+          "transform": {
+            "px": 1.45,
+            "py": 0.9,
+            "pz": 0.27,
+            "rx": 0,
+            "ry": -0.88,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 0.8,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_truck_bed_floor",
+          "type": "block",
+          "name": "Rear Cargo Bed Floor",
+          "transform": {
+            "px": 0,
+            "py": 0.6,
+            "pz": -1.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.9,
+            "sy": 0.2,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_truck_bed_wall_left",
+          "type": "block",
+          "name": "Cargo Bed Side Wall Left",
+          "transform": {
+            "px": -0.9,
+            "py": 0.8,
+            "pz": -1.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 0.6,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_truck_bed_wall_right",
+          "type": "block",
+          "name": "Cargo Bed Side Wall Right",
+          "transform": {
+            "px": 0.9,
+            "py": 0.8,
+            "pz": -1.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.15,
+            "sy": 0.6,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_truck_tailgate",
+          "type": "block",
+          "name": "Rear Tailgate Panel",
+          "transform": {
+            "px": 0,
+            "py": 0.8,
+            "pz": -2.45,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.9,
+            "sy": 0.6,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_truck_wheel_fl",
+          "type": "block",
+          "name": "Front Left Wheel Tire",
+          "transform": {
+            "px": -1.05,
+            "py": 0.38,
+            "pz": 1.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.75,
+            "sz": 0.75
+          }
+        },
+        {
+          "id": "block_truck_wheel_fr",
+          "type": "block",
+          "name": "Front Right Wheel Tire",
+          "transform": {
+            "px": 1.05,
+            "py": 0.38,
+            "pz": 1.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.75,
+            "sz": 0.75
+          }
+        },
+        {
+          "id": "block_truck_wheel_rl",
+          "type": "block",
+          "name": "Rear Left Wheel Tire",
+          "transform": {
+            "px": -1.05,
+            "py": 0.38,
+            "pz": -1.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.75,
+            "sz": 0.75
+          }
+        },
+        {
+          "id": "block_truck_wheel_rr",
+          "type": "block",
+          "name": "Rear Right Wheel Tire",
+          "transform": {
+            "px": 1.05,
+            "py": 0.38,
+            "pz": -1.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.35,
+            "sy": 0.75,
+            "sz": 0.75
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_phone_booth",
+      "type": "group",
+      "name": "Open Outdoor Telephone Booth",
+      "transform": {
+        "px": -6.84,
+        "py": -0.01,
+        "pz": -10.96,
+        "rx": 3.14,
+        "ry": -1.57,
+        "rz": 3.14,
+        "sx": 1.12,
+        "sy": 1.12,
+        "sz": 1.12
+      },
+      "children": [
+        {
+          "id": "block_phone_base",
+          "type": "block",
+          "name": "Booth Step Base Slab",
+          "transform": {
+            "px": 0,
+            "py": 0.05,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.2,
+            "sy": 0.1,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_phone_post_bl",
+          "type": "block",
+          "name": "Frame Post Back Left",
+          "transform": {
+            "px": -0.5,
+            "py": 1.3,
+            "pz": -0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_phone_post_br",
+          "type": "block",
+          "name": "Frame Post Back Right",
+          "transform": {
+            "px": 0.5,
+            "py": 1.3,
+            "pz": -0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_phone_post_fl",
+          "type": "block",
+          "name": "Frame Post Front Left",
+          "transform": {
+            "px": -0.5,
+            "py": 1.3,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_phone_post_fr",
+          "type": "block",
+          "name": "Frame Post Front Right",
+          "transform": {
+            "px": 0.5,
+            "py": 1.3,
+            "pz": 0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_phone_glass_back",
+          "type": "block",
+          "name": "Back Glass Panel",
+          "transform": {
+            "px": 0,
+            "py": 1.4,
+            "pz": -0.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.9,
+            "sy": 1.8,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_phone_glass_right",
+          "type": "block",
+          "name": "Right Glass Wall",
+          "transform": {
+            "px": 0.5,
+            "py": 1.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.05,
+            "sy": 1.8,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_phone_glass_left",
+          "type": "block",
+          "name": "Left Glass Wall",
+          "transform": {
+            "px": -0.5,
+            "py": 1.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.05,
+            "sy": 1.8,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_phone_door_open",
+          "type": "block",
+          "name": "Open Folding Glass Door",
+          "transform": {
+            "px": 0.74,
+            "py": 1.1,
+            "pz": 0.96,
+            "rx": -3.14,
+            "ry": 1.1,
+            "rz": -3.14,
+            "sx": 0.85,
+            "sy": 2,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_phone_roof_cap",
+          "type": "block",
+          "name": "Phone Booth Roof Cap",
+          "transform": {
+            "px": 0,
+            "py": 2.34,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.91,
+            "sy": 0.22,
+            "sz": 0.94
+          }
+        },
+        {
+          "id": "block_phone_sign_header",
+          "type": "block",
+          "name": "TELEPHONE Illuminated Header",
+          "transform": {
+            "px": 0,
+            "py": 2.37,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.25,
+            "sy": 0.25,
+            "sz": 1.25
+          }
+        },
+        {
+          "id": "block_phone_wall_unit",
+          "type": "block",
+          "name": "Interior Telephone Unit",
+          "transform": {
+            "px": 0,
+            "py": 1.5,
+            "pz": -0.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.3,
+            "sy": 0.5,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_phone_shelf",
+          "type": "block",
+          "name": "Directory Book Shelf",
+          "transform": {
+            "px": 0,
+            "py": 1.1,
+            "pz": -0.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.05,
+            "sz": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_giant_gas_sign",
+      "type": "group",
+      "name": "Giant Vintage Gas Station Sign Tower",
+      "transform": {
+        "px": 15.19,
+        "py": 0,
+        "pz": -0.06,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 0.74,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_sign_footing",
+          "type": "block",
+          "name": "Concrete Sign Foundation",
+          "transform": {
+            "px": 0,
+            "py": 0.2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 0.4,
+            "sz": 2
+          }
+        },
+        {
+          "id": "block_sign_shaft_left",
+          "type": "block",
+          "name": "Steel Pylon Shaft Left",
+          "transform": {
+            "px": -0.6,
+            "py": 5.9,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 11,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_sign_shaft_right",
+          "type": "block",
+          "name": "Steel Pylon Shaft Right",
+          "transform": {
+            "px": 0.6,
+            "py": 5.9,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 11,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_sign_crossbar_1",
+          "type": "block",
+          "name": "Lower Support Crossbar",
+          "transform": {
+            "px": 0,
+            "py": 4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 0.2,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_sign_crossbar_2",
+          "type": "block",
+          "name": "Middle Support Crossbar",
+          "transform": {
+            "px": 0,
+            "py": 7.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1.6,
+            "sy": 0.2,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_sign_main_board",
+          "type": "block",
+          "name": "Giant GAS Sign Board Header",
+          "transform": {
+            "px": 0,
+            "py": 11.24,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.5,
+            "sy": 4.69,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_sign_outer_frame",
+          "type": "block",
+          "name": "Sign Outer Neon Frame Trim",
+          "transform": {
+            "px": 0,
+            "py": 11.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.9,
+            "sy": 3.6,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_sign_crest_topper",
+          "type": "block",
+          "name": "Rooftop 50s Starburst Crest",
+          "transform": {
+            "px": 0,
+            "py": 13.5,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.5,
+            "sy": 1,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_sign_lower_price_board",
+          "type": "block",
+          "name": "Lower SERVICE & PRICE Board",
+          "transform": {
+            "px": 0,
+            "py": 9.2,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 4.2,
+            "sy": 1.4,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_utility_poles",
+      "type": "group",
+      "name": "Roadside Utility & Power Poles",
+      "transform": {
+        "px": 1.19,
+        "py": 0,
+        "pz": -1.36,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 0.81
+      },
+      "children": [
+        {
+          "id": "group_utility_pole_1",
+          "type": "group",
+          "name": "Utility Pole 1 (South)",
+          "transform": {
+            "px": -13.5,
+            "py": 0,
+            "pz": -24,
+            "rx": 0,
+            "ry": 1.57,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pole1_trunk",
+              "type": "block",
+              "name": "Wooden Pole Shaft 1",
+              "transform": {
+                "px": 0,
+                "py": 4.25,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.35,
+                "sy": 8.5,
+                "sz": 0.35
+              }
+            },
+            {
+              "id": "block_pole1_arm_upper",
+              "type": "block",
+              "name": "Upper Crossarm 1",
+              "transform": {
+                "px": 0,
+                "py": 7.8,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.8
+              }
+            },
+            {
+              "id": "block_pole1_arm_lower",
+              "type": "block",
+              "name": "Lower Crossarm 1",
+              "transform": {
+                "px": 0,
+                "py": 7.2,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.2
+              }
+            },
+            {
+              "id": "block_pole1_transformer",
+              "type": "block",
+              "name": "Pole Transformer Box 1",
+              "transform": {
+                "px": 0.4,
+                "py": 6.2,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.6,
+                "sy": 1,
+                "sz": 0.6
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_utility_pole_2",
+          "type": "group",
+          "name": "Utility Pole 2 (Mid South)",
+          "transform": {
+            "px": -13.5,
+            "py": 0,
+            "pz": -8,
+            "rx": 0,
+            "ry": 1.57,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pole2_trunk",
+              "type": "block",
+              "name": "Wooden Pole Shaft 2",
+              "transform": {
+                "px": 0,
+                "py": 4.25,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.35,
+                "sy": 8.5,
+                "sz": 0.35
+              }
+            },
+            {
+              "id": "block_pole2_arm_upper",
+              "type": "block",
+              "name": "Upper Crossarm 2",
+              "transform": {
+                "px": 0,
+                "py": 7.8,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.8
+              }
+            },
+            {
+              "id": "block_pole2_arm_lower",
+              "type": "block",
+              "name": "Lower Crossarm 2",
+              "transform": {
+                "px": 0,
+                "py": 7.2,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.2
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_utility_pole_3",
+          "type": "group",
+          "name": "Utility Pole 3 (Mid North)",
+          "transform": {
+            "px": -13.5,
+            "py": 0,
+            "pz": 8,
+            "rx": 0,
+            "ry": 1.57,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pole3_trunk",
+              "type": "block",
+              "name": "Wooden Pole Shaft 3",
+              "transform": {
+                "px": 0,
+                "py": 4.25,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.35,
+                "sy": 8.5,
+                "sz": 0.35
+              }
+            },
+            {
+              "id": "block_pole3_arm_upper",
+              "type": "block",
+              "name": "Upper Crossarm 3",
+              "transform": {
+                "px": 0,
+                "py": 7.8,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.8
+              }
+            },
+            {
+              "id": "block_pole3_arm_lower",
+              "type": "block",
+              "name": "Lower Crossarm 3",
+              "transform": {
+                "px": 0,
+                "py": 7.2,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.2
+              }
+            },
+            {
+              "id": "block_pole3_transformer",
+              "type": "block",
+              "name": "Pole Transformer Box 3",
+              "transform": {
+                "px": 0.4,
+                "py": 6.2,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.6,
+                "sy": 1,
+                "sz": 0.6
+              }
+            }
+          ]
+        },
+        {
+          "id": "group_utility_pole_4",
+          "type": "group",
+          "name": "Utility Pole 4 (North)",
+          "transform": {
+            "px": -13.69,
+            "py": 0,
+            "pz": 24,
+            "rx": 0,
+            "ry": 1.57,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_pole4_trunk",
+              "type": "block",
+              "name": "Wooden Pole Shaft 4",
+              "transform": {
+                "px": 0,
+                "py": 4.25,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.35,
+                "sy": 8.5,
+                "sz": 0.35
+              }
+            },
+            {
+              "id": "block_pole4_arm_upper",
+              "type": "block",
+              "name": "Upper Crossarm 4",
+              "transform": {
+                "px": 0,
+                "py": 7.8,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.15,
+                "sy": 0.2,
+                "sz": 2.8
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_desert_props",
+      "type": "group",
+      "name": "Desert & Middle of Nowhere Props",
+      "transform": {
+        "px": 1.19,
+        "py": 0,
+        "pz": -1.36,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1
+      },
+      "children": [
+        {
+          "id": "block_air_water_dispenser",
+          "type": "block",
+          "name": "Air & Water Pump Machine",
+          "transform": {
+            "px": 5.2,
+            "py": 0.6,
+            "pz": 5.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 1.2,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_vending_machine",
+          "type": "block",
+          "name": "Vintage Soda Vending Machine",
+          "transform": {
+            "px": 7.2,
+            "py": 0.9,
+            "pz": 4.8,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 1.6,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_oil_barrel_1",
+          "type": "block",
+          "name": "Rusty Oil Drum 1",
+          "transform": {
+            "px": 15,
+            "py": 0.5,
+            "pz": -5.5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.65,
+            "sy": 1,
+            "sz": 0.65
+          }
+        },
+        {
+          "id": "block_oil_barrel_2",
+          "type": "block",
+          "name": "Rusty Oil Drum 2",
+          "transform": {
+            "px": 15.7,
+            "py": 0.5,
+            "pz": -5.2,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.65,
+            "sy": 1,
+            "sz": 0.65
+          }
+        },
+        {
+          "id": "block_oil_barrel_tipped",
+          "type": "block",
+          "name": "Tipped Over Oil Drum",
+          "transform": {
+            "px": 15.2,
+            "py": 0.33,
+            "pz": -6.4,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.57,
+            "sx": 1,
+            "sy": 0.65,
+            "sz": 0.65
+          }
+        },
+        {
+          "id": "group_desert_cactus_1",
+          "type": "group",
+          "name": "Saguaro Cactus 1",
+          "transform": {
+            "px": -0.71,
+            "py": 0,
+            "pz": 11.77,
+            "rx": 0,
+            "ry": 0.17,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": []
+        },
+        {
+          "id": "group_desert_cactus_2",
+          "type": "group",
+          "name": "Saguaro Cactus 2",
+          "transform": {
+            "px": -16,
+            "py": 0,
+            "pz": -5,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 1
+          },
+          "children": [
+            {
+              "id": "block_cactus2_stem",
+              "type": "block",
+              "name": "Cactus Trunk Stem 2",
+              "transform": {
+                "px": 0,
+                "py": 1.1,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.4,
+                "sy": 2.2,
+                "sz": 0.4
+              }
+            },
+            {
+              "id": "block_cactus2_arm",
+              "type": "block",
+              "name": "Cactus Arm 2",
+              "transform": {
+                "px": 0.3,
+                "py": 1.4,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.6,
+                "sy": 0.3,
+                "sz": 0.3
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "node_g8shlrr",
+      "type": "group",
+      "name": "Group_ehpig",
+      "transform": {
+        "px": 9.37,
+        "py": 0.01,
+        "pz": 4.63,
+        "rx": 0,
+        "ry": 1.57,
+        "rz": 0,
+        "sx": 1,
+        "sy": 1,
+        "sz": 1.93
+      },
+      "children": [
+        {
+          "id": "node_riunw8f",
+          "type": "block",
+          "name": "Gravel Dirt Apron",
+          "transform": {
+            "px": -4.45,
+            "py": -0.01,
+            "pz": -4.9,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2,
+            "sy": 0.03,
+            "sz": 50
+          }
+        },
+        {
+          "id": "group_road_and_environment",
+          "type": "group",
+          "name": "Desert Highway & Apron",
+          "transform": {
+            "px": 5.95,
+            "py": -0.03,
+            "pz": -4.93,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 1,
+            "sy": 1,
+            "sz": 0.99
+          },
+          "children": [
+            {
+              "id": "block_road_strip",
+              "type": "block",
+              "name": "Asphalt Highway Lane",
+              "transform": {
+                "px": -6,
+                "py": 0.02,
+                "pz": 0.01,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 7,
+                "sy": 0.04,
+                "sz": 49.83
+              }
+            },
+            {
+              "id": "block_road_line_1",
+              "type": "block",
+              "name": "Dashed Yellow Line 1",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": -20,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_road_line_2",
+              "type": "block",
+              "name": "Dashed Yellow Line 2",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": -12,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_road_line_3",
+              "type": "block",
+              "name": "Dashed Yellow Line 3",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": -4,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_road_line_4",
+              "type": "block",
+              "name": "Dashed Yellow Line 4",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": 4,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_road_line_5",
+              "type": "block",
+              "name": "Dashed Yellow Line 5",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": 12,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_road_line_6",
+              "type": "block",
+              "name": "Dashed Yellow Line 6",
+              "transform": {
+                "px": -6,
+                "py": 0.05,
+                "pz": 20,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 0.3,
+                "sy": 0.02,
+                "sz": 3
+              }
+            },
+            {
+              "id": "block_dirt_apron",
+              "type": "block",
+              "name": "Gravel Dirt Apron",
+              "transform": {
+                "px": -1.5,
+                "py": 0.02,
+                "pz": 0,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0,
+                "sx": 2,
+                "sy": 0.03,
+                "sz": 50
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "group_ufo_saucer",
+      "type": "group",
+      "name": "1950s Serie-Z Flying Saucer UFO",
+      "transform": {
+        "px": 16.63,
+        "py": -0.02,
+        "pz": -12.38,
+        "rx": 0.7,
+        "ry": -0.21,
+        "rz": 0.18,
+        "sx": 0.71,
+        "sy": 0.71,
+        "sz": 0.71
+      },
+      "children": [
+        {
+          "id": "block_ufo_outer_disc_rim",
+          "type": "block",
+          "name": "Main Saucer Outer Rim Disc",
+          "transform": {
+            "px": 0,
+            "py": 2.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 8.8,
+            "sy": 0.4,
+            "sz": 8.8
+          }
+        },
+        {
+          "id": "block_ufo_upper_hull_ring",
+          "type": "block",
+          "name": "Upper Saucer Hull Taper",
+          "transform": {
+            "px": 0,
+            "py": 2.8,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 6,
+            "sy": 0.6,
+            "sz": 6
+          }
+        },
+        {
+          "id": "block_ufo_lower_hull_ring",
+          "type": "block",
+          "name": "Lower Saucer Hull Taper",
+          "transform": {
+            "px": 0,
+            "py": 1.8,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 5.6,
+            "sy": 0.6,
+            "sz": 5.6
+          }
+        },
+        {
+          "id": "block_ufo_cockpit_dome",
+          "type": "block",
+          "name": "Cockpit Glass Bubble Dome",
+          "transform": {
+            "px": 0,
+            "py": 3.6,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.4,
+            "sy": 1.2,
+            "sz": 2.4
+          }
+        },
+        {
+          "id": "block_ufo_antenna_spire",
+          "type": "block",
+          "name": "Rooftop Ray-Gun Antenna Spire",
+          "transform": {
+            "px": 0,
+            "py": 4.8,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.2,
+            "sy": 1.2,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_ufo_antenna_tip",
+          "type": "block",
+          "name": "Antenna Tip Emitter Sphere",
+          "transform": {
+            "px": 0,
+            "py": 5.4,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.5,
+            "sy": 0.3,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_ufo_light_north",
+          "type": "block",
+          "name": "Flashing Rim Light North",
+          "transform": {
+            "px": 0,
+            "py": 2.3,
+            "pz": -4.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_light_south",
+          "type": "block",
+          "name": "Flashing Rim Light South",
+          "transform": {
+            "px": 0,
+            "py": 2.3,
+            "pz": 4.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_light_east",
+          "type": "block",
+          "name": "Flashing Rim Light East",
+          "transform": {
+            "px": 4.3,
+            "py": 2.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_light_west",
+          "type": "block",
+          "name": "Flashing Rim Light West",
+          "transform": {
+            "px": -4.3,
+            "py": 2.3,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.5,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_ventral_core",
+          "type": "block",
+          "name": "Glowing Ventral Tractor Core",
+          "transform": {
+            "px": 0,
+            "py": 1.25,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 2.8,
+            "sy": 0.5,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_ufo_leg_1",
+          "type": "block",
+          "name": "Tripod Landing Leg Front",
+          "transform": {
+            "px": 0,
+            "py": 0.8,
+            "pz": 2.2,
+            "rx": 0.3,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.4,
+            "sy": 1.6,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_ufo_leg_2",
+          "type": "block",
+          "name": "Tripod Landing Leg Back Left",
+          "transform": {
+            "px": -1.9,
+            "py": 0.8,
+            "pz": -1.1,
+            "rx": -0.15,
+            "ry": 0,
+            "rz": -0.25,
+            "sx": 0.4,
+            "sy": 1.6,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_ufo_leg_3",
+          "type": "block",
+          "name": "Tripod Landing Leg Back Right",
+          "transform": {
+            "px": 1.9,
+            "py": 0.8,
+            "pz": -1.1,
+            "rx": -0.15,
+            "ry": 0,
+            "rz": 0.25,
+            "sx": 0.4,
+            "sy": 1.6,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_ufo_foot_1",
+          "type": "block",
+          "name": "Landing Foot Pad Front",
+          "transform": {
+            "px": 0,
+            "py": 0.08,
+            "pz": 2.6,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.15,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_foot_2",
+          "type": "block",
+          "name": "Landing Foot Pad Back Left",
+          "transform": {
+            "px": -2.3,
+            "py": 0.08,
+            "pz": -1.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.15,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_ufo_foot_3",
+          "type": "block",
+          "name": "Landing Foot Pad Back Right",
+          "transform": {
+            "px": 2.3,
+            "py": 0.08,
+            "pz": -1.3,
+            "rx": 0,
+            "ry": 0,
+            "rz": 0,
+            "sx": 0.8,
+            "sy": 0.15,
+            "sz": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "block_cactus1_stem",
+      "type": "block",
+      "name": "Cactus Trunk Stem",
+      "transform": {
+        "px": 12.96,
+        "py": 1.25,
+        "pz": -0.64,
+        "rx": -3.14,
+        "ry": 1.4,
+        "rz": -3.14,
+        "sx": 0.65,
+        "sy": 2.5,
+        "sz": 0.4
+      }
+    }
+  ],
+  "selectedPreset": "gas_station.json",
+  "spawn_point": {
+    "px": -15.895,
+    "py": 0,
+    "pz": -6.51,
+    "ry": -0.349
+  }
+}

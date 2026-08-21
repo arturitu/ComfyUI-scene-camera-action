@@ -6,24 +6,17 @@
     </div>
     <div v-else class="canvas-wrapper" @mousedown="onCanvasMouseDown">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
 
-      <!-- Top Right Floating Capture Button -->
-      <div class="directing-top-bar" @mousedown.stop>
-        <button
-          class="capture-btn"
-          :class="{ 'recording': isRecordingVideo }"
-          :disabled="isRecordingVideo"
-          title="Capture video from start of acting"
-          @click="handleRecordVideo"
-        >
-          <span class="rec-dot" v-if="isRecordingVideo"></span>
-          {{ isRecordingVideo ? (videoStatusText || 'Capturing...') : '● Capture' }}
-        </button>
+      <!-- Recording Overlay when Auto-Capturing -->
+      <div v-if="isRecordingVideo" class="recording-overlay" @mousedown.stop.prevent>
+        <div class="recording-spinner"></div>
+        <div class="recording-text">{{ videoStatusText || 'Capturing 3D Video...' }}</div>
       </div>
 
       <!-- Floating Bottom Timeline Bar -->
+
       <div
         class="timeline-bar"
         :class="{ 'disabled-timeline': isRecordingVideo }"
@@ -130,6 +123,50 @@
                   {{ mode.label }}
                 </button>
               </div>
+
+              <!-- Target Actor Selector for Multi-Actor scenes -->
+              <div v-if="availableActors.length > 0" class="popover-target-row">
+                <span class="target-label">Track:</span>
+                <select
+                  :value="kf.actor_target || availableActors[0]?.id"
+                  class="target-select"
+                  @change.stop="changeKeyframeTarget(kf, ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="act in availableActors" :key="act.id" :value="act.id">
+                    {{ act.label }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- FOV Slider Row -->
+              <div class="popover-fov-row">
+                <div class="fov-label-row">
+                  <span class="fov-label">FOV:</span>
+                  <span class="fov-value">{{ getKeyframeFov(kf) }}°</span>
+                  <button
+                    class="fov-reset-btn"
+                    title="Reset to default FOV"
+                    @click.stop="resetKeyframeFov(kf)"
+                  >
+                    ↺
+                  </button>
+                </div>
+                <div class="fov-slider-container">
+                  <span class="fov-bound-label">{{ getFovConfig(kf.mode).min }}°</span>
+                  <input
+                    type="range"
+                    :min="getFovConfig(kf.mode).min"
+                    :max="getFovConfig(kf.mode).max"
+                    step="1"
+                    :value="getKeyframeFov(kf)"
+                    class="fov-slider"
+                    @input.stop="changeKeyframeFov(kf, Number(($event.target as HTMLInputElement).value))"
+                    @mousedown.stop
+                  />
+                  <span class="fov-bound-label">{{ getFovConfig(kf.mode).max }}°</span>
+                </div>
+              </div>
+
               <div class="popover-arrow"></div>
             </div>
           </div>
@@ -146,8 +183,9 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
+import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
+import { CAMERA_FOV_CONFIG, getCameraFovConfig, getDefaultCameraFov } from '../threeConfig'
 import type { DirectingState } from '../types'
 
 const props = defineProps<{
@@ -166,6 +204,8 @@ interface Keyframe {
   id: string
   t: number
   mode: string
+  actor_target?: string
+  fov?: number
 }
 
 const cameraModes: CameraMode[] = [
@@ -196,9 +236,16 @@ let timeFrameId: number | null = null
 let isDraggingPlayhead = false
 let draggingKeyframe: Keyframe | null = null
 
+const availableActors = computed(() => {
+  if (threeDirecting && typeof (threeDirecting as any).getAvailableActors === 'function') {
+    return (threeDirecting as any).getAvailableActors()
+  }
+  return [{ id: 'default', label: 'Scene Target' }]
+})
+
 function parseKeyframes(raw: string): Keyframe[] {
   if (!raw || !raw.trim()) {
-    return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
+    return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
   }
   try {
     const parsed = JSON.parse(raw)
@@ -207,10 +254,12 @@ function parseKeyframes(raw: string): Keyframe[] {
         id: item.id || `kf-${idx}-${Date.now()}`,
         t: Math.max(0, typeof item.t === 'number' ? item.t : 0),
         mode: item.mode || 'Third Person',
+        actor_target: item.actor_target || item.actorTarget || 'actor_1',
+        fov: typeof item.fov === 'number' ? item.fov : undefined,
       })).sort((a, b) => a.t - b.t)
     }
   } catch {}
-  return [{ id: 'kf-init', t: 0, mode: 'Third Person' }]
+  return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
 }
 
 const isActingNodeConnected = computed(() => {
@@ -228,6 +277,7 @@ const hasActingData = computed(() => {
   try {
     const parsed = JSON.parse(state.acting_data)
     if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed.actors) && parsed.actors.length > 0) return true
       if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true
       if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true
       if (typeof parsed.motion_data === 'string' && parsed.motion_data.trim().length > 0) {
@@ -319,6 +369,7 @@ const addKeyframe = () => {
     id: `kf-${Date.now()}`,
     t: curT,
     mode: activeMode,
+    fov: getDefaultCameraFov(activeMode),
   }
 
   keyframes.value.push(newKf)
@@ -338,8 +389,55 @@ const selectKeyframe = (kf: Keyframe) => {
   currentTime.value = kf.t
 }
 
+const getFovConfig = (mode: string) => {
+  return getCameraFovConfig(mode)
+}
+
+const getKeyframeFov = (kf: Keyframe): number => {
+  if (typeof kf.fov === 'number') return kf.fov
+  return getDefaultCameraFov(kf.mode)
+}
+
+const changeKeyframeFov = (kf: Keyframe, fov: number) => {
+  const cfg = getCameraFovConfig(kf.mode)
+  const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(fov)))
+  kf.fov = clamped
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const resetKeyframeFov = (kf: Keyframe) => {
+  kf.fov = getDefaultCameraFov(kf.mode)
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
 const changeKeyframeMode = (kf: Keyframe, mode: string) => {
+  const oldMode = kf.mode
+  const oldDefault = getDefaultCameraFov(oldMode)
+  const isUsingDefault = kf.fov === undefined || kf.fov === oldDefault
+
   kf.mode = mode
+
+  if (isUsingDefault) {
+    kf.fov = getDefaultCameraFov(mode)
+  } else if (typeof kf.fov === 'number') {
+    const newCfg = getCameraFovConfig(mode)
+    kf.fov = Math.max(newCfg.min, Math.min(newCfg.max, kf.fov))
+  }
+
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const changeKeyframeTarget = (kf: Keyframe, targetId: string) => {
+  kf.actor_target = targetId
   syncKeyframes()
 }
 
@@ -364,68 +462,28 @@ const syncKeyframes = () => {
 }
 
 const handleRecordVideo = async () => {
-  if (!threeDirecting || isRecordingVideo.value) return
+  if (isRecordingVideo.value) return
+  const nodeId = String(props.currentNode?.id ?? '')
 
-  // Validate that BOTH Captured Video AND Captured Stage output slots are connected
-  const videoOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_video' || o.name === 'Captured Video'
-  )
-  const stageOutput = props.currentNode?.outputs?.find((o: any) =>
-    o.name === 'captured_stage' || o.name === 'Captured Stage'
-  )
-
-  const isVideoConnected = videoOutput?.links && videoOutput.links.length > 0
-  const isStageConnected = stageOutput?.links && stageOutput.links.length > 0
-
-  if (!isVideoConnected || !isStageConnected) {
-    if (props.currentNode) {
-      props.currentNode.has_errors = true
-      if (videoOutput && !isVideoConnected) videoOutput.has_errors = true
-      if (stageOutput && !isStageConnected) stageOutput.has_errors = true
-
-      const comfyApp = (window as any).comfyAPI?.app?.app
-      if (comfyApp && comfyApp.canvas) {
-        comfyApp.canvas.draw(true, true)
-      }
-
-      const missingNames: string[] = []
-      if (!isVideoConnected) missingNames.push("'Captured Video'")
-      if (!isStageConnected) missingNames.push("'Captured Stage'")
-
-      const validationErrorMsg = {
-        "prompt_id": "validation_error",
-        "node_id": String(props.currentNode.id),
-        "node_type": props.currentNode.type,
-        "executed": [],
-        "exception_message": `Required output connection(s) missing: ${missingNames.join(' and ')}. Connect outputs to proceed.`,
-        "exception_type": "ValueError",
-        "traceback": [],
-        "current_inputs": [],
-        "current_outputs": []
-      }
-
-      if (comfyApp && comfyApp.api && typeof comfyApp.api.dispatchEvent === "function") {
-        comfyApp.api.dispatchEvent(new CustomEvent("execution_error", { detail: validationErrorMsg }))
-      }
-
-      window.setTimeout(() => {
-        if (props.currentNode) {
-          delete props.currentNode.has_errors
-          if (videoOutput) delete videoOutput.has_errors
-          if (stageOutput) delete stageOutput.has_errors
-          if (comfyApp && comfyApp.canvas) {
-            comfyApp.canvas.draw(true, true)
-          }
-        }
-      }, 4000)
-    }
+  if (!hasActingData.value || !threeDirecting) {
+    try {
+      await fetch('/scene_camera_action/capture_done', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          node_id: nodeId,
+          error: 'Directing canvas is disabled. Connect an Acting node and record motion first.'
+        }),
+      })
+    } catch (e) {}
     return
   }
+
 
   // Hide any open cut popover
   selectedKeyframe.value = null
   isRecordingVideo.value = true
-  videoStatusText.value = 'Capturing...'
+  videoStatusText.value = 'Capturing 3D Video...'
 
   const dur = threeDirecting.getDuration()
 
@@ -433,6 +491,13 @@ const handleRecordVideo = async () => {
   threeDirecting.seekToTime(0)
   threeDirecting.setIsRecordingMode(true)
   currentTime.value = 0
+
+  // Capture exact first frame snapshot directly from canvas at t=0
+  let stageBlob: Blob | null = null
+  try {
+    stageBlob = await threeDirecting.captureCurrentCanvasSnapshot()
+  } catch (e) {}
+
   threeDirecting.isPlaying = true
   isPlaying.value = true
 
@@ -445,7 +510,7 @@ const handleRecordVideo = async () => {
     if (threeDirecting) {
       const elapsed = (performance.now() - recordStartTime) / 1000
       const displayT = Math.min(dur, elapsed)
-      videoStatusText.value = `Capturing ${displayT.toFixed(1)}s / ${dur.toFixed(1)}s...`
+      videoStatusText.value = `Capturing 3D Video... ${displayT.toFixed(1)}s / ${dur.toFixed(1)}s`
 
       // Stop cleanly as soon as wall-clock duration is reached OR playback stops
       if (elapsed >= dur || !threeDirecting.isPlaying) {
@@ -456,10 +521,7 @@ const handleRecordVideo = async () => {
 
         try {
           const videoBlob = await threeDirecting.stopRecording()
-          const stageBlob = await threeDirecting.captureStageSnapshot()
           threeDirecting.setIsRecordingMode(false)
-
-          const nodeId = props.currentNode?.id ?? 'default'
 
           // 1. Upload Video
           const videoFormData = new FormData()
@@ -472,33 +534,49 @@ const handleRecordVideo = async () => {
           })
 
           // 2. Upload Captured Stage Overview Image
-          const imageFormData = new FormData()
-          imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
-          imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
+          if (stageBlob) {
+            const imageFormData = new FormData()
+            imageFormData.append('image', stageBlob, `3d_directing_stage_${nodeId}.png`)
+            imageFormData.append('filename', `3d_directing_stage_${nodeId}.png`)
 
-          await fetch('/scene_camera_action/upload_image', {
-            method: 'POST',
-            body: imageFormData
-          })
+            await fetch('/scene_camera_action/upload_image', {
+              method: 'POST',
+              body: imageFormData
+            })
+          }
 
           videoStatusText.value = 'Saved!'
-
-          const comfyApp = (window as any).comfyAPI?.app?.app
-          if (comfyApp && typeof comfyApp.queuePrompt === 'function') {
-            comfyApp.queuePrompt(0)
-          }
         } catch (err) {
-          console.error('Failed to capture and upload video/image:', err)
+          console.error('Failed to capture and upload video:', err)
           threeDirecting.setIsRecordingMode(false)
         } finally {
+          // Notify python backend execution that capture and upload are complete
+          try {
+            await fetch('/scene_camera_action/capture_done', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ node_id: nodeId }),
+            })
+          } catch (e) {}
+
           window.setTimeout(() => {
             videoStatusText.value = ''
             isRecordingVideo.value = false
-          }, 1000)
+          }, 300)
         }
       }
     }
   }, 50)
+}
+
+const handleWsCaptureEvent = async (event: Event) => {
+  const detail = (event as CustomEvent).detail
+  const targetNodeId = String(detail?.node_id ?? '')
+  const myNodeId = String(props.currentNode?.id ?? '')
+
+  if (targetNodeId && myNodeId && targetNodeId === myNodeId) {
+    await handleRecordVideo()
+  }
 }
 
 const onCanvasMouseDown = () => {
@@ -578,9 +656,19 @@ const onKeyframeMouseDown = (kf: Keyframe, e: MouseEvent) => {
 
 onMounted(() => {
   timeFrameId = requestAnimationFrame(updateTimeLoop)
+  const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
+  if (comfyApi && typeof comfyApi.addEventListener === 'function') {
+    comfyApi.addEventListener('scene_camera_action_directing_capture', handleWsCaptureEvent)
+    comfyApi.addEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
+  }
 })
 
 onUnmounted(() => {
+  const comfyApi = (window as any).comfyAPI?.api?.api || (window as any).comfyAPI?.app?.app?.api
+  if (comfyApi && typeof comfyApi.removeEventListener === 'function') {
+    comfyApi.removeEventListener('scene_camera_action_directing_capture', handleWsCaptureEvent)
+    comfyApi.removeEventListener('ub_3d_studio_directing_capture', handleWsCaptureEvent)
+  }
   if (timeFrameId !== null) {
     cancelAnimationFrame(timeFrameId)
     timeFrameId = null
@@ -590,6 +678,7 @@ onUnmounted(() => {
     threeDirecting = null
   }
 })
+
 
 const setState = (newState: Partial<DirectingState>) => {
   if (newState.hasOwnProperty('acting_data')) {
@@ -682,54 +771,46 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   color: #8c8c9e;
 }
 
-/* Top Right Capture Toolbar */
-.directing-top-bar {
+/* Recording Overlay */
+.recording-overlay {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 25;
-}
-
-.capture-btn {
-  background: rgba(12, 12, 18, 0.85);
-  color: #ff3366;
-  border: 1px solid rgba(255, 51, 102, 0.3);
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(8px);
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: rgba(10, 13, 20, 0.85);
+  z-index: 50;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: all;
+  user-select: none;
+  backdrop-filter: blur(4px);
 }
 
-.capture-btn:hover:not(:disabled) {
-  background: rgba(255, 51, 102, 0.2);
-  border-color: #ff3366;
+.recording-text {
   color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.capture-btn.recording {
-  background: #ff3366;
-  color: #ffffff;
-  border-color: #ff3366;
-}
-
-.rec-dot {
-  width: 7px;
-  height: 7px;
-  background: #ffffff;
+.recording-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid rgba(255, 51, 102, 0.2);
+  border-top-color: #ff3366;
   border-radius: 50%;
-  animation: blink 0.8s infinite steps(2, start);
+  animation: spin 0.8s linear infinite;
 }
 
-@keyframes blink {
-  from { opacity: 1; }
-  to { opacity: 0.2; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
+
 
 /* Floating Timeline Bar (Bottom Center) */
 .timeline-bar {
@@ -926,7 +1007,8 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   bottom: 26px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
+  width: 184px;
+  box-sizing: border-box;
   background: rgba(18, 20, 28, 0.95);
   border: 1px solid rgba(0, 255, 204, 0.5);
   border-radius: 6px;
@@ -1010,6 +1092,149 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   background: #3d4974;
   color: #ffffff;
   border-color: #00ffcc;
+}
+
+.popover-target-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.target-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #a0a8b8;
+  font-family: monospace;
+}
+
+.target-select {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  color: #ffffff;
+  font-size: 9px;
+  border-radius: 4px;
+  padding: 2px 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.target-select:focus {
+  border-color: #00ffcc;
+}
+
+/* FOV Slider Row in Popover */
+.popover-fov-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.fov-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+}
+
+.fov-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #a0a8b8;
+}
+
+.fov-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: #00ffcc;
+  min-width: 28px;
+}
+
+.fov-reset-btn {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #c0c5d0;
+  font-size: 10px;
+  border-radius: 3px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.fov-reset-btn:hover {
+  background: rgba(0, 255, 204, 0.2);
+  color: #00ffcc;
+  border-color: #00ffcc;
+}
+
+.fov-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fov-bound-label {
+  font-size: 9px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: center;
+}
+
+.fov-slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.fov-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00ffcc;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 255, 204, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.fov-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.fov-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00ffcc;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 4px rgba(0, 255, 204, 0.6);
 }
 
 .popover-arrow {

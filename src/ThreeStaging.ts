@@ -1,24 +1,24 @@
 import * as THREE from 'three'
 import { MapControls } from 'three/addons/controls/MapControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { SceneState, ThreeSceneOptions, CubeTransform } from './types'
+import type { SceneState, ThreeStagingOptions, CubeTransform } from './types'
 import * as config from './threeConfig'
-import { SceneHierarchyManager } from './scene/SceneHierarchyManager'
-import { SceneSelectionManager } from './scene/SceneSelectionManager'
-import { StageEnvironment } from './scene/StageEnvironment'
-import { SpawnPointHelper } from './scene/SpawnPointHelper'
+import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
+import { StagingSelectionManager } from './staging/StagingSelectionManager'
+import { StageEnvironment } from './staging/StageEnvironment'
+import { InstancedStageMesh } from './staging/InstancedStageMesh'
 
-export class ThreeScene {
+export class ThreeStaging {
   private container: HTMLElement
   private state: SceneState
   private onStateChange?: (state: SceneState) => void
   private onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   private onSelectionChange?: (hasSelection: boolean) => void
-  private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean }) => void
+  private onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
 
-  private hierarchyManager: SceneHierarchyManager
-  private selectionManager: SceneSelectionManager
-  private spawnPointHelper!: SpawnPointHelper
+  private hierarchyManager: StagingHierarchyManager
+  private selectionManager: StagingSelectionManager
+  private instancedStageMesh!: InstancedStageMesh
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -40,21 +40,20 @@ export class ThreeScene {
   private resizeAnimationFrameId: number | null = null
   private cachedSceneExtent = 15.0
 
-  constructor(options: ThreeSceneOptions) {
+  constructor(options: ThreeStagingOptions) {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onTransformModeChange = options.onTransformModeChange
     this.onSelectionChange = options.onSelectionChange
     this.onSelectionInfoChange = options.onSelectionInfoChange
 
-    this.hierarchyManager = new SceneHierarchyManager()
-    this.selectionManager = new SceneSelectionManager()
+    this.hierarchyManager = new StagingHierarchyManager()
+    this.selectionManager = new StagingSelectionManager()
 
     this.state = {
-      type: 'cube_scene',
+      type: 'cube_stage',
       num_assets: options.initialState?.num_assets ?? 0,
       nodes: options.initialState?.nodes ?? [],
-      spawn_point: options.initialState?.spawn_point ?? { px: 0, py: 0, pz: 2, ry: 0 },
     }
 
     this.initThreeJS()
@@ -107,10 +106,9 @@ export class ThreeScene {
     const stageEnv = new StageEnvironment()
     stageEnv.initStage(this.scene)
 
-    // Setup Spawn Point Helper
-    this.spawnPointHelper = new SpawnPointHelper()
-    this.spawnPointHelper.setSpawnPoint(this.state.spawn_point)
-    this.scene.add(this.spawnPointHelper.group)
+    // Instanced Stage Mesh Container
+    this.instancedStageMesh = new InstancedStageMesh()
+    this.scene.add(this.instancedStageMesh.getGroup())
 
     // TransformControls
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
@@ -131,13 +129,8 @@ export class ThreeScene {
     })
 
     this.transformControls.addEventListener('objectChange', () => {
-      if (this.spawnPointHelper && this.transformControls.object === this.spawnPointHelper.group) {
-        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.spawnPointHelper.group.quaternion)
-        const ry = Math.atan2(forward.x, forward.z)
-        this.spawnPointHelper.group.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry)
-        this.spawnPointHelper.group.rotation.set(0, ry, 0, 'YXZ')
-      }
       this.selectionManager.onObjectChange()
+      this.syncInstancedMesh()
       this.syncStateAndNotify()
     })
 
@@ -155,47 +148,11 @@ export class ThreeScene {
     this.controls.maxDistance = config.CAMERA_MAX_DISTANCE
     this.controls.maxPolarAngle = Math.PI / 2 - 0.05
     this.controls.zoomToCursor = true
-
-    this.focusCameraOnSpawnPoint()
   }
 
-  public focusCameraOnSpawnPoint(): void {
-    const sp = this.state.spawn_point ?? { px: 0, py: 0, pz: 2, ry: 0 }
-
-    const targetX = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, sp.px))
-    const targetY = Math.max(0, sp.py + 0.5)
-    const targetZ = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, sp.pz))
-
-    const target = new THREE.Vector3(targetX, targetY, targetZ)
-
-    let offset = new THREE.Vector3(-12, 10, 0)
-    if (this.controls && this.camera) {
-      const currentOffset = this.camera.position.clone().sub(this.controls.target)
-      if (currentOffset.lengthSq() > 1) {
-        offset = currentOffset
-      }
-    }
-
-    if (this.controls) {
-      this.controls.target.copy(target)
-      this.camera.position.copy(target).add(offset)
-      this.controls.update()
-    } else {
-      this.camera.position.copy(target).add(offset)
-      this.camera.lookAt(target)
-    }
-  }
-
-  public selectSpawnPoint(): void {
-    if (this.spawnPointHelper) {
-      this.selectionManager.setSelectedObjects([this.spawnPointHelper.group])
-      const modeToUse = this.transformMode === 'scale' ? 'translate' : (this.transformMode ?? this.lastTransformMode)
-      this.setTransformMode(modeToUse)
-      if (this.onTransformModeChange) {
-        this.onTransformModeChange(modeToUse)
-      }
-      this.updateSelectionUI()
-    }
+  private syncInstancedMesh(): void {
+    const virtualBlocks = this.hierarchyManager.getAllVirtualBlocks(this.scene)
+    this.instancedStageMesh.syncFromVirtualBlocks(virtualBlocks)
   }
 
   private updateMesh(): void {
@@ -203,21 +160,12 @@ export class ThreeScene {
       this.scene,
       this.state,
       () => this.selectionManager.clearSelectionUI(this.scene, this.transformControls),
-      this.transformControls.getHelper()
+      this.transformControls.getHelper(),
+      this.instancedStageMesh
     )
-    if (this.spawnPointHelper) {
-      if (!this.scene.children.includes(this.spawnPointHelper.group)) {
-        this.scene.add(this.spawnPointHelper.group)
-      }
-      this.spawnPointHelper.setSpawnPoint(this.state.spawn_point)
-    }
 
     // Dynamically adjust fog and camera range based on overall scene extent
-    const envObjects = this.scene.children.filter(
-      (child) =>
-        !StageEnvironment.isStageObject(child, this.transformControls.getHelper()) &&
-        child !== this.spawnPointHelper?.group
-    )
+    const envObjects = this.hierarchyManager.getVirtualRootObjects(this.scene)
     this.cachedSceneExtent = config.calculateSceneExtent(envObjects)
     config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.controls?.target)
     if (this.controls) {
@@ -235,15 +183,12 @@ export class ThreeScene {
       this.selectionManager.getMultiSelectionPivot(),
       undefined
     )
-    if (this.spawnPointHelper) {
-      this.state.spawn_point = this.spawnPointHelper.getSpawnPoint()
-    }
     if (this.onStateChange) {
       this.onStateChange({ ...this.state })
     }
   }
 
-  private updateSelectionUI(): void {
+  private updateSelectionUI(cycleInfo?: { index: number; total: number }): void {
     this.selectionManager.updateSelectionUI(
       this.scene,
       this.transformControls,
@@ -252,14 +197,60 @@ export class ThreeScene {
       {
         onSelectionChange: this.onSelectionChange,
         onSelectionInfoChange: this.onSelectionInfoChange,
-      }
+      },
+      cycleInfo
     )
   }
 
+  public getSelectableCandidatesFromHits(instancedHits: THREE.Intersection[], otherHits: THREE.Intersection[]): THREE.Object3D[] {
+    const candidates: THREE.Object3D[] = []
+    const addCandidate = (obj: THREE.Object3D | null) => {
+      if (obj && !candidates.includes(obj)) {
+        candidates.push(obj)
+      }
+    }
+
+    for (const hit of instancedHits) {
+      if (hit.instanceId !== undefined && hit.instanceId !== null) {
+        const virtualBlock = this.instancedStageMesh.getNodeByInstanceId(hit.instanceId)
+        if (virtualBlock) {
+          const topObj = this.selectionManager.getTopSelectableObject(virtualBlock, this.scene, this.transformControls.getHelper())
+          if (topObj) {
+            addCandidate(topObj)
+
+            const chain: THREE.Object3D[] = []
+            let curr: THREE.Object3D | null = virtualBlock
+            while (curr && curr !== topObj) {
+              if (curr.name !== '__edge_outline__' && curr.name !== '__box_helper__' && curr.name !== 'floor') {
+                chain.unshift(curr)
+              }
+              curr = curr.parent
+            }
+            chain.forEach(c => addCandidate(c))
+          }
+        }
+      }
+    }
+
+    for (const hit of otherHits) {
+      let mesh: THREE.Object3D | null = hit.object
+      if (!mesh || !mesh.visible) continue
+      if (mesh.name === '__box_helper__' || mesh.name === 'floor' || mesh.name === 'grid' || mesh.name === 'helper') continue
+
+      const topObj = this.selectionManager.getTopSelectableObject(mesh, this.scene, this.transformControls.getHelper())
+      if (topObj) {
+        addCandidate(topObj)
+      }
+    }
+
+    return candidates
+  }
+
   public groupSelected(): void {
-    const selectedObjects = this.selectionManager.getSelectedObjects().filter(obj => !this.spawnPointHelper.isSpawnPointObject(obj))
+    const selectedObjects = this.selectionManager.getSelectedObjects()
     const group = this.hierarchyManager.groupSelected(this.scene, selectedObjects)
     if (group) {
+      this.syncInstancedMesh()
       this.selectionManager.setSelectedObjects([group])
       this.updateSelectionUI()
       this.syncStateAndNotify()
@@ -267,27 +258,15 @@ export class ThreeScene {
   }
 
   public selectAll(): void {
-    const topLevelObjects: THREE.Object3D[] = []
-    this.scene.children.forEach((child) => {
-      if (
-        child.name !== 'floor' &&
-        !(child instanceof THREE.GridHelper) &&
-        child !== this.transformControls.getHelper() &&
-        child !== this.selectionManager.getMultiSelectionPivot() &&
-        !(child instanceof THREE.Light) &&
-        child.name !== '__edge_outline__' &&
-        child !== this.spawnPointHelper.group
-      ) {
-        topLevelObjects.push(child)
-      }
-    })
+    const topLevelObjects = this.hierarchyManager.getVirtualRootObjects(this.scene)
     this.selectionManager.setSelectedObjects(topLevelObjects)
     this.updateSelectionUI()
   }
 
   public ungroupSelected(): void {
-    const selectedObjects = this.selectionManager.getSelectedObjects().filter(obj => !this.spawnPointHelper.isSpawnPointObject(obj))
+    const selectedObjects = this.selectionManager.getSelectedObjects()
     const newSelected = this.hierarchyManager.ungroupSelected(this.scene, selectedObjects)
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects(newSelected)
     this.updateSelectionUI()
     this.syncStateAndNotify()
@@ -307,7 +286,7 @@ export class ThreeScene {
     const newTransform: CubeTransform = { px, py, pz, rx: 0, ry: 0, rz: 0, sx, sy, sz }
     const newMesh = this.hierarchyManager.createBlockMesh(newTransform)
     this.scene.add(newMesh)
-    this.hierarchyManager.registerMesh(newMesh)
+    this.syncInstancedMesh()
 
     this.selectionManager.setSelectedObjects([newMesh])
     const modeToUse = this.transformMode ?? this.lastTransformMode
@@ -321,33 +300,25 @@ export class ThreeScene {
   }
 
   public deleteSelectedAsset(): void {
-    const selectedObjects = this.selectionManager.getSelectedObjects().filter(obj => !this.spawnPointHelper.isSpawnPointObject(obj))
+    const selectedObjects = this.selectionManager.getSelectedObjects()
     if (selectedObjects.length === 0) return
 
     selectedObjects.forEach(obj => {
-      this.scene.remove(obj)
-      if (obj.type === 'Mesh') {
-        const mesh = obj as THREE.Mesh
-        this.hierarchyManager.unregisterMesh(mesh)
-        mesh.geometry.dispose()
-      } else if (obj.type === 'Group') {
-        obj.traverse(child => {
-          if ((child as THREE.Mesh).isMesh) {
-            const m = child as THREE.Mesh
-            this.hierarchyManager.unregisterMesh(m)
-            m.geometry.dispose()
-          }
-        })
+      if (obj.parent) {
+        obj.parent.remove(obj)
+      } else {
+        this.scene.remove(obj)
       }
     })
 
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects([])
     this.updateSelectionUI()
     this.syncStateAndNotify()
   }
 
   public duplicateSelectedAsset(): void {
-    const selectedObjects = this.selectionManager.getSelectedObjects().filter(obj => !this.spawnPointHelper.isSpawnPointObject(obj))
+    const selectedObjects = this.selectionManager.getSelectedObjects()
     if (selectedObjects.length === 0) return
 
     const newSelected: THREE.Object3D[] = []
@@ -368,6 +339,7 @@ export class ThreeScene {
       }
     })
 
+    this.syncInstancedMesh()
     this.selectionManager.setSelectedObjects(newSelected)
     this.updateSelectionUI()
     this.syncStateAndNotify()
@@ -464,43 +436,51 @@ export class ThreeScene {
         }
       }
 
-      // Collect selectable objects (including spawnPointHelper)
-      const selectableObjects: THREE.Object3D[] = []
+      // 1. Raycast against InstancedMesh
+      const instancedIntersects = raycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false)
+
+      // 2. Raycast against other non-block objects (e.g. spawn points)
+      const otherSelectables: THREE.Object3D[] = []
       this.scene.children.forEach(child => {
-        if (!StageEnvironment.isStageObject(child, this.transformControls.getHelper()) || child === this.spawnPointHelper.group) {
-          selectableObjects.push(child)
+        if (
+          child.name === '__spawn_point_indicator__' ||
+          child.name === '__spawn_point_mesh__'
+        ) {
+          otherSelectables.push(child)
         }
       })
+      const otherIntersects = otherSelectables.length > 0 ? raycaster.intersectObjects(otherSelectables, true) : []
 
-      const intersects = raycaster.intersectObjects(selectableObjects, true)
+      if (instancedIntersects.length > 0 || otherIntersects.length > 0) {
+        const candidates = this.getSelectableCandidatesFromHits(instancedIntersects, otherIntersects)
 
-      if (intersects.length > 0) {
-        const clickedMesh = intersects[0].object
-        if (this.spawnPointHelper.isSpawnPointObject(clickedMesh)) {
-          this.selectionManager.setSelectedObjects([this.spawnPointHelper.group])
-          const modeToUse = this.transformMode === 'scale' ? 'translate' : (this.transformMode ?? this.lastTransformMode)
-          this.setTransformMode(modeToUse)
-          if (this.onTransformModeChange) {
-            this.onTransformModeChange(modeToUse)
-          }
-          this.updateSelectionUI()
-        } else {
-          const topObj = this.selectionManager.getTopSelectableObject(clickedMesh, this.scene, this.transformControls.getHelper())
+        if (candidates.length > 0) {
+          const selectedObjects = this.selectionManager.getSelectedObjects()
 
-          if (topObj) {
-            const selectedObjects = this.selectionManager.getSelectedObjects().filter(o => !this.spawnPointHelper.isSpawnPointObject(o))
-            if (event.shiftKey) {
-              const existingIdx = selectedObjects.indexOf(topObj)
-              if (existingIdx !== -1) {
-                selectedObjects.splice(existingIdx, 1)
-              } else {
-                selectedObjects.push(topObj)
-              }
+          if (event.shiftKey) {
+            const targetObj = candidates[0]
+            const existingIdx = selectedObjects.indexOf(targetObj)
+            if (existingIdx !== -1) {
+              selectedObjects.splice(existingIdx, 1)
             } else {
-              selectedObjects.length = 0
-              selectedObjects.push(topObj)
+              selectedObjects.push(targetObj)
             }
             this.selectionManager.setSelectedObjects(selectedObjects)
+            this.updateSelectionUI()
+          } else {
+            let targetObj: THREE.Object3D = candidates[0]
+            let targetIndex = 0
+
+            if (selectedObjects.length === 1) {
+              const currentSingle = selectedObjects[0]
+              const currentIdx = candidates.indexOf(currentSingle)
+              if (currentIdx !== -1) {
+                targetIndex = (currentIdx + 1) % candidates.length
+                targetObj = candidates[targetIndex]
+              }
+            }
+
+            this.selectionManager.setSelectedObjects([targetObj])
             const modeToUse = this.transformMode ?? this.lastTransformMode
             if (!this.transformMode) {
               this.setTransformMode(modeToUse)
@@ -508,8 +488,13 @@ export class ThreeScene {
                 this.onTransformModeChange(modeToUse)
               }
             }
-            this.updateSelectionUI()
+
+            const cycleInfo = candidates.length > 1 ? { index: targetIndex + 1, total: candidates.length } : undefined
+            this.updateSelectionUI(cycleInfo)
           }
+        } else {
+          this.selectionManager.setSelectedObjects([])
+          this.updateSelectionUI()
         }
       } else {
         this.selectionManager.setSelectedObjects([])
@@ -566,28 +551,16 @@ export class ThreeScene {
   }
 
   public setTransformMode(mode: 'translate' | 'rotate' | 'scale' | null): void {
-    const isSpawnSelected = this.selectionManager.getSelectedObjects().some(obj => this.spawnPointHelper?.isSpawnPointObject(obj))
-    let effectiveMode = mode
-    if (isSpawnSelected && mode === 'scale') {
-      effectiveMode = 'translate'
-    }
-
-    this.transformMode = effectiveMode
-    if (effectiveMode) {
-      this.lastTransformMode = effectiveMode
+    this.transformMode = mode
+    if (mode) {
+      this.lastTransformMode = mode
     }
     if (this.transformControls) {
-      if (effectiveMode) {
-        this.transformControls.setMode(effectiveMode)
-        if (isSpawnSelected && effectiveMode === 'rotate') {
-          this.transformControls.showX = false
-          this.transformControls.showY = true
-          this.transformControls.showZ = false
-        } else {
-          this.transformControls.showX = true
-          this.transformControls.showY = true
-          this.transformControls.showZ = true
-        }
+      if (mode) {
+        this.transformControls.setMode(mode)
+        this.transformControls.showX = true
+        this.transformControls.showY = true
+        this.transformControls.showZ = true
         if (this.selectionManager.getSelectedObjects().length > 0) {
           this.updateSelectionUI()
         }
@@ -598,12 +571,6 @@ export class ThreeScene {
   }
 
   public setState(newState: Partial<SceneState>): void {
-    if (newState.spawn_point !== undefined) {
-      this.state.spawn_point = newState.spawn_point
-      if (this.spawnPointHelper) {
-        this.spawnPointHelper.setSpawnPoint(newState.spawn_point)
-      }
-    }
     if (newState.nodes !== undefined) {
       this.state.nodes = newState.nodes
       this.updateMesh()
@@ -614,14 +581,9 @@ export class ThreeScene {
     if (newState.num_assets !== undefined) {
       this.state.num_assets = newState.num_assets
     }
-    this.focusCameraOnSpawnPoint()
   }
 
   public dispose(): void {
-    if (this.spawnPointHelper) {
-      this.spawnPointHelper.dispose()
-    }
-
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null
@@ -657,6 +619,14 @@ export class ThreeScene {
 
     if (this.transformControls) {
       this.transformControls.dispose()
+    }
+
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose()
+    }
+
+    if (this.hierarchyManager) {
+      this.hierarchyManager.dispose()
     }
 
     if (this.renderer) {

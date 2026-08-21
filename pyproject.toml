@@ -1,0 +1,19 @@
+[project]
+name = "comfyui-scene-camera-action"
+version = "0.4.0"
+description = "Interactive 3D scene staging, actor acting, and camera directing nodes for ComfyUI."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "arturitu" }
+]
+dependencies = [
+    "pillow",
+    "numpy",
+    "typing_extensions"
+]
+
+[tool.comfy]
+PublisherId = "arturitu"
+DisplayName = "ComfyUI Scene Camera Action"
+Icon = "https://unboring.net/icon.png"

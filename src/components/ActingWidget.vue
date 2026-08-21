@@ -2,11 +2,11 @@
   <div class="three-container">
     <div v-if="!state.scene_data" class="disabled-overlay">
       <div class="disabled-title">Acting Canvas Disabled</div>
-      <div class="disabled-subtitle">Connect a Staging 3D Node to activate.</div>
+      <div class="disabled-subtitle">Connect a Stage or Acting 3D Node to activate.</div>
     </div>
     <div v-else class="canvas-wrapper">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
 
       <!-- Top-left Countdown Badge -->
@@ -25,6 +25,37 @@
         <div class="progress-track">
           <div class="progress-fill" :style="{ width: (recordingElapsed / state.duration * 100) + '%' }"></div>
         </div>
+      </div>
+
+      <!-- Spawn Point Toolbar (Left Side: 3 Buttons) -->
+      <div v-if="!isRecording && !isPlaying && !isCounting && !state.motion_data" class="canvas-edit-toolbar left">
+        <button
+          class="edit-btn"
+          title="Reset Actor to Spawn Point"
+          @click.stop="resetActorToSpawn"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
+            <circle cx="8" cy="8" r="2" fill="currentColor"/>
+            <path d="M8 0v3M8 13v3M0 8h3M13 8h3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+        <button
+          class="edit-btn"
+          :class="{ 'active': activeSpawnMode === 'translate' }"
+          title="Move Spawn Point (XYZ axes)"
+          @click.stop="toggleSpawnMode('translate')"
+        >
+          ✛
+        </button>
+        <button
+          class="edit-btn"
+          :class="{ 'active': activeSpawnMode === 'rotate' }"
+          title="Rotate Spawn Heading (Y axis)"
+          @click.stop="toggleSpawnMode('rotate')"
+        >
+          ↺
+        </button>
       </div>
 
       <!-- Controls Overlay (Top Right / Bottom Center) -->
@@ -86,7 +117,7 @@
         </button>
       </template>
       <template v-else>
-        <div class="hint">Waiting for scene link...</div>
+        <div class="hint">Waiting for stage link...</div>
       </template>
     </div>
 
@@ -158,7 +189,7 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
+import StagingCanvas from './StagingCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
 import type { ActingState } from '../types'
 
@@ -168,13 +199,34 @@ const props = defineProps<{
   currentNode?: any
 }>()
 
+const initialActorType = props.initialState?.actor_type ?? 'human'
+const initialActorSpeed = props.initialState?.actor_speed ?? (initialActorType === 'car' ? 20.0 : 10.0)
+const defaultActorColor = computed(() => initialActorType === 'car' ? '#0284C7' : '#F1DFBF')
+const initialActorColor = props.initialState?.actor_color ?? defaultActorColor.value
+
 const state = reactive<ActingState>({
-  actor_type: props.initialState?.actor_type ?? 'human',
-  actor_speed: props.initialState?.actor_speed ?? 10.0,
+  actor_type: initialActorType,
+  actor_color: initialActorColor,
+  actor_speed: initialActorSpeed,
   duration: props.initialState?.duration ?? 7.0,
+  spawn_point: props.initialState?.spawn_point,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
+  actors: props.initialState?.actors ?? []
 })
+
+const actorColorVal = computed(() => state.actor_color || (state.actor_type === 'car' ? '#0284C7' : '#F1DFBF'))
+
+const onColorChange = (e: Event) => {
+  const hex = (e.target as HTMLInputElement).value
+  state.actor_color = hex
+  if (props.onStateChange) {
+    props.onStateChange(state)
+  }
+  if (threeActing) {
+    threeActing.setActorColor(hex)
+  }
+}
 
 const isCounting = ref(false)
 const countdownVal = ref<number | null>(null)
@@ -182,6 +234,24 @@ const isRecording = ref(false)
 const recordingElapsed = ref(0)
 const isPlaying = ref(false)
 const showHelpModal = ref(false)
+const activeSpawnMode = ref<'translate' | 'rotate' | null>(null)
+
+const toggleSpawnMode = (mode: 'translate' | 'rotate') => {
+  if (activeSpawnMode.value === mode) {
+    activeSpawnMode.value = null
+  } else {
+    activeSpawnMode.value = mode
+  }
+  if (threeActing) {
+    threeActing.setSpawnTransformMode(activeSpawnMode.value)
+  }
+}
+
+const resetActorToSpawn = () => {
+  if (threeActing) {
+    threeActing.resetActorPosition()
+  }
+}
 
 const handleEscapeKey = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && showHelpModal.value) {
@@ -224,6 +294,11 @@ const updateRecordProgress = () => {
 
 const startCountdown = () => {
   if (isCounting.value || isRecording.value) return
+  activeSpawnMode.value = null
+  if (threeActing) {
+    threeActing.setSpawnTransformMode(null)
+    threeActing.setCountingState(true)
+  }
 
   if (isPlaying.value) {
     isPlaying.value = false
@@ -301,7 +376,9 @@ const stopPlayback = () => {
 const resetToInteractive = () => {
   isPlaying.value = false
   isRecording.value = false
+  isCounting.value = false
   if (threeActing) {
+    threeActing.setCountingState(false)
     threeActing.setState({ motion_data: '' })
     threeActing.stopPlayback()
   }
@@ -312,11 +389,17 @@ const resetToInteractive = () => {
 }
 
 const setState = (newState: Partial<ActingState>) => {
+  if (newState.hasOwnProperty('actors')) {
+    state.actors = newState.actors
+  }
   if (newState.hasOwnProperty('scene_data')) {
     state.scene_data = newState.scene_data as any
   }
   if (newState.hasOwnProperty('actor_type')) {
     state.actor_type = newState.actor_type as any
+  }
+  if (newState.hasOwnProperty('actor_color')) {
+    state.actor_color = newState.actor_color as string
   }
   if (newState.hasOwnProperty('actor_speed')) {
     state.actor_speed = newState.actor_speed as number
@@ -338,12 +421,13 @@ const setState = (newState: Partial<ActingState>) => {
   }
 }
 
-const setConnectedThreeScene = (threeScene: any) => {
-  currentThreeScene = threeScene
+const setConnectedThreeStage = (threeStage: any) => {
+  currentThreeScene = threeStage
   if (threeActing) {
-    threeActing.setConnectedThreeScene(threeScene)
+    threeActing.setConnectedThreeStage(threeStage)
   }
 }
+const setConnectedThreeScene = setConnectedThreeStage
 
 const cleanup = () => {
   if (recordProgressFrameId !== null) {
@@ -356,9 +440,15 @@ const cleanup = () => {
   }
 }
 
-watch(() => state.scene_data, (newVal) => {
+watch(() => state.stage_data || state.scene_data, (newVal) => {
   if (threeActing) {
-    threeActing.setState({ scene_data: newVal ?? undefined })
+    threeActing.setState({ stage_data: newVal ?? undefined, scene_data: newVal ?? undefined })
+  }
+})
+
+watch(() => state.actor_color, (newColor) => {
+  if (threeActing && newColor) {
+    threeActing.setActorColor(newColor)
   }
 })
 
@@ -399,7 +489,7 @@ onUnmounted(() => {
 
 const getThreeActing = () => threeActing
 
-defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
+defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing })
 </script>
 
 <style scoped>
@@ -548,6 +638,49 @@ defineExpose({ setState, cleanup, setConnectedThreeScene, getThreeActing })
   background: #ff3366;
   width: 0%;
   transition: width 0.1s linear;
+}
+
+/* Spawn Point Toolbar (Left Side 3 Buttons) Styling */
+.canvas-edit-toolbar {
+  position: absolute;
+  top: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  z-index: 20;
+}
+
+.canvas-edit-toolbar.left {
+  left: 12px;
+}
+
+.edit-btn {
+  background: rgba(12, 12, 18, 0.85);
+  color: #8c8c9e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.edit-btn:hover {
+  background: #2b2b3b;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.edit-btn.active {
+  background: #3d4974;
+  color: #ffffff;
+  border-color: #5d6d9e;
 }
 
 /* Acting Toolbar styling */

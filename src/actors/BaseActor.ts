@@ -18,6 +18,12 @@ export abstract class BaseActor {
   public showCollider: boolean = false
 
   public lastSpawnPoint?: SpawnPoint
+  public actorColor: string = '#F1DFBF'
+
+  public setActorColor(hexColor: string): void {
+    if (!hexColor) return
+    this.actorColor = hexColor
+  }
 
   constructor() {
     this.group = new THREE.Group()
@@ -100,7 +106,7 @@ export abstract class BaseActor {
     }
   }
 
-  public applyMotionFrame(frame: any, diffY: number = 0, dt: number = 0.016): void {
+  public applyMotionFrame(frame: any, diffY: number = 0, dt: number = 0.016, isHardCut: boolean = false): void {
     if (!frame) return
 
     const prevX = this.position.x
@@ -117,12 +123,12 @@ export abstract class BaseActor {
 
     const dx = this.position.x - prevX
     const dz = this.position.z - prevZ
-    const distMoved = Math.sqrt(dx * dx + dz * dz)
+    const distMoved = isHardCut ? 0 : Math.sqrt(dx * dx + dz * dz)
 
-    this.onPlaybackMotion(distMoved, diffY, frame.anim, dt)
+    this.onPlaybackMotion(distMoved, diffY, frame.anim, dt, isHardCut)
   }
 
-  public onPlaybackMotion(_distMoved: number, _diffY: number, _animName?: string, _dt: number = 0.016): void {}
+  public onPlaybackMotion(_distMoved: number, _diffY: number, _animName?: string, _dt: number = 0.016, _isHardCut: boolean = false): void {}
 
   public resetAnimation(_initialAnim?: string): void {}
 

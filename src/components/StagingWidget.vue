@@ -3,9 +3,9 @@
     <!-- Preset Top Control Bar -->
     <div class="preset-control-bar">
       <div class="preset-selector-group">
-        <span class="preset-label">SCENE:</span>
+        <span class="preset-label">STAGE:</span>
         <select class="preset-select" :value="selectedPreset" @change="onPresetSelectChange">
-          <option value="__NEW__">+ New Scene...</option>
+          <option value="__NEW__">+ New Stage...</option>
           <option v-if="selectedPreset && selectedPreset !== '__NEW__' && !presetFiles.includes(selectedPreset)" :value="selectedPreset">
             {{ selectedPreset }}
           </option>
@@ -16,7 +16,7 @@
         <span v-if="isDirty" class="dirty-badge" title="Unsaved modifications">Modified</span>
       </div>
       <div class="preset-actions">
-        <button class="preset-btn save-btn" title="Save scene to JSON preset" @click.stop="saveCurrentPreset">
+        <button class="preset-btn save-btn" title="Save stage to JSON preset" @click.stop="saveCurrentPreset">
           Save
         </button>
         <button class="preset-btn reset-btn" title="Reset to last saved state" :disabled="!isDirty" @click.stop="resetCurrentPreset">
@@ -27,7 +27,7 @@
 
     <div class="canvas-wrapper">
       <div class="canvas-aspect-container">
-        <SceneCanvas :init-scene="initScene" />
+        <StagingCanvas :init-scene="initScene" />
       </div>
       <!-- Edit Mode Toolbar (Left Side) -->
       <div class="canvas-edit-toolbar left">
@@ -55,13 +55,6 @@
             <rect x="5" y="5" width="6" height="6" fill="currentColor"/>
           </svg>
         </button>
-        <button class="edit-btn select-spawn-btn" title="Select Spawn Point" @click.stop="selectSpawnPoint">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
-            <circle cx="8" cy="8" r="2" fill="currentColor"/>
-            <path d="M8 0v3M8 13v3M0 8h3M13 8h3" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
-        </button>
         <button class="edit-btn group-btn" title="Group selected assets" @click.stop="groupSelected" :disabled="!canGroup">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M1.5 2A.5.5 0 0 0 1 2.5v4a.5.5 0 0 0 .5.5h4A.5.5 0 0 0 6 6.5v-4A.5.5 0 0 0 5.5 2h-4zm.5 4V3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4V3h3v3h-3zM1.5 9.5a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3z"/>
@@ -80,6 +73,9 @@
     </div>
     <div class="info-overlay">
       <div>Assets: {{ state.num_assets }}</div>
+      <div v-if="cycleInfo" class="cycle-info-text">
+        Hit {{ cycleInfo.index }}/{{ cycleInfo.total }} (Click to cycle)
+      </div>
     </div>
 
     <!-- Unsaved Changes Warning Modal -->
@@ -99,8 +95,8 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
-import SceneCanvas from './SceneCanvas.vue'
-import { ThreeScene } from '../ThreeScene'
+import StagingCanvas from './StagingCanvas.vue'
+import { ThreeStaging as ThreeScene } from '../ThreeStaging'
 import type { SceneState } from '../types'
 
 const props = defineProps<{
@@ -112,7 +108,7 @@ const props = defineProps<{
 }>()
 
 const state = reactive<SceneState>({
-  type: 'cube_scene',
+  type: 'cube_stage',
   num_assets: props.initialState?.num_assets ?? 0,
   nodes: props.initialState?.nodes ?? [],
   selectedPreset: props.initialState?.selectedPreset || props.initialPreset || '__NEW__',
@@ -133,9 +129,8 @@ let originalPresetState: Partial<SceneState> | null = null
 const normalizeStateString = (s: any): string => {
   if (!s || typeof s !== 'object') return ''
   return JSON.stringify({
-    type: s.type || 'cube_scene',
+    type: s.type || 'cube_stage',
     num_assets: s.num_assets ?? (s.nodes?.length || 0),
-    spawn_point: s.spawn_point || { px: 0, py: 0, pz: 2, ry: 0 },
     nodes: s.nodes || []
   })
 }
@@ -188,7 +183,7 @@ onUnmounted(() => {
 
 const loadPresetFile = async (filename: string) => {
   if (filename === '__NEW__') {
-    const emptyState: SceneState = { type: 'cube_scene', num_assets: 0, nodes: [], selectedPreset: '__NEW__' }
+    const emptyState: SceneState = { type: 'cube_stage', num_assets: 0, nodes: [], selectedPreset: '__NEW__' }
     originalPresetState = emptyState
     setState(emptyState)
     selectedPreset.value = '__NEW__'
@@ -298,6 +293,8 @@ const resetCurrentPreset = () => {
   }
 }
 
+const cycleInfo = ref<{ index: number; total: number } | null>(null)
+
 const initScene = (container: HTMLElement) => {
   threeScene = new ThreeScene({
     container,
@@ -314,11 +311,13 @@ const initScene = (container: HTMLElement) => {
     },
     onSelectionChange: (selected) => {
       hasSelection.value = selected
+      if (!selected) cycleInfo.value = null
     },
     onSelectionInfoChange: (info) => {
       hasSelection.value = info.selectedCount > 0
       canGroup.value = info.canGroup
       canUngroup.value = info.canUngroup
+      cycleInfo.value = info.cycleInfo || null
     }
   })
   threeScene.setTransformMode(activeMode.value)
@@ -616,6 +615,11 @@ defineExpose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetL
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.cycle-info-text {
+  color: #00ffcc;
+  font-weight: 600;
 }
 
 .confirm-modal-backdrop {

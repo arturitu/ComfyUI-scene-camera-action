@@ -11,5 +11,12 @@ try:
 except Exception:
     pass
 
-__all__ = ["comfy_entrypoint", "NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
+WEB_DIRECTORY = "./js"
+
+__all__ = [
+    "comfy_entrypoint",
+    "NODE_CLASS_MAPPINGS",
+    "NODE_DISPLAY_NAME_MAPPINGS",
+    "WEB_DIRECTORY",
+]
 
