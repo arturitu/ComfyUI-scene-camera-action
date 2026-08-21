@@ -94,12 +94,8 @@ The [`skills/stage-builder/SKILL.md`](skills/stage-builder/SKILL.md) instruction
 
 ## 💻 Installation
 
-### Via Comfy Registry (Recommended)
-```bash
-comfy node install comfyui-scene-camera-action
-```
+This custom node includes a TypeScript/Vue frontend that must be built after cloning the repository. Make sure Node.js and npm are installed before continuing.
 
-### Manual Installation
 Clone this repository directly into your ComfyUI `custom_nodes` directory:
 
 ```bash
@@ -115,7 +111,24 @@ If you are using `ComfyUI_windows_portable`, run this from your portable root fo
 python_embeded\python.exe -m pip install -r ComfyUI\custom_nodes\ComfyUI-scene-camera-action\requirements.txt
 ```
 
-Restart your ComfyUI server after installation.
+Install the frontend dependencies and build the JavaScript bundle:
+
+```bash
+cd ComfyUI-scene-camera-action
+npm ci
+npm run build
+```
+
+The build should create the frontend bundle at:
+
+```text
+js/main.js
+```
+
+Restart your ComfyUI server after the build completes.
+
+> [!NOTE]
+> A plain `git clone` does not include the generated `js/` directory because build output is excluded from the repository. If the frontend is not built before starting ComfyUI, startup may fail because `ComfyUI-scene-camera-action/js` does not exist.
 
 ---
 
