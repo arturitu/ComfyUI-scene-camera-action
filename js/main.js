@@ -33656,7 +33656,7 @@ const CAMERA_MIN_DISTANCE = 1.5;
 const CAMERA_MAX_DISTANCE = 65;
 const MAX_PAN = 42;
 const CAMERA_FOV_CONFIG = {
-  "Wide": { min: 10, max: 60, default: 35 },
+  "Wide": { min: 20, max: 70, default: 45 },
   "Third Person": { min: 25, max: 85, default: 50 },
   "Side": { min: 20, max: 80, default: 45 },
   "First Person": { min: 40, max: 100, default: 50 }
@@ -33666,6 +33666,30 @@ function getCameraFovConfig(mode) {
 }
 function getDefaultCameraFov(mode) {
   return getCameraFovConfig(mode).default;
+}
+const CAMERA_DISTANCE_CONFIG = {
+  "Wide": { min: 4, max: 80, default: 16, step: 1 },
+  "Third Person": { min: 1.5, max: 15, default: 3.5, step: 0.1 },
+  "Side": { min: 1.5, max: 20, default: 4.5, step: 0.1 },
+  "First Person": { min: 0, max: 0, default: 0, step: 0 }
+};
+function getCameraDistanceConfig(mode, isCar = false) {
+  const base = CAMERA_DISTANCE_CONFIG[mode] || { min: 1, max: 60, default: 10, step: 0.5 };
+  if (isCar && (mode === "Side" || mode === "Third Person")) {
+    return {
+      min: 3.5,
+      max: base.max,
+      default: mode === "Third Person" ? 6.5 : 6.5,
+      step: base.step
+    };
+  }
+  return base;
+}
+function getDefaultCameraDistance(mode, isCar = false) {
+  if (mode === "Third Person") return isCar ? 6.5 : 3.5;
+  if (mode === "Side") return isCar ? 6.5 : 4.5;
+  if (mode === "Wide") return isCar ? 18 : 16;
+  return getCameraDistanceConfig(mode, isCar).default;
 }
 const FOG_NEAR = 1;
 const FOG_FAR = 160;
@@ -47299,19 +47323,31 @@ class ThreeDirecting {
   }
   setConnectedThreeActing(threeActing) {
     this.connectedThreeActing = threeActing;
+    const stageData = this.getStageData();
+    if (stageData) {
+      this.buildStageFromData(stageData);
+    }
     if (this.state.acting_data) {
       this.loadActingData(this.state.acting_data);
+    } else if (threeActing && typeof threeActing.getAccumulatedActors === "function") {
+      this.buildActorsFromData({ actors: threeActing.getAccumulatedActors() });
     }
-    this.buildSceneEnvironment();
+    this.buildStageEnvironment();
+    this.updateCamera();
   }
   getAvailableActors() {
+    const list = [];
     if (this.actorList.length === 0) {
-      return [{ id: "default", label: "Scene Target" }];
+      list.push({ id: "actor_1", label: "Actor 1 (human)" });
+      return list;
     }
-    return this.actorList.map((a, idx) => ({
-      id: a.id,
-      label: `Actor ${idx + 1} (${a.record.actor_type || "human"})`
-    }));
+    this.actorList.forEach((a, idx) => {
+      list.push({
+        id: a.id,
+        label: `Actor ${idx + 1} (${a.record.actor_type || "human"})`
+      });
+    });
+    return list;
   }
   loadActingData(actingDataInput) {
     let parsedPayload = null;
@@ -47368,8 +47404,16 @@ class ThreeDirecting {
     let actorsArr = [];
     if (parsedPayload && Array.isArray(parsedPayload.actors) && parsedPayload.actors.length > 0) {
       actorsArr = parsedPayload.actors;
+    } else if (this.connectedThreeActing && typeof this.connectedThreeActing.getAccumulatedActors === "function") {
+      const acc = this.connectedThreeActing.getAccumulatedActors();
+      if (Array.isArray(acc) && acc.length > 0) {
+        actorsArr = acc;
+      }
     } else if (parsedPayload && (parsedPayload.trajectory || parsedPayload.motion_data)) {
-      const traj = parsedPayload.trajectory || (typeof parsedPayload.motion_data === "string" ? JSON.parse(parsedPayload.motion_data).trajectory : parsedPayload.motion_data);
+      let traj = parsedPayload.trajectory;
+      if (!traj && parsedPayload.motion_data) {
+        traj = typeof parsedPayload.motion_data === "string" ? JSON.parse(parsedPayload.motion_data).trajectory : parsedPayload.motion_data;
+      }
       actorsArr = [{
         id: "actor_1",
         actor_type: parsedPayload.actor_type || "human",
@@ -47629,7 +47673,7 @@ class ThreeDirecting {
     const activeKeyframe = this.getActiveKeyframe(currentTime);
     const activeMode = activeKeyframe.mode;
     let targetActorCtrl = null;
-    let targetActorId = "default";
+    let targetActorId = "actor_1";
     if (activeKeyframe.actor_target && this.actorList.length > 0) {
       const found = this.actorList.find((a) => a.id === activeKeyframe.actor_target);
       if (found) {
@@ -47643,11 +47687,11 @@ class ThreeDirecting {
     }
     if (!targetActorCtrl) {
       targetActorCtrl = this.actorController;
+      if (targetActorCtrl) targetActorId = "actor_1";
     }
-    if (!targetActorCtrl) return;
-    const charPos = targetActorCtrl.position;
-    const rotY = targetActorCtrl.group.rotation.y;
-    const isFPV = activeMode === "First Person";
+    const charPos = targetActorCtrl ? targetActorCtrl.position : new Vector3(0, GROUND_Y, 0);
+    const rotY = targetActorCtrl ? targetActorCtrl.group.rotation.y : 0;
+    const isFPV = activeMode === "First Person" && targetActorCtrl !== null;
     if (this.actorList.length > 0) {
       this.actorList.forEach((a) => {
         const isThisActorFPV = isFPV && (a.controller === targetActorCtrl || a.id === targetActorId);
@@ -47694,17 +47738,13 @@ class ThreeDirecting {
     const posLerpFactor = 1 - Math.exp(-posLerpSpeed * Math.max(1e-3, dt));
     let targetFov = activeKeyframe.fov;
     if (targetFov === void 0) {
-      if (activeMode === "Side" && isCarTarget) {
-        targetFov = 42;
-      } else {
-        targetFov = getDefaultCameraFov(activeMode);
-      }
+      targetFov = getDefaultCameraFov(activeMode);
     }
     if (this.camera.fov !== targetFov) {
       this.camera.fov = targetFov;
       this.camera.updateProjectionMatrix();
     }
-    if (isFPV) {
+    if (isFPV && targetActorCtrl) {
       const localOffset = targetActorCtrl.getFPVOffset();
       const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion);
       const fpvCamPos = charPos.clone().add(worldOffset);
@@ -47724,9 +47764,12 @@ class ThreeDirecting {
     } else if (activeMode === "Third Person") {
       const isCar = isCarTarget;
       const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
-      const camHeight = isCar ? 2.2 : isCrouch ? 1 : 1.7;
-      const camDist = isCar ? -6.5 : isCrouch ? -2.8 : -3.5;
-      const targetYOffset = isCar ? 0.9 : isCrouch ? 1.05 : 0.8;
+      const minDistance = isCar ? 3.5 : 1.5;
+      const defaultDist = isCar ? 6.5 : isCrouch ? 2.8 : 3.5;
+      const userDist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
+      const camHeight = isCar ? 1.3 + 0.35 * Math.min(2, Math.max(0, (userDist - 3.5) / 3)) : isCrouch ? 1.1 : 1.52 + 0.15 * Math.min(2, Math.max(0, (userDist - 1.5) / 2));
+      const camDist = -userDist;
+      const targetYOffset = isCar ? 0.75 : isCrouch ? 1.1 : 1.52;
       const backOffset = new Vector3(0, camHeight, camDist).applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
       const idealCamPos = charPos.clone().add(backOffset);
       const idealLookAt = new Vector3(charPos.x, charPos.y + targetYOffset, charPos.z);
@@ -47750,10 +47793,13 @@ class ThreeDirecting {
       }
     } else if (activeMode === "Wide") {
       const isCar = isCarTarget;
-      const targetOffsetY = isCar ? 0.9 : 0.85;
+      const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
+      const minDistance = isCar ? 3.5 : 1.5;
+      const defaultDist = isCar ? 18 : 16;
+      const dist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
+      const targetOffsetY = isCar ? 0.75 : isCrouch ? 1.1 : 1.52;
       const actorCenter = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
-      const baseDist = 14.5;
-      const idealCamPos = actorCenter.clone().add(new Vector3(-baseDist * 0.7, baseDist * 0.55, baseDist * 0.7));
+      const idealCamPos = actorCenter.clone().add(new Vector3(-dist * 0.7, dist * 0.55, dist * 0.7));
       if (this.lastCameraMode !== "Wide" || isHardCut) {
         this.wideTarget.copy(actorCenter);
         this.camera.position.copy(idealCamPos);
@@ -47768,8 +47814,13 @@ class ThreeDirecting {
       }
     } else if (activeMode === "Side") {
       const isCar = isCarTarget;
-      const sideVec = isCar ? new Vector3(-6.5, 1.8, 0) : new Vector3(-4.2, 1.3, 0.4);
-      const targetOffsetY = isCar ? 0.9 : 0.95;
+      const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
+      const minDistance = isCar ? 3.5 : 1.5;
+      const defaultDist = isCar ? 6.5 : 4.5;
+      const userDist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
+      const camHeight = isCar ? 0.9 + 0.3 * Math.min(2, Math.max(0, (userDist - 3.5) / 3)) : isCrouch ? 1.05 : 1.5 + 0.15 * Math.min(2, Math.max(0, (userDist - 1.5) / 3));
+      const sideVec = isCar ? new Vector3(-userDist, camHeight, 0) : new Vector3(-userDist, camHeight, 0.3);
+      const targetOffsetY = isCar ? 0.75 : isCrouch ? 1.1 : 1.52;
       const sideOffset = sideVec.applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
       const idealCamPos = charPos.clone().add(sideOffset);
       const idealLookAt = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
@@ -48054,15 +48105,26 @@ const _hoisted_16 = {
 };
 const _hoisted_17 = ["value", "onChange"];
 const _hoisted_18 = ["value"];
-const _hoisted_19 = { class: "popover-fov-row" };
-const _hoisted_20 = { class: "fov-label-row" };
-const _hoisted_21 = { class: "fov-value" };
+const _hoisted_19 = {
+  key: 1,
+  class: "popover-dist-row"
+};
+const _hoisted_20 = { class: "dist-label-row" };
+const _hoisted_21 = { class: "dist-value" };
 const _hoisted_22 = ["onClick"];
-const _hoisted_23 = { class: "fov-slider-container" };
-const _hoisted_24 = { class: "fov-bound-label" };
-const _hoisted_25 = ["min", "max", "value", "onInput"];
-const _hoisted_26 = { class: "fov-bound-label" };
-const _hoisted_27 = { class: "time-display" };
+const _hoisted_23 = { class: "dist-slider-container" };
+const _hoisted_24 = { class: "dist-bound-label" };
+const _hoisted_25 = ["min", "max", "step", "value", "onInput"];
+const _hoisted_26 = { class: "dist-bound-label" };
+const _hoisted_27 = { class: "popover-fov-row" };
+const _hoisted_28 = { class: "fov-label-row" };
+const _hoisted_29 = { class: "fov-value" };
+const _hoisted_30 = ["onClick"];
+const _hoisted_31 = { class: "fov-slider-container" };
+const _hoisted_32 = { class: "fov-bound-label" };
+const _hoisted_33 = ["min", "max", "value", "onInput"];
+const _hoisted_34 = { class: "fov-bound-label" };
+const _hoisted_35 = { class: "time-display" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "DirectingWidget",
   props: {
@@ -48097,15 +48159,26 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     let timeFrameId = null;
     let isDraggingPlayhead = false;
     let draggingKeyframe = null;
+    const availableActorsList = /* @__PURE__ */ ref([
+      { id: "actor_1", label: "Actor 1 (human)" }
+    ]);
     const availableActors = computed(() => {
       if (threeDirecting && typeof threeDirecting.getAvailableActors === "function") {
-        return threeDirecting.getAvailableActors();
+        const list = threeDirecting.getAvailableActors();
+        if (Array.isArray(list) && list.length > 0) return list;
       }
-      return [{ id: "default", label: "Scene Target" }];
+      return availableActorsList.value;
     });
     function parseKeyframes(raw) {
       if (!raw || !raw.trim()) {
-        return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1", fov: getDefaultCameraFov("Third Person") }];
+        return [{
+          id: "kf-init",
+          t: 0,
+          mode: "Third Person",
+          actor_target: "actor_1",
+          fov: getDefaultCameraFov("Third Person"),
+          distance: getDefaultCameraDistance("Third Person")
+        }];
       }
       try {
         const parsed = JSON.parse(raw);
@@ -48115,12 +48188,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             t: Math.max(0, typeof item.t === "number" ? item.t : 0),
             mode: item.mode || "Third Person",
             actor_target: item.actor_target || item.actorTarget || "actor_1",
-            fov: typeof item.fov === "number" ? item.fov : void 0
+            fov: typeof item.fov === "number" ? item.fov : void 0,
+            distance: typeof item.distance === "number" ? item.distance : void 0
           })).sort((a, b) => a.t - b.t);
         }
       } catch {
       }
-      return [{ id: "kf-init", t: 0, mode: "Third Person", actor_target: "actor_1", fov: getDefaultCameraFov("Third Person") }];
+      return [{
+        id: "kf-init",
+        t: 0,
+        mode: "Third Person",
+        actor_target: "actor_1",
+        fov: getDefaultCameraFov("Third Person"),
+        distance: getDefaultCameraDistance("Third Person")
+      }];
     }
     const isActingNodeConnected = computed(() => {
       if (threeDirecting && threeDirecting.connectedThreeActing) return true;
@@ -48178,11 +48259,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       });
       threeDirecting.setKeyframes(keyframes.value);
+      availableActorsList.value = threeDirecting.getAvailableActors();
     };
     const updateTimeLoop = () => {
       if (threeDirecting && !isDraggingPlayhead) {
         currentTime.value = threeDirecting.getCurrentTime();
         duration.value = threeDirecting.getDuration();
+        const actors = threeDirecting.getAvailableActors();
+        if (actors && actors.length > 0 && JSON.stringify(actors) !== JSON.stringify(availableActorsList.value)) {
+          availableActorsList.value = actors;
+        }
       }
       timeFrameId = requestAnimationFrame(updateTimeLoop);
     };
@@ -48210,17 +48296,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const addKeyframe = () => {
       if (isRecordingVideo.value) return;
       const curT = Math.round(currentTime.value * 10) / 10;
-      const activeMode = threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : "Third Person";
       const existing = keyframes.value.find((k) => Math.abs(k.t - curT) < 0.1);
       if (existing) {
         selectKeyframe(existing);
         return;
       }
+      const prevKf = [...keyframes.value].reverse().find((k) => k.t <= curT);
+      const activeMode = prevKf ? prevKf.mode : threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : "Third Person";
+      const activeTarget = (prevKf == null ? void 0 : prevKf.actor_target) || "actor_1";
       const newKf = {
         id: `kf-${Date.now()}`,
         t: curT,
         mode: activeMode,
-        fov: getDefaultCameraFov(activeMode)
+        actor_target: activeTarget,
+        fov: (prevKf == null ? void 0 : prevKf.fov) ?? getDefaultCameraFov(activeMode),
+        distance: (prevKf == null ? void 0 : prevKf.distance) ?? getDefaultCameraDistance(activeMode)
       };
       keyframes.value.push(newKf);
       keyframes.value.sort((a, b) => a.t - b.t);
@@ -48260,16 +48350,79 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         threeDirecting.seekToTime(kf.t);
       }
     };
+    const isCarTarget = (kf) => {
+      const target = kf.actor_target || "actor_1";
+      const found = availableActors.value.find((a) => a.id === target);
+      return found ? found.label.toLowerCase().includes("car") : false;
+    };
+    const getDistanceConfig = (mode, kf) => {
+      const isCar = kf ? isCarTarget(kf) : false;
+      return getCameraDistanceConfig(mode, isCar);
+    };
+    const getKeyframeDistance = (kf) => {
+      const isCar = isCarTarget(kf);
+      if (typeof kf.distance === "number") {
+        const cfg = getCameraDistanceConfig(kf.mode, isCar);
+        return Math.max(cfg.min, Math.min(cfg.max, kf.distance));
+      }
+      return getDefaultCameraDistance(kf.mode, isCar);
+    };
+    const changeKeyframeDistance = (kf, dist) => {
+      const isCar = isCarTarget(kf);
+      const cfg = getCameraDistanceConfig(kf.mode, isCar);
+      const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(dist * 10) / 10));
+      kf.distance = clamped;
+      syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
+    };
+    const resetKeyframeDistance = (kf) => {
+      const isCar = isCarTarget(kf);
+      kf.distance = getDefaultCameraDistance(kf.mode, isCar);
+      syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
+    };
+    const getAvailableActorsForMode = (_mode) => {
+      const all = availableActors.value.filter((a) => a.id !== "stage");
+      if (all.length === 0) {
+        return [{ id: "actor_1", label: "Actor 1 (human)" }];
+      }
+      return all;
+    };
+    const getEffectiveTarget = (kf) => {
+      var _a2;
+      const options = getAvailableActorsForMode(kf.mode);
+      if (kf.actor_target && options.some((o) => o.id === kf.actor_target)) {
+        return kf.actor_target;
+      }
+      return ((_a2 = options[0]) == null ? void 0 : _a2.id) || "actor_1";
+    };
     const changeKeyframeMode = (kf, mode) => {
+      var _a2;
       const oldMode = kf.mode;
-      const oldDefault = getDefaultCameraFov(oldMode);
-      const isUsingDefault = kf.fov === void 0 || kf.fov === oldDefault;
+      const oldDefaultFov = getDefaultCameraFov(oldMode);
+      const isUsingDefaultFov = kf.fov === void 0 || kf.fov === oldDefaultFov;
+      const oldDefaultDist = getDefaultCameraDistance(oldMode);
+      const isUsingDefaultDist = kf.distance === void 0 || kf.distance === oldDefaultDist;
       kf.mode = mode;
-      if (isUsingDefault) {
+      if (isUsingDefaultFov) {
         kf.fov = getDefaultCameraFov(mode);
       } else if (typeof kf.fov === "number") {
         const newCfg = getCameraFovConfig(mode);
         kf.fov = Math.max(newCfg.min, Math.min(newCfg.max, kf.fov));
+      }
+      if (isUsingDefaultDist) {
+        kf.distance = getDefaultCameraDistance(mode);
+      } else if (typeof kf.distance === "number") {
+        const newDistCfg = getCameraDistanceConfig(mode);
+        kf.distance = Math.max(newDistCfg.min, Math.min(newDistCfg.max, kf.distance));
+      }
+      const validActors = getAvailableActorsForMode();
+      if (!validActors.some((a) => a.id === kf.actor_target)) {
+        kf.actor_target = ((_a2 = validActors[0]) == null ? void 0 : _a2.id) || "actor_1";
       }
       syncKeyframes();
       if (threeDirecting) {
@@ -48279,6 +48432,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const changeKeyframeTarget = (kf, targetId) => {
       kf.actor_target = targetId;
       syncKeyframes();
+      if (threeDirecting) {
+        threeDirecting.seekToTime(kf.t);
+      }
     };
     const deleteKeyframe = (kf) => {
       var _a2;
@@ -48493,6 +48649,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
       if (threeDirecting) {
         threeDirecting.setState(newState);
+        availableActorsList.value = threeDirecting.getAvailableActors();
       }
     };
     const cleanup = () => {
@@ -48504,13 +48661,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const setConnectedThreeActing = (threeActing) => {
       if (threeDirecting) {
         threeDirecting.setConnectedThreeActing(threeActing);
+        availableActorsList.value = threeDirecting.getAvailableActors();
       }
     };
     __expose({ setState, cleanup, setConnectedThreeActing });
     return (_ctx, _cache2) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         !hasActingData.value ? (openBlock(), createElementBlock("div", _hoisted_2, [
-          _cache2[4] || (_cache2[4] = createBaseVNode("div", { class: "disabled-title" }, "Directing Canvas Disabled", -1)),
+          _cache2[5] || (_cache2[5] = createBaseVNode("div", { class: "disabled-title" }, "Directing Canvas Disabled", -1)),
           createBaseVNode("div", _hoisted_3, toDisplayString(disabledSubtitle.value), 1)
         ])) : (openBlock(), createElementBlock("div", {
           key: 1,
@@ -48526,12 +48684,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             onMousedown: _cache2[0] || (_cache2[0] = withModifiers(() => {
             }, ["stop", "prevent"]))
           }, [
-            _cache2[5] || (_cache2[5] = createBaseVNode("div", { class: "recording-spinner" }, null, -1)),
+            _cache2[6] || (_cache2[6] = createBaseVNode("div", { class: "recording-spinner" }, null, -1)),
             createBaseVNode("div", _hoisted_5, toDisplayString(videoStatusText.value || "Capturing 3D Video..."), 1)
           ], 32)) : createCommentVNode("", true),
           createBaseVNode("div", {
             class: normalizeClass(["timeline-bar", { "disabled-timeline": isRecordingVideo.value }]),
-            onMousedown: _cache2[3] || (_cache2[3] = withModifiers(() => {
+            onMousedown: _cache2[4] || (_cache2[4] = withModifiers(() => {
             }, ["stop"]))
           }, [
             createBaseVNode("button", {
@@ -48552,11 +48710,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 disabled: isRecordingVideo.value,
                 title: "Add cut at current position",
                 onClick: addKeyframe
-              }, [..._cache2[6] || (_cache2[6] = [
+              }, [..._cache2[7] || (_cache2[7] = [
                 createBaseVNode("span", { class: "diamond-icon" }, "◇", -1),
                 createBaseVNode("span", { class: "plus-icon" }, "+", -1)
               ])], 8, _hoisted_9),
-              _cache2[7] || (_cache2[7] = createBaseVNode("div", { class: "add-kf-tooltip" }, "Add cut", -1))
+              _cache2[8] || (_cache2[8] = createBaseVNode("div", { class: "add-kf-tooltip" }, "Add cut", -1))
             ]),
             createBaseVNode("div", {
               ref_key: "trackRef",
@@ -48564,7 +48722,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               class: "timeline-track",
               onMousedown: withModifiers(onTrackMouseDown, ["stop"])
             }, [
-              _cache2[13] || (_cache2[13] = createBaseVNode("div", { class: "track-line" }, null, -1)),
+              _cache2[15] || (_cache2[15] = createBaseVNode("div", { class: "track-line" }, null, -1)),
               createBaseVNode("div", {
                 class: "track-fill",
                 style: normalizeStyle({ width: progressPercent.value + "%" })
@@ -48572,11 +48730,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               createBaseVNode("div", {
                 class: "playhead",
                 style: normalizeStyle({ left: progressPercent.value + "%" })
-              }, [..._cache2[8] || (_cache2[8] = [
+              }, [..._cache2[9] || (_cache2[9] = [
                 createBaseVNode("div", { class: "playhead-line" }, null, -1)
               ])], 4),
               (openBlock(true), createElementBlock(Fragment, null, renderList(keyframes.value, (kf) => {
-                var _a2, _b2, _c2;
+                var _a2, _b2;
                 return openBlock(), createElementBlock("div", {
                   key: kf.id,
                   class: normalizeClass(["keyframe-marker", { active: ((_a2 = selectedKeyframe.value) == null ? void 0 : _a2.id) === kf.id }]),
@@ -48584,14 +48742,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   title: `${kf.t.toFixed(1)}s: ${kf.mode}`,
                   onMousedown: withModifiers(($event) => onKeyframeMouseDown(kf), ["stop"])
                 }, [
-                  _cache2[12] || (_cache2[12] = createBaseVNode("div", { class: "diamond-marker" }, null, -1)),
+                  _cache2[14] || (_cache2[14] = createBaseVNode("div", { class: "diamond-marker" }, null, -1)),
                   ((_b2 = selectedKeyframe.value) == null ? void 0 : _b2.id) === kf.id && !isPlaying.value && !isRecordingVideo.value ? (openBlock(), createElementBlock("div", {
                     key: 0,
                     class: normalizeClass(["keyframe-popover", {
                       "align-left": kf.t / duration.value < 0.2,
                       "align-right": kf.t / duration.value > 0.8
                     }]),
-                    onMousedown: _cache2[2] || (_cache2[2] = withModifiers(() => {
+                    onMousedown: _cache2[3] || (_cache2[3] = withModifiers(() => {
                     }, ["stop"]))
                   }, [
                     createBaseVNode("div", _hoisted_11, [
@@ -48612,14 +48770,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }, toDisplayString(mode.label), 11, _hoisted_15);
                       }), 64))
                     ]),
-                    availableActors.value.length > 0 ? (openBlock(), createElementBlock("div", _hoisted_16, [
-                      _cache2[9] || (_cache2[9] = createBaseVNode("span", { class: "target-label" }, "Track:", -1)),
+                    getAvailableActorsForMode(kf.mode).length > 0 ? (openBlock(), createElementBlock("div", _hoisted_16, [
+                      _cache2[10] || (_cache2[10] = createBaseVNode("span", { class: "target-label" }, "Track:", -1)),
                       createBaseVNode("select", {
-                        value: kf.actor_target || ((_c2 = availableActors.value[0]) == null ? void 0 : _c2.id),
+                        value: getEffectiveTarget(kf),
                         class: "target-select",
                         onChange: withModifiers(($event) => changeKeyframeTarget(kf, $event.target.value), ["stop"])
                       }, [
-                        (openBlock(true), createElementBlock(Fragment, null, renderList(availableActors.value, (act) => {
+                        (openBlock(true), createElementBlock(Fragment, null, renderList(getAvailableActorsForMode(kf.mode), (act) => {
                           return openBlock(), createElementBlock("option", {
                             key: act.id,
                             value: act.id
@@ -48627,18 +48785,44 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         }), 128))
                       ], 40, _hoisted_17)
                     ])) : createCommentVNode("", true),
-                    createBaseVNode("div", _hoisted_19, [
+                    kf.mode !== "First Person" ? (openBlock(), createElementBlock("div", _hoisted_19, [
                       createBaseVNode("div", _hoisted_20, [
-                        _cache2[10] || (_cache2[10] = createBaseVNode("span", { class: "fov-label" }, "FOV:", -1)),
-                        createBaseVNode("span", _hoisted_21, toDisplayString(getKeyframeFov(kf)) + "°", 1),
+                        _cache2[11] || (_cache2[11] = createBaseVNode("span", { class: "dist-label" }, "Dist:", -1)),
+                        createBaseVNode("span", _hoisted_21, toDisplayString(getKeyframeDistance(kf)) + "m", 1),
+                        createBaseVNode("button", {
+                          class: "dist-reset-btn",
+                          title: "Reset to default Distance",
+                          onClick: withModifiers(($event) => resetKeyframeDistance(kf), ["stop"])
+                        }, " ↺ ", 8, _hoisted_22)
+                      ]),
+                      createBaseVNode("div", _hoisted_23, [
+                        createBaseVNode("span", _hoisted_24, toDisplayString(getDistanceConfig(kf.mode, kf).min) + "m", 1),
+                        createBaseVNode("input", {
+                          type: "range",
+                          min: getDistanceConfig(kf.mode, kf).min,
+                          max: getDistanceConfig(kf.mode, kf).max,
+                          step: getDistanceConfig(kf.mode, kf).step,
+                          value: getKeyframeDistance(kf),
+                          class: "dist-slider",
+                          onInput: withModifiers(($event) => changeKeyframeDistance(kf, Number($event.target.value)), ["stop"]),
+                          onMousedown: _cache2[1] || (_cache2[1] = withModifiers(() => {
+                          }, ["stop"]))
+                        }, null, 40, _hoisted_25),
+                        createBaseVNode("span", _hoisted_26, toDisplayString(getDistanceConfig(kf.mode, kf).max) + "m", 1)
+                      ])
+                    ])) : createCommentVNode("", true),
+                    createBaseVNode("div", _hoisted_27, [
+                      createBaseVNode("div", _hoisted_28, [
+                        _cache2[12] || (_cache2[12] = createBaseVNode("span", { class: "fov-label" }, "FOV:", -1)),
+                        createBaseVNode("span", _hoisted_29, toDisplayString(getKeyframeFov(kf)) + "°", 1),
                         createBaseVNode("button", {
                           class: "fov-reset-btn",
                           title: "Reset to default FOV",
                           onClick: withModifiers(($event) => resetKeyframeFov(kf), ["stop"])
-                        }, " ↺ ", 8, _hoisted_22)
+                        }, " ↺ ", 8, _hoisted_30)
                       ]),
-                      createBaseVNode("div", _hoisted_23, [
-                        createBaseVNode("span", _hoisted_24, toDisplayString(getFovConfig(kf.mode).min) + "°", 1),
+                      createBaseVNode("div", _hoisted_31, [
+                        createBaseVNode("span", _hoisted_32, toDisplayString(getFovConfig(kf.mode).min) + "°", 1),
                         createBaseVNode("input", {
                           type: "range",
                           min: getFovConfig(kf.mode).min,
@@ -48647,25 +48831,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           value: getKeyframeFov(kf),
                           class: "fov-slider",
                           onInput: withModifiers(($event) => changeKeyframeFov(kf, Number($event.target.value)), ["stop"]),
-                          onMousedown: _cache2[1] || (_cache2[1] = withModifiers(() => {
+                          onMousedown: _cache2[2] || (_cache2[2] = withModifiers(() => {
                           }, ["stop"]))
-                        }, null, 40, _hoisted_25),
-                        createBaseVNode("span", _hoisted_26, toDisplayString(getFovConfig(kf.mode).max) + "°", 1)
+                        }, null, 40, _hoisted_33),
+                        createBaseVNode("span", _hoisted_34, toDisplayString(getFovConfig(kf.mode).max) + "°", 1)
                       ])
                     ]),
-                    _cache2[11] || (_cache2[11] = createBaseVNode("div", { class: "popover-arrow" }, null, -1))
+                    _cache2[13] || (_cache2[13] = createBaseVNode("div", { class: "popover-arrow" }, null, -1))
                   ], 34)) : createCommentVNode("", true)
                 ], 46, _hoisted_10);
               }), 128))
             ], 544),
-            createBaseVNode("div", _hoisted_27, toDisplayString(formattedTime.value), 1)
+            createBaseVNode("div", _hoisted_35, toDisplayString(formattedTime.value), 1)
           ], 34)
         ], 32))
       ]);
     };
   }
 });
-const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c97b68b8"]]);
+const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-2df0ed8c"]]);
 const { app } = window.comfyAPI.app;
 (() => {
   const cssUrl = new URL(
@@ -49140,52 +49324,6 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
   }
   notifyConnectedDirectingNodes(actingNode);
 }
-function isActingNodeMotionValid(actingNode) {
-  var _a;
-  const actingInst = actingInstances.get(actingNode);
-  const threeActing = ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
-  if (threeActing) {
-    if (typeof threeActing.getTrajectory === "function") {
-      const traj = threeActing.getTrajectory();
-      if (Array.isArray(traj) && traj.length > 0) return true;
-    }
-  }
-  const actingState = readActingStateFromNode(actingNode);
-  const rawBlob = actingState.motion_data;
-  if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
-    try {
-      const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
-      if (parsed && typeof parsed === "object") {
-        if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true;
-        if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true;
-      }
-      if (Array.isArray(parsed) && parsed.length > 0) return true;
-    } catch {
-    }
-  }
-  return false;
-}
-function isUpstreamActingChainComplete(startActingNode) {
-  let currNode = startActingNode;
-  const visited = /* @__PURE__ */ new Set();
-  while (currNode && !visited.has(currNode)) {
-    visited.add(currNode);
-    if (isActingNode(currNode)) {
-      if (!isActingNodeMotionValid(currNode)) {
-        return false;
-      }
-      const originInfo = findConnectedStageOrActingOrigin(currNode);
-      if (originInfo && originInfo.isActing) {
-        currNode = originInfo.originNode;
-      } else {
-        break;
-      }
-    } else {
-      break;
-    }
-  }
-  return true;
-}
 function notifyConnectedDirectingNodes(originNode) {
   var _a, _b;
   const graph = app.graph;
@@ -49198,35 +49336,37 @@ function notifyConnectedDirectingNodes(originNode) {
         const directingInst = directingInstances.get(targetNode);
         if (directingInst) {
           if (isActingNode(originNode)) {
-            const chainComplete = isUpstreamActingChainComplete(originNode);
-            if (!chainComplete) {
-              directingInst.exposed.setState({ acting_data: "" });
-              if (directingInst.exposed.setConnectedThreeActing) {
-                directingInst.exposed.setConnectedThreeActing(null);
-              }
-              continue;
-            }
             const actingState = readActingStateFromNode(originNode);
             const actingInst = actingInstances.get(originNode);
             const threeActing = ((_b = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _b.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
             if (threeActing && directingInst.exposed.setConnectedThreeActing) {
               directingInst.exposed.setConnectedThreeActing(threeActing);
             }
-            const rawBlob = actingState.motion_data ?? "";
-            let actingBlob = "";
-            const currentSceneData = (threeActing == null ? void 0 : threeActing.getStageData) ? threeActing.getStageData() : (threeActing == null ? void 0 : threeActing.getSceneData()) ?? actingState.scene_data;
+            const rootStagingNode = findRootStagingNode(originNode);
+            let stageData = null;
+            if (rootStagingNode) {
+              stageData = readStageStateFromNode(rootStagingNode);
+            }
+            if (!stageData && (threeActing == null ? void 0 : threeActing.getStageData)) {
+              stageData = threeActing.getStageData();
+            }
+            if (!stageData) {
+              stageData = actingState.stage_data ?? actingState.scene_data ?? null;
+            }
             const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
             const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
+            const rawBlob = actingState.motion_data ?? "";
+            let actingBlob = "";
             if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
               try {
                 const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
                 if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
                   parsed.actor_type = currentActorType;
-                  if (currentSceneData) {
-                    parsed.stage_data = currentSceneData;
-                    parsed.scene_data = currentSceneData;
+                  if (stageData) {
+                    parsed.stage_data = stageData;
+                    parsed.scene_data = stageData;
                   }
-                  if (currentActors) {
+                  if (currentActors && currentActors.length > 0) {
                     parsed.actors = currentActors;
                   }
                   if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory;
@@ -49235,8 +49375,8 @@ function notifyConnectedDirectingNodes(originNode) {
                   actingBlob = JSON.stringify({
                     type: "acting_motion",
                     actor_type: currentActorType,
-                    stage_data: currentSceneData,
-                    scene_data: currentSceneData,
+                    stage_data: stageData,
+                    scene_data: stageData,
                     trajectory: parsed,
                     motion_data: parsed,
                     actors: currentActors
@@ -49246,7 +49386,15 @@ function notifyConnectedDirectingNodes(originNode) {
                 actingBlob = rawBlob;
               }
             } else {
-              actingBlob = "";
+              actingBlob = JSON.stringify({
+                type: "acting_motion",
+                actor_type: currentActorType,
+                stage_data: stageData,
+                scene_data: stageData,
+                trajectory: [],
+                motion_data: [],
+                actors: currentActors || []
+              });
             }
             directingInst.exposed.setState({ acting_data: actingBlob });
           }
@@ -49588,17 +49736,71 @@ function updateDirectingNodeFromLinks(directingNode) {
   const connectedActingNode = findConnectedActingNode(directingNode);
   if (connectedActingNode) {
     const actingState = readActingStateFromNode(connectedActingNode);
-    const actingBlob = actingState.motion_data ?? "";
-    directingInst.exposed.setState({ acting_data: actingBlob });
     const actingInst = actingInstances.get(connectedActingNode);
-    if ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) {
-      const threeActing = actingInst.exposed.getThreeActing();
-      if (threeActing && directingInst.exposed.setConnectedThreeActing) {
-        directingInst.exposed.setConnectedThreeActing(threeActing);
-      }
+    const threeActing = ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
+    if (threeActing && directingInst.exposed.setConnectedThreeActing) {
+      directingInst.exposed.setConnectedThreeActing(threeActing);
     }
+    const rootStagingNode = findRootStagingNode(connectedActingNode);
+    let stageData = null;
+    if (rootStagingNode) {
+      stageData = readStageStateFromNode(rootStagingNode);
+    }
+    if (!stageData && (threeActing == null ? void 0 : threeActing.getStageData)) {
+      stageData = threeActing.getStageData();
+    }
+    if (!stageData) {
+      stageData = actingState.stage_data ?? actingState.scene_data ?? null;
+    }
+    const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
+    const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
+    const rawBlob = actingState.motion_data ?? "";
+    let actingBlob = "";
+    if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
+      try {
+        const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+          parsed.actor_type = currentActorType;
+          if (stageData) {
+            parsed.stage_data = stageData;
+            parsed.scene_data = stageData;
+          }
+          if (currentActors && currentActors.length > 0) {
+            parsed.actors = currentActors;
+          }
+          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory;
+          actingBlob = JSON.stringify(parsed);
+        } else {
+          actingBlob = JSON.stringify({
+            type: "acting_motion",
+            actor_type: currentActorType,
+            stage_data: stageData,
+            scene_data: stageData,
+            trajectory: parsed,
+            motion_data: parsed,
+            actors: currentActors
+          });
+        }
+      } catch (e) {
+        actingBlob = rawBlob;
+      }
+    } else {
+      actingBlob = JSON.stringify({
+        type: "acting_motion",
+        actor_type: currentActorType,
+        stage_data: stageData,
+        scene_data: stageData,
+        trajectory: [],
+        motion_data: [],
+        actors: currentActors || []
+      });
+    }
+    directingInst.exposed.setState({ acting_data: actingBlob });
   } else {
     directingInst.exposed.setState({ acting_data: "" });
+    if (directingInst.exposed.setConnectedThreeActing) {
+      directingInst.exposed.setConnectedThreeActing(null);
+    }
   }
 }
 function createDirectingInstance(node) {

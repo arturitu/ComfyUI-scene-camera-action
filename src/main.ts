@@ -632,15 +632,6 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
         const directingInst = directingInstances.get(targetNode!)
         if (directingInst) {
           if (isActingNode(originNode)) {
-            const chainComplete = isUpstreamActingChainComplete(originNode)
-            if (!chainComplete) {
-              directingInst.exposed.setState({ acting_data: '' })
-              if ((directingInst.exposed as any).setConnectedThreeActing) {
-                (directingInst.exposed as any).setConnectedThreeActing(null)
-              }
-              continue
-            }
-
             const actingState = readActingStateFromNode(originNode)
             const actingInst = actingInstances.get(originNode)
             const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
@@ -649,24 +640,37 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
               (directingInst.exposed as any).setConnectedThreeActing(threeActing)
             }
 
-            const rawBlob = actingState.motion_data ?? ''
-            let actingBlob: any = ''
-            const currentSceneData = threeActing?.getStageData ? threeActing.getStageData() : (threeActing?.getSceneData() ?? actingState.scene_data)
+            // Find root stage data across the acting/staging chain
+            const rootStagingNode = findRootStagingNode(originNode)
+            let stageData = null
+            if (rootStagingNode) {
+              stageData = readStageStateFromNode(rootStagingNode)
+            }
+            if (!stageData && threeActing?.getStageData) {
+              stageData = threeActing.getStageData()
+            }
+            if (!stageData) {
+              stageData = actingState.stage_data ?? actingState.scene_data ?? null
+            }
+
             const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
             const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
               ? (threeActing as any).getAccumulatedActors()
               : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
+
+            const rawBlob = actingState.motion_data ?? ''
+            let actingBlob: any = ''
 
             if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
               try {
                 const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
                 if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
                   parsed.actor_type = currentActorType
-                  if (currentSceneData) {
-                    parsed.stage_data = currentSceneData
-                    parsed.scene_data = currentSceneData
+                  if (stageData) {
+                    parsed.stage_data = stageData
+                    parsed.scene_data = stageData
                   }
-                  if (currentActors) {
+                  if (currentActors && currentActors.length > 0) {
                     parsed.actors = currentActors
                   }
                   if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
@@ -675,8 +679,8 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
                   actingBlob = JSON.stringify({
                     type: 'acting_motion',
                     actor_type: currentActorType,
-                    stage_data: currentSceneData,
-                    scene_data: currentSceneData,
+                    stage_data: stageData,
+                    scene_data: stageData,
                     trajectory: parsed,
                     motion_data: parsed,
                     actors: currentActors
@@ -686,7 +690,15 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
                 actingBlob = rawBlob
               }
             } else {
-              actingBlob = ''
+              actingBlob = JSON.stringify({
+                type: 'acting_motion',
+                actor_type: currentActorType,
+                stage_data: stageData,
+                scene_data: stageData,
+                trajectory: [],
+                motion_data: [],
+                actors: currentActors || []
+              })
             }
 
             directingInst.exposed.setState({ acting_data: actingBlob })
@@ -1069,19 +1081,80 @@ function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
   const connectedActingNode = findConnectedActingNode(directingNode)
   if (connectedActingNode) {
     const actingState = readActingStateFromNode(connectedActingNode)
-    const actingBlob = actingState.motion_data ?? ''
-    directingInst.exposed.setState({ acting_data: actingBlob })
-
-    // Pass live ThreeActing scene for cloning (with lights)
     const actingInst = actingInstances.get(connectedActingNode)
-    if (actingInst?.exposed?.getThreeActing) {
-      const threeActing = (actingInst.exposed as any).getThreeActing()
-      if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
-        (directingInst.exposed as any).setConnectedThreeActing(threeActing)
-      }
+    const threeActing = actingInst?.exposed?.getThreeActing ? (actingInst.exposed as any).getThreeActing() : null
+
+    if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+      (directingInst.exposed as any).setConnectedThreeActing(threeActing)
     }
+
+    // Find root stage data across the acting/staging chain
+    const rootStagingNode = findRootStagingNode(connectedActingNode)
+    let stageData = null
+    if (rootStagingNode) {
+      stageData = readStageStateFromNode(rootStagingNode)
+    }
+    if (!stageData && threeActing?.getStageData) {
+      stageData = threeActing.getStageData()
+    }
+    if (!stageData) {
+      stageData = actingState.stage_data ?? actingState.scene_data ?? null
+    }
+
+    const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
+    const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
+      ? (threeActing as any).getAccumulatedActors()
+      : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
+
+    const rawBlob = actingState.motion_data ?? ''
+    let actingBlob: any = ''
+
+    if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
+      try {
+        const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          parsed.actor_type = currentActorType
+          if (stageData) {
+            parsed.stage_data = stageData
+            parsed.scene_data = stageData
+          }
+          if (currentActors && currentActors.length > 0) {
+            parsed.actors = currentActors
+          }
+          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
+          actingBlob = JSON.stringify(parsed)
+        } else {
+          actingBlob = JSON.stringify({
+            type: 'acting_motion',
+            actor_type: currentActorType,
+            stage_data: stageData,
+            scene_data: stageData,
+            trajectory: parsed,
+            motion_data: parsed,
+            actors: currentActors
+          })
+        }
+      } catch (e) {
+        actingBlob = rawBlob
+      }
+    } else {
+      actingBlob = JSON.stringify({
+        type: 'acting_motion',
+        actor_type: currentActorType,
+        stage_data: stageData,
+        scene_data: stageData,
+        trajectory: [],
+        motion_data: [],
+        actors: currentActors || []
+      })
+    }
+
+    directingInst.exposed.setState({ acting_data: actingBlob })
   } else {
     directingInst.exposed.setState({ acting_data: '' })
+    if ((directingInst.exposed as any).setConnectedThreeActing) {
+      (directingInst.exposed as any).setConnectedThreeActing(null)
+    }
   }
 }
 

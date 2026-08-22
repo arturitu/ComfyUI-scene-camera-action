@@ -58,10 +58,17 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
+    const stageData = this.getStageData()
+    if (stageData) {
+      this.buildStageFromData(stageData)
+    }
     if (this.state.acting_data) {
       this.loadActingData(this.state.acting_data)
+    } else if (threeActing && typeof threeActing.getAccumulatedActors === 'function') {
+      this.buildActorsFromData({ actors: threeActing.getAccumulatedActors() })
     }
-    this.buildSceneEnvironment()
+    this.buildStageEnvironment()
+    this.updateCamera()
   }
 
   private actorList: Array<{
@@ -72,13 +79,18 @@ export class ThreeDirecting {
   }> = []
 
   public getAvailableActors(): Array<{ id: string; label: string }> {
+    const list: Array<{ id: string; label: string }> = []
     if (this.actorList.length === 0) {
-      return [{ id: 'default', label: 'Scene Target' }]
+      list.push({ id: 'actor_1', label: 'Actor 1 (human)' })
+      return list
     }
-    return this.actorList.map((a, idx) => ({
-      id: a.id,
-      label: `Actor ${idx + 1} (${a.record.actor_type || 'human'})`
-    }))
+    this.actorList.forEach((a, idx) => {
+      list.push({
+        id: a.id,
+        label: `Actor ${idx + 1} (${a.record.actor_type || 'human'})`
+      })
+    })
+    return list
   }
 
   public loadActingData(actingDataInput: any): void {
@@ -142,8 +154,16 @@ export class ThreeDirecting {
     let actorsArr: any[] = []
     if (parsedPayload && Array.isArray(parsedPayload.actors) && parsedPayload.actors.length > 0) {
       actorsArr = parsedPayload.actors
+    } else if (this.connectedThreeActing && typeof (this.connectedThreeActing as any).getAccumulatedActors === 'function') {
+      const acc = (this.connectedThreeActing as any).getAccumulatedActors()
+      if (Array.isArray(acc) && acc.length > 0) {
+        actorsArr = acc
+      }
     } else if (parsedPayload && (parsedPayload.trajectory || parsedPayload.motion_data)) {
-      const traj = parsedPayload.trajectory || (typeof parsedPayload.motion_data === 'string' ? JSON.parse(parsedPayload.motion_data).trajectory : parsedPayload.motion_data)
+      let traj = parsedPayload.trajectory
+      if (!traj && parsedPayload.motion_data) {
+        traj = typeof parsedPayload.motion_data === 'string' ? JSON.parse(parsedPayload.motion_data).trajectory : parsedPayload.motion_data
+      }
       actorsArr = [{
         id: 'actor_1',
         actor_type: parsedPayload.actor_type || 'human',
@@ -436,7 +456,8 @@ export class ThreeDirecting {
 
     // Select target actor controller for camera tracking
     let targetActorCtrl: BaseActor | null = null
-    let targetActorId = 'default'
+    let targetActorId = 'actor_1'
+
     if (activeKeyframe.actor_target && this.actorList.length > 0) {
       const found = this.actorList.find(a => a.id === activeKeyframe.actor_target)
       if (found) {
@@ -450,14 +471,13 @@ export class ThreeDirecting {
     }
     if (!targetActorCtrl) {
       targetActorCtrl = this.actorController
+      if (targetActorCtrl) targetActorId = 'actor_1'
     }
 
-    if (!targetActorCtrl) return
+    const charPos = targetActorCtrl ? targetActorCtrl.position : new THREE.Vector3(0, config.GROUND_Y, 0)
+    const rotY = targetActorCtrl ? targetActorCtrl.group.rotation.y : 0
 
-    const charPos = targetActorCtrl.position
-    const rotY = targetActorCtrl.group.rotation.y
-
-    const isFPV = activeMode === 'First Person'
+    const isFPV = activeMode === 'First Person' && targetActorCtrl !== null
 
     // Update mesh visibility for all actors before any early return:
     // Only hide an actor if it is the current target actor and active mode is First Person (FPV)
@@ -518,11 +538,7 @@ export class ThreeDirecting {
     // Determine target FOV for active keyframe and mode
     let targetFov = activeKeyframe.fov
     if (targetFov === undefined) {
-      if (activeMode === 'Side' && isCarTarget) {
-        targetFov = 42
-      } else {
-        targetFov = config.getDefaultCameraFov(activeMode)
-      }
+      targetFov = config.getDefaultCameraFov(activeMode)
     }
 
     if (this.camera.fov !== targetFov) {
@@ -530,7 +546,7 @@ export class ThreeDirecting {
       this.camera.updateProjectionMatrix()
     }
 
-    if (isFPV) {
+    if (isFPV && targetActorCtrl) {
       const localOffset = targetActorCtrl.getFPVOffset()
       const worldOffset = localOffset.clone().applyQuaternion(targetActorCtrl.group.quaternion)
       const fpvCamPos = charPos.clone().add(worldOffset)
@@ -553,9 +569,16 @@ export class ThreeDirecting {
     } else if (activeMode === 'Third Person') {
       const isCar = isCarTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const camHeight = isCar ? 2.2 : (isCrouch ? 1.0 : 1.7)
-      const camDist = isCar ? -6.5 : (isCrouch ? -2.8 : -3.5)
-      const targetYOffset = isCar ? 0.9 : (isCrouch ? 1.05 : 0.8)
+      const minDistance = isCar ? 3.5 : 1.5
+      const defaultDist = isCar ? 6.5 : (isCrouch ? 2.8 : 3.5)
+      const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
+      
+      // Eye-level camera height: stays near eye/chest level at close distance, elevating naturally at further distance
+      const camHeight = isCar
+        ? 1.30 + 0.35 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
+        : (isCrouch ? 1.10 : (1.52 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 2.0))))
+      const camDist = -userDist
+      const targetYOffset = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
 
       const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(backOffset)
@@ -586,12 +609,15 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Wide') {
       const isCar = isCarTarget
-      const targetOffsetY = isCar ? 0.9 : 0.85
+      const isCrouch = targetActorCtrl?.isCrouching() ?? false
+      const minDistance = isCar ? 3.5 : 1.5
+      const defaultDist = isCar ? 18.0 : 16.0
+      const dist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
+      const targetOffsetY = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
       const actorCenter = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
 
-      const baseDist = 14.5
-      // Elevated corner angle offset focused directly on the actor
-      const idealCamPos = actorCenter.clone().add(new THREE.Vector3(-baseDist * 0.7, baseDist * 0.55, baseDist * 0.7))
+      // Physical distance-based elevation and offset looking at upper target / head
+      const idealCamPos = actorCenter.clone().add(new THREE.Vector3(-dist * 0.7, dist * 0.55, dist * 0.7))
 
       if (this.lastCameraMode !== 'Wide' || isHardCut) {
         this.wideTarget.copy(actorCenter)
@@ -609,8 +635,20 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Side') {
       const isCar = isCarTarget
-      const sideVec = isCar ? new THREE.Vector3(-6.5, 1.8, 0.0) : new THREE.Vector3(-4.2, 1.3, 0.4)
-      const targetOffsetY = isCar ? 0.90 : 0.95
+      const isCrouch = targetActorCtrl?.isCrouching() ?? false
+      const minDistance = isCar ? 3.5 : 1.5
+      const defaultDist = isCar ? 6.5 : 4.5
+      const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
+      
+      // Eye-level side profile height
+      const camHeight = isCar
+        ? 0.90 + 0.30 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
+        : (isCrouch ? 1.05 : (1.50 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 3.0))))
+      const sideVec = isCar
+        ? new THREE.Vector3(-userDist, camHeight, 0.0)
+        : new THREE.Vector3(-userDist, camHeight, 0.3)
+      const targetOffsetY = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
+
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(sideOffset)
       const idealLookAt = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)

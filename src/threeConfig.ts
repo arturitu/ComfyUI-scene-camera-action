@@ -17,7 +17,7 @@ export interface CameraFovRange {
 }
 
 export const CAMERA_FOV_CONFIG: Record<string, CameraFovRange> = {
-  'Wide': { min: 10, max: 60, default: 35 },
+  'Wide': { min: 20, max: 70, default: 45 },
   'Third Person': { min: 25, max: 85, default: 50 },
   'Side': { min: 20, max: 80, default: 45 },
   'First Person': { min: 40, max: 100, default: 50 },
@@ -29,6 +29,40 @@ export function getCameraFovConfig(mode: string): CameraFovRange {
 
 export function getDefaultCameraFov(mode: string): number {
   return getCameraFovConfig(mode).default
+}
+
+export interface CameraDistanceRange {
+  min: number
+  max: number
+  default: number
+  step: number
+}
+
+export const CAMERA_DISTANCE_CONFIG: Record<string, CameraDistanceRange> = {
+  'Wide': { min: 4, max: 80, default: 16, step: 1 },
+  'Third Person': { min: 1.5, max: 15, default: 3.5, step: 0.1 },
+  'Side': { min: 1.5, max: 20, default: 4.5, step: 0.1 },
+  'First Person': { min: 0, max: 0, default: 0, step: 0 },
+}
+
+export function getCameraDistanceConfig(mode: string, isCar: boolean = false): CameraDistanceRange {
+  const base = CAMERA_DISTANCE_CONFIG[mode] || { min: 1, max: 60, default: 10, step: 0.5 }
+  if (isCar && (mode === 'Side' || mode === 'Third Person')) {
+    return {
+      min: 3.5,
+      max: base.max,
+      default: mode === 'Third Person' ? 6.5 : 6.5,
+      step: base.step
+    }
+  }
+  return base
+}
+
+export function getDefaultCameraDistance(mode: string, isCar: boolean = false): number {
+  if (mode === 'Third Person') return isCar ? 6.5 : 3.5
+  if (mode === 'Side') return isCar ? 6.5 : 4.5
+  if (mode === 'Wide') return isCar ? 18.0 : 16.0
+  return getCameraDistanceConfig(mode, isCar).default
 }
 
 // Fog Config

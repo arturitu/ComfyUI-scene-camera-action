@@ -124,6 +124,7 @@ export interface DirectingKeyframe {
   mode: string
   actor_target?: string
   fov?: number
+  distance?: number
 }
 
 export interface DirectingState {

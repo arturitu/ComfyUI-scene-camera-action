@@ -125,17 +125,46 @@
               </div>
 
               <!-- Target Actor Selector for Multi-Actor scenes -->
-              <div v-if="availableActors.length > 0" class="popover-target-row">
+              <div v-if="getAvailableActorsForMode(kf.mode).length > 0" class="popover-target-row">
                 <span class="target-label">Track:</span>
                 <select
-                  :value="kf.actor_target || availableActors[0]?.id"
+                  :value="getEffectiveTarget(kf)"
                   class="target-select"
                   @change.stop="changeKeyframeTarget(kf, ($event.target as HTMLSelectElement).value)"
                 >
-                  <option v-for="act in availableActors" :key="act.id" :value="act.id">
+                  <option v-for="act in getAvailableActorsForMode(kf.mode)" :key="act.id" :value="act.id">
                     {{ act.label }}
                   </option>
                 </select>
+              </div>
+
+              <!-- Distance Slider Row (for Wide, Third Person, Side) -->
+              <div v-if="kf.mode !== 'First Person'" class="popover-dist-row">
+                <div class="dist-label-row">
+                  <span class="dist-label">Dist:</span>
+                  <span class="dist-value">{{ getKeyframeDistance(kf) }}m</span>
+                  <button
+                    class="dist-reset-btn"
+                    title="Reset to default Distance"
+                    @click.stop="resetKeyframeDistance(kf)"
+                  >
+                    ↺
+                  </button>
+                </div>
+                <div class="dist-slider-container">
+                  <span class="dist-bound-label">{{ getDistanceConfig(kf.mode, kf).min }}m</span>
+                  <input
+                    type="range"
+                    :min="getDistanceConfig(kf.mode, kf).min"
+                    :max="getDistanceConfig(kf.mode, kf).max"
+                    :step="getDistanceConfig(kf.mode, kf).step"
+                    :value="getKeyframeDistance(kf)"
+                    class="dist-slider"
+                    @input.stop="changeKeyframeDistance(kf, Number(($event.target as HTMLInputElement).value))"
+                    @mousedown.stop
+                  />
+                  <span class="dist-bound-label">{{ getDistanceConfig(kf.mode, kf).max }}m</span>
+                </div>
               </div>
 
               <!-- FOV Slider Row -->
@@ -185,7 +214,14 @@
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
-import { CAMERA_FOV_CONFIG, getCameraFovConfig, getDefaultCameraFov } from '../threeConfig'
+import {
+  CAMERA_FOV_CONFIG,
+  getCameraFovConfig,
+  getDefaultCameraFov,
+  CAMERA_DISTANCE_CONFIG,
+  getCameraDistanceConfig,
+  getDefaultCameraDistance
+} from '../threeConfig'
 import type { DirectingState } from '../types'
 
 const props = defineProps<{
@@ -206,6 +242,7 @@ interface Keyframe {
   mode: string
   actor_target?: string
   fov?: number
+  distance?: number
 }
 
 const cameraModes: CameraMode[] = [
@@ -236,16 +273,28 @@ let timeFrameId: number | null = null
 let isDraggingPlayhead = false
 let draggingKeyframe: Keyframe | null = null
 
+const availableActorsList = ref<Array<{ id: string; label: string }>>([
+  { id: 'actor_1', label: 'Actor 1 (human)' }
+])
+
 const availableActors = computed(() => {
   if (threeDirecting && typeof (threeDirecting as any).getAvailableActors === 'function') {
-    return (threeDirecting as any).getAvailableActors()
+    const list = (threeDirecting as any).getAvailableActors()
+    if (Array.isArray(list) && list.length > 0) return list
   }
-  return [{ id: 'default', label: 'Scene Target' }]
+  return availableActorsList.value
 })
 
 function parseKeyframes(raw: string): Keyframe[] {
   if (!raw || !raw.trim()) {
-    return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
+    return [{
+      id: 'kf-init',
+      t: 0,
+      mode: 'Third Person',
+      actor_target: 'actor_1',
+      fov: getDefaultCameraFov('Third Person'),
+      distance: getDefaultCameraDistance('Third Person')
+    }]
   }
   try {
     const parsed = JSON.parse(raw)
@@ -256,10 +305,18 @@ function parseKeyframes(raw: string): Keyframe[] {
         mode: item.mode || 'Third Person',
         actor_target: item.actor_target || item.actorTarget || 'actor_1',
         fov: typeof item.fov === 'number' ? item.fov : undefined,
+        distance: typeof item.distance === 'number' ? item.distance : undefined,
       })).sort((a, b) => a.t - b.t)
     }
   } catch {}
-  return [{ id: 'kf-init', t: 0, mode: 'Third Person', actor_target: 'actor_1', fov: getDefaultCameraFov('Third Person') }]
+  return [{
+    id: 'kf-init',
+    t: 0,
+    mode: 'Third Person',
+    actor_target: 'actor_1',
+    fov: getDefaultCameraFov('Third Person'),
+    distance: getDefaultCameraDistance('Third Person')
+  }]
 }
 
 const isActingNodeConnected = computed(() => {
@@ -320,12 +377,17 @@ const initScene = (el: HTMLElement) => {
     },
   })
   threeDirecting.setKeyframes(keyframes.value)
+  availableActorsList.value = threeDirecting.getAvailableActors()
 }
 
 const updateTimeLoop = () => {
   if (threeDirecting && !isDraggingPlayhead) {
     currentTime.value = threeDirecting.getCurrentTime()
     duration.value = threeDirecting.getDuration()
+    const actors = threeDirecting.getAvailableActors()
+    if (actors && actors.length > 0 && JSON.stringify(actors) !== JSON.stringify(availableActorsList.value)) {
+      availableActorsList.value = actors
+    }
   }
   timeFrameId = requestAnimationFrame(updateTimeLoop)
 }
@@ -356,20 +418,23 @@ const rewind = () => {
 const addKeyframe = () => {
   if (isRecordingVideo.value) return
   const curT = Math.round(currentTime.value * 10) / 10
-  const activeMode = threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : 'Third Person'
-
-  // If a keyframe already exists very close, select it & seek
   const existing = keyframes.value.find(k => Math.abs(k.t - curT) < 0.1)
   if (existing) {
     selectKeyframe(existing)
     return
   }
 
+  const prevKf = [...keyframes.value].reverse().find(k => k.t <= curT)
+  const activeMode = prevKf ? prevKf.mode : (threeDirecting ? threeDirecting.getActiveKeyframeMode(curT) : 'Third Person')
+  const activeTarget = prevKf?.actor_target || 'actor_1'
+
   const newKf: Keyframe = {
     id: `kf-${Date.now()}`,
     t: curT,
     mode: activeMode,
-    fov: getDefaultCameraFov(activeMode),
+    actor_target: activeTarget,
+    fov: prevKf?.fov ?? getDefaultCameraFov(activeMode),
+    distance: prevKf?.distance ?? getDefaultCameraDistance(activeMode),
   }
 
   keyframes.value.push(newKf)
@@ -416,18 +481,90 @@ const resetKeyframeFov = (kf: Keyframe) => {
   }
 }
 
+const isCarTarget = (kf: Keyframe): boolean => {
+  const target = kf.actor_target || 'actor_1'
+  const found = availableActors.value.find(a => a.id === target)
+  return found ? found.label.toLowerCase().includes('car') : false
+}
+
+const getDistanceConfig = (mode: string, kf?: Keyframe) => {
+  const isCar = kf ? isCarTarget(kf) : false
+  return getCameraDistanceConfig(mode, isCar)
+}
+
+const getKeyframeDistance = (kf: Keyframe): number => {
+  const isCar = isCarTarget(kf)
+  if (typeof kf.distance === 'number') {
+    const cfg = getCameraDistanceConfig(kf.mode, isCar)
+    return Math.max(cfg.min, Math.min(cfg.max, kf.distance))
+  }
+  return getDefaultCameraDistance(kf.mode, isCar)
+}
+
+const changeKeyframeDistance = (kf: Keyframe, dist: number) => {
+  const isCar = isCarTarget(kf)
+  const cfg = getCameraDistanceConfig(kf.mode, isCar)
+  const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(dist * 10) / 10))
+  kf.distance = clamped
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const resetKeyframeDistance = (kf: Keyframe) => {
+  const isCar = isCarTarget(kf)
+  kf.distance = getDefaultCameraDistance(kf.mode, isCar)
+  syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
+}
+
+const getAvailableActorsForMode = (_mode: string) => {
+  const all = availableActors.value.filter(a => a.id !== 'stage')
+  if (all.length === 0) {
+    return [{ id: 'actor_1', label: 'Actor 1 (human)' }]
+  }
+  return all
+}
+
+const getEffectiveTarget = (kf: Keyframe) => {
+  const options = getAvailableActorsForMode(kf.mode)
+  if (kf.actor_target && options.some(o => o.id === kf.actor_target)) {
+    return kf.actor_target
+  }
+  return options[0]?.id || 'actor_1'
+}
+
 const changeKeyframeMode = (kf: Keyframe, mode: string) => {
   const oldMode = kf.mode
-  const oldDefault = getDefaultCameraFov(oldMode)
-  const isUsingDefault = kf.fov === undefined || kf.fov === oldDefault
+  const oldDefaultFov = getDefaultCameraFov(oldMode)
+  const isUsingDefaultFov = kf.fov === undefined || kf.fov === oldDefaultFov
+
+  const oldDefaultDist = getDefaultCameraDistance(oldMode)
+  const isUsingDefaultDist = kf.distance === undefined || kf.distance === oldDefaultDist
 
   kf.mode = mode
 
-  if (isUsingDefault) {
+  if (isUsingDefaultFov) {
     kf.fov = getDefaultCameraFov(mode)
   } else if (typeof kf.fov === 'number') {
     const newCfg = getCameraFovConfig(mode)
     kf.fov = Math.max(newCfg.min, Math.min(newCfg.max, kf.fov))
+  }
+
+  if (isUsingDefaultDist) {
+    kf.distance = getDefaultCameraDistance(mode)
+  } else if (typeof kf.distance === 'number') {
+    const newDistCfg = getCameraDistanceConfig(mode)
+    kf.distance = Math.max(newDistCfg.min, Math.min(newDistCfg.max, kf.distance))
+  }
+
+  // Ensure target is valid actor
+  const validActors = getAvailableActorsForMode(mode)
+  if (!validActors.some(a => a.id === kf.actor_target)) {
+    kf.actor_target = validActors[0]?.id || 'actor_1'
   }
 
   syncKeyframes()
@@ -439,6 +576,9 @@ const changeKeyframeMode = (kf: Keyframe, mode: string) => {
 const changeKeyframeTarget = (kf: Keyframe, targetId: string) => {
   kf.actor_target = targetId
   syncKeyframes()
+  if (threeDirecting) {
+    threeDirecting.seekToTime(kf.t)
+  }
 }
 
 const deleteKeyframe = (kf: Keyframe) => {
@@ -693,6 +833,7 @@ const setState = (newState: Partial<DirectingState>) => {
   }
   if (threeDirecting) {
     threeDirecting.setState(newState)
+    availableActorsList.value = threeDirecting.getAvailableActors()
   }
 }
 
@@ -706,6 +847,7 @@ const cleanup = () => {
 const setConnectedThreeActing = (threeActing: any) => {
   if (threeDirecting) {
     threeDirecting.setConnectedThreeActing(threeActing)
+    availableActorsList.value = threeDirecting.getAvailableActors()
   }
 }
 
@@ -1122,6 +1264,119 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
 
 .target-select:focus {
   border-color: #00ffcc;
+}
+
+/* Distance Slider Row in Popover */
+.popover-dist-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.dist-label-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+}
+
+.dist-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #a0a8b8;
+}
+
+.dist-value {
+  font-size: 10px;
+  font-weight: bold;
+  color: #38bdf8;
+  min-width: 32px;
+}
+
+.dist-reset-btn {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #c0c5d0;
+  font-size: 10px;
+  border-radius: 3px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.dist-reset-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: #38bdf8;
+}
+
+.dist-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dist-bound-label {
+  font-size: 9px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 22px;
+  text-align: center;
+}
+
+.dist-slider {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.dist-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #38bdf8;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.6);
+  transition: transform 0.1s ease;
+}
+
+.dist-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+.dist-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #38bdf8;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 4px rgba(56, 189, 248, 0.6);
 }
 
 /* FOV Slider Row in Popover */
