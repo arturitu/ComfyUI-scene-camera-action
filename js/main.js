@@ -50109,7 +50109,7 @@ app.registerExtension({
         }
       };
       const [oldWidth, oldHeight] = node.size;
-      node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)]);
+      node.setSize([Math.max(oldWidth, 840), Math.max(oldHeight, 690)]);
       createSceneNodeWidget(node);
       const sceneFileWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "stage_file" || w.name === "scene_file");
       if (sceneFileWidget) {
@@ -50235,7 +50235,7 @@ app.registerExtension({
         durationWidget.options.step = 0.5;
       }
       const [oldWidth, oldHeight] = node.size;
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)]);
+      node.setSize([Math.max(oldWidth, 800), Math.max(oldHeight, 760)]);
       createActingNodeWidget(node);
       const origActingOnExecuted = node.onExecuted;
       node.onExecuted = function(message) {
@@ -50346,7 +50346,7 @@ app.registerExtension({
         }
       };
       const [oldWidth, oldHeight] = node.size;
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)]);
+      node.setSize([Math.max(oldWidth, 800), Math.max(oldHeight, 710)]);
       createDirectingNodeWidget(node);
       const origOnConfigure = node.onConfigure;
       node.onConfigure = function(info) {

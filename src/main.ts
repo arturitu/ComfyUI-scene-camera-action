@@ -1407,7 +1407,7 @@ app.registerExtension({
       }
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)])
+      node.setSize([Math.max(oldWidth, 840), Math.max(oldHeight, 690)])
       createSceneNodeWidget(node)
 
       const sceneFileWidget = node.widgets?.find(w => w.name === 'stage_file' || w.name === 'scene_file')
@@ -1541,7 +1541,7 @@ app.registerExtension({
       }
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
+      node.setSize([Math.max(oldWidth, 800), Math.max(oldHeight, 760)])
       createActingNodeWidget(node)
 
       const origActingOnExecuted = node.onExecuted
@@ -1660,7 +1660,7 @@ app.registerExtension({
       }
 
       const [oldWidth, oldHeight] = node.size
-      node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
+      node.setSize([Math.max(oldWidth, 800), Math.max(oldHeight, 710)])
       createDirectingNodeWidget(node)
 
       const origOnConfigure = node.onConfigure
