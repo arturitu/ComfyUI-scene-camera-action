@@ -32,42 +32,34 @@
       <!-- Edit Mode Toolbar (Left Side) -->
       <div class="canvas-edit-toolbar left">
         <button class="edit-btn" :class="{ 'active': activeMode === 'translate' }" title="Move object" @click.stop="setMode('translate')">
-          ✛
+          <Move :size="16" />
         </button>
         <button class="edit-btn" :class="{ 'active': activeMode === 'rotate' }" title="Rotate object" @click.stop="setMode('rotate')">
-          ↺
+          <RotateCw :size="16" />
         </button>
         <button class="edit-btn" :class="{ 'active': activeMode === 'scale' }" title="Scale object" @click.stop="setMode('scale')">
-          ⤢
+          <Maximize2 :size="16" />
         </button>
       </div>
       <!-- Asset Add/Duplicate/Group/Ungroup/Delete Toolbar (Right Side) -->
       <div class="canvas-edit-toolbar right">
         <button class="edit-btn add-btn" title="Add asset" @click.stop="addAsset">
-          ＋
+          <Plus :size="16" />
         </button>
         <button class="edit-btn duplicate-btn" title="Duplicate selected asset" @click.stop="duplicateAsset" :disabled="!hasSelection">
-          ❐
+          <Copy :size="15" />
         </button>
         <button class="edit-btn select-all-btn" title="Select all assets" @click.stop="selectAll">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-dasharray="2 2" fill="none" stroke-width="1.2"/>
-            <rect x="5" y="5" width="6" height="6" fill="currentColor"/>
-          </svg>
+          <SquareDashedMousePointer :size="16" />
         </button>
         <button class="edit-btn group-btn" title="Group selected assets" @click.stop="groupSelected" :disabled="!canGroup">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1.5 2A.5.5 0 0 0 1 2.5v4a.5.5 0 0 0 .5.5h4A.5.5 0 0 0 6 6.5v-4A.5.5 0 0 0 5.5 2h-4zm.5 4V3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4V3h3v3h-3zM1.5 9.5a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3zm7.5-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 0-.5-.5h-4zm.5 4v-3h3v3h-3z"/>
-          </svg>
+          <Group :size="16" />
         </button>
         <button class="edit-btn ungroup-btn" title="Ungroup selected group" @click.stop="ungroupSelected" :disabled="!canUngroup">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM9 10.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
-            <path stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 2" d="M6.5 6.5l3 3"/>
-          </svg>
+          <Ungroup :size="16" />
         </button>
         <button class="edit-btn delete-btn" title="Delete selected asset" @click.stop="deleteAsset" :disabled="!hasSelection">
-          ✕
+          <Trash2 :size="15" />
         </button>
       </div>
     </div>
@@ -95,6 +87,17 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted, onUnmounted } from 'vue'
+import {
+  Move,
+  RotateCw,
+  Maximize2,
+  Plus,
+  Copy,
+  SquareDashedMousePointer,
+  Group,
+  Ungroup,
+  Trash2
+} from 'lucide-vue-next'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeStaging as ThreeScene } from '../ThreeStaging'
 import type { SceneState } from '../types'

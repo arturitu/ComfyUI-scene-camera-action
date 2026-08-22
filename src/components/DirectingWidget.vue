@@ -29,7 +29,7 @@
           title="Rewind to start"
           @click="rewind"
         >
-          ⏮
+          <SkipBack :size="14" />
         </button>
 
         <!-- Play / Pause Toggle -->
@@ -39,7 +39,7 @@
           :title="isPlaying ? 'Pause' : 'Play'"
           @click="togglePlay"
         >
-          {{ isPlaying ? '⏸' : '▶' }}
+          <component :is="isPlaying ? Pause : Play" :size="14" />
         </button>
 
         <!-- Add Keyframe Button with Tooltip -->
@@ -50,8 +50,8 @@
             title="Add cut at current position"
             @click="addKeyframe"
           >
-            <span class="diamond-icon">◇</span>
-            <span class="plus-icon">+</span>
+            <Diamond :size="14" class="diamond-icon" />
+            <Plus :size="9" class="plus-icon" />
           </button>
           <div class="add-kf-tooltip">Add cut</div>
         </div>
@@ -109,7 +109,7 @@
                   title="Delete cut"
                   @click.stop="deleteKeyframe(kf)"
                 >
-                  ✕
+                  <Trash2 :size="12" />
                 </button>
               </div>
               <div class="popover-modes">
@@ -148,7 +148,7 @@
                     title="Reset to default Distance"
                     @click.stop="resetKeyframeDistance(kf)"
                   >
-                    ↺
+                    <RotateCcw :size="10" />
                   </button>
                 </div>
                 <div class="dist-slider-container">
@@ -177,7 +177,7 @@
                     title="Reset to default FOV"
                     @click.stop="resetKeyframeFov(kf)"
                   >
-                    ↺
+                    <RotateCcw :size="10" />
                   </button>
                 </div>
                 <div class="fov-slider-container">
@@ -212,6 +212,15 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, onMounted, onUnmounted } from 'vue'
+import {
+  SkipBack,
+  Play,
+  Pause,
+  Diamond,
+  Plus,
+  Trash2,
+  RotateCcw
+} from 'lucide-vue-next'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
 import {

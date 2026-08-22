@@ -34,11 +34,7 @@
           title="Reset Actor to Spawn Point"
           @click.stop="resetActorToSpawn"
         >
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/>
-            <circle cx="8" cy="8" r="2" fill="currentColor"/>
-            <path d="M8 0v3M8 13v3M0 8h3M13 8h3" stroke="currentColor" stroke-width="1.2"/>
-          </svg>
+          <LocateFixed :size="16" />
         </button>
         <button
           class="edit-btn"
@@ -46,7 +42,7 @@
           title="Move Spawn Point (XYZ axes)"
           @click.stop="toggleSpawnMode('translate')"
         >
-          ✛
+          <Move :size="16" />
         </button>
         <button
           class="edit-btn"
@@ -54,7 +50,7 @@
           title="Rotate Spawn Heading (Y axis)"
           @click.stop="toggleSpawnMode('rotate')"
         >
-          ↺
+          <RotateCw :size="16" />
         </button>
       </div>
 
@@ -66,7 +62,8 @@
           title="Start Recording"
           @click="startCountdown"
         >
-          ● Record
+          <CircleDot :size="13" class="btn-icon" />
+          <span>Record</span>
         </button>
         <button
           v-if="isRecording"
@@ -74,7 +71,8 @@
           title="Stop Recording"
           @click="stopRecording"
         >
-          ■ Stop
+          <Square :size="12" class="btn-icon fill-icon" />
+          <span>Stop</span>
         </button>
 
         <template v-if="state.motion_data && !isRecording && !isCounting">
@@ -84,21 +82,24 @@
             :title="isPlaying ? 'Pause Playback' : 'Play Playback'"
             @click="togglePlay"
           >
-            {{ isPlaying ? 'Pause' : 'Play' }}
+            <component :is="isPlaying ? Pause : Play" :size="12" class="btn-icon" />
+            <span>{{ isPlaying ? 'Pause' : 'Play' }}</span>
           </button>
           <button
             class="acting-btn stop-btn"
             title="Stop and Reset Position"
             @click="stopPlayback"
           >
-            Stop
+            <Square :size="12" class="btn-icon fill-icon" />
+            <span>Stop</span>
           </button>
           <button
             class="acting-btn reset-btn"
             title="Clear Recording and Reset to Keyboard"
             @click="resetToInteractive"
           >
-            Reset
+            <RotateCcw :size="12" class="btn-icon" />
+            <span>Reset</span>
           </button>
         </template>
       </div>
@@ -107,7 +108,7 @@
     <div class="info-overlay">
       <template v-if="state.scene_data">
         <div v-if="isPlaying" class="state-indicator playing">
-          <span class="status-icon">▶</span> REPLAYING
+          <Play :size="10" class="status-icon fill-icon" /> REPLAYING
         </div>
         <div v-else-if="isRecording" class="state-indicator recording">
           <span class="rec-dot"></span> RECORDING
@@ -119,11 +120,11 @@
           <span class="practice-dot"></span> PRACTICE
         </div>
         <div v-else class="state-indicator recorded">
-          <span class="status-icon">✓</span> RECORDED
+          <Check :size="11" class="status-icon" /> RECORDED
         </div>
         
         <button class="info-help-btn" title="View Keyboard Controls" @click="showHelpModal = true">
-          <span class="info-icon">?</span>
+          <CircleHelp :size="13" class="info-icon" />
           <span class="info-label">Controls</span>
         </button>
       </template>
@@ -134,7 +135,7 @@
 
     <!-- Time Counter Overlay (Bottom Right) -->
     <div v-if="state.scene_data" class="time-counter-overlay" :class="{ practice: !state.motion_data, recording: isRecording, playing: isPlaying }">
-      <span v-if="!state.motion_data" class="loop-icon" title="Practice Loop">🔁</span>
+      <Repeat v-if="!state.motion_data" :size="12" class="loop-icon" title="Practice Loop" />
       {{ formattedTime }}
     </div>
 
@@ -148,7 +149,9 @@
               {{ state.actor_type === 'car' ? 'CAR ACTOR' : 'HUMAN ACTOR' }}
             </span>
           </div>
-          <button class="modal-close-btn" @click="showHelpModal = false" title="Close">✕</button>
+          <button class="modal-close-btn" @click="showHelpModal = false" title="Close">
+            <X :size="16" />
+          </button>
         </div>
 
         <div class="modal-body">
@@ -201,6 +204,20 @@
 
 <script setup lang="ts">
 import { reactive, ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import {
+  LocateFixed,
+  Move,
+  RotateCw,
+  CircleDot,
+  Square,
+  Play,
+  Pause,
+  RotateCcw,
+  Check,
+  CircleHelp,
+  Repeat,
+  X
+} from 'lucide-vue-next'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
 import type { ActingState } from '../types'
@@ -721,6 +738,18 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   cursor: pointer;
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.btn-icon {
+  flex-shrink: 0;
+}
+
+.fill-icon {
+  fill: currentColor;
 }
 
 .acting-btn:hover {
@@ -814,13 +843,7 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  background: #00ffff;
-  color: #100b14;
-  font-weight: 800;
-  font-size: 9px;
+  flex-shrink: 0;
 }
 
 .title {
