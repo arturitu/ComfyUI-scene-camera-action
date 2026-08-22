@@ -45970,7 +45970,6 @@ class ThreeActing {
   stopRecording() {
     this.isRecording = false;
     this.isPlaying = false;
-    const stageData = this.getStageData();
     const allActors = this.getAccumulatedActors();
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = true;
@@ -45979,15 +45978,13 @@ class ThreeActing {
       type: "acting_motion",
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === "human" ? "#F1DFBF" : "#0284C7"),
-      stage_data: stageData,
-      scene_data: stageData,
-      trajectory: this.trajectory,
-      motion_data: this.trajectory,
-      actors: allActors
+      actor_speed: this.state.actor_speed,
+      duration: this.state.duration,
+      spawn_point: this.state.spawn_point,
+      trajectory: this.trajectory
     };
     const json = JSON.stringify(payload);
     this.state.motion_data = json;
-    this.state.actors = allActors;
     this.state.actors = allActors;
     this.playbackController.setTrajectory(JSON.stringify(this.trajectory));
     if (this.trajectory.length > 0) {
@@ -48686,6 +48683,64 @@ const STAGE_PROP_KEY = "stageNodeState";
 const SCENE_PROP_KEY = STAGE_PROP_KEY;
 const ACTING_PROP_KEY = "actingNodeState";
 const DIRECTING_PROP_KEY = "directingNodeState";
+function sanitizeMotionDataPayload(raw) {
+  if (!raw || typeof raw !== "string" || !raw.trim()) return "";
+  try {
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return raw;
+    let traj = parsed.trajectory || parsed.motion_data;
+    if (typeof traj === "string" && traj.trim()) {
+      try {
+        traj = JSON.parse(traj);
+      } catch (e) {
+      }
+    }
+    if (Array.isArray(traj)) {
+      const cleanPayload = {
+        type: "acting_motion",
+        actor_type: parsed.actor_type || "human",
+        actor_color: parsed.actor_color || "#F1DFBF",
+        actor_speed: parsed.actor_speed ?? 10,
+        duration: parsed.duration ?? 7,
+        spawn_point: parsed.spawn_point,
+        trajectory: traj
+      };
+      return JSON.stringify(cleanPayload);
+    }
+  } catch (e) {
+  }
+  return raw;
+}
+function installStorageInterceptor() {
+  const origSetItem = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(key, value) {
+    try {
+      origSetItem(key, value);
+    } catch (err) {
+      const isQuota = err instanceof DOMException && (err.name === "QuotaExceededError" || err.name === "NS_ERROR_DOM_QUOTA_REACHED" || err.code === 22 || err.code === 1014);
+      if (isQuota) {
+        try {
+          const draftKeys = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith("Comfy.Workflow.DraftPayload:") || k.startsWith("Comfy.Workflow.Drafts:") || k === "litegrapheditor_clipboard")) {
+              draftKeys.push(k);
+            }
+          }
+          for (const k of draftKeys) {
+            if (k !== key) {
+              localStorage.removeItem(k);
+            }
+          }
+          origSetItem(key, value);
+          return;
+        } catch (retryErr) {
+        }
+      }
+      throw err;
+    }
+  };
+}
 const stageInstances = /* @__PURE__ */ new WeakMap();
 const sceneInstances = stageInstances;
 const actingInstances = /* @__PURE__ */ new WeakMap();
@@ -48792,14 +48847,13 @@ function readStoredStageProps(node) {
 }
 function writeStoredStageProps(node, patch) {
   var _a;
-  if (!node.properties) node.properties = {};
-  const existing = node.properties[STAGE_PROP_KEY] ?? {};
-  const updated = { ...existing, ...patch };
-  node.properties[STAGE_PROP_KEY] = updated;
-  node.properties[SCENE_PROP_KEY] = updated;
+  if (node.properties) {
+    delete node.properties[STAGE_PROP_KEY];
+    delete node.properties[SCENE_PROP_KEY];
+  }
   const stageDataWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "stage_data" || w.name === "scene_data");
   if (stageDataWidget) {
-    stageDataWidget.value = JSON.stringify(updated);
+    stageDataWidget.value = JSON.stringify(patch);
   }
 }
 const writeStoredSceneProps = writeStoredStageProps;
@@ -48934,8 +48988,15 @@ function readStoredActingProps(node) {
 }
 function writeStoredActingProps(node, patch) {
   if (!node.properties) node.properties = {};
-  const existing = node.properties[ACTING_PROP_KEY] ?? {};
-  node.properties[ACTING_PROP_KEY] = { ...existing, ...patch };
+  const existing = node.properties[ACTING_PROP_KEY] || {};
+  delete existing.stage_data;
+  delete existing.scene_data;
+  delete existing.actors;
+  delete existing.motion_data;
+  if (patch.spawn_point) {
+    existing.spawn_point = patch.spawn_point;
+  }
+  node.properties[ACTING_PROP_KEY] = existing;
 }
 function findConnectedStageOrActingOrigin(actingNode) {
   var _a;
@@ -49057,14 +49118,7 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
         duration: effectiveDuration,
         actors: previousActors
       });
-      writeStoredActingProps(actingNode, {
-        scene_data: stageState,
-        stage_data: stageState,
-        actor_type: charType,
-        actor_color: currentActingState.actor_color,
-        duration: effectiveDuration,
-        actors: previousActors
-      });
+      writeStoredActingProps(actingNode, {});
       const rootStagingNode = findRootStagingNode(actingNode);
       if (rootStagingNode) {
         const sceneInst = sceneInstances.get(rootStagingNode);
@@ -49080,7 +49134,7 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
     }
   }
   actingInst.exposed.setState({ scene_data: void 0, stage_data: void 0, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] });
-  writeStoredActingProps(actingNode, { scene_data: void 0, stage_data: void 0, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] });
+  writeStoredActingProps(actingNode, {});
   if (actingInst.exposed.setConnectedThreeStage) {
     actingInst.exposed.setConnectedThreeStage(null);
   }
@@ -49147,7 +49201,6 @@ function notifyConnectedDirectingNodes(originNode) {
             const chainComplete = isUpstreamActingChainComplete(originNode);
             if (!chainComplete) {
               directingInst.exposed.setState({ acting_data: "" });
-              writeStoredDirectingProps(targetNode, { acting_data: "" });
               if (directingInst.exposed.setConnectedThreeActing) {
                 directingInst.exposed.setConnectedThreeActing(null);
               }
@@ -49163,7 +49216,7 @@ function notifyConnectedDirectingNodes(originNode) {
             let actingBlob = "";
             const currentSceneData = (threeActing == null ? void 0 : threeActing.getStageData) ? threeActing.getStageData() : (threeActing == null ? void 0 : threeActing.getSceneData()) ?? actingState.scene_data;
             const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
-            const currentActors = (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
+            const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
             if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
               try {
                 const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
@@ -49196,7 +49249,6 @@ function notifyConnectedDirectingNodes(originNode) {
               actingBlob = "";
             }
             directingInst.exposed.setState({ acting_data: actingBlob });
-            writeStoredDirectingProps(targetNode, { acting_data: actingBlob });
           }
         }
       }
@@ -49271,6 +49323,7 @@ function getWidgetValueByNameOrIndex(node, name, defaultIdx, defaultValue) {
   return defaultValue;
 }
 function readActingStateFromNode(node) {
+  var _a;
   const typeVal = getWidgetValueByNameOrIndex(node, "actor_type", 0, "human");
   const defaultColor = typeVal === "car" ? "#0284C7" : "#F1DFBF";
   const storedProps = readStoredActingProps(node);
@@ -49278,11 +49331,18 @@ function readActingStateFromNode(node) {
   const cleanColor = parseCleanHexColor(rawColor, defaultColor);
   const speedVal = getWidgetValueByNameOrIndex(node, "actor_speed", 1, 10);
   const durationVal = getWidgetValueByNameOrIndex(node, "duration", 3, 7);
-  const motionDataVal = getWidgetValueByNameOrIndex(node, "motion_data", 4, "");
+  const rawMotionData = getWidgetValueByNameOrIndex(node, "motion_data", 4, "");
+  const motionDataVal = typeof rawMotionData === "string" ? sanitizeMotionDataPayload(rawMotionData) : "";
+  if (typeof rawMotionData === "string" && rawMotionData !== motionDataVal) {
+    const motionWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "motion_data");
+    if (motionWidget) {
+      motionWidget.value = motionDataVal;
+    }
+  }
   let extractedActors = storedProps == null ? void 0 : storedProps.actors;
-  if ((!extractedActors || extractedActors.length === 0) && typeof motionDataVal === "string" && motionDataVal.trim()) {
+  if ((!extractedActors || extractedActors.length === 0) && typeof rawMotionData === "string" && rawMotionData.trim()) {
     try {
-      const parsed = JSON.parse(motionDataVal);
+      const parsed = JSON.parse(rawMotionData);
       if (parsed && Array.isArray(parsed.actors)) {
         extractedActors = parsed.actors;
       }
@@ -49294,7 +49354,7 @@ function readActingStateFromNode(node) {
     actor_color: cleanColor,
     actor_speed: typeof speedVal === "number" ? Math.max(1, Math.min(30, speedVal)) : typeVal === "car" ? 20 : 10,
     duration: typeof durationVal === "number" ? Math.max(4, Math.min(15, durationVal)) : 7,
-    motion_data: typeof motionDataVal === "string" ? motionDataVal : "",
+    motion_data: motionDataVal,
     spawn_point: storedProps == null ? void 0 : storedProps.spawn_point,
     scene_data: (storedProps == null ? void 0 : storedProps.scene_data) ?? void 0,
     stage_data: (storedProps == null ? void 0 : storedProps.stage_data) ?? (storedProps == null ? void 0 : storedProps.scene_data) ?? void 0,
@@ -49391,7 +49451,7 @@ function bindActingWidgetCallbacks(node, exposed) {
       setWidgetValue(node, "actor_color", targetColor);
     }
     exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed });
-    writeStoredActingProps(node, { actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed });
+    writeStoredActingProps(node, {});
     notifyConnectedDirectingNodes(node);
   });
   wire("actor_color", (v) => {
@@ -49400,7 +49460,7 @@ function bindActingWidgetCallbacks(node, exposed) {
     const defaultColor = charType === "car" ? "#0284C7" : "#F1DFBF";
     const cleanColor = parseCleanHexColor(v, defaultColor);
     exposed.setState({ actor_color: cleanColor });
-    writeStoredActingProps(node, { actor_color: cleanColor });
+    writeStoredActingProps(node, {});
     notifyConnectedActingNodes(node);
     notifyConnectedDirectingNodes(node);
   });
@@ -49415,19 +49475,19 @@ function bindActingWidgetCallbacks(node, exposed) {
   setTimeout(syncStateNow, 300);
   wire("actor_speed", (v) => {
     exposed.setState({ actor_speed: Number(v) });
-    writeStoredActingProps(node, { actor_speed: Number(v) });
+    writeStoredActingProps(node, {});
   });
   wire("duration", (v) => {
     var _a;
     exposed.setState({ duration: Number(v) });
-    writeStoredActingProps(node, { duration: Number(v) });
+    writeStoredActingProps(node, {});
     notifyConnectedActingNodes(node);
     notifyConnectedDirectingNodes(node);
     (_a = app.graph) == null ? void 0 : _a.setDirtyCanvas(true, true);
   });
   wire("motion_data", (v) => {
     exposed.setState({ motion_data: String(v) });
-    writeStoredActingProps(node, { motion_data: String(v) });
+    writeStoredActingProps(node, {});
   });
 }
 function createActingNodeWidget(node) {
@@ -49505,8 +49565,12 @@ function readStoredDirectingProps(node) {
 }
 function writeStoredDirectingProps(node, patch) {
   if (!node.properties) node.properties = {};
-  const existing = node.properties[DIRECTING_PROP_KEY] ?? {};
-  node.properties[DIRECTING_PROP_KEY] = { ...existing, ...patch };
+  const existing = node.properties[DIRECTING_PROP_KEY] || {};
+  delete existing.acting_data;
+  if (patch.camera_mode) {
+    existing.camera_mode = patch.camera_mode;
+  }
+  node.properties[DIRECTING_PROP_KEY] = existing;
 }
 function readDirectingStateFromNode(node) {
   const directingDataVal = getWidgetValue(node, "directing_data", "");
@@ -49514,7 +49578,7 @@ function readDirectingStateFromNode(node) {
   return {
     camera_mode: stored.camera_mode ?? "Third Person",
     directing_data: typeof directingDataVal === "string" ? directingDataVal : "",
-    acting_data: stored.acting_data ?? ""
+    acting_data: ""
   };
 }
 function updateDirectingNodeFromLinks(directingNode) {
@@ -49526,7 +49590,6 @@ function updateDirectingNodeFromLinks(directingNode) {
     const actingState = readActingStateFromNode(connectedActingNode);
     const actingBlob = actingState.motion_data ?? "";
     directingInst.exposed.setState({ acting_data: actingBlob });
-    writeStoredDirectingProps(directingNode, { acting_data: actingBlob });
     const actingInst = actingInstances.get(connectedActingNode);
     if ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) {
       const threeActing = actingInst.exposed.getThreeActing();
@@ -49536,7 +49599,6 @@ function updateDirectingNodeFromLinks(directingNode) {
     }
   } else {
     directingInst.exposed.setState({ acting_data: "" });
-    writeStoredDirectingProps(directingNode, { acting_data: "" });
   }
 }
 function createDirectingInstance(node) {
@@ -49571,7 +49633,7 @@ function createDirectingInstance(node) {
       if (ddWidget) {
         ddWidget.value = directingDataJson;
       }
-      writeStoredDirectingProps(live, { directing_data: directingDataJson });
+      writeStoredDirectingProps(live, {});
       (_b = app.graph) == null ? void 0 : _b.setDirtyCanvas(true, true);
     }
   });
@@ -49644,6 +49706,23 @@ function createDirectingNodeWidget(node) {
 app.registerExtension({
   name: "ComfyUI.SceneCameraAction",
   setup() {
+    installStorageInterceptor();
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith("Comfy.Workflow.Drafts:") || key === "Comfy.Workflow.Drafts" || key === "Comfy.PreviousWorkflow")) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => {
+        try {
+          localStorage.removeItem(k);
+        } catch (e) {
+        }
+      });
+    } catch (e) {
+    }
     window.addEventListener("error", (e) => {
       var _a;
       const msg = e.message || ((_a = e.error) == null ? void 0 : _a.message) || "";
@@ -49671,11 +49750,27 @@ app.registerExtension({
     }
   },
   nodeCreated(node) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     if (isStagingNode(node)) {
       hideNodeWidget(node, "stage_data");
       hideNodeWidget(node, "scene_data");
       hideNodeWidget(node, "num_assets");
+      if (node.properties) {
+        delete node.properties[STAGE_PROP_KEY];
+        delete node.properties[SCENE_PROP_KEY];
+        delete node.properties["stageNodeState"];
+        delete node.properties["sceneNodeState"];
+      }
+      const origOnSerialize = node.onSerialize;
+      node.onSerialize = function(info) {
+        origOnSerialize == null ? void 0 : origOnSerialize.call(this, info);
+        if (info && info.properties) {
+          delete info.properties[STAGE_PROP_KEY];
+          delete info.properties[SCENE_PROP_KEY];
+          delete info.properties["stageNodeState"];
+          delete info.properties["sceneNodeState"];
+        }
+      };
       const [oldWidth, oldHeight] = node.size;
       node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)]);
       createSceneNodeWidget(node);
@@ -49701,6 +49796,12 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure;
       node.onConfigure = function(info) {
         origOnConfigure == null ? void 0 : origOnConfigure.call(this, info);
+        if (this.properties) {
+          delete this.properties[STAGE_PROP_KEY];
+          delete this.properties[SCENE_PROP_KEY];
+          delete this.properties["stageNodeState"];
+          delete this.properties["sceneNodeState"];
+        }
         hideNodeWidget(this, "stage_data");
         hideNodeWidget(this, "scene_data");
         hideNodeWidget(this, "num_assets");
@@ -49734,7 +49835,28 @@ app.registerExtension({
     } else if (isActingNode(node)) {
       hideNodeWidget(node, "motion_data");
       removeNodeInput(node, "motion_data");
-      const speedWidget = (_b = node.widgets) == null ? void 0 : _b.find((w) => w.name === "actor_speed");
+      if ((_b = node.properties) == null ? void 0 : _b[ACTING_PROP_KEY]) {
+        const p2 = node.properties[ACTING_PROP_KEY];
+        delete p2.stage_data;
+        delete p2.scene_data;
+        delete p2.actors;
+        delete p2.motion_data;
+      }
+      const origOnSerialize = node.onSerialize;
+      node.onSerialize = function(info) {
+        origOnSerialize == null ? void 0 : origOnSerialize.call(this, info);
+        if (info && info.properties && info.properties[ACTING_PROP_KEY]) {
+          const p2 = info.properties[ACTING_PROP_KEY];
+          delete p2.stage_data;
+          delete p2.scene_data;
+          delete p2.actors;
+          delete p2.motion_data;
+        }
+        if (info && Array.isArray(info.widgets_values)) {
+          info.widgets_values = info.widgets_values.map((v) => typeof v === "string" ? sanitizeMotionDataPayload(v) : v);
+        }
+      };
+      const speedWidget = (_c = node.widgets) == null ? void 0 : _c.find((w) => w.name === "actor_speed");
       if (speedWidget) {
         speedWidget.type = "number";
         if (!speedWidget.options) speedWidget.options = {};
@@ -49745,7 +49867,7 @@ app.registerExtension({
           speedWidget.value = 10;
         }
       }
-      let durationWidget = (_c = node.widgets) == null ? void 0 : _c.find((w) => w.name === "duration");
+      let durationWidget = (_d = node.widgets) == null ? void 0 : _d.find((w) => w.name === "duration");
       if (!durationWidget) {
         durationWidget = node.addWidget(
           "number",
@@ -49756,7 +49878,7 @@ app.registerExtension({
             if (instance && instance.exposed) {
               instance.exposed.setState({ duration: Number(value) });
             }
-            writeStoredActingProps(node, { duration: Number(value) });
+            writeStoredActingProps(node, {});
           },
           { min: 4, max: 15, step: 0.5 }
         );
@@ -49789,11 +49911,22 @@ app.registerExtension({
       };
       const origOnConfigure = node.onConfigure;
       node.onConfigure = function(info) {
-        var _a2, _b2;
+        var _a2, _b2, _c2, _d2;
         origOnConfigure == null ? void 0 : origOnConfigure.call(this, info);
+        if ((_a2 = this.properties) == null ? void 0 : _a2[ACTING_PROP_KEY]) {
+          const p2 = this.properties[ACTING_PROP_KEY];
+          delete p2.stage_data;
+          delete p2.scene_data;
+          delete p2.actors;
+          delete p2.motion_data;
+        }
         hideNodeWidget(this, "motion_data");
         removeNodeInput(this, "motion_data");
-        const speedWidgetConf = (_a2 = this.widgets) == null ? void 0 : _a2.find((w) => w.name === "actor_speed");
+        const motionWidget = (_b2 = this.widgets) == null ? void 0 : _b2.find((w) => w.name === "motion_data");
+        if (motionWidget && typeof motionWidget.value === "string" && motionWidget.value.trim()) {
+          motionWidget.value = sanitizeMotionDataPayload(motionWidget.value);
+        }
+        const speedWidgetConf = (_c2 = this.widgets) == null ? void 0 : _c2.find((w) => w.name === "actor_speed");
         if (speedWidgetConf) {
           speedWidgetConf.type = "number";
           if (!speedWidgetConf.options) speedWidgetConf.options = {};
@@ -49804,7 +49937,7 @@ app.registerExtension({
             speedWidgetConf.value = 10;
           }
         }
-        let durationWidgetConf = (_b2 = this.widgets) == null ? void 0 : _b2.find((w) => w.name === "duration");
+        let durationWidgetConf = (_d2 = this.widgets) == null ? void 0 : _d2.find((w) => w.name === "duration");
         if (!durationWidgetConf) {
           durationWidgetConf = this.addWidget(
             "number",
@@ -49815,7 +49948,7 @@ app.registerExtension({
               if (instance2 && instance2.exposed) {
                 instance2.exposed.setState({ duration: Number(value) });
               }
-              writeStoredActingProps(this, { duration: Number(value) });
+              writeStoredActingProps(this, {});
             },
             { min: 4, max: 15, step: 0.5 }
           );
@@ -49863,12 +49996,28 @@ app.registerExtension({
     } else if (isDirectingNode(node)) {
       hideNodeWidget(node, "directing_data");
       removeNodeInput(node, "directing_data");
+      if ((_e = node.properties) == null ? void 0 : _e[DIRECTING_PROP_KEY]) {
+        const p2 = node.properties[DIRECTING_PROP_KEY];
+        delete p2.acting_data;
+      }
+      const origOnSerialize = node.onSerialize;
+      node.onSerialize = function(info) {
+        origOnSerialize == null ? void 0 : origOnSerialize.call(this, info);
+        if (info && info.properties && info.properties[DIRECTING_PROP_KEY]) {
+          delete info.properties[DIRECTING_PROP_KEY].acting_data;
+        }
+      };
       const [oldWidth, oldHeight] = node.size;
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)]);
       createDirectingNodeWidget(node);
       const origOnConfigure = node.onConfigure;
       node.onConfigure = function(info) {
+        var _a2;
         origOnConfigure == null ? void 0 : origOnConfigure.call(this, info);
+        if ((_a2 = this.properties) == null ? void 0 : _a2[DIRECTING_PROP_KEY]) {
+          const p2 = this.properties[DIRECTING_PROP_KEY];
+          delete p2.acting_data;
+        }
         hideNodeWidget(this, "directing_data");
         removeNodeInput(this, "directing_data");
         const instance = directingInstances.get(this);

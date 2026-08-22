@@ -288,6 +288,32 @@ class ActingNode(io.ComfyNode):
                     "trajectory": traj or []
                 }]
 
+        # Parse current actor trajectory from motion_data
+        current_traj = []
+        current_spawn = None
+        if motion_data and isinstance(motion_data, str) and motion_data.strip():
+            try:
+                parsed_curr = json.loads(motion_data)
+                if isinstance(parsed_curr, dict):
+                    current_traj = parsed_curr.get("trajectory", [])
+                    current_spawn = parsed_curr.get("spawn_point")
+                elif isinstance(parsed_curr, list):
+                    current_traj = parsed_curr
+            except Exception:
+                pass
+
+        all_actors = list(previous_actors)
+        if current_traj:
+            current_actor_record = {
+                "id": f"actor_{len(previous_actors) + 1}",
+                "actor_type": actor_type,
+                "actor_color": clean_color,
+                "actor_speed": actor_speed,
+                "spawn_point": current_spawn,
+                "trajectory": current_traj,
+            }
+            all_actors.append(current_actor_record)
+
         acting_dict = {
             "stage_data": stage_data,
             "actor_type": actor_type,
@@ -295,7 +321,7 @@ class ActingNode(io.ComfyNode):
             "actor_speed": actor_speed,
             "duration": duration,
             "motion_data": motion_data,
-            "actors": previous_actors,
+            "actors": all_actors,
         }
 
         acting_json = json.dumps(acting_dict)

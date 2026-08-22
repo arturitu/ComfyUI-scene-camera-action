@@ -4,23 +4,94 @@ import ActingWidget from './components/ActingWidget.vue'
 import DirectingWidget from './components/DirectingWidget.vue'
 import type { SceneState, StageState, ActingState, DirectingState, SceneAppExposed, StageAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
 
-
 const { app } = window.comfyAPI.app
 
-  // Inject CSS from built assets if any (main.css)
-  ; (() => {
-    const cssUrl = new URL(/* @vite-ignore */ './assets/main.css', import.meta.url).href
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = cssUrl
-    document.head.appendChild(link)
-  })()
+// Inject CSS from built assets if any (main.css)
+; (() => {
+  const cssUrl = new URL(/* @vite-ignore */ './assets/main.css', import.meta.url).href
+  const link = document.createElement('link')
+  link.rel = 'stylesheet'
+  link.href = cssUrl
+  document.head.appendChild(link)
+})()
 
 const CLEANUP_DELAY_MS = 200
 const STAGE_PROP_KEY = 'stageNodeState'
 const SCENE_PROP_KEY = STAGE_PROP_KEY
 const ACTING_PROP_KEY = 'actingNodeState'
 const DIRECTING_PROP_KEY = 'directingNodeState'
+
+/**
+ * Sanitizes motion_data string by stripping nested stage_data, scene_data, and duplicate actors array.
+ */
+function sanitizeMotionDataPayload(raw: unknown): string {
+  if (!raw || typeof raw !== 'string' || !raw.trim()) return ''
+  try {
+    const parsed = JSON.parse(raw)
+    if (typeof parsed !== 'object' || parsed === null) return raw
+
+    let traj = parsed.trajectory || parsed.motion_data
+    if (typeof traj === 'string' && traj.trim()) {
+      try { traj = JSON.parse(traj) } catch (e) {}
+    }
+
+    if (Array.isArray(traj)) {
+      const cleanPayload = {
+        type: 'acting_motion',
+        actor_type: parsed.actor_type || 'human',
+        actor_color: parsed.actor_color || '#F1DFBF',
+        actor_speed: parsed.actor_speed ?? 10.0,
+        duration: parsed.duration ?? 7.0,
+        spawn_point: parsed.spawn_point,
+        trajectory: traj
+      }
+      return JSON.stringify(cleanPayload)
+    }
+  } catch (e) {}
+  return raw
+}
+
+/**
+ * Install automatic localStorage interceptor to recover from storage quota exhaustion.
+ */
+function installStorageInterceptor(): void {
+  const origSetItem = localStorage.setItem.bind(localStorage)
+
+  localStorage.setItem = function (key: string, value: string) {
+    try {
+      origSetItem(key, value)
+    } catch (err: any) {
+      const isQuota = err instanceof DOMException && (
+        err.name === 'QuotaExceededError' ||
+        err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+        err.code === 22 ||
+        err.code === 1014
+      )
+
+      if (isQuota) {
+        try {
+          const draftKeys: string[] = []
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i)
+            if (k && (k.startsWith('Comfy.Workflow.DraftPayload:') || k.startsWith('Comfy.Workflow.Drafts:') || k === 'litegrapheditor_clipboard')) {
+              draftKeys.push(k)
+            }
+          }
+
+          for (const k of draftKeys) {
+            if (k !== key) {
+              localStorage.removeItem(k)
+            }
+          }
+
+          origSetItem(key, value)
+          return
+        } catch (retryErr) {}
+      }
+      throw err
+    }
+  }
+}
 
 interface StageNodeInstance {
   container: HTMLElement
@@ -166,15 +237,14 @@ function readStoredStageProps(node: ComfyNode): Partial<StageState> | null {
 const readStoredSceneProps = readStoredStageProps
 
 function writeStoredStageProps(node: ComfyNode, patch: Partial<StageState>): void {
-  if (!node.properties) node.properties = {}
-  const existing = (node.properties[STAGE_PROP_KEY] as Partial<StageState>) ?? {}
-  const updated = { ...existing, ...patch }
-  node.properties[STAGE_PROP_KEY] = updated
-  node.properties[SCENE_PROP_KEY] = updated
+  if (node.properties) {
+    delete node.properties[STAGE_PROP_KEY]
+    delete node.properties[SCENE_PROP_KEY]
+  }
 
   const stageDataWidget = node.widgets?.find(w => w.name === 'stage_data' || w.name === 'scene_data')
   if (stageDataWidget) {
-    stageDataWidget.value = JSON.stringify(updated)
+    stageDataWidget.value = JSON.stringify(patch)
   }
 }
 const writeStoredSceneProps = writeStoredStageProps
@@ -325,8 +395,16 @@ function readStoredActingProps(node: ComfyNode): Partial<ActingState> | null {
 
 function writeStoredActingProps(node: ComfyNode, patch: Partial<ActingState>): void {
   if (!node.properties) node.properties = {}
-  const existing = (node.properties[ACTING_PROP_KEY] as Partial<ActingState>) ?? {}
-  node.properties[ACTING_PROP_KEY] = { ...existing, ...patch }
+  const existing = ((node.properties[ACTING_PROP_KEY] as any) || {})
+  delete existing.stage_data
+  delete existing.scene_data
+  delete existing.actors
+  delete existing.motion_data
+
+  if (patch.spawn_point) {
+    existing.spawn_point = patch.spawn_point
+  }
+  node.properties[ACTING_PROP_KEY] = existing
 }
 
 function findConnectedStageOrActingOrigin(actingNode: ComfyNode): { originNode: ComfyNode; isActing: boolean } | null {
@@ -470,14 +548,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
         duration: effectiveDuration,
         actors: previousActors
       })
-      writeStoredActingProps(actingNode, {
-        scene_data: stageState,
-        stage_data: stageState,
-        actor_type: charType,
-        actor_color: currentActingState.actor_color,
-        duration: effectiveDuration,
-        actors: previousActors
-      })
+      writeStoredActingProps(actingNode, {})
 
       const rootStagingNode = findRootStagingNode(actingNode)
       if (rootStagingNode) {
@@ -495,7 +566,7 @@ function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: S
   }
 
   actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] })
-  writeStoredActingProps(actingNode, { scene_data: undefined, stage_data: undefined, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] })
+  writeStoredActingProps(actingNode, {})
   if (actingInst.exposed.setConnectedThreeStage) {
     actingInst.exposed.setConnectedThreeStage(null)
   }
@@ -564,7 +635,6 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             const chainComplete = isUpstreamActingChainComplete(originNode)
             if (!chainComplete) {
               directingInst.exposed.setState({ acting_data: '' })
-              writeStoredDirectingProps(targetNode!, { acting_data: '' })
               if ((directingInst.exposed as any).setConnectedThreeActing) {
                 (directingInst.exposed as any).setConnectedThreeActing(null)
               }
@@ -583,7 +653,9 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             let actingBlob: any = ''
             const currentSceneData = threeActing?.getStageData ? threeActing.getStageData() : (threeActing?.getSceneData() ?? actingState.scene_data)
             const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
-            const currentActors = threeActing?.getState ? threeActing.getState().actors : actingState.actors
+            const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
+              ? (threeActing as any).getAccumulatedActors()
+              : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
 
             if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
               try {
@@ -618,7 +690,6 @@ function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
             }
 
             directingInst.exposed.setState({ acting_data: actingBlob })
-            writeStoredDirectingProps(targetNode!, { acting_data: actingBlob })
           }
         }
       }
@@ -709,12 +780,19 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
   const cleanColor = parseCleanHexColor(rawColor, defaultColor)
   const speedVal = getWidgetValueByNameOrIndex(node, 'actor_speed', 1, 10.0)
   const durationVal = getWidgetValueByNameOrIndex(node, 'duration', 3, 7.0)
-  const motionDataVal = getWidgetValueByNameOrIndex(node, 'motion_data', 4, '')
+  const rawMotionData = getWidgetValueByNameOrIndex(node, 'motion_data', 4, '')
+  const motionDataVal = typeof rawMotionData === 'string' ? sanitizeMotionDataPayload(rawMotionData) : ''
+  if (typeof rawMotionData === 'string' && rawMotionData !== motionDataVal) {
+    const motionWidget = node.widgets?.find(w => w.name === 'motion_data')
+    if (motionWidget) {
+      motionWidget.value = motionDataVal
+    }
+  }
 
   let extractedActors: any[] | undefined = storedProps?.actors
-  if ((!extractedActors || extractedActors.length === 0) && typeof motionDataVal === 'string' && motionDataVal.trim()) {
+  if ((!extractedActors || extractedActors.length === 0) && typeof rawMotionData === 'string' && rawMotionData.trim()) {
     try {
-      const parsed = JSON.parse(motionDataVal)
+      const parsed = JSON.parse(rawMotionData)
       if (parsed && Array.isArray(parsed.actors)) {
         extractedActors = parsed.actors
       }
@@ -726,7 +804,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
     actor_color: cleanColor,
     actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : ((typeVal as string) === 'car' ? 20.0 : 10.0),
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
-    motion_data: typeof motionDataVal === 'string' ? motionDataVal : '',
+    motion_data: motionDataVal,
     spawn_point: storedProps?.spawn_point,
     scene_data: storedProps?.scene_data ?? (undefined as any),
     stage_data: storedProps?.stage_data ?? storedProps?.scene_data ?? (undefined as any),
@@ -966,8 +1044,12 @@ function readStoredDirectingProps(node: ComfyNode): Partial<DirectingState> | nu
 
 function writeStoredDirectingProps(node: ComfyNode, patch: Partial<DirectingState>): void {
   if (!node.properties) node.properties = {}
-  const existing = (node.properties[DIRECTING_PROP_KEY] as Partial<DirectingState>) ?? {}
-  node.properties[DIRECTING_PROP_KEY] = { ...existing, ...patch }
+  const existing = (node.properties[DIRECTING_PROP_KEY] as any) || {}
+  delete existing.acting_data
+  if (patch.camera_mode) {
+    existing.camera_mode = patch.camera_mode
+  }
+  node.properties[DIRECTING_PROP_KEY] = existing
 }
 
 function readDirectingStateFromNode(node: ComfyNode): Partial<DirectingState> {
@@ -976,7 +1058,7 @@ function readDirectingStateFromNode(node: ComfyNode): Partial<DirectingState> {
   return {
     camera_mode: stored.camera_mode ?? 'Third Person',
     directing_data: typeof directingDataVal === 'string' ? directingDataVal : '',
-    acting_data: stored.acting_data ?? '',
+    acting_data: '',
   }
 }
 
@@ -989,7 +1071,6 @@ function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
     const actingState = readActingStateFromNode(connectedActingNode)
     const actingBlob = actingState.motion_data ?? ''
     directingInst.exposed.setState({ acting_data: actingBlob })
-    writeStoredDirectingProps(directingNode, { acting_data: actingBlob })
 
     // Pass live ThreeActing scene for cloning (with lights)
     const actingInst = actingInstances.get(connectedActingNode)
@@ -1001,7 +1082,6 @@ function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
     }
   } else {
     directingInst.exposed.setState({ acting_data: '' })
-    writeStoredDirectingProps(directingNode, { acting_data: '' })
   }
 }
 
@@ -1129,6 +1209,22 @@ app.registerExtension({
   name: 'ComfyUI.SceneCameraAction',
 
   setup() {
+    installStorageInterceptor()
+
+    try {
+      // Clean up legacy V1 draft blobs from localStorage to free browser storage quota
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && (key.startsWith('Comfy.Workflow.Drafts:') || key === 'Comfy.Workflow.Drafts' || key === 'Comfy.PreviousWorkflow')) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(k => {
+        try { localStorage.removeItem(k) } catch (e) {}
+      })
+    } catch (e) {}
+
     window.addEventListener('error', (e: ErrorEvent) => {
       const msg = e.message || e.error?.message || ''
       if (typeof msg === 'string' && (
@@ -1168,6 +1264,25 @@ app.registerExtension({
       hideNodeWidget(node, 'scene_data')
       hideNodeWidget(node, 'num_assets')
 
+      // Purge legacy bloated properties
+      if (node.properties) {
+        delete node.properties[STAGE_PROP_KEY]
+        delete node.properties[SCENE_PROP_KEY]
+        delete node.properties['stageNodeState']
+        delete node.properties['sceneNodeState']
+      }
+
+      const origOnSerialize = (node as any).onSerialize
+      ;(node as any).onSerialize = function (info: any) {
+        origOnSerialize?.call(this, info)
+        if (info && info.properties) {
+          delete info.properties[STAGE_PROP_KEY]
+          delete info.properties[SCENE_PROP_KEY]
+          delete info.properties['stageNodeState']
+          delete info.properties['sceneNodeState']
+        }
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 420), Math.max(oldHeight, 420)])
       createSceneNodeWidget(node)
@@ -1197,6 +1312,14 @@ app.registerExtension({
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
+        // Purge legacy bloated properties on load/paste
+        if (this.properties) {
+          delete this.properties[STAGE_PROP_KEY]
+          delete this.properties[SCENE_PROP_KEY]
+          delete this.properties['stageNodeState']
+          delete this.properties['sceneNodeState']
+        }
+
         hideNodeWidget(this, 'stage_data')
         hideNodeWidget(this, 'scene_data')
         hideNodeWidget(this, 'num_assets')
@@ -1225,6 +1348,30 @@ app.registerExtension({
     } else if (isActingNode(node)) {
       hideNodeWidget(node, 'motion_data')
       removeNodeInput(node, 'motion_data')
+
+      // Purge legacy bloated properties
+      if (node.properties?.[ACTING_PROP_KEY]) {
+        const p = node.properties[ACTING_PROP_KEY] as any
+        delete p.stage_data
+        delete p.scene_data
+        delete p.actors
+        delete p.motion_data
+      }
+
+      const origOnSerialize = (node as any).onSerialize
+      ;(node as any).onSerialize = function (info: any) {
+        origOnSerialize?.call(this, info)
+        if (info && info.properties && info.properties[ACTING_PROP_KEY]) {
+          const p = info.properties[ACTING_PROP_KEY]
+          delete p.stage_data
+          delete p.scene_data
+          delete p.actors
+          delete p.motion_data
+        }
+        if (info && Array.isArray(info.widgets_values)) {
+          info.widgets_values = info.widgets_values.map((v: any) => typeof v === 'string' ? sanitizeMotionDataPayload(v) : v)
+        }
+      }
 
       // Revert speed widget to render as number with step 1.0
       const speedWidget = node.widgets?.find(w => w.name === 'actor_speed')
@@ -1288,8 +1435,23 @@ app.registerExtension({
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
 
+        // Purge legacy bloated properties on load/paste
+        if (this.properties?.[ACTING_PROP_KEY]) {
+          const p = this.properties[ACTING_PROP_KEY] as any
+          delete p.stage_data
+          delete p.scene_data
+          delete p.actors
+          delete p.motion_data
+        }
+
         hideNodeWidget(this, 'motion_data')
         removeNodeInput(this, 'motion_data')
+
+        // Sanitize motion_data widget value if legacy bloated format
+        const motionWidget = this.widgets?.find(w => w.name === 'motion_data')
+        if (motionWidget && typeof motionWidget.value === 'string' && motionWidget.value.trim()) {
+          motionWidget.value = sanitizeMotionDataPayload(motionWidget.value)
+        }
 
         // Reinforce speed limits and number type on configure load
         const speedWidgetConf = this.widgets?.find(w => w.name === 'actor_speed')
@@ -1359,6 +1521,20 @@ app.registerExtension({
       hideNodeWidget(node, 'directing_data')
       removeNodeInput(node, 'directing_data')
 
+      // Purge legacy bloated properties
+      if (node.properties?.[DIRECTING_PROP_KEY]) {
+        const p = node.properties[DIRECTING_PROP_KEY] as any
+        delete p.acting_data
+      }
+
+      const origOnSerialize = (node as any).onSerialize
+      ;(node as any).onSerialize = function (info: any) {
+        origOnSerialize?.call(this, info)
+        if (info && info.properties && info.properties[DIRECTING_PROP_KEY]) {
+          delete info.properties[DIRECTING_PROP_KEY].acting_data
+        }
+      }
+
       const [oldWidth, oldHeight] = node.size
       node.setSize([Math.max(oldWidth, 400), Math.max(oldHeight, 380)])
       createDirectingNodeWidget(node)
@@ -1366,6 +1542,12 @@ app.registerExtension({
       const origOnConfigure = node.onConfigure
       node.onConfigure = function (info) {
         origOnConfigure?.call(this, info)
+
+        // Purge legacy bloated properties on load/paste
+        if (this.properties?.[DIRECTING_PROP_KEY]) {
+          const p = this.properties[DIRECTING_PROP_KEY] as any
+          delete p.acting_data
+        }
 
         hideNodeWidget(this, 'directing_data')
         removeNodeInput(this, 'directing_data')

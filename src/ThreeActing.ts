@@ -148,7 +148,6 @@ export class ThreeActing {
   public stopRecording(): string {
     this.isRecording = false
     this.isPlaying = false
-    const stageData = this.getStageData()
     const allActors = this.getAccumulatedActors()
 
     if (this.spawnPointHelper) {
@@ -159,17 +158,15 @@ export class ThreeActing {
       type: 'acting_motion',
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === 'human' ? '#F1DFBF' : '#0284C7'),
-      stage_data: stageData,
-      scene_data: stageData,
-      trajectory: this.trajectory,
-      motion_data: this.trajectory,
-      actors: allActors
+      actor_speed: this.state.actor_speed,
+      duration: this.state.duration,
+      spawn_point: this.state.spawn_point,
+      trajectory: this.trajectory
     }
     const json = JSON.stringify(payload)
     this.state.motion_data = json
     this.state.actors = allActors
 
-    this.state.actors = allActors
     this.playbackController.setTrajectory(JSON.stringify(this.trajectory))
     if (this.trajectory.length > 0) {
       this.isPlaybackMode = true
