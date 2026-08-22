@@ -46769,15 +46769,16 @@ const _hoisted_17$1 = {
 };
 const _hoisted_18$1 = {
   key: 4,
-  class: "state-indicator interactive"
+  class: "state-indicator recorded"
 };
 const _hoisted_19$1 = {
   key: 1,
   class: "hint"
 };
 const _hoisted_20$1 = {
-  key: 2,
-  class: "time-counter-overlay"
+  key: 0,
+  class: "loop-icon",
+  title: "Practice Loop"
 };
 const _hoisted_21$1 = { class: "controls-modal-card" };
 const _hoisted_22$1 = { class: "modal-header" };
@@ -47002,11 +47003,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const practiceElapsed = /* @__PURE__ */ ref(0);
     const totalDuration = /* @__PURE__ */ ref(((_i = props.initialState) == null ? void 0 : _i.duration) ?? 7);
     let timeFrameId = null;
-    const practiceTimeDisplay = computed(() => {
-      const cur = Math.max(0, practiceElapsed.value).toFixed(1);
-      const dur = Math.max(0, totalDuration.value).toFixed(1);
-      return `${cur}s / ${dur}s`;
-    });
     const updateTimeCounter = () => {
       if (threeActing) {
         if (isRecording.value) {
@@ -47146,21 +47142,36 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         ])),
         createBaseVNode("div", _hoisted_13$1, [
           state.scene_data ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
-            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_14$1, "Replaying Motion")) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, "Recording Acting...")) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_16$1, "Starting in " + toDisplayString(countdownVal.value) + "...", 1)) : !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_17$1, [
-              _cache2[11] || (_cache2[11] = createBaseVNode("span", { class: "practice-dot" }, null, -1)),
-              createTextVNode(" PRACTICE (Loop " + toDisplayString(practiceTimeDisplay.value) + ") ", 1)
-            ])) : (openBlock(), createElementBlock("div", _hoisted_18$1, "Interactive Keyboard Control")),
+            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_14$1, [..._cache2[11] || (_cache2[11] = [
+              createBaseVNode("span", { class: "status-icon" }, "▶", -1),
+              createTextVNode(" REPLAYING ", -1)
+            ])])) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, [..._cache2[12] || (_cache2[12] = [
+              createBaseVNode("span", { class: "rec-dot" }, null, -1),
+              createTextVNode(" RECORDING ", -1)
+            ])])) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_16$1, " STARTING IN " + toDisplayString(countdownVal.value) + "... ", 1)) : !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_17$1, [..._cache2[13] || (_cache2[13] = [
+              createBaseVNode("span", { class: "practice-dot" }, null, -1),
+              createTextVNode(" PRACTICE ", -1)
+            ])])) : (openBlock(), createElementBlock("div", _hoisted_18$1, [..._cache2[14] || (_cache2[14] = [
+              createBaseVNode("span", { class: "status-icon" }, "✓", -1),
+              createTextVNode(" RECORDED ", -1)
+            ])])),
             createBaseVNode("button", {
               class: "info-help-btn",
               title: "View Keyboard Controls",
               onClick: _cache2[2] || (_cache2[2] = ($event) => showHelpModal.value = true)
-            }, [..._cache2[12] || (_cache2[12] = [
+            }, [..._cache2[15] || (_cache2[15] = [
               createBaseVNode("span", { class: "info-icon" }, "?", -1),
               createBaseVNode("span", { class: "info-label" }, "Controls", -1)
             ])])
           ], 64)) : (openBlock(), createElementBlock("div", _hoisted_19$1, "Waiting for stage link..."))
         ]),
-        state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_20$1, toDisplayString(formattedTime.value), 1)) : createCommentVNode("", true),
+        state.scene_data ? (openBlock(), createElementBlock("div", {
+          key: 2,
+          class: normalizeClass(["time-counter-overlay", { practice: !state.motion_data, recording: isRecording.value, playing: isPlaying.value }])
+        }, [
+          !state.motion_data ? (openBlock(), createElementBlock("span", _hoisted_20$1, "🔁")) : createCommentVNode("", true),
+          createTextVNode(" " + toDisplayString(formattedTime.value), 1)
+        ], 2)) : createCommentVNode("", true),
         showHelpModal.value ? (openBlock(), createElementBlock("div", {
           key: 3,
           class: "controls-modal-backdrop",
@@ -47169,7 +47180,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           createBaseVNode("div", _hoisted_21$1, [
             createBaseVNode("div", _hoisted_22$1, [
               createBaseVNode("div", _hoisted_23$1, [
-                _cache2[13] || (_cache2[13] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
+                _cache2[16] || (_cache2[16] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
                 createBaseVNode("span", {
                   class: normalizeClass(["actor-type-badge", state.actor_type])
                 }, toDisplayString(state.actor_type === "car" ? "CAR ACTOR" : "HUMAN ACTOR"), 3)
@@ -47181,10 +47192,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }, "✕")
             ]),
             createBaseVNode("div", _hoisted_24$1, [
-              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[14] || (_cache2[14] = [
-                createStaticVNode('<div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>W</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>▲</kbd></div><span class="action-desc" data-v-f5d4ebd1>Accelerate</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>S</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>▼</kbd></div><span class="action-desc" data-v-f5d4ebd1>Brake / Reverse</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>A</kbd> <kbd data-v-f5d4ebd1>D</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>◀</kbd> <kbd data-v-f5d4ebd1>▶</kbd></div><span class="action-desc" data-v-f5d4ebd1>Steer Left / Right</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Space</kbd></div><span class="action-desc" data-v-f5d4ebd1>Handbrake</span></div>', 4)
-              ])])) : (openBlock(), createElementBlock("div", _hoisted_26$1, [..._cache2[15] || (_cache2[15] = [
-                createStaticVNode('<div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>W</kbd> <kbd data-v-f5d4ebd1>A</kbd> <kbd data-v-f5d4ebd1>S</kbd> <kbd data-v-f5d4ebd1>D</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>Arrows</kbd></div><span class="action-desc" data-v-f5d4ebd1>Move</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Shift</kbd> + Move</div><span class="action-desc" data-v-f5d4ebd1>Sprint (Fast Run)</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>C</kbd></div><span class="action-desc" data-v-f5d4ebd1>Crouch / Crouch Walk</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Space</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>J</kbd></div><span class="action-desc" data-v-f5d4ebd1>Jump</span></div>', 4)
+              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[17] || (_cache2[17] = [
+                createStaticVNode('<div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>W</kbd> <span class="or" data-v-5d96be51>or</span> <kbd data-v-5d96be51>▲</kbd></div><span class="action-desc" data-v-5d96be51>Accelerate</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>S</kbd> <span class="or" data-v-5d96be51>or</span> <kbd data-v-5d96be51>▼</kbd></div><span class="action-desc" data-v-5d96be51>Brake / Reverse</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>A</kbd> <kbd data-v-5d96be51>D</kbd> <span class="or" data-v-5d96be51>or</span> <kbd data-v-5d96be51>◀</kbd> <kbd data-v-5d96be51>▶</kbd></div><span class="action-desc" data-v-5d96be51>Steer Left / Right</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>Space</kbd></div><span class="action-desc" data-v-5d96be51>Handbrake</span></div>', 4)
+              ])])) : (openBlock(), createElementBlock("div", _hoisted_26$1, [..._cache2[18] || (_cache2[18] = [
+                createStaticVNode('<div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>W</kbd> <kbd data-v-5d96be51>A</kbd> <kbd data-v-5d96be51>S</kbd> <kbd data-v-5d96be51>D</kbd> <span class="or" data-v-5d96be51>or</span> <kbd data-v-5d96be51>Arrows</kbd></div><span class="action-desc" data-v-5d96be51>Move</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>Shift</kbd> + Move</div><span class="action-desc" data-v-5d96be51>Sprint (Fast Run)</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>C</kbd></div><span class="action-desc" data-v-5d96be51>Crouch / Crouch Walk</span></div><div class="control-row" data-v-5d96be51><div class="key-group" data-v-5d96be51><kbd data-v-5d96be51>Space</kbd> <span class="or" data-v-5d96be51>or</span> <kbd data-v-5d96be51>J</kbd></div><span class="action-desc" data-v-5d96be51>Jump</span></div>', 4)
               ])]))
             ]),
             createBaseVNode("div", _hoisted_27$1, [
@@ -47199,7 +47210,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-f5d4ebd1"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-5d96be51"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);

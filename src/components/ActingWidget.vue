@@ -106,14 +106,21 @@
 
     <div class="info-overlay">
       <template v-if="state.scene_data">
-        <div v-if="isPlaying" class="state-indicator playing">Replaying Motion</div>
-        <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
-        <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
-        <div v-else-if="!state.motion_data" class="state-indicator practice">
-          <span class="practice-dot"></span>
-          PRACTICE (Loop {{ practiceTimeDisplay }})
+        <div v-if="isPlaying" class="state-indicator playing">
+          <span class="status-icon">▶</span> REPLAYING
         </div>
-        <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
+        <div v-else-if="isRecording" class="state-indicator recording">
+          <span class="rec-dot"></span> RECORDING
+        </div>
+        <div v-else-if="isCounting" class="state-indicator counting">
+          STARTING IN {{ countdownVal }}...
+        </div>
+        <div v-else-if="!state.motion_data" class="state-indicator practice">
+          <span class="practice-dot"></span> PRACTICE
+        </div>
+        <div v-else class="state-indicator recorded">
+          <span class="status-icon">✓</span> RECORDED
+        </div>
         
         <button class="info-help-btn" title="View Keyboard Controls" @click="showHelpModal = true">
           <span class="info-icon">?</span>
@@ -126,7 +133,8 @@
     </div>
 
     <!-- Time Counter Overlay (Bottom Right) -->
-    <div v-if="state.scene_data" class="time-counter-overlay">
+    <div v-if="state.scene_data" class="time-counter-overlay" :class="{ practice: !state.motion_data, recording: isRecording, playing: isPlaying }">
+      <span v-if="!state.motion_data" class="loop-icon" title="Practice Loop">🔁</span>
       {{ formattedTime }}
     </div>
 
@@ -459,12 +467,6 @@ const currentTime = ref(0)
 const practiceElapsed = ref(0)
 const totalDuration = ref(props.initialState?.duration ?? 7.0)
 let timeFrameId: number | null = null
-
-const practiceTimeDisplay = computed(() => {
-  const cur = Math.max(0, practiceElapsed.value).toFixed(1)
-  const dur = Math.max(0, totalDuration.value).toFixed(1)
-  return `${cur}s / ${dur}s`
-})
 
 const updateTimeCounter = () => {
   if (threeActing) {
@@ -832,6 +834,10 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   font-weight: bold;
   margin: 2px 0;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.5px;
 }
 
 .state-indicator.playing {
@@ -842,15 +848,21 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   color: #ff3366;
 }
 
+.rec-dot {
+  width: 6px;
+  height: 6px;
+  background: #ff3366;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ff3366;
+  animation: blink 0.8s infinite;
+}
+
 .state-indicator.counting {
   color: #ff007f;
 }
 
 .state-indicator.practice {
   color: #00ffaa;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
 }
 
 .practice-dot {
@@ -862,8 +874,12 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   animation: pulse 1s infinite alternate;
 }
 
-.state-indicator.interactive {
-  color: #8c8c9e;
+.state-indicator.recorded {
+  color: #00e5ff;
+}
+
+.status-icon {
+  font-size: 9px;
 }
 
 .hint {
@@ -899,6 +915,29 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   pointer-events: none;
   z-index: 10;
   letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-counter-overlay.practice {
+  border-color: rgba(0, 255, 170, 0.4);
+  color: #e6fff7;
+}
+
+.time-counter-overlay.recording {
+  border-color: rgba(255, 51, 102, 0.6);
+  color: #ff99b3;
+}
+
+.time-counter-overlay.playing {
+  border-color: rgba(0, 255, 255, 0.4);
+  color: #e0ffff;
+}
+
+.loop-icon {
+  font-size: 10px;
+  opacity: 0.85;
 }
 
 /* Modal Styles (Scoped to Acting Widget container) */
