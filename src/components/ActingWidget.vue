@@ -109,6 +109,10 @@
         <div v-if="isPlaying" class="state-indicator playing">Replaying Motion</div>
         <div v-else-if="isRecording" class="state-indicator recording">Recording Acting...</div>
         <div v-else-if="isCounting" class="state-indicator counting">Starting in {{ countdownVal }}...</div>
+        <div v-else-if="!state.motion_data" class="state-indicator practice">
+          <span class="practice-dot"></span>
+          PRACTICE (Loop {{ practiceTimeDisplay }})
+        </div>
         <div v-else class="state-indicator interactive">Interactive Keyboard Control</div>
         
         <button class="info-help-btn" title="View Keyboard Controls" @click="showHelpModal = true">
@@ -377,12 +381,11 @@ const resetToInteractive = () => {
   isPlaying.value = false
   isRecording.value = false
   isCounting.value = false
+  state.motion_data = ''
   if (threeActing) {
     threeActing.setCountingState(false)
-    threeActing.setState({ motion_data: '' })
-    threeActing.stopPlayback()
+    threeActing.resetRecording()
   }
-  state.motion_data = ''
   if (props.onStateChange) {
     props.onStateChange(state)
   }
@@ -453,16 +456,28 @@ watch(() => state.actor_color, (newColor) => {
 })
 
 const currentTime = ref(0)
+const practiceElapsed = ref(0)
 const totalDuration = ref(props.initialState?.duration ?? 7.0)
 let timeFrameId: number | null = null
 
+const practiceTimeDisplay = computed(() => {
+  const cur = Math.max(0, practiceElapsed.value).toFixed(1)
+  const dur = Math.max(0, totalDuration.value).toFixed(1)
+  return `${cur}s / ${dur}s`
+})
+
 const updateTimeCounter = () => {
   if (threeActing) {
-    currentTime.value = threeActing.getCurrentTime()
-    totalDuration.value = threeActing.getDuration()
     if (isRecording.value) {
       recordingElapsed.value = (threeActing as any).recordingTime
+      currentTime.value = (threeActing as any).recordingTime
+    } else if (isPlaying.value || (threeActing as any).isPlaybackMode) {
+      currentTime.value = threeActing.getCurrentTime()
+    } else {
+      practiceElapsed.value = typeof (threeActing as any).getPracticeTime === 'function' ? (threeActing as any).getPracticeTime() : 0
+      currentTime.value = practiceElapsed.value
     }
+    totalDuration.value = threeActing.getDuration()
   }
   timeFrameId = requestAnimationFrame(updateTimeCounter)
 }
@@ -829,6 +844,22 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
 
 .state-indicator.counting {
   color: #ff007f;
+}
+
+.state-indicator.practice {
+  color: #00ffaa;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.practice-dot {
+  width: 6px;
+  height: 6px;
+  background: #00ffaa;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #00ffaa;
+  animation: pulse 1s infinite alternate;
 }
 
 .state-indicator.interactive {

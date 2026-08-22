@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import type { DirectingState, ThreeDirectingOptions } from './types'
+import type { DirectingState, ThreeDirectingOptions, DirectingKeyframe } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
@@ -184,6 +184,8 @@ export class ThreeDirecting {
           traj = parsed.trajectory || parsed.motion_data || parsed
         } catch (e) {}
       }
+      if (!traj || (Array.isArray(traj) && traj.length === 0)) return
+
       pbCtrl.setTrajectory(traj || [])
       const firstFrame = pbCtrl.getTrajectory()[0]
       const initialAnim = firstFrame?.anim
@@ -383,16 +385,16 @@ export class ThreeDirecting {
     this.scene.add(this.actorController.group)
   }
 
-  private keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string; fov?: number }> = []
+  private keyframes: DirectingKeyframe[] = []
   public isPlaying = true
 
-  public setKeyframes(keyframes: Array<{ id: string; t: number; mode: string; actor_target?: string; fov?: number }>): void {
+  public setKeyframes(keyframes: DirectingKeyframe[]): void {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t)
     this.forceHardCutNextCameraUpdate = true
     this.updateCamera(0)
   }
 
-  public getActiveKeyframe(time: number): { id: string; t: number; mode: string; actor_target?: string; fov?: number } {
+  public getActiveKeyframe(time: number): DirectingKeyframe {
     if (this.keyframes.length === 0) {
       return { id: 'default', t: 0, mode: this.state.camera_mode || 'Third Person' }
     }

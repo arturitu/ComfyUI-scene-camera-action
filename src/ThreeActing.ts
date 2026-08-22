@@ -53,6 +53,7 @@ export class ThreeActing {
     record: any
   }> = []
   private previousActorsData: any[] = []
+  private practiceTime: number = 0
 
   private debugPanel: DebugPanel | null = null
   private clonedEnvGroup: THREE.Group | null = null
@@ -114,9 +115,16 @@ export class ThreeActing {
     this.trajectory = []
     this.isRecording = true
     this.recordingTime = 0
+    this.practiceTime = 0
     this.isPlaying = false
+    this.isPlaybackMode = false
     this.activeRecordingTargetDuration = this.state.duration ?? 7.0
     this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
+
+    this.previousActorControllers.forEach(p => {
+      p.playbackController.setCurrentTime(0)
+      p.playbackController.evaluateAt(0, p.controller, 0, true)
+    })
 
     if (this.transformControls) {
       this.transformControls.detach()
@@ -124,16 +132,12 @@ export class ThreeActing {
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = false
     }
-
-    // Reset previous actors to t=0
-    this.previousActorControllers.forEach(p => {
-      p.playbackController.start()
-      p.playbackController.evaluateAt(0, p.controller, 0)
-    })
   }
 
   public getAccumulatedActors(): any[] {
-    const upstream = this.previousActorsData || []
+    const upstream = (this.previousActorsData || []).filter(
+      (a: any) => !a.id?.startsWith('actor_ds_') && !a.isDownstreamPeer
+    )
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
       actor_type: this.getActorType(),
@@ -170,6 +174,7 @@ export class ThreeActing {
     this.playbackController.setTrajectory(JSON.stringify(this.trajectory))
     if (this.trajectory.length > 0) {
       this.isPlaybackMode = true
+      this.buildPreviousActors(this.previousActorsData)
     }
 
     if (this.onStateChange) {
@@ -183,6 +188,7 @@ export class ThreeActing {
     this.isPlaying = false
     this.isPlaybackMode = false
     this.recordingTime = 0
+    this.practiceTime = 0
     this.trajectory = []
     this.playbackController.stop()
     this.playbackController.setTrajectory('')
@@ -190,20 +196,28 @@ export class ThreeActing {
     const accumulated = this.getAccumulatedActors()
     this.state.actors = accumulated
     this.resetActorPosition()
+    this.buildPreviousActors(this.previousActorsData)
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, motion_data: undefined, actors: accumulated })
     }
   }
 
+  private lastBuiltPlaybackMode: boolean | null = null
+
   public buildPreviousActors(actorsRecords?: any[]): void {
     const newRecords = actorsRecords || []
-    if (this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
+    if (
+      this.lastBuiltPlaybackMode === this.isPlaybackMode &&
+      this.previousActorsData &&
+      this.previousActorControllers.length === newRecords.length
+    ) {
       try {
         if (JSON.stringify(newRecords) === JSON.stringify(this.previousActorsData)) {
           return
         }
       } catch (e) {}
     }
+    this.lastBuiltPlaybackMode = this.isPlaybackMode
 
     this.previousActorControllers.forEach(p => {
       this.scene.remove(p.controller.group)
@@ -213,6 +227,9 @@ export class ThreeActing {
     this.previousActorsData = newRecords
 
     this.previousActorsData.forEach((rec) => {
+      // In playback mode (reviewing own recording), never render downstream practice peers
+      if (this.isPlaybackMode && (rec.isDownstreamPeer || rec.id?.startsWith('actor_ds_'))) return
+
       let traj = rec.trajectory || rec.motion_data
       if (typeof traj === 'string' && traj.trim()) {
         try {
@@ -252,6 +269,7 @@ export class ThreeActing {
       this.isRecording = false
       this.isPlaybackMode = true
       this.isPlaying = true
+      this.buildPreviousActors(this.previousActorsData)
       this.playbackController.start()
     }
   }
@@ -448,12 +466,13 @@ export class ThreeActing {
     this.resetActorPosition()
   }
 
-  public setActorColor(color: string): void {
+  public setActorColor(color: string, triggerChange: boolean = true): void {
+    const isDifferent = this.state.actor_color !== color
     this.state.actor_color = color
     if (this.actorController) {
       this.actorController.setActorColor(color)
     }
-    if (this.onStateChange) {
+    if (isDifferent && triggerChange && this.onStateChange) {
       this.onStateChange({ ...this.state, actor_color: color, actors: this.getAccumulatedActors() })
     }
   }
@@ -591,28 +610,30 @@ export class ThreeActing {
   }
 
   private updateActorMovement(dt: number): void {
-    // Evaluate previous actors' motion at current playback/recording time
-    const curTime = this.isRecording ? this.recordingTime : this.playbackController.getCurrentTime()
-    this.previousActorControllers.forEach(p => {
-      p.playbackController.evaluateAt(curTime, p.controller, dt)
-    })
-
     if (this.isPlaybackMode) {
+      const curTime = this.playbackController.getCurrentTime()
+      this.previousActorControllers.forEach(p => {
+        p.playbackController.evaluateAt(curTime, p.controller, this.isPlaying ? dt : 0)
+      })
       if (this.isPlaying) {
         this.playbackController.update(dt, this.actorController)
       } else if (this.actorController) {
-        this.playbackController.evaluateAt(this.playbackController.getCurrentTime(), this.actorController, 0)
+        this.playbackController.evaluateAt(curTime, this.actorController, 0)
       }
       return
     }
 
-    if (this.actorController) {
-      const speedMult = this.state.actor_speed ?? 10.0
-      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
+    if (this.isRecording) {
+      const curTime = this.recordingTime
+      this.previousActorControllers.forEach(p => {
+        p.playbackController.evaluateAt(curTime, p.controller, dt)
+      })
 
-      if (this.isRecording) {
+      if (this.actorController) {
+        const speedMult = this.state.actor_speed ?? 10.0
+        this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
+
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
-
         this.recordingTime += dt
 
         if (this.recordingTime >= this.activeRecordingTargetDuration) {
@@ -622,7 +643,29 @@ export class ThreeActing {
           }
         }
       }
+      return
     }
+
+    // --- Continuous Looping Practice Mode ---
+    const loopDuration = Math.max(0.1, this.state.duration ?? 7.0)
+    this.practiceTime = (this.practiceTime + dt) % loopDuration
+    this.previousActorControllers.forEach(p => {
+      p.playbackController.evaluateAt(this.practiceTime, p.controller, dt)
+    })
+
+    if (this.actorController) {
+      const speedMult = this.state.actor_speed ?? 10.0
+      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
+    }
+  }
+
+  public getPracticeTime(): number {
+    const loopDur = Math.max(0.1, this.state.duration ?? 7.0)
+    return this.practiceTime % loopDur
+  }
+
+  public isPracticeMode(): boolean {
+    return !this.isRecording && !this.isPlaybackMode
   }
 
   public setDisplayCollider(val: boolean): void {
@@ -740,7 +783,7 @@ export class ThreeActing {
       this.buildActor(newState.actor_type)
     }
     if (newState.actor_color !== undefined) {
-      this.setActorColor(newState.actor_color)
+      this.setActorColor(newState.actor_color, false)
     }
     if (newState.actor_speed !== undefined) {
       this.state.actor_speed = newState.actor_speed
@@ -753,7 +796,13 @@ export class ThreeActing {
     }
     if (newState.motion_data !== undefined) {
       this.state.motion_data = newState.motion_data
-      this.loadTrajectory(newState.motion_data)
+      if (!newState.motion_data || (typeof newState.motion_data === 'string' && !newState.motion_data.trim())) {
+        this.trajectory = []
+        this.isPlaybackMode = false
+        this.playbackController.setTrajectory('')
+      } else {
+        this.loadTrajectory(newState.motion_data)
+      }
     }
     const newStageData = newState.stage_data ?? newState.scene_data
     if (newStageData !== undefined) {

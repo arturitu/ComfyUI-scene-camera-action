@@ -45913,6 +45913,7 @@ class ThreeActing {
     __publicField(this, "playbackController");
     __publicField(this, "previousActorControllers", []);
     __publicField(this, "previousActorsData", []);
+    __publicField(this, "practiceTime", 0);
     __publicField(this, "debugPanel", null);
     __publicField(this, "clonedEnvGroup", null);
     __publicField(this, "keydownHandler");
@@ -45922,6 +45923,7 @@ class ThreeActing {
     __publicField(this, "resizeAnimationFrameId", null);
     __publicField(this, "lastTime", performance.now());
     __publicField(this, "onRecordingFinished");
+    __publicField(this, "lastBuiltPlaybackMode", null);
     __publicField(this, "isPlaybackMode", false);
     __publicField(this, "isCountingCountdown", false);
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
@@ -45965,22 +45967,29 @@ class ThreeActing {
     this.trajectory = [];
     this.isRecording = true;
     this.recordingTime = 0;
+    this.practiceTime = 0;
     this.isPlaying = false;
+    this.isPlaybackMode = false;
     this.activeRecordingTargetDuration = this.state.duration ?? 7;
     this.activeRecordingSpeed = this.state.actor_speed ?? 1;
+    this.previousActorControllers.forEach((p2) => {
+      p2.playbackController.setCurrentTime(0);
+      p2.playbackController.evaluateAt(0, p2.controller, 0, true);
+    });
     if (this.transformControls) {
       this.transformControls.detach();
     }
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = false;
     }
-    this.previousActorControllers.forEach((p2) => {
-      p2.playbackController.start();
-      p2.playbackController.evaluateAt(0, p2.controller, 0);
-    });
   }
   getAccumulatedActors() {
-    const upstream = this.previousActorsData || [];
+    const upstream = (this.previousActorsData || []).filter(
+      (a) => {
+        var _a;
+        return !((_a = a.id) == null ? void 0 : _a.startsWith("actor_ds_")) && !a.isDownstreamPeer;
+      }
+    );
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
       actor_type: this.getActorType(),
@@ -46013,6 +46022,7 @@ class ThreeActing {
     this.playbackController.setTrajectory(JSON.stringify(this.trajectory));
     if (this.trajectory.length > 0) {
       this.isPlaybackMode = true;
+      this.buildPreviousActors(this.previousActorsData);
     }
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, actors: allActors });
@@ -46024,6 +46034,7 @@ class ThreeActing {
     this.isPlaying = false;
     this.isPlaybackMode = false;
     this.recordingTime = 0;
+    this.practiceTime = 0;
     this.trajectory = [];
     this.playbackController.stop();
     this.playbackController.setTrajectory("");
@@ -46031,13 +46042,14 @@ class ThreeActing {
     const accumulated = this.getAccumulatedActors();
     this.state.actors = accumulated;
     this.resetActorPosition();
+    this.buildPreviousActors(this.previousActorsData);
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, motion_data: void 0, actors: accumulated });
     }
   }
   buildPreviousActors(actorsRecords) {
     const newRecords = actorsRecords || [];
-    if (this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
+    if (this.lastBuiltPlaybackMode === this.isPlaybackMode && this.previousActorsData && this.previousActorControllers.length === newRecords.length) {
       try {
         if (JSON.stringify(newRecords) === JSON.stringify(this.previousActorsData)) {
           return;
@@ -46045,6 +46057,7 @@ class ThreeActing {
       } catch (e) {
       }
     }
+    this.lastBuiltPlaybackMode = this.isPlaybackMode;
     this.previousActorControllers.forEach((p2) => {
       this.scene.remove(p2.controller.group);
       p2.controller.dispose();
@@ -46052,6 +46065,8 @@ class ThreeActing {
     this.previousActorControllers = [];
     this.previousActorsData = newRecords;
     this.previousActorsData.forEach((rec) => {
+      var _a;
+      if (this.isPlaybackMode && (rec.isDownstreamPeer || ((_a = rec.id) == null ? void 0 : _a.startsWith("actor_ds_")))) return;
       let traj = rec.trajectory || rec.motion_data;
       if (typeof traj === "string" && traj.trim()) {
         try {
@@ -46087,6 +46102,7 @@ class ThreeActing {
       this.isRecording = false;
       this.isPlaybackMode = true;
       this.isPlaying = true;
+      this.buildPreviousActors(this.previousActorsData);
       this.playbackController.start();
     }
   }
@@ -46258,12 +46274,13 @@ class ThreeActing {
     this.scene.add(this.actorController.group);
     this.resetActorPosition();
   }
-  setActorColor(color) {
+  setActorColor(color, triggerChange = true) {
+    const isDifferent = this.state.actor_color !== color;
     this.state.actor_color = color;
     if (this.actorController) {
       this.actorController.setActorColor(color);
     }
-    if (this.onStateChange) {
+    if (isDifferent && triggerChange && this.onStateChange) {
       this.onStateChange({ ...this.state, actor_color: color, actors: this.getAccumulatedActors() });
     }
   }
@@ -46380,22 +46397,26 @@ class ThreeActing {
     this.resizeObserver.observe(this.container);
   }
   updateActorMovement(dt) {
-    const curTime = this.isRecording ? this.recordingTime : this.playbackController.getCurrentTime();
-    this.previousActorControllers.forEach((p2) => {
-      p2.playbackController.evaluateAt(curTime, p2.controller, dt);
-    });
     if (this.isPlaybackMode) {
+      const curTime = this.playbackController.getCurrentTime();
+      this.previousActorControllers.forEach((p2) => {
+        p2.playbackController.evaluateAt(curTime, p2.controller, this.isPlaying ? dt : 0);
+      });
       if (this.isPlaying) {
         this.playbackController.update(dt, this.actorController);
       } else if (this.actorController) {
-        this.playbackController.evaluateAt(this.playbackController.getCurrentTime(), this.actorController, 0);
+        this.playbackController.evaluateAt(curTime, this.actorController, 0);
       }
       return;
     }
-    if (this.actorController) {
-      const speedMult = this.state.actor_speed ?? 10;
-      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera);
-      if (this.isRecording) {
+    if (this.isRecording) {
+      const curTime = this.recordingTime;
+      this.previousActorControllers.forEach((p2) => {
+        p2.playbackController.evaluateAt(curTime, p2.controller, dt);
+      });
+      if (this.actorController) {
+        const speedMult = this.state.actor_speed ?? 10;
+        this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera);
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime));
         this.recordingTime += dt;
         if (this.recordingTime >= this.activeRecordingTargetDuration) {
@@ -46405,7 +46426,24 @@ class ThreeActing {
           }
         }
       }
+      return;
     }
+    const loopDuration = Math.max(0.1, this.state.duration ?? 7);
+    this.practiceTime = (this.practiceTime + dt) % loopDuration;
+    this.previousActorControllers.forEach((p2) => {
+      p2.playbackController.evaluateAt(this.practiceTime, p2.controller, dt);
+    });
+    if (this.actorController) {
+      const speedMult = this.state.actor_speed ?? 10;
+      this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera);
+    }
+  }
+  getPracticeTime() {
+    const loopDur = Math.max(0.1, this.state.duration ?? 7);
+    return this.practiceTime % loopDur;
+  }
+  isPracticeMode() {
+    return !this.isRecording && !this.isPlaybackMode;
   }
   setDisplayCollider(val) {
     this.displayCollider = val;
@@ -46501,7 +46539,7 @@ class ThreeActing {
       this.buildActor(newState.actor_type);
     }
     if (newState.actor_color !== void 0) {
-      this.setActorColor(newState.actor_color);
+      this.setActorColor(newState.actor_color, false);
     }
     if (newState.actor_speed !== void 0) {
       this.state.actor_speed = newState.actor_speed;
@@ -46514,7 +46552,13 @@ class ThreeActing {
     }
     if (newState.motion_data !== void 0) {
       this.state.motion_data = newState.motion_data;
-      this.loadTrajectory(newState.motion_data);
+      if (!newState.motion_data || typeof newState.motion_data === "string" && !newState.motion_data.trim()) {
+        this.trajectory = [];
+        this.isPlaybackMode = false;
+        this.playbackController.setTrajectory("");
+      } else {
+        this.loadTrajectory(newState.motion_data);
+      }
     }
     const newStageData = newState.stage_data ?? newState.scene_data;
     if (newStageData !== void 0) {
@@ -46721,29 +46765,33 @@ const _hoisted_16$1 = {
 };
 const _hoisted_17$1 = {
   key: 3,
-  class: "state-indicator interactive"
+  class: "state-indicator practice"
 };
 const _hoisted_18$1 = {
+  key: 4,
+  class: "state-indicator interactive"
+};
+const _hoisted_19$1 = {
   key: 1,
   class: "hint"
 };
-const _hoisted_19$1 = {
+const _hoisted_20$1 = {
   key: 2,
   class: "time-counter-overlay"
 };
-const _hoisted_20$1 = { class: "controls-modal-card" };
-const _hoisted_21$1 = { class: "modal-header" };
-const _hoisted_22$1 = { class: "modal-title-group" };
-const _hoisted_23$1 = { class: "modal-body" };
-const _hoisted_24$1 = {
+const _hoisted_21$1 = { class: "controls-modal-card" };
+const _hoisted_22$1 = { class: "modal-header" };
+const _hoisted_23$1 = { class: "modal-title-group" };
+const _hoisted_24$1 = { class: "modal-body" };
+const _hoisted_25$1 = {
   key: 0,
   class: "controls-list"
 };
-const _hoisted_25$1 = {
+const _hoisted_26$1 = {
   key: 1,
   class: "controls-list"
 };
-const _hoisted_26$1 = { class: "modal-footer" };
+const _hoisted_27$1 = { class: "modal-footer" };
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ActingWidget",
   props: {
@@ -46887,12 +46935,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       isPlaying.value = false;
       isRecording.value = false;
       isCounting.value = false;
+      state.motion_data = "";
       if (threeActing) {
         threeActing.setCountingState(false);
-        threeActing.setState({ motion_data: "" });
-        threeActing.stopPlayback();
+        threeActing.resetRecording();
       }
-      state.motion_data = "";
       if (props.onStateChange) {
         props.onStateChange(state);
       }
@@ -46952,15 +46999,26 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       }
     });
     const currentTime = /* @__PURE__ */ ref(0);
+    const practiceElapsed = /* @__PURE__ */ ref(0);
     const totalDuration = /* @__PURE__ */ ref(((_i = props.initialState) == null ? void 0 : _i.duration) ?? 7);
     let timeFrameId = null;
+    const practiceTimeDisplay = computed(() => {
+      const cur = Math.max(0, practiceElapsed.value).toFixed(1);
+      const dur = Math.max(0, totalDuration.value).toFixed(1);
+      return `${cur}s / ${dur}s`;
+    });
     const updateTimeCounter = () => {
       if (threeActing) {
-        currentTime.value = threeActing.getCurrentTime();
-        totalDuration.value = threeActing.getDuration();
         if (isRecording.value) {
           recordingElapsed.value = threeActing.recordingTime;
+          currentTime.value = threeActing.recordingTime;
+        } else if (isPlaying.value || threeActing.isPlaybackMode) {
+          currentTime.value = threeActing.getCurrentTime();
+        } else {
+          practiceElapsed.value = typeof threeActing.getPracticeTime === "function" ? threeActing.getPracticeTime() : 0;
+          currentTime.value = practiceElapsed.value;
         }
+        totalDuration.value = threeActing.getDuration();
       }
       timeFrameId = requestAnimationFrame(updateTimeCounter);
     };
@@ -47088,27 +47146,30 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         ])),
         createBaseVNode("div", _hoisted_13$1, [
           state.scene_data ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
-            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_14$1, "Replaying Motion")) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, "Recording Acting...")) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_16$1, "Starting in " + toDisplayString(countdownVal.value) + "...", 1)) : (openBlock(), createElementBlock("div", _hoisted_17$1, "Interactive Keyboard Control")),
+            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_14$1, "Replaying Motion")) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, "Recording Acting...")) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_16$1, "Starting in " + toDisplayString(countdownVal.value) + "...", 1)) : !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_17$1, [
+              _cache2[11] || (_cache2[11] = createBaseVNode("span", { class: "practice-dot" }, null, -1)),
+              createTextVNode(" PRACTICE (Loop " + toDisplayString(practiceTimeDisplay.value) + ") ", 1)
+            ])) : (openBlock(), createElementBlock("div", _hoisted_18$1, "Interactive Keyboard Control")),
             createBaseVNode("button", {
               class: "info-help-btn",
               title: "View Keyboard Controls",
               onClick: _cache2[2] || (_cache2[2] = ($event) => showHelpModal.value = true)
-            }, [..._cache2[11] || (_cache2[11] = [
+            }, [..._cache2[12] || (_cache2[12] = [
               createBaseVNode("span", { class: "info-icon" }, "?", -1),
               createBaseVNode("span", { class: "info-label" }, "Controls", -1)
             ])])
-          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_18$1, "Waiting for stage link..."))
+          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_19$1, "Waiting for stage link..."))
         ]),
-        state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_19$1, toDisplayString(formattedTime.value), 1)) : createCommentVNode("", true),
+        state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_20$1, toDisplayString(formattedTime.value), 1)) : createCommentVNode("", true),
         showHelpModal.value ? (openBlock(), createElementBlock("div", {
           key: 3,
           class: "controls-modal-backdrop",
           onClick: _cache2[5] || (_cache2[5] = withModifiers(($event) => showHelpModal.value = false, ["self"]))
         }, [
-          createBaseVNode("div", _hoisted_20$1, [
-            createBaseVNode("div", _hoisted_21$1, [
-              createBaseVNode("div", _hoisted_22$1, [
-                _cache2[12] || (_cache2[12] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
+          createBaseVNode("div", _hoisted_21$1, [
+            createBaseVNode("div", _hoisted_22$1, [
+              createBaseVNode("div", _hoisted_23$1, [
+                _cache2[13] || (_cache2[13] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
                 createBaseVNode("span", {
                   class: normalizeClass(["actor-type-badge", state.actor_type])
                 }, toDisplayString(state.actor_type === "car" ? "CAR ACTOR" : "HUMAN ACTOR"), 3)
@@ -47119,14 +47180,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 title: "Close"
               }, "✕")
             ]),
-            createBaseVNode("div", _hoisted_23$1, [
-              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_24$1, [..._cache2[13] || (_cache2[13] = [
-                createStaticVNode('<div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>W</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>▲</kbd></div><span class="action-desc" data-v-0b101302>Accelerate</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>S</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>▼</kbd></div><span class="action-desc" data-v-0b101302>Brake / Reverse</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>A</kbd> <kbd data-v-0b101302>D</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>◀</kbd> <kbd data-v-0b101302>▶</kbd></div><span class="action-desc" data-v-0b101302>Steer Left / Right</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Space</kbd></div><span class="action-desc" data-v-0b101302>Handbrake</span></div>', 4)
-              ])])) : (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[14] || (_cache2[14] = [
-                createStaticVNode('<div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>W</kbd> <kbd data-v-0b101302>A</kbd> <kbd data-v-0b101302>S</kbd> <kbd data-v-0b101302>D</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>Arrows</kbd></div><span class="action-desc" data-v-0b101302>Move</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Shift</kbd> + Move</div><span class="action-desc" data-v-0b101302>Sprint (Fast Run)</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>C</kbd></div><span class="action-desc" data-v-0b101302>Crouch / Crouch Walk</span></div><div class="control-row" data-v-0b101302><div class="key-group" data-v-0b101302><kbd data-v-0b101302>Space</kbd> <span class="or" data-v-0b101302>or</span> <kbd data-v-0b101302>J</kbd></div><span class="action-desc" data-v-0b101302>Jump</span></div>', 4)
+            createBaseVNode("div", _hoisted_24$1, [
+              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[14] || (_cache2[14] = [
+                createStaticVNode('<div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>W</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>▲</kbd></div><span class="action-desc" data-v-f5d4ebd1>Accelerate</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>S</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>▼</kbd></div><span class="action-desc" data-v-f5d4ebd1>Brake / Reverse</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>A</kbd> <kbd data-v-f5d4ebd1>D</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>◀</kbd> <kbd data-v-f5d4ebd1>▶</kbd></div><span class="action-desc" data-v-f5d4ebd1>Steer Left / Right</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Space</kbd></div><span class="action-desc" data-v-f5d4ebd1>Handbrake</span></div>', 4)
+              ])])) : (openBlock(), createElementBlock("div", _hoisted_26$1, [..._cache2[15] || (_cache2[15] = [
+                createStaticVNode('<div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>W</kbd> <kbd data-v-f5d4ebd1>A</kbd> <kbd data-v-f5d4ebd1>S</kbd> <kbd data-v-f5d4ebd1>D</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>Arrows</kbd></div><span class="action-desc" data-v-f5d4ebd1>Move</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Shift</kbd> + Move</div><span class="action-desc" data-v-f5d4ebd1>Sprint (Fast Run)</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>C</kbd></div><span class="action-desc" data-v-f5d4ebd1>Crouch / Crouch Walk</span></div><div class="control-row" data-v-f5d4ebd1><div class="key-group" data-v-f5d4ebd1><kbd data-v-f5d4ebd1>Space</kbd> <span class="or" data-v-f5d4ebd1>or</span> <kbd data-v-f5d4ebd1>J</kbd></div><span class="action-desc" data-v-f5d4ebd1>Jump</span></div>', 4)
               ])]))
             ]),
-            createBaseVNode("div", _hoisted_26$1, [
+            createBaseVNode("div", _hoisted_27$1, [
               createBaseVNode("button", {
                 class: "modal-ok-btn",
                 onClick: _cache2[4] || (_cache2[4] = ($event) => showHelpModal.value = false)
@@ -47138,7 +47199,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-0b101302"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-f5d4ebd1"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);
@@ -47434,6 +47495,7 @@ class ThreeDirecting {
         } catch (e) {
         }
       }
+      if (!traj || Array.isArray(traj) && traj.length === 0) return;
       pbCtrl.setTrajectory(traj || []);
       const firstFrame = pbCtrl.getTrajectory()[0];
       const initialAnim = firstFrame == null ? void 0 : firstFrame.anim;
@@ -48976,8 +49038,7 @@ async function updateStageNodeFromPreset(node, filename) {
       } else {
         writeStoredStageProps(node, data);
       }
-      notifyConnectedActingNodes(node);
-      notifyConnectedDirectingNodes(node);
+      syncGraph();
     }
   } catch (e) {
     console.error("[StageNode] Failed to load preset:", e);
@@ -49089,8 +49150,7 @@ function createSceneInstance(node) {
       const live = instance.currentNode;
       writeStoredSceneProps(live, state);
       (_a2 = app.graph) == null ? void 0 : _a2.setDirtyCanvas(true, true);
-      notifyConnectedActingNodes(live);
-      notifyConnectedDirectingNodes(live);
+      syncGraph();
     },
     onPresetSaved: (filename) => {
       const live = instance.currentNode;
@@ -49114,8 +49174,7 @@ function updateSceneNodeFromLinks(node) {
   if (!instance) return;
   const state = readSceneStateFromNode(node);
   instance.exposed.setState(state);
-  notifyConnectedActingNodes(node);
-  notifyConnectedDirectingNodes(node);
+  syncGraph();
 }
 function createSceneNodeWidget(node) {
   var _a;
@@ -49217,21 +49276,6 @@ function findConnectedStageNode(actingNode) {
   return findRootStagingNode(actingNode);
 }
 const findConnectedSceneNode = findConnectedStageNode;
-function findConnectedActingNode(directingNode) {
-  var _a;
-  if (!directingNode.inputs || directingNode.inputs.length === 0) return null;
-  const actingInput = directingNode.inputs.find((i) => i.name === "acting" || i.name === "Acting");
-  if (!actingInput || actingInput.link == null) return null;
-  const graph = app.graph;
-  if (!graph || !graph.links) return null;
-  const link = graph.links[actingInput.link];
-  if (!link) return null;
-  const originNode = (_a = graph.getNodeById) == null ? void 0 : _a.call(graph, link.origin_id);
-  if (isActingNode(originNode)) {
-    return originNode || null;
-  }
-  return null;
-}
 function findRootActingNode(actingNode) {
   let currNode = actingNode;
   const visited = /* @__PURE__ */ new Set();
@@ -49246,10 +49290,135 @@ function findRootActingNode(actingNode) {
   }
   return currNode;
 }
-function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE__ */ new Set()) {
-  var _a, _b, _c;
-  if (visitedSet.has(actingNode)) return;
-  visitedSet.add(actingNode);
+function findDirectlyConnectedDownstreamActingNodes(actingNode) {
+  var _a;
+  const downstream = [];
+  const graph = app.graph;
+  if (!graph || !graph.links) return downstream;
+  for (const linkId in graph.links) {
+    const link = graph.links[linkId];
+    if (link && link.origin_id === actingNode.id) {
+      const targetNode = (_a = graph.getNodeById) == null ? void 0 : _a.call(graph, link.target_id);
+      if (isActingNode(targetNode)) {
+        downstream.push(targetNode);
+      }
+    }
+  }
+  return downstream;
+}
+function getChainActorsForNode(actingNode) {
+  var _a, _b;
+  const originInfo = findConnectedStageOrActingOrigin(actingNode);
+  if (!originInfo) return [];
+  let upstreamActors = [];
+  if (originInfo.isActing) {
+    const upstreamActingNode = originInfo.originNode;
+    const upstreamInst = actingInstances.get(upstreamActingNode);
+    const upstreamThreeActing = ((_a = upstreamInst == null ? void 0 : upstreamInst.exposed) == null ? void 0 : _a.getThreeActing) ? upstreamInst.exposed.getThreeActing() : null;
+    if (upstreamThreeActing && typeof upstreamThreeActing.getAccumulatedActors === "function") {
+      upstreamActors = upstreamThreeActing.getAccumulatedActors();
+    } else {
+      const upstreamActingState = readActingStateFromNode(upstreamActingNode);
+      upstreamActors = upstreamActingState.actors ?? [];
+    }
+  }
+  upstreamActors = upstreamActors.filter((a) => {
+    var _a2;
+    return !((_a2 = a.id) == null ? void 0 : _a2.startsWith("actor_ds_")) && !a.isDownstreamPeer;
+  });
+  const downstreamActors = [];
+  const visited = /* @__PURE__ */ new Set();
+  visited.add(actingNode);
+  let currentLevel = findDirectlyConnectedDownstreamActingNodes(actingNode);
+  while (currentLevel.length > 0) {
+    const nextLevel = [];
+    for (const dsNode of currentLevel) {
+      if (visited.has(dsNode) || dsNode.id === actingNode.id) continue;
+      visited.add(dsNode);
+      const dsInst = actingInstances.get(dsNode);
+      const dsThreeActing = ((_b = dsInst == null ? void 0 : dsInst.exposed) == null ? void 0 : _b.getThreeActing) ? dsInst.exposed.getThreeActing() : null;
+      const dsState = readActingStateFromNode(dsNode);
+      let dsTraj = [];
+      if (dsThreeActing && typeof dsThreeActing.getTrajectory === "function") {
+        dsTraj = dsThreeActing.getTrajectory() || [];
+      }
+      if ((!dsTraj || dsTraj.length === 0) && !dsThreeActing && dsState.motion_data) {
+        try {
+          const parsed = typeof dsState.motion_data === "string" ? JSON.parse(dsState.motion_data) : dsState.motion_data;
+          dsTraj = (parsed == null ? void 0 : parsed.trajectory) || (parsed == null ? void 0 : parsed.motion_data) || (Array.isArray(parsed) ? parsed : []);
+        } catch {
+        }
+      }
+      if (dsTraj && dsTraj.length > 0) {
+        downstreamActors.push({
+          id: `actor_ds_${dsNode.id}`,
+          isDownstreamPeer: true,
+          actor_type: (dsThreeActing == null ? void 0 : dsThreeActing.getActorType) ? dsThreeActing.getActorType() : dsState.actor_type ?? "human",
+          actor_color: dsState.actor_color || (dsState.actor_type === "car" ? "#0284C7" : "#F1DFBF"),
+          actor_speed: dsState.actor_speed ?? 10,
+          spawn_point: dsState.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
+          trajectory: dsTraj
+        });
+      }
+      const furtherNodes = findDirectlyConnectedDownstreamActingNodes(dsNode);
+      for (const fn of furtherNodes) {
+        if (!visited.has(fn)) {
+          nextLevel.push(fn);
+        }
+      }
+    }
+    currentLevel = nextLevel;
+  }
+  return [...upstreamActors, ...downstreamActors];
+}
+function isActingNodeMotionValid(actingNode) {
+  var _a;
+  const actingInst = actingInstances.get(actingNode);
+  const threeActing = ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
+  if (threeActing) {
+    if (typeof threeActing.getTrajectory === "function") {
+      const traj = threeActing.getTrajectory();
+      return Array.isArray(traj) && traj.length > 0;
+    }
+  }
+  const actingState = readActingStateFromNode(actingNode);
+  const rawBlob = actingState.motion_data;
+  if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
+    try {
+      const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
+      if (parsed && typeof parsed === "object") {
+        if (Array.isArray(parsed.trajectory) && parsed.trajectory.length > 0) return true;
+        if (Array.isArray(parsed.motion_data) && parsed.motion_data.length > 0) return true;
+      }
+      if (Array.isArray(parsed) && parsed.length > 0) return true;
+    } catch {
+    }
+  }
+  return false;
+}
+function isUpstreamActingChainComplete(startActingNode) {
+  let currNode = startActingNode;
+  const visited = /* @__PURE__ */ new Set();
+  while (currNode && !visited.has(currNode)) {
+    visited.add(currNode);
+    if (isActingNode(currNode)) {
+      if (!isActingNodeMotionValid(currNode)) {
+        return false;
+      }
+      const originInfo = findConnectedStageOrActingOrigin(currNode);
+      if (originInfo && originInfo.isActing) {
+        currNode = originInfo.originNode;
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+  return true;
+}
+function updateActingNodeState(actingNode) {
+  var _a, _b;
   const actingInst = actingInstances.get(actingNode);
   if (!actingInst) return;
   const originInfo = findConnectedStageOrActingOrigin(actingNode);
@@ -49257,12 +49426,35 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
   const charType = currentActingState.actor_type ?? "human";
   if (originInfo) {
     let stageState = null;
-    let previousActors = [];
+    const rootStagingNode = findRootStagingNode(actingNode);
+    if (rootStagingNode) {
+      const sceneInst = sceneInstances.get(rootStagingNode);
+      const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null;
+      if (threeScene && actingInst.exposed.setConnectedThreeStage) {
+        actingInst.exposed.setConnectedThreeStage(threeScene);
+      }
+      stageState = readSceneStateFromNode(rootStagingNode);
+    }
+    if (!stageState) {
+      if (!originInfo.isActing) {
+        stageState = readSceneStateFromNode(originInfo.originNode);
+      } else {
+        const upstreamActingNode = originInfo.originNode;
+        const upstreamInst = actingInstances.get(upstreamActingNode);
+        const upstreamThreeActing = ((_a = upstreamInst == null ? void 0 : upstreamInst.exposed) == null ? void 0 : _a.getThreeActing) ? upstreamInst.exposed.getThreeActing() : null;
+        if (upstreamThreeActing) {
+          stageState = upstreamThreeActing.getStageData();
+        } else {
+          const upstreamActingState = readActingStateFromNode(upstreamActingNode);
+          stageState = upstreamActingState.stage_data ?? upstreamActingState.scene_data ?? null;
+        }
+      }
+    }
     const rootActingNode = findRootActingNode(actingNode);
     const rootActingState = readActingStateFromNode(rootActingNode);
     const masterDuration = rootActingState.duration ?? 7;
     const isNestedActing = originInfo.isActing;
-    const durWidget = (_a = actingNode.widgets) == null ? void 0 : _a.find((w) => w.name === "duration");
+    const durWidget = (_b = actingNode.widgets) == null ? void 0 : _b.find((w) => w.name === "duration");
     if (isNestedActing) {
       setWidgetValue(actingNode, "duration", masterDuration);
       if (durWidget) {
@@ -49278,21 +49470,7 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
       }
     }
     const effectiveDuration = isNestedActing ? masterDuration : currentActingState.duration ?? 7;
-    if (!originInfo.isActing) {
-      stageState = readSceneStateFromNode(originInfo.originNode);
-    } else {
-      const upstreamActingNode = originInfo.originNode;
-      const upstreamInst = actingInstances.get(upstreamActingNode);
-      const upstreamThreeActing = ((_b = upstreamInst == null ? void 0 : upstreamInst.exposed) == null ? void 0 : _b.getThreeActing) ? upstreamInst.exposed.getThreeActing() : null;
-      if (upstreamThreeActing) {
-        stageState = upstreamThreeActing.getStageData();
-        previousActors = typeof upstreamThreeActing.getAccumulatedActors === "function" ? upstreamThreeActing.getAccumulatedActors() : upstreamThreeActing.getState().actors ?? [];
-      } else {
-        const upstreamActingState = readActingStateFromNode(upstreamActingNode);
-        stageState = upstreamActingState.stage_data ?? upstreamActingState.scene_data ?? null;
-        previousActors = upstreamActingState.actors ?? [];
-      }
-    }
+    const allPeerActors = getChainActorsForNode(actingNode);
     if (stageState) {
       actingInst.exposed.setState({
         scene_data: stageState,
@@ -49300,123 +49478,153 @@ function updateActingNodeFromConnectedScene(actingNode, visitedSet = /* @__PURE_
         actor_type: charType,
         actor_color: currentActingState.actor_color,
         duration: effectiveDuration,
-        actors: previousActors
+        actors: allPeerActors
       });
       writeStoredActingProps(actingNode, {});
-      const rootStagingNode = findRootStagingNode(actingNode);
-      if (rootStagingNode) {
-        const sceneInst = sceneInstances.get(rootStagingNode);
-        const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null;
-        if (threeScene && actingInst.exposed.setConnectedThreeStage) {
-          actingInst.exposed.setConnectedThreeStage(threeScene);
-        }
-      }
-      notifyConnectedActingNodes(actingNode, visitedSet);
-      notifyConnectedDirectingNodes(actingNode);
-      (_c = app.graph) == null ? void 0 : _c.setDirtyCanvas(true, true);
       return;
     }
   }
-  actingInst.exposed.setState({ scene_data: void 0, stage_data: void 0, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] });
+  actingInst.exposed.setState({
+    scene_data: void 0,
+    stage_data: void 0,
+    actor_type: charType,
+    actor_color: currentActingState.actor_color,
+    actors: []
+  });
   writeStoredActingProps(actingNode, {});
   if (actingInst.exposed.setConnectedThreeStage) {
     actingInst.exposed.setConnectedThreeStage(null);
   }
-  notifyConnectedDirectingNodes(actingNode);
 }
-function notifyConnectedDirectingNodes(originNode) {
-  var _a, _b;
-  const graph = app.graph;
-  if (!graph || !graph.links) return;
-  for (const linkId in graph.links) {
-    const link = graph.links[linkId];
-    if (link && link.origin_id === originNode.id) {
-      const targetNode = (_a = graph.getNodeById) == null ? void 0 : _a.call(graph, link.target_id);
-      if (isDirectingNode(targetNode)) {
-        const directingInst = directingInstances.get(targetNode);
-        if (directingInst) {
-          if (isActingNode(originNode)) {
-            const actingState = readActingStateFromNode(originNode);
-            const actingInst = actingInstances.get(originNode);
-            const threeActing = ((_b = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _b.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
-            if (threeActing && directingInst.exposed.setConnectedThreeActing) {
-              directingInst.exposed.setConnectedThreeActing(threeActing);
-            }
-            const rootStagingNode = findRootStagingNode(originNode);
-            let stageData = null;
-            if (rootStagingNode) {
-              stageData = readStageStateFromNode(rootStagingNode);
-            }
-            if (!stageData && (threeActing == null ? void 0 : threeActing.getStageData)) {
-              stageData = threeActing.getStageData();
-            }
-            if (!stageData) {
-              stageData = actingState.stage_data ?? actingState.scene_data ?? null;
-            }
-            const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
-            const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
-            const rawBlob = actingState.motion_data ?? "";
-            let actingBlob = "";
-            if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
-              try {
-                const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
-                if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-                  parsed.actor_type = currentActorType;
-                  if (stageData) {
-                    parsed.stage_data = stageData;
-                    parsed.scene_data = stageData;
-                  }
-                  if (currentActors && currentActors.length > 0) {
-                    parsed.actors = currentActors;
-                  }
-                  if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory;
-                  actingBlob = JSON.stringify(parsed);
-                } else {
-                  actingBlob = JSON.stringify({
-                    type: "acting_motion",
-                    actor_type: currentActorType,
-                    stage_data: stageData,
-                    scene_data: stageData,
-                    trajectory: parsed,
-                    motion_data: parsed,
-                    actors: currentActors
-                  });
-                }
-              } catch (e) {
-                actingBlob = rawBlob;
-              }
-            } else {
-              actingBlob = JSON.stringify({
-                type: "acting_motion",
-                actor_type: currentActorType,
-                stage_data: stageData,
-                scene_data: stageData,
-                trajectory: [],
-                motion_data: [],
-                actors: currentActors || []
-              });
-            }
-            directingInst.exposed.setState({ acting_data: actingBlob });
-          }
-        }
-      }
+function updateDirectingNodeState(directingNode) {
+  var _a;
+  const directingInst = directingInstances.get(directingNode);
+  if (!directingInst) return;
+  const originInfo = findConnectedStageOrActingOrigin(directingNode);
+  if (!originInfo) {
+    directingInst.exposed.setState({ acting_data: "" });
+    writeStoredDirectingProps(directingNode, {});
+    return;
+  }
+  const originNode = originInfo.originNode;
+  if (isActingNode(originNode)) {
+    if (!isUpstreamActingChainComplete(originNode)) {
+      directingInst.exposed.setState({ acting_data: "" });
+      writeStoredDirectingProps(directingNode, {});
+      return;
     }
+    const actingState = readActingStateFromNode(originNode);
+    const actingInst = actingInstances.get(originNode);
+    const threeActing = ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
+    if (threeActing && directingInst.exposed.setConnectedThreeActing) {
+      directingInst.exposed.setConnectedThreeActing(threeActing);
+    }
+    const rootStagingNode = findRootStagingNode(originNode);
+    let stageData = null;
+    if (rootStagingNode) {
+      stageData = readStageStateFromNode(rootStagingNode);
+    }
+    if (!stageData && (threeActing == null ? void 0 : threeActing.getStageData)) {
+      stageData = threeActing.getStageData();
+    }
+    if (!stageData) {
+      stageData = actingState.stage_data ?? actingState.scene_data ?? null;
+    }
+    const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
+    const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
+    const rawBlob = actingState.motion_data ?? "";
+    let actingBlob = "";
+    if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
+      try {
+        const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+          parsed.actor_type = currentActorType;
+          if (stageData) {
+            parsed.stage_data = stageData;
+            parsed.scene_data = stageData;
+          }
+          if (currentActors && currentActors.length > 0) {
+            parsed.actors = currentActors;
+          }
+          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory;
+          actingBlob = JSON.stringify(parsed);
+        } else {
+          actingBlob = JSON.stringify({
+            type: "acting_motion",
+            actor_type: currentActorType,
+            stage_data: stageData,
+            scene_data: stageData,
+            trajectory: parsed,
+            motion_data: parsed,
+            actors: currentActors
+          });
+        }
+      } catch (e) {
+        actingBlob = rawBlob;
+      }
+    } else {
+      actingBlob = JSON.stringify({
+        type: "acting_motion",
+        actor_type: currentActorType,
+        stage_data: stageData,
+        scene_data: stageData,
+        trajectory: [],
+        motion_data: [],
+        actors: currentActors || []
+      });
+    }
+    directingInst.exposed.setState({ acting_data: actingBlob });
+    writeStoredDirectingProps(directingNode, {});
   }
 }
-function notifyConnectedActingNodes(originNode, visitedSet = /* @__PURE__ */ new Set()) {
-  var _a;
-  const graph = app.graph;
-  if (!graph || !graph.links) return;
-  visitedSet.add(originNode);
-  for (const linkId in graph.links) {
-    const link = graph.links[linkId];
-    if (link && link.origin_id === originNode.id) {
-      const targetNode = (_a = graph.getNodeById) == null ? void 0 : _a.call(graph, link.target_id);
-      if (isActingNode(targetNode)) {
-        if (!visitedSet.has(targetNode)) {
-          updateActingNodeFromConnectedScene(targetNode, visitedSet);
+let isSyncingGraph = false;
+let pendingGraphSync = false;
+function syncGraph() {
+  if (isSyncingGraph) {
+    pendingGraphSync = true;
+    return;
+  }
+  isSyncingGraph = true;
+  try {
+    const graph = app.graph;
+    if (!graph) return;
+    const allNodes = graph._nodes || graph.nodes || [];
+    if (!Array.isArray(allNodes)) return;
+    const actingNodes = [];
+    const directingNodes = [];
+    for (const node of allNodes) {
+      if (isActingNode(node)) actingNodes.push(node);
+      else if (isDirectingNode(node)) directingNodes.push(node);
+    }
+    const getActingDepth = (node) => {
+      let depth = 0;
+      let curr = node;
+      const seen = /* @__PURE__ */ new Set();
+      while (curr && !seen.has(curr)) {
+        seen.add(curr);
+        const originInfo = findConnectedStageOrActingOrigin(curr);
+        if (originInfo && originInfo.isActing) {
+          depth++;
+          curr = originInfo.originNode;
+        } else {
+          break;
         }
       }
+      return depth;
+    };
+    actingNodes.sort((a, b) => getActingDepth(a) - getActingDepth(b));
+    for (const node of actingNodes) {
+      updateActingNodeState(node);
+    }
+    for (const node of directingNodes) {
+      updateDirectingNodeState(node);
+    }
+    graph.setDirtyCanvas(true, true);
+  } finally {
+    isSyncingGraph = false;
+    if (pendingGraphSync) {
+      pendingGraphSync = false;
+      syncGraph();
     }
   }
 }
@@ -49539,28 +49747,17 @@ function createActingInstance(node) {
       actors: stored.actors ?? []
     },
     onStateChange: (state) => {
-      var _a, _b, _c, _d, _e;
+      var _a;
       const live = instance.currentNode;
       writeStoredActingProps(live, state);
-      const durationWidget = (_a = live.widgets) == null ? void 0 : _a.find((w) => w.name === "duration");
-      if (durationWidget && durationWidget.value !== state.duration) {
-        durationWidget.value = state.duration;
+      setWidgetValue(live, "duration", state.duration);
+      setWidgetValue(live, "actor_speed", state.actor_speed);
+      if (state.actor_color) {
+        setWidgetValue(live, "actor_color", state.actor_color);
       }
-      const speedWidget = (_b = live.widgets) == null ? void 0 : _b.find((w) => w.name === "actor_speed");
-      if (speedWidget && speedWidget.value !== state.actor_speed) {
-        speedWidget.value = state.actor_speed;
-      }
-      const colorWidget = (_c = live.widgets) == null ? void 0 : _c.find((w) => w.name === "actor_color");
-      if (colorWidget && colorWidget.value !== state.actor_color && state.actor_color) {
-        colorWidget.value = state.actor_color;
-      }
-      const motionWidget = (_d = live.widgets) == null ? void 0 : _d.find((w) => w.name === "motion_data");
-      if (motionWidget && motionWidget.value !== state.motion_data) {
-        motionWidget.value = state.motion_data ?? "";
-      }
-      (_e = app.graph) == null ? void 0 : _e.setDirtyCanvas(true, true);
-      notifyConnectedActingNodes(live);
-      notifyConnectedDirectingNodes(live);
+      setWidgetValue(live, "motion_data", state.motion_data ?? "");
+      (_a = app.graph) == null ? void 0 : _a.setDirtyCanvas(true, true);
+      syncGraph();
     }
   });
   const mounted = vueApp.mount(container);
@@ -49600,7 +49797,7 @@ function bindActingWidgetCallbacks(node, exposed) {
     }
     exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed });
     writeStoredActingProps(node, {});
-    notifyConnectedDirectingNodes(node);
+    syncGraph();
   });
   wire("actor_color", (v) => {
     const rawType = getWidgetValue(node, "actor_type", "human");
@@ -49609,8 +49806,7 @@ function bindActingWidgetCallbacks(node, exposed) {
     const cleanColor = parseCleanHexColor(v, defaultColor);
     exposed.setState({ actor_color: cleanColor });
     writeStoredActingProps(node, {});
-    notifyConnectedActingNodes(node);
-    notifyConnectedDirectingNodes(node);
+    syncGraph();
   });
   const syncStateNow = () => {
     const st = readActingStateFromNode(node);
@@ -49624,18 +49820,19 @@ function bindActingWidgetCallbacks(node, exposed) {
   wire("actor_speed", (v) => {
     exposed.setState({ actor_speed: Number(v) });
     writeStoredActingProps(node, {});
+    syncGraph();
   });
   wire("duration", (v) => {
     var _a;
     exposed.setState({ duration: Number(v) });
     writeStoredActingProps(node, {});
-    notifyConnectedActingNodes(node);
-    notifyConnectedDirectingNodes(node);
+    syncGraph();
     (_a = app.graph) == null ? void 0 : _a.setDirtyCanvas(true, true);
   });
   wire("motion_data", (v) => {
     exposed.setState({ motion_data: String(v) });
     writeStoredActingProps(node, {});
+    syncGraph();
   });
 }
 function createActingNodeWidget(node) {
@@ -49671,6 +49868,7 @@ function createActingNodeWidget(node) {
         const st = readActingStateFromNode(this);
         actingInst.exposed.setState(st);
       }
+      syncGraph();
     }, 10);
   };
   const origOnConnectionsChange = node.onConnectionsChange;
@@ -49684,10 +49882,9 @@ function createActingNodeWidget(node) {
         if (actingInst) {
           actingInst.exposed.setState({ scene_data: void 0, stage_data: void 0, actors: [] });
         }
-        return;
       }
     }
-    updateActingNodeFromConnectedScene(this);
+    syncGraph();
   };
   const baseOnRemove = (_a = widget.onRemove) == null ? void 0 : _a.bind(widget);
   widget.onRemove = () => {
@@ -49700,9 +49897,10 @@ function createActingNodeWidget(node) {
       still.exposed.cleanup();
       still.vueApp.unmount();
       actingInstances.delete(node);
+      syncGraph();
     }, CLEANUP_DELAY_MS);
   };
-  setTimeout(() => updateActingNodeFromConnectedScene(node), 100);
+  setTimeout(() => syncGraph(), 100);
   return widget;
 }
 function readStoredDirectingProps(node) {
@@ -49728,80 +49926,6 @@ function readDirectingStateFromNode(node) {
     directing_data: typeof directingDataVal === "string" ? directingDataVal : "",
     acting_data: ""
   };
-}
-function updateDirectingNodeFromLinks(directingNode) {
-  var _a;
-  const directingInst = directingInstances.get(directingNode);
-  if (!directingInst) return;
-  const connectedActingNode = findConnectedActingNode(directingNode);
-  if (connectedActingNode) {
-    const actingState = readActingStateFromNode(connectedActingNode);
-    const actingInst = actingInstances.get(connectedActingNode);
-    const threeActing = ((_a = actingInst == null ? void 0 : actingInst.exposed) == null ? void 0 : _a.getThreeActing) ? actingInst.exposed.getThreeActing() : null;
-    if (threeActing && directingInst.exposed.setConnectedThreeActing) {
-      directingInst.exposed.setConnectedThreeActing(threeActing);
-    }
-    const rootStagingNode = findRootStagingNode(connectedActingNode);
-    let stageData = null;
-    if (rootStagingNode) {
-      stageData = readStageStateFromNode(rootStagingNode);
-    }
-    if (!stageData && (threeActing == null ? void 0 : threeActing.getStageData)) {
-      stageData = threeActing.getStageData();
-    }
-    if (!stageData) {
-      stageData = actingState.stage_data ?? actingState.scene_data ?? null;
-    }
-    const currentActorType = (threeActing == null ? void 0 : threeActing.getActorType()) ?? actingState.actor_type ?? "human";
-    const currentActors = typeof (threeActing == null ? void 0 : threeActing.getAccumulatedActors) === "function" ? threeActing.getAccumulatedActors() : (threeActing == null ? void 0 : threeActing.getState) ? threeActing.getState().actors : actingState.actors;
-    const rawBlob = actingState.motion_data ?? "";
-    let actingBlob = "";
-    if (rawBlob && (typeof rawBlob === "object" || typeof rawBlob === "string" && rawBlob.trim())) {
-      try {
-        const parsed = typeof rawBlob === "string" ? JSON.parse(rawBlob) : rawBlob;
-        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-          parsed.actor_type = currentActorType;
-          if (stageData) {
-            parsed.stage_data = stageData;
-            parsed.scene_data = stageData;
-          }
-          if (currentActors && currentActors.length > 0) {
-            parsed.actors = currentActors;
-          }
-          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory;
-          actingBlob = JSON.stringify(parsed);
-        } else {
-          actingBlob = JSON.stringify({
-            type: "acting_motion",
-            actor_type: currentActorType,
-            stage_data: stageData,
-            scene_data: stageData,
-            trajectory: parsed,
-            motion_data: parsed,
-            actors: currentActors
-          });
-        }
-      } catch (e) {
-        actingBlob = rawBlob;
-      }
-    } else {
-      actingBlob = JSON.stringify({
-        type: "acting_motion",
-        actor_type: currentActorType,
-        stage_data: stageData,
-        scene_data: stageData,
-        trajectory: [],
-        motion_data: [],
-        actors: currentActors || []
-      });
-    }
-    directingInst.exposed.setState({ acting_data: actingBlob });
-  } else {
-    directingInst.exposed.setState({ acting_data: "" });
-    if (directingInst.exposed.setConnectedThreeActing) {
-      directingInst.exposed.setConnectedThreeActing(null);
-    }
-  }
 }
 function createDirectingInstance(node) {
   const container = document.createElement("div");
@@ -49884,10 +50008,9 @@ function createDirectingNodeWidget(node) {
         if (directingInst) {
           directingInst.exposed.setState({ acting_data: "" });
         }
-        return;
       }
     }
-    updateDirectingNodeFromLinks(this);
+    syncGraph();
   };
   const baseOnRemove = (_b = widget.onRemove) == null ? void 0 : _b.bind(widget);
   widget.onRemove = () => {
@@ -49900,9 +50023,10 @@ function createDirectingNodeWidget(node) {
       still.exposed.cleanup();
       still.vueApp.unmount();
       directingInstances.delete(node);
+      syncGraph();
     }, CLEANUP_DELAY_MS);
   };
-  setTimeout(() => updateDirectingNodeFromLinks(node), 100);
+  setTimeout(() => syncGraph(), 100);
   return widget;
 }
 app.registerExtension({
@@ -50012,6 +50136,7 @@ app.registerExtension({
           const state = readStageStateFromNode(this);
           instance.exposed.setState(state);
         }
+        setTimeout(() => syncGraph(), 50);
       };
       const origOnRemoved = node.onRemoved;
       node.onRemoved = function() {
@@ -50227,6 +50352,7 @@ app.registerExtension({
           const state = readDirectingStateFromNode(this);
           instance.exposed.setState(state);
         }
+        setTimeout(() => syncGraph(), 50);
       };
       const origDirectingOnRemoved = node.onRemoved;
       node.onRemoved = function() {
@@ -50255,6 +50381,7 @@ app.registerExtension({
 export {
   isActingNode,
   isDirectingNode,
-  isStagingNode
+  isStagingNode,
+  syncGraph
 };
 //# sourceMappingURL=main.js.map

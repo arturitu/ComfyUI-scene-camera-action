@@ -174,8 +174,7 @@ async function updateStageNodeFromPreset(node: ComfyNode, filename: string): Pro
       } else {
         writeStoredStageProps(node, data)
       }
-      notifyConnectedActingNodes(node)
-      notifyConnectedDirectingNodes(node)
+      syncGraph()
     }
   } catch (e) {
     console.error('[StageNode] Failed to load preset:', e)
@@ -298,8 +297,7 @@ function createSceneInstance(node: ComfyNode): SceneNodeInstance {
       const live = instance.currentNode
       writeStoredSceneProps(live, state)
       app.graph?.setDirtyCanvas(true, true)
-      notifyConnectedActingNodes(live)
-      notifyConnectedDirectingNodes(live)
+      syncGraph()
     },
     onPresetSaved: (filename: string) => {
       const live = instance.currentNode
@@ -326,8 +324,7 @@ function updateSceneNodeFromLinks(node: ComfyNode): void {
   if (!instance) return
   const state = readSceneStateFromNode(node)
   instance.exposed.setState(state)
-  notifyConnectedActingNodes(node)
-  notifyConnectedDirectingNodes(node)
+  syncGraph()
 }
 
 function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
@@ -482,95 +479,95 @@ function findRootActingNode(actingNode: ComfyNode): ComfyNode {
   return currNode
 }
 
-function updateActingNodeFromConnectedScene(actingNode: ComfyNode, visitedSet: Set<ComfyNode> = new Set()): void {
-  if (visitedSet.has(actingNode)) return
-  visitedSet.add(actingNode)
+function findDirectlyConnectedDownstreamActingNodes(actingNode: ComfyNode): ComfyNode[] {
+  const downstream: ComfyNode[] = []
+  const graph = app.graph
+  if (!graph || !graph.links) return downstream
 
-  const actingInst = actingInstances.get(actingNode)
-  if (!actingInst) return
+  for (const linkId in graph.links) {
+    const link = graph.links[linkId]
+    if (link && link.origin_id === actingNode.id) {
+      const targetNode = graph.getNodeById?.(link.target_id)
+      if (isActingNode(targetNode)) {
+        downstream.push(targetNode!)
+      }
+    }
+  }
+  return downstream
+}
 
+function getChainActorsForNode(actingNode: ComfyNode): any[] {
   const originInfo = findConnectedStageOrActingOrigin(actingNode)
-  const currentActingState = readActingStateFromNode(actingNode)
-  const charType = currentActingState.actor_type ?? 'human'
+  if (!originInfo) return []
 
-  if (originInfo) {
-    let stageState: SceneState | null = null
-    let previousActors: any[] = []
+  // 1. Upstream actors (strictly from parent and ancestors)
+  let upstreamActors: any[] = []
+  if (originInfo.isActing) {
+    const upstreamActingNode = originInfo.originNode
+    const upstreamInst = actingInstances.get(upstreamActingNode)
+    const upstreamThreeActing = upstreamInst?.exposed?.getThreeActing ? upstreamInst.exposed.getThreeActing() : null
 
-    const rootActingNode = findRootActingNode(actingNode)
-    const rootActingState = readActingStateFromNode(rootActingNode)
-    const masterDuration = rootActingState.duration ?? 7.0
-    const isNestedActing = originInfo.isActing
-
-    const durWidget = actingNode.widgets?.find(w => w.name === 'duration')
-    if (isNestedActing) {
-      setWidgetValue(actingNode, 'duration', masterDuration)
-      if (durWidget) {
-        if (!durWidget.options) durWidget.options = {}
-        durWidget.options.read_only = true
-        ;(durWidget as any).disabled = true
-      }
+    if (upstreamThreeActing && typeof (upstreamThreeActing as any).getAccumulatedActors === 'function') {
+      upstreamActors = (upstreamThreeActing as any).getAccumulatedActors()
     } else {
-      if (durWidget) {
-        if (!durWidget.options) durWidget.options = {}
-        durWidget.options.read_only = false
-        ;(durWidget as any).disabled = false
-      }
+      const upstreamActingState = readActingStateFromNode(upstreamActingNode)
+      upstreamActors = upstreamActingState.actors ?? []
     }
+  }
 
-    const effectiveDuration = isNestedActing ? masterDuration : (currentActingState.duration ?? 7.0)
+  // Ensure no downstream tags leaked into upstream
+  upstreamActors = upstreamActors.filter((a: any) => !a.id?.startsWith('actor_ds_') && !a.isDownstreamPeer)
 
-    if (!originInfo.isActing) {
-      stageState = readSceneStateFromNode(originInfo.originNode) as SceneState
-    } else {
-      const upstreamActingNode = originInfo.originNode
-      const upstreamInst = actingInstances.get(upstreamActingNode)
-      const upstreamThreeActing = upstreamInst?.exposed?.getThreeActing ? upstreamInst.exposed.getThreeActing() : null
+  // 2. Downstream recorded actors (peers downstream in the chain with recorded trajectories for practice loop)
+  const downstreamActors: any[] = []
+  const visited = new Set<ComfyNode>()
+  visited.add(actingNode)
 
-      if (upstreamThreeActing) {
-        stageState = upstreamThreeActing.getStageData()
-        previousActors = typeof (upstreamThreeActing as any).getAccumulatedActors === 'function'
-          ? (upstreamThreeActing as any).getAccumulatedActors()
-          : (upstreamThreeActing.getState().actors ?? [])
-      } else {
-        const upstreamActingState = readActingStateFromNode(upstreamActingNode)
-        stageState = upstreamActingState.stage_data ?? upstreamActingState.scene_data ?? null
-        previousActors = upstreamActingState.actors ?? []
+  let currentLevel: ComfyNode[] = findDirectlyConnectedDownstreamActingNodes(actingNode)
+  while (currentLevel.length > 0) {
+    const nextLevel: ComfyNode[] = []
+    for (const dsNode of currentLevel) {
+      if (visited.has(dsNode) || dsNode.id === actingNode.id) continue
+      visited.add(dsNode)
+
+      const dsInst = actingInstances.get(dsNode)
+      const dsThreeActing = dsInst?.exposed?.getThreeActing ? dsInst.exposed.getThreeActing() : null
+      const dsState = readActingStateFromNode(dsNode)
+
+      let dsTraj: any[] = []
+      if (dsThreeActing && typeof dsThreeActing.getTrajectory === 'function') {
+        dsTraj = dsThreeActing.getTrajectory() || []
       }
-    }
+      if ((!dsTraj || dsTraj.length === 0) && !dsThreeActing && dsState.motion_data) {
+        try {
+          const parsed = typeof dsState.motion_data === 'string' ? JSON.parse(dsState.motion_data) : dsState.motion_data
+          dsTraj = parsed?.trajectory || parsed?.motion_data || (Array.isArray(parsed) ? parsed : [])
+        } catch {}
+      }
 
-    if (stageState) {
-      actingInst.exposed.setState({
-        scene_data: stageState,
-        stage_data: stageState,
-        actor_type: charType,
-        actor_color: currentActingState.actor_color,
-        duration: effectiveDuration,
-        actors: previousActors
-      })
-      writeStoredActingProps(actingNode, {})
+      if (dsTraj && dsTraj.length > 0) {
+        downstreamActors.push({
+          id: `actor_ds_${dsNode.id}`,
+          isDownstreamPeer: true,
+          actor_type: dsThreeActing?.getActorType ? dsThreeActing.getActorType() : (dsState.actor_type ?? 'human'),
+          actor_color: dsState.actor_color || (dsState.actor_type === 'car' ? '#0284C7' : '#F1DFBF'),
+          actor_speed: dsState.actor_speed ?? 10.0,
+          spawn_point: dsState.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
+          trajectory: dsTraj
+        })
+      }
 
-      const rootStagingNode = findRootStagingNode(actingNode)
-      if (rootStagingNode) {
-        const sceneInst = sceneInstances.get(rootStagingNode)
-        const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
-        if (threeScene && actingInst.exposed.setConnectedThreeStage) {
-          actingInst.exposed.setConnectedThreeStage(threeScene)
+      const furtherNodes = findDirectlyConnectedDownstreamActingNodes(dsNode)
+      for (const fn of furtherNodes) {
+        if (!visited.has(fn)) {
+          nextLevel.push(fn)
         }
       }
-      notifyConnectedActingNodes(actingNode, visitedSet)
-      notifyConnectedDirectingNodes(actingNode)
-      app.graph?.setDirtyCanvas(true, true)
-      return
     }
+    currentLevel = nextLevel
   }
 
-  actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actor_type: charType, actor_color: currentActingState.actor_color, actors: [] })
-  writeStoredActingProps(actingNode, {})
-  if (actingInst.exposed.setConnectedThreeStage) {
-    actingInst.exposed.setConnectedThreeStage(null)
-  }
-  notifyConnectedDirectingNodes(actingNode)
+  return [...upstreamActors, ...downstreamActors]
 }
 
 function isActingNodeMotionValid(actingNode: ComfyNode): boolean {
@@ -579,7 +576,7 @@ function isActingNodeMotionValid(actingNode: ComfyNode): boolean {
   if (threeActing) {
     if (typeof threeActing.getTrajectory === 'function') {
       const traj = threeActing.getTrajectory()
-      if (Array.isArray(traj) && traj.length > 0) return true
+      return Array.isArray(traj) && traj.length > 0
     }
   }
   const actingState = readActingStateFromNode(actingNode)
@@ -620,109 +617,252 @@ function isUpstreamActingChainComplete(startActingNode: ComfyNode): boolean {
   return true
 }
 
-function notifyConnectedDirectingNodes(originNode: ComfyNode): void {
-  const graph = app.graph
-  if (!graph || !graph.links) return
+function updateActingNodeState(actingNode: ComfyNode): void {
+  const actingInst = actingInstances.get(actingNode)
+  if (!actingInst) return
 
-  for (const linkId in graph.links) {
-    const link = graph.links[linkId]
-    if (link && link.origin_id === originNode.id) {
-      const targetNode = graph.getNodeById?.(link.target_id)
-      if (isDirectingNode(targetNode)) {
-        const directingInst = directingInstances.get(targetNode!)
-        if (directingInst) {
-          if (isActingNode(originNode)) {
-            const actingState = readActingStateFromNode(originNode)
-            const actingInst = actingInstances.get(originNode)
-            const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
+  const originInfo = findConnectedStageOrActingOrigin(actingNode)
+  const currentActingState = readActingStateFromNode(actingNode)
+  const charType = currentActingState.actor_type ?? 'human'
 
-            if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
-              (directingInst.exposed as any).setConnectedThreeActing(threeActing)
-            }
+  if (originInfo) {
+    let stageState: SceneState | null = null
 
-            // Find root stage data across the acting/staging chain
-            const rootStagingNode = findRootStagingNode(originNode)
-            let stageData = null
-            if (rootStagingNode) {
-              stageData = readStageStateFromNode(rootStagingNode)
-            }
-            if (!stageData && threeActing?.getStageData) {
-              stageData = threeActing.getStageData()
-            }
-            if (!stageData) {
-              stageData = actingState.stage_data ?? actingState.scene_data ?? null
-            }
+    // 1. Resolve root Staging node geometry
+    const rootStagingNode = findRootStagingNode(actingNode)
+    if (rootStagingNode) {
+      const sceneInst = sceneInstances.get(rootStagingNode)
+      const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
+      if (threeScene && actingInst.exposed.setConnectedThreeStage) {
+        actingInst.exposed.setConnectedThreeStage(threeScene)
+      }
+      stageState = readSceneStateFromNode(rootStagingNode) as SceneState
+    }
 
-            const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
-            const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
-              ? (threeActing as any).getAccumulatedActors()
-              : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
-
-            const rawBlob = actingState.motion_data ?? ''
-            let actingBlob: any = ''
-
-            if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
-              try {
-                const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
-                if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-                  parsed.actor_type = currentActorType
-                  if (stageData) {
-                    parsed.stage_data = stageData
-                    parsed.scene_data = stageData
-                  }
-                  if (currentActors && currentActors.length > 0) {
-                    parsed.actors = currentActors
-                  }
-                  if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
-                  actingBlob = JSON.stringify(parsed)
-                } else {
-                  actingBlob = JSON.stringify({
-                    type: 'acting_motion',
-                    actor_type: currentActorType,
-                    stage_data: stageData,
-                    scene_data: stageData,
-                    trajectory: parsed,
-                    motion_data: parsed,
-                    actors: currentActors
-                  })
-                }
-              } catch (e) {
-                actingBlob = rawBlob
-              }
-            } else {
-              actingBlob = JSON.stringify({
-                type: 'acting_motion',
-                actor_type: currentActorType,
-                stage_data: stageData,
-                scene_data: stageData,
-                trajectory: [],
-                motion_data: [],
-                actors: currentActors || []
-              })
-            }
-
-            directingInst.exposed.setState({ acting_data: actingBlob })
-          }
+    if (!stageState) {
+      if (!originInfo.isActing) {
+        stageState = readSceneStateFromNode(originInfo.originNode) as SceneState
+      } else {
+        const upstreamActingNode = originInfo.originNode
+        const upstreamInst = actingInstances.get(upstreamActingNode)
+        const upstreamThreeActing = upstreamInst?.exposed?.getThreeActing ? upstreamInst.exposed.getThreeActing() : null
+        if (upstreamThreeActing) {
+          stageState = upstreamThreeActing.getStageData()
+        } else {
+          const upstreamActingState = readActingStateFromNode(upstreamActingNode)
+          stageState = upstreamActingState.stage_data ?? upstreamActingState.scene_data ?? null
         }
       }
     }
+
+    // 2. Resolve master duration from root acting node
+    const rootActingNode = findRootActingNode(actingNode)
+    const rootActingState = readActingStateFromNode(rootActingNode)
+    const masterDuration = rootActingState.duration ?? 7.0
+    const isNestedActing = originInfo.isActing
+
+    const durWidget = actingNode.widgets?.find(w => w.name === 'duration')
+    if (isNestedActing) {
+      setWidgetValue(actingNode, 'duration', masterDuration)
+      if (durWidget) {
+        if (!durWidget.options) durWidget.options = {}
+        durWidget.options.read_only = true
+        ;(durWidget as any).disabled = true
+      }
+    } else {
+      if (durWidget) {
+        if (!durWidget.options) durWidget.options = {}
+        durWidget.options.read_only = false
+        ;(durWidget as any).disabled = false
+      }
+    }
+
+    const effectiveDuration = isNestedActing ? masterDuration : (currentActingState.duration ?? 7.0)
+
+    // 3. Resolve all peer actors (upstream + downstream peers)
+    const allPeerActors = getChainActorsForNode(actingNode)
+
+    if (stageState) {
+      actingInst.exposed.setState({
+        scene_data: stageState,
+        stage_data: stageState,
+        actor_type: charType,
+        actor_color: currentActingState.actor_color,
+        duration: effectiveDuration,
+        actors: allPeerActors
+      })
+      writeStoredActingProps(actingNode, {})
+      return
+    }
+  }
+
+  // Disconnected state
+  actingInst.exposed.setState({
+    scene_data: undefined,
+    stage_data: undefined,
+    actor_type: charType,
+    actor_color: currentActingState.actor_color,
+    actors: []
+  })
+  writeStoredActingProps(actingNode, {})
+  if (actingInst.exposed.setConnectedThreeStage) {
+    actingInst.exposed.setConnectedThreeStage(null)
   }
 }
 
-function notifyConnectedActingNodes(originNode: ComfyNode, visitedSet: Set<ComfyNode> = new Set()): void {
-  const graph = app.graph
-  if (!graph || !graph.links) return
-  visitedSet.add(originNode)
+function updateDirectingNodeState(directingNode: ComfyNode): void {
+  const directingInst = directingInstances.get(directingNode)
+  if (!directingInst) return
 
-  for (const linkId in graph.links) {
-    const link = graph.links[linkId]
-    if (link && link.origin_id === originNode.id) {
-      const targetNode = graph.getNodeById?.(link.target_id)
-      if (isActingNode(targetNode)) {
-        if (!visitedSet.has(targetNode!)) {
-          updateActingNodeFromConnectedScene(targetNode!, visitedSet)
+  const originInfo = findConnectedStageOrActingOrigin(directingNode)
+  if (!originInfo) {
+    directingInst.exposed.setState({ acting_data: '' })
+    writeStoredDirectingProps(directingNode, { acting_data: '' })
+    return
+  }
+
+  const originNode = originInfo.originNode
+  if (isActingNode(originNode)) {
+    if (!isUpstreamActingChainComplete(originNode)) {
+      directingInst.exposed.setState({ acting_data: '' })
+      writeStoredDirectingProps(directingNode, { acting_data: '' })
+      return
+    }
+
+    const actingState = readActingStateFromNode(originNode)
+    const actingInst = actingInstances.get(originNode)
+    const threeActing = actingInst?.exposed?.getThreeActing ? actingInst.exposed.getThreeActing() : null
+
+    if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
+      (directingInst.exposed as any).setConnectedThreeActing(threeActing)
+    }
+
+    // Find root stage data across the acting/staging chain
+    const rootStagingNode = findRootStagingNode(originNode)
+    let stageData = null
+    if (rootStagingNode) {
+      stageData = readStageStateFromNode(rootStagingNode)
+    }
+    if (!stageData && threeActing?.getStageData) {
+      stageData = threeActing.getStageData()
+    }
+    if (!stageData) {
+      stageData = actingState.stage_data ?? actingState.scene_data ?? null
+    }
+
+    const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
+    const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
+      ? (threeActing as any).getAccumulatedActors()
+      : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
+
+    const rawBlob = actingState.motion_data ?? ''
+    let actingBlob: any = ''
+
+    if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
+      try {
+        const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          parsed.actor_type = currentActorType
+          if (stageData) {
+            parsed.stage_data = stageData
+            parsed.scene_data = stageData
+          }
+          if (currentActors && currentActors.length > 0) {
+            parsed.actors = currentActors
+          }
+          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
+          actingBlob = JSON.stringify(parsed)
+        } else {
+          actingBlob = JSON.stringify({
+            type: 'acting_motion',
+            actor_type: currentActorType,
+            stage_data: stageData,
+            scene_data: stageData,
+            trajectory: parsed,
+            motion_data: parsed,
+            actors: currentActors
+          })
+        }
+      } catch (e) {
+        actingBlob = rawBlob
+      }
+    } else {
+      actingBlob = JSON.stringify({
+        type: 'acting_motion',
+        actor_type: currentActorType,
+        stage_data: stageData,
+        scene_data: stageData,
+        trajectory: [],
+        motion_data: [],
+        actors: currentActors || []
+      })
+    }
+
+    directingInst.exposed.setState({ acting_data: actingBlob })
+    writeStoredDirectingProps(directingNode, { acting_data: actingBlob })
+  }
+}
+
+let isSyncingGraph = false
+let pendingGraphSync = false
+
+export function syncGraph(): void {
+  if (isSyncingGraph) {
+    pendingGraphSync = true
+    return
+  }
+  isSyncingGraph = true
+  try {
+    const graph = app.graph
+    if (!graph) return
+
+    const allNodes: ComfyNode[] = (graph as any)._nodes || (graph as any).nodes || []
+    if (!Array.isArray(allNodes)) return
+
+    const actingNodes: ComfyNode[] = []
+    const directingNodes: ComfyNode[] = []
+
+    for (const node of allNodes) {
+      if (isActingNode(node)) actingNodes.push(node)
+      else if (isDirectingNode(node)) directingNodes.push(node)
+    }
+
+    // Sort Acting nodes topologically (from root staging connection down to leaves)
+    const getActingDepth = (node: ComfyNode): number => {
+      let depth = 0
+      let curr = node
+      const seen = new Set<ComfyNode>()
+      while (curr && !seen.has(curr)) {
+        seen.add(curr)
+        const originInfo = findConnectedStageOrActingOrigin(curr)
+        if (originInfo && originInfo.isActing) {
+          depth++
+          curr = originInfo.originNode
+        } else {
+          break
         }
       }
+      return depth
+    }
+
+    actingNodes.sort((a, b) => getActingDepth(a) - getActingDepth(b))
+
+    // 1. Sync all acting nodes in topological order
+    for (const node of actingNodes) {
+      updateActingNodeState(node)
+    }
+
+    // 2. Sync all directing nodes
+    for (const node of directingNodes) {
+      updateDirectingNodeState(node)
+    }
+
+    graph.setDirtyCanvas(true, true)
+  } finally {
+    isSyncingGraph = false
+    if (pendingGraphSync) {
+      pendingGraphSync = false
+      syncGraph()
     }
   }
 }
@@ -861,26 +1001,15 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       writeStoredActingProps(live, state)
       
       // Update the widget values in ComfyUI node if they differ from state
-      const durationWidget = live.widgets?.find(w => w.name === 'duration')
-      if (durationWidget && durationWidget.value !== state.duration) {
-        durationWidget.value = state.duration
+      setWidgetValue(live, 'duration', state.duration)
+      setWidgetValue(live, 'actor_speed', state.actor_speed)
+      if (state.actor_color) {
+        setWidgetValue(live, 'actor_color', state.actor_color)
       }
-      const speedWidget = live.widgets?.find(w => w.name === 'actor_speed')
-      if (speedWidget && speedWidget.value !== state.actor_speed) {
-        speedWidget.value = state.actor_speed
-      }
-      const colorWidget = live.widgets?.find(w => w.name === 'actor_color')
-      if (colorWidget && colorWidget.value !== state.actor_color && state.actor_color) {
-        colorWidget.value = state.actor_color
-      }
-      const motionWidget = live.widgets?.find(w => w.name === 'motion_data')
-      if (motionWidget && motionWidget.value !== state.motion_data) {
-        motionWidget.value = state.motion_data ?? ''
-      }
+      setWidgetValue(live, 'motion_data', state.motion_data ?? '')
 
       app.graph?.setDirtyCanvas(true, true)
-      notifyConnectedActingNodes(live)
-      notifyConnectedDirectingNodes(live)
+      syncGraph()
     }
   })
 
@@ -923,7 +1052,7 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
     }
     exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
     writeStoredActingProps(node, { actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
-    notifyConnectedDirectingNodes(node)
+    syncGraph()
   })
 
   wire('actor_color', v => {
@@ -933,8 +1062,7 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
     const cleanColor = parseCleanHexColor(v, defaultColor)
     exposed.setState({ actor_color: cleanColor })
     writeStoredActingProps(node, { actor_color: cleanColor })
-    notifyConnectedActingNodes(node)
-    notifyConnectedDirectingNodes(node)
+    syncGraph()
   })
 
   // Sync initial widget state immediately after binding and on tick
@@ -951,19 +1079,20 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
   wire('actor_speed', v => {
     exposed.setState({ actor_speed: Number(v) })
     writeStoredActingProps(node, { actor_speed: Number(v) })
+    syncGraph()
   })
 
   wire('duration', v => {
     exposed.setState({ duration: Number(v) })
     writeStoredActingProps(node, { duration: Number(v) })
-    notifyConnectedActingNodes(node)
-    notifyConnectedDirectingNodes(node)
+    syncGraph()
     app.graph?.setDirtyCanvas(true, true)
   })
 
   wire('motion_data', v => {
     exposed.setState({ motion_data: String(v) })
     writeStoredActingProps(node, { motion_data: String(v) })
+    syncGraph()
   })
 }
 
@@ -1004,6 +1133,7 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
         const st = readActingStateFromNode(this)
         actingInst.exposed.setState(st)
       }
+      syncGraph()
     }, 10)
   }
 
@@ -1019,10 +1149,9 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
         if (actingInst) {
           actingInst.exposed.setState({ scene_data: undefined, stage_data: undefined, actors: [] })
         }
-        return
       }
     }
-    updateActingNodeFromConnectedScene(this)
+    syncGraph()
   }
 
   const baseOnRemove = widget.onRemove?.bind(widget)
@@ -1038,11 +1167,12 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
       still.exposed.cleanup()
       still.vueApp.unmount()
       actingInstances.delete(node)
+      syncGraph()
     }, CLEANUP_DELAY_MS)
   }
 
   // Initial connection sync check
-  setTimeout(() => updateActingNodeFromConnectedScene(node), 100)
+  setTimeout(() => syncGraph(), 100)
 
   return widget
 }
@@ -1075,87 +1205,7 @@ function readDirectingStateFromNode(node: ComfyNode): Partial<DirectingState> {
 }
 
 function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
-  const directingInst = directingInstances.get(directingNode)
-  if (!directingInst) return
-
-  const connectedActingNode = findConnectedActingNode(directingNode)
-  if (connectedActingNode) {
-    const actingState = readActingStateFromNode(connectedActingNode)
-    const actingInst = actingInstances.get(connectedActingNode)
-    const threeActing = actingInst?.exposed?.getThreeActing ? (actingInst.exposed as any).getThreeActing() : null
-
-    if (threeActing && (directingInst.exposed as any).setConnectedThreeActing) {
-      (directingInst.exposed as any).setConnectedThreeActing(threeActing)
-    }
-
-    // Find root stage data across the acting/staging chain
-    const rootStagingNode = findRootStagingNode(connectedActingNode)
-    let stageData = null
-    if (rootStagingNode) {
-      stageData = readStageStateFromNode(rootStagingNode)
-    }
-    if (!stageData && threeActing?.getStageData) {
-      stageData = threeActing.getStageData()
-    }
-    if (!stageData) {
-      stageData = actingState.stage_data ?? actingState.scene_data ?? null
-    }
-
-    const currentActorType = threeActing?.getActorType() ?? actingState.actor_type ?? 'human'
-    const currentActors = typeof (threeActing as any)?.getAccumulatedActors === 'function'
-      ? (threeActing as any).getAccumulatedActors()
-      : (threeActing?.getState ? threeActing.getState().actors : actingState.actors)
-
-    const rawBlob = actingState.motion_data ?? ''
-    let actingBlob: any = ''
-
-    if (rawBlob && (typeof rawBlob === 'object' || (typeof rawBlob === 'string' && rawBlob.trim()))) {
-      try {
-        const parsed = typeof rawBlob === 'string' ? JSON.parse(rawBlob) : rawBlob
-        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-          parsed.actor_type = currentActorType
-          if (stageData) {
-            parsed.stage_data = stageData
-            parsed.scene_data = stageData
-          }
-          if (currentActors && currentActors.length > 0) {
-            parsed.actors = currentActors
-          }
-          if (!parsed.motion_data && parsed.trajectory) parsed.motion_data = parsed.trajectory
-          actingBlob = JSON.stringify(parsed)
-        } else {
-          actingBlob = JSON.stringify({
-            type: 'acting_motion',
-            actor_type: currentActorType,
-            stage_data: stageData,
-            scene_data: stageData,
-            trajectory: parsed,
-            motion_data: parsed,
-            actors: currentActors
-          })
-        }
-      } catch (e) {
-        actingBlob = rawBlob
-      }
-    } else {
-      actingBlob = JSON.stringify({
-        type: 'acting_motion',
-        actor_type: currentActorType,
-        stage_data: stageData,
-        scene_data: stageData,
-        trajectory: [],
-        motion_data: [],
-        actors: currentActors || []
-      })
-    }
-
-    directingInst.exposed.setState({ acting_data: actingBlob })
-  } else {
-    directingInst.exposed.setState({ acting_data: '' })
-    if ((directingInst.exposed as any).setConnectedThreeActing) {
-      (directingInst.exposed as any).setConnectedThreeActing(null)
-    }
-  }
+  updateDirectingNodeState(directingNode)
 }
 
 function createDirectingInstance(node: ComfyNode): DirectingNodeInstance {
@@ -1249,10 +1299,9 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
         if (directingInst) {
           directingInst.exposed.setState({ acting_data: '' })
         }
-        return
       }
     }
-    updateDirectingNodeFromLinks(this)
+    syncGraph()
   }
 
   const baseOnRemove = widget.onRemove?.bind(widget)
@@ -1268,10 +1317,11 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
       still.exposed.cleanup()
       still.vueApp.unmount()
       directingInstances.delete(node)
+      syncGraph()
     }, CLEANUP_DELAY_MS)
   }
 
-  setTimeout(() => updateDirectingNodeFromLinks(node), 100)
+  setTimeout(() => syncGraph(), 100)
 
   return widget
 }
@@ -1402,6 +1452,7 @@ app.registerExtension({
           const state = readStageStateFromNode(this)
           instance.exposed.setState(state)
         }
+        setTimeout(() => syncGraph(), 50)
       }
 
       const origOnRemoved = node.onRemoved
@@ -1630,6 +1681,7 @@ app.registerExtension({
           const state = readDirectingStateFromNode(this)
           instance.exposed.setState(state)
         }
+        setTimeout(() => syncGraph(), 50)
       }
 
 
