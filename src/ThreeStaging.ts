@@ -8,6 +8,8 @@ import { StagingSelectionManager } from './staging/StagingSelectionManager'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
 
+const _tempCamDir = new THREE.Vector3()
+
 export class ThreeStaging {
   private container: HTMLElement
   private state: SceneState
@@ -19,6 +21,8 @@ export class ThreeStaging {
   private hierarchyManager: StagingHierarchyManager
   private selectionManager: StagingSelectionManager
   private instancedStageMesh!: InstancedStageMesh
+  private stagingRaycaster = new THREE.Raycaster()
+  private stagingDitherOpacity = 1.0
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -545,6 +549,32 @@ export class ThreeStaging {
       this.controls.target.z = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.z))
       this.controls.update()
     }
+
+    if (this.controls && this.instancedStageMesh) {
+      const camPos = this.camera.position
+      const targetPos = this.controls.target
+      const distToTarget = camPos.distanceTo(targetPos)
+
+      const occludedSet = new Set<number>()
+
+      if (distToTarget > 0.05) {
+        _tempCamDir.subVectors(targetPos, camPos).normalize()
+        this.stagingRaycaster.set(camPos, _tempCamDir)
+        this.stagingRaycaster.near = 0.05
+        this.stagingRaycaster.far = Math.max(0.1, distToTarget - 0.25)
+
+        const hits = this.stagingRaycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false)
+        for (const hit of hits) {
+          if (hit.distance < 1.25 && hit.instanceId !== undefined && hit.instanceId !== null) {
+            occludedSet.add(hit.instanceId)
+          }
+        }
+      }
+
+      this.instancedStageMesh.setOccludedInstances(occludedSet, 0.2)
+      this.instancedStageMesh.updateDither(0.016)
+    }
+
     config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.controls?.target)
     this.selectionManager.updateBoxHelpers()
     this.renderer.render(this.scene, this.camera)

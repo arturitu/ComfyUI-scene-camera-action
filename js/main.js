@@ -2157,6 +2157,36 @@ function withCtx(fn, ctx = currentRenderingInstance, isNonScopedSlot) {
   renderFnWithContext._d = true;
   return renderFnWithContext;
 }
+function withDirectives(vnode, directives) {
+  if (currentRenderingInstance === null) {
+    return vnode;
+  }
+  const instance = getComponentPublicInstance(currentRenderingInstance);
+  const bindings = vnode.dirs || (vnode.dirs = []);
+  for (let i = 0; i < directives.length; i++) {
+    let [dir, value, arg, modifiers = EMPTY_OBJ] = directives[i];
+    if (dir) {
+      if (isFunction(dir)) {
+        dir = {
+          mounted: dir,
+          updated: dir
+        };
+      }
+      if (dir.deep) {
+        traverse(value);
+      }
+      bindings.push({
+        dir,
+        instance,
+        value,
+        oldValue: void 0,
+        arg,
+        modifiers
+      });
+    }
+  }
+  return vnode;
+}
 function invokeDirectiveHook(vnode, prevVNode, instance, name) {
   const bindings = vnode.dirs;
   const oldBindings = prevVNode && prevVNode.dirs;
@@ -6373,6 +6403,69 @@ function shouldSetAsPropForVueCE(el, key) {
   const camelKey = camelize(key);
   return Array.isArray(props) ? props.some((prop) => camelize(prop) === camelKey) : Object.keys(props).some((prop) => camelize(prop) === camelKey);
 }
+const getModelAssigner = (vnode) => {
+  const fn = vnode.props["onUpdate:modelValue"] || false;
+  return isArray(fn) ? (value) => invokeArrayFns(fn, value) : fn;
+};
+function onCompositionStart(e) {
+  e.target.composing = true;
+}
+function onCompositionEnd(e) {
+  const target = e.target;
+  if (target.composing) {
+    target.composing = false;
+    target.dispatchEvent(new Event("input"));
+  }
+}
+const assignKey = /* @__PURE__ */ Symbol("_assign");
+function castValue(value, trim, number) {
+  if (trim) value = value.trim();
+  if (number) value = looseToNumber(value);
+  return value;
+}
+const vModelText = {
+  created(el, { modifiers: { lazy, trim, number } }, vnode) {
+    el[assignKey] = getModelAssigner(vnode);
+    const castToNumber = number || vnode.props && vnode.props.type === "number";
+    addEventListener(el, lazy ? "change" : "input", (e) => {
+      if (e.target.composing) return;
+      el[assignKey](castValue(el.value, trim, castToNumber));
+    });
+    if (trim || castToNumber) {
+      addEventListener(el, "change", () => {
+        el.value = castValue(el.value, trim, castToNumber);
+      });
+    }
+    if (!lazy) {
+      addEventListener(el, "compositionstart", onCompositionStart);
+      addEventListener(el, "compositionend", onCompositionEnd);
+      addEventListener(el, "change", onCompositionEnd);
+    }
+  },
+  // set value on mounted so it's after min/max for type="range"
+  mounted(el, { value }) {
+    el.value = value == null ? "" : value;
+  },
+  beforeUpdate(el, { value, oldValue, modifiers: { lazy, trim, number } }, vnode) {
+    el[assignKey] = getModelAssigner(vnode);
+    if (el.composing) return;
+    const elValue = (number || el.type === "number") && !/^0\d/.test(el.value) ? looseToNumber(el.value) : el.value;
+    const newValue = value == null ? "" : value;
+    if (elValue === newValue) {
+      return;
+    }
+    const rootNode = el.getRootNode();
+    if ((rootNode instanceof Document || rootNode instanceof ShadowRoot) && rootNode.activeElement === el && el.type !== "range") {
+      if (lazy && value === oldValue) {
+        return;
+      }
+      if (trim && el.value.trim() === newValue) {
+        return;
+      }
+    }
+    el.value = newValue;
+  }
+};
 const systemModifiers = ["ctrl", "shift", "alt", "meta"];
 const modifierGuards = {
   stop: (e) => e.stopPropagation(),
@@ -6822,6 +6915,18 @@ const Ungroup = createLucideIcon("ungroup", [
 const X = createLucideIcon("x", [
   ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
   ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
+]);
+/**
+ * @license lucide-vue-next v1.0.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const ZoomIn = createLucideIcon("zoom-in", [
+  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }],
+  ["line", { x1: "21", x2: "16.65", y1: "21", y2: "16.65", key: "13gj7c" }],
+  ["line", { x1: "11", x2: "11", y1: "8", y2: "14", key: "1vmskp" }],
+  ["line", { x1: "8", x2: "14", y1: "11", y2: "11", key: "durymu" }]
 ]);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "StagingCanvas",
@@ -34245,8 +34350,28 @@ function injectDitherShader(material, uniformHolder) {
       originalOnBeforeCompile(shader, renderer2);
     }
     shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity;
+    const ditherVertexPars = `
+      attribute float instanceDither;
+      varying float vInstanceDither;
+    `;
+    shader.vertexShader = ditherVertexPars + "\n" + shader.vertexShader;
+    if (shader.vertexShader.includes("#include <begin_vertex>")) {
+      shader.vertexShader = shader.vertexShader.replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
+      );
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        "void main() {",
+        `void main() {
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
+      );
+    }
     const ditherFunction = `
       uniform float uDitherOpacity;
+      varying float vInstanceDither;
+
       float getDitherThreshold(vec2 pos) {
         int x = int(mod(pos.x, 4.0));
         int y = int(mod(pos.y, 4.0));
@@ -34274,21 +34399,23 @@ function injectDitherShader(material, uniformHolder) {
       }
     `;
     shader.fragmentShader = ditherFunction + "\n" + shader.fragmentShader;
+    const ditherDiscardSnippet = `
+      float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
+      if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
+        discard;
+      }
+    `;
     if (shader.fragmentShader.includes("#include <dithering_fragment>")) {
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <dithering_fragment>",
         `#include <dithering_fragment>
-        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
-          discard;
-        }`
+        ${ditherDiscardSnippet}`
       );
     } else {
       shader.fragmentShader = shader.fragmentShader.replace(
         "void main() {",
         `void main() {
-        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
-          discard;
-        }`
+        ${ditherDiscardSnippet}`
       );
     }
   };
@@ -34868,6 +34995,9 @@ class InstancedStageMesh {
     __publicField(this, "edgeMaterial");
     __publicField(this, "interleavedBuffer");
     __publicField(this, "ditherUniform", { uDitherOpacity: { value: 1 } });
+    __publicField(this, "currentDithers", new Float32Array(INITIAL_CAPACITY).fill(1));
+    __publicField(this, "targetDithers", new Float32Array(INITIAL_CAPACITY).fill(1));
+    __publicField(this, "ditherAttribute");
     __publicField(this, "capacity", INITIAL_CAPACITY);
     __publicField(this, "_count", 0);
     __publicField(this, "nodeToInstanceMap", /* @__PURE__ */ new Map());
@@ -34897,7 +35027,10 @@ class InstancedStageMesh {
         attribute vec4 instanceMatrix1;
         attribute vec4 instanceMatrix2;
         attribute vec4 instanceMatrix3;
+        attribute float instanceDither;
+        varying float vInstanceDither;
         void main() {
+          vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
           mat4 instanceMatrix = mat4(instanceMatrix0, instanceMatrix1, instanceMatrix2, instanceMatrix3);
           vec4 worldPosition = instanceMatrix * vec4(position, 1.0);
           vec4 mvPosition = viewMatrix * worldPosition;
@@ -34911,6 +35044,7 @@ class InstancedStageMesh {
         uniform vec3 diffuse;
         uniform float opacity;
         uniform float uDitherOpacity;
+        varying float vInstanceDither;
 
         float getDitherThreshold(vec2 pos) {
           int x = int(mod(pos.x, 4.0));
@@ -34939,7 +35073,8 @@ class InstancedStageMesh {
         }
 
         void main() {
-          if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
+          if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
             discard;
           }
           vec4 diffuseColor = vec4(diffuse, opacity);
@@ -34974,7 +35109,18 @@ class InstancedStageMesh {
       this.edgeLines.geometry.dispose();
     }
     this.capacity = newCapacity;
-    this.surfaceMesh = new InstancedMesh(this.unitBoxGeometry, this.surfaceMaterial, this.capacity);
+    const oldDithers = this.currentDithers;
+    this.currentDithers = new Float32Array(this.capacity).fill(1);
+    this.targetDithers = new Float32Array(this.capacity).fill(1);
+    if (oldDithers && oldCount > 0) {
+      this.currentDithers.set(oldDithers.subarray(0, Math.min(oldCount, this.capacity)));
+      this.targetDithers.set(oldDithers.subarray(0, Math.min(oldCount, this.capacity)));
+    }
+    this.ditherAttribute = new InstancedBufferAttribute(this.currentDithers, 1);
+    this.ditherAttribute.setUsage(DynamicDrawUsage);
+    const surfaceGeo = this.unitBoxGeometry.clone();
+    surfaceGeo.setAttribute("instanceDither", this.ditherAttribute);
+    this.surfaceMesh = new InstancedMesh(surfaceGeo, this.surfaceMaterial, this.capacity);
     this.surfaceMesh.name = "__stage_instanced_surface__";
     this.surfaceMesh.castShadow = true;
     this.surfaceMesh.receiveShadow = true;
@@ -34992,6 +35138,7 @@ class InstancedStageMesh {
     instancedEdgeGeo.setAttribute("instanceMatrix1", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 4));
     instancedEdgeGeo.setAttribute("instanceMatrix2", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 8));
     instancedEdgeGeo.setAttribute("instanceMatrix3", new InterleavedBufferAttribute(this.interleavedBuffer, 4, 12));
+    instancedEdgeGeo.setAttribute("instanceDither", this.ditherAttribute);
     instancedEdgeGeo.instanceCount = oldCount;
     this.edgeLines = new LineSegments(instancedEdgeGeo, this.edgeMaterial);
     this.edgeLines.name = "__stage_instanced_edges__";
@@ -35029,6 +35176,54 @@ class InstancedStageMesh {
   }
   getSurfaceMesh() {
     return this.surfaceMesh;
+  }
+  /**
+   * Sets target dither for specific occluding instances.
+   * Occluded instances smoothly fade to occludedOpacity, all others stay/return to 1.0 (opaque).
+   */
+  setOccludedInstances(occludedIds, occludedOpacity = 0.15) {
+    const occludedSet = occludedIds instanceof Set ? occludedIds : new Set(occludedIds);
+    for (let i = 0; i < this._count; i++) {
+      this.targetDithers[i] = occludedSet.has(i) ? occludedOpacity : 1;
+    }
+  }
+  /**
+   * Per-frame smooth interpolation of instance dither values.
+   */
+  updateDither(dt = 0.016) {
+    if (this._count === 0) return;
+    let changed = false;
+    const lerpFactor = Math.min(1, dt * 14);
+    for (let i = 0; i < this._count; i++) {
+      const cur = this.currentDithers[i];
+      const target = this.targetDithers[i];
+      if (Math.abs(cur - target) > 5e-3) {
+        this.currentDithers[i] = cur + (target - cur) * lerpFactor;
+        changed = true;
+      } else if (cur !== target) {
+        this.currentDithers[i] = target;
+        changed = true;
+      }
+    }
+    if (changed && this.ditherAttribute) {
+      this.ditherAttribute.needsUpdate = true;
+    }
+  }
+  /**
+   * Immediately resets all instances to 1.0 (fully opaque).
+   */
+  resetAllDithering() {
+    let changed = false;
+    for (let i = 0; i < this.capacity; i++) {
+      if (this.currentDithers[i] !== 1 || this.targetDithers[i] !== 1) {
+        this.currentDithers[i] = 1;
+        this.targetDithers[i] = 1;
+        changed = true;
+      }
+    }
+    if (changed && this.ditherAttribute) {
+      this.ditherAttribute.needsUpdate = true;
+    }
   }
   setDitherOpacity(opacity) {
     const val = Math.max(0, Math.min(1, opacity));
@@ -35255,6 +35450,7 @@ class StageEnvironment {
     return true;
   }
 }
+const _tempCamDir$1 = new Vector3();
 class ThreeStaging {
   constructor(options) {
     __publicField(this, "container");
@@ -35266,6 +35462,8 @@ class ThreeStaging {
     __publicField(this, "hierarchyManager");
     __publicField(this, "selectionManager");
     __publicField(this, "instancedStageMesh");
+    __publicField(this, "stagingRaycaster", new Raycaster());
+    __publicField(this, "stagingDitherOpacity", 1);
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
@@ -35706,6 +35904,26 @@ class ThreeStaging {
       this.controls.target.x = Math.max(-42, Math.min(MAX_PAN, this.controls.target.x));
       this.controls.target.z = Math.max(-42, Math.min(MAX_PAN, this.controls.target.z));
       this.controls.update();
+    }
+    if (this.controls && this.instancedStageMesh) {
+      const camPos = this.camera.position;
+      const targetPos = this.controls.target;
+      const distToTarget = camPos.distanceTo(targetPos);
+      const occludedSet = /* @__PURE__ */ new Set();
+      if (distToTarget > 0.05) {
+        _tempCamDir$1.subVectors(targetPos, camPos).normalize();
+        this.stagingRaycaster.set(camPos, _tempCamDir$1);
+        this.stagingRaycaster.near = 0.05;
+        this.stagingRaycaster.far = Math.max(0.1, distToTarget - 0.25);
+        const hits = this.stagingRaycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false);
+        for (const hit of hits) {
+          if (hit.distance < 1.25 && hit.instanceId !== void 0 && hit.instanceId !== null) {
+            occludedSet.add(hit.instanceId);
+          }
+        }
+      }
+      this.instancedStageMesh.setOccludedInstances(occludedSet, 0.2);
+      this.instancedStageMesh.updateDither(0.016);
     }
     updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, (_a = this.controls) == null ? void 0 : _a.target);
     this.selectionManager.updateBoxHelpers();
@@ -43172,6 +43390,9 @@ class BaseActor {
     this.group.position.copy(this.position);
     this.group.rotation.set(0, ry, 0);
   }
+  getCurrentAnimationName() {
+    return "Idle_A";
+  }
   getMotionState(t) {
     _tempEuler$1.setFromQuaternion(this.group.quaternion, "YXZ");
     return {
@@ -43769,7 +43990,7 @@ const _tempVecA = new Vector3();
 const _tempVecB = new Vector3();
 const _tempDir = new Vector3();
 const _tempFwd = new Vector3();
-const _tempRight = new Vector3();
+const _tempRight$1 = new Vector3();
 const _tempSegment = new Line3();
 const _tempCapsuleBounds = new Box3();
 const _tempRay = new Ray();
@@ -44127,10 +44348,10 @@ class CarActor extends BaseActor {
         const groundNormal = hit.face.normal;
         if (groundNormal.y > SLOPE_CONFIG.minNormalY) {
           _tempFwd.set(forwardX, 0, forwardZ);
-          _tempRight.set(rightX, 0, rightZ);
+          _tempRight$1.set(rightX, 0, rightZ);
           const clampVal = SLOPE_CONFIG.clampThreshold;
           targetRampPitch = Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempFwd.dot(groundNormal)))) * SLOPE_CONFIG.pitchMultiplier;
-          targetRampRoll = -Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempRight.dot(groundNormal)))) * SLOPE_CONFIG.rollMultiplier;
+          targetRampRoll = -Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempRight$1.dot(groundNormal)))) * SLOPE_CONFIG.rollMultiplier;
         }
       }
     } else if (!this.isOnGround) {
@@ -46100,6 +46321,9 @@ class PlaybackController {
   getIsPlaying() {
     return this.isPlaying;
   }
+  isEnded() {
+    return this.maxDuration > 0 && this.currentTime >= this.maxDuration && !this.isPlaying;
+  }
   setIsRecordingMode(active) {
     this.isRecordingMode = active;
   }
@@ -46286,11 +46510,17 @@ class SpawnPointHelper {
     });
   }
 }
+const _tempCamDir = new Vector3();
+const _tempRight = new Vector3();
+const _tempUp = new Vector3(0, 1, 0);
+const _tempOrigin = new Vector3();
+const _tempOffsetDir = new Vector3();
 class ThreeActing {
   constructor(options) {
     __publicField(this, "container");
     __publicField(this, "state");
     __publicField(this, "onStateChange");
+    __publicField(this, "onCameraDistanceChange");
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
@@ -46323,9 +46553,14 @@ class ThreeActing {
     __publicField(this, "practiceTime", 0);
     __publicField(this, "debugPanel", null);
     __publicField(this, "clonedEnvGroup", null);
+    __publicField(this, "instancedStageMesh", null);
+    __publicField(this, "cameraDistance", 1);
+    __publicField(this, "actingRaycaster", new Raycaster());
+    __publicField(this, "actingDitherOpacity", 1);
     __publicField(this, "keydownHandler");
     __publicField(this, "keyupHandler");
     __publicField(this, "blurHandler");
+    __publicField(this, "wheelHandler");
     __publicField(this, "resizeObserver", null);
     __publicField(this, "resizeAnimationFrameId", null);
     __publicField(this, "lastTime", performance.now());
@@ -46333,23 +46568,25 @@ class ThreeActing {
     __publicField(this, "lastBuiltPlaybackMode", null);
     __publicField(this, "isPlaybackMode", false);
     __publicField(this, "isCountingCountdown", false);
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     this.container = options.container;
     this.onStateChange = options.onStateChange;
     this.onRecordingFinished = options.onRecordingFinished;
     const initialStageData = ((_a = options.initialState) == null ? void 0 : _a.stage_data) ?? ((_b = options.initialState) == null ? void 0 : _b.scene_data) ?? { type: "cube_stage", num_assets: 0, nodes: [] };
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null;
     const defaultSpeed = ((_c = options.initialState) == null ? void 0 : _c.actor_speed) ?? (((_d = options.initialState) == null ? void 0 : _d.actor_type) === "car" ? 20 : 10);
+    this.cameraDistance = ((_e = options.initialState) == null ? void 0 : _e.camera_distance) ?? 1;
     this.state = {
-      actor_type: ((_e = options.initialState) == null ? void 0 : _e.actor_type) ?? "human",
-      actor_color: (_f = options.initialState) == null ? void 0 : _f.actor_color,
+      actor_type: ((_f = options.initialState) == null ? void 0 : _f.actor_type) ?? "human",
+      actor_color: (_g = options.initialState) == null ? void 0 : _g.actor_color,
       actor_speed: defaultSpeed,
-      duration: ((_g = options.initialState) == null ? void 0 : _g.duration) ?? 7,
+      camera_distance: this.cameraDistance,
+      duration: ((_h = options.initialState) == null ? void 0 : _h.duration) ?? 7,
       stage_data: initialStageData,
       scene_data: initialStageData,
-      motion_data: (_h = options.initialState) == null ? void 0 : _h.motion_data,
-      spawn_point: (_i = options.initialState) == null ? void 0 : _i.spawn_point,
-      actors: ((_j = options.initialState) == null ? void 0 : _j.actors) ?? []
+      motion_data: (_i = options.initialState) == null ? void 0 : _i.motion_data,
+      spawn_point: (_j = options.initialState) == null ? void 0 : _j.spawn_point,
+      actors: ((_k = options.initialState) == null ? void 0 : _k.actors) ?? []
     };
     this.playbackController = new PlaybackController();
     this.initThreeJS();
@@ -46529,6 +46766,9 @@ class ThreeActing {
     var _a;
     this.isPlaying = false;
     this.playbackController.stop();
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.resetAllDithering();
+    }
     const trajectory = this.playbackController.getTrajectory();
     if (trajectory.length > 0) {
       this.isPlaybackMode = true;
@@ -46691,17 +46931,24 @@ class ThreeActing {
       this.onStateChange({ ...this.state, actor_color: color, actors: this.getAccumulatedActors() });
     }
   }
+  setCameraDistance(dist) {
+    this.cameraDistance = Math.max(0.5, Math.min(2.5, Math.round(dist * 10) / 10));
+    this.state.camera_distance = this.cameraDistance;
+  }
+  getCameraDistance() {
+    return this.cameraDistance;
+  }
   getActorFramingOffsets() {
     if (!this.actorController) {
-      return { camOffset: new Vector3(-8, 4, 0), targetOffset: new Vector3(0, 0.5, 0) };
+      return { camOffset: new Vector3(-8 * this.cameraDistance, 4 * this.cameraDistance, 0), targetOffset: new Vector3(0, 0.5, 0) };
     }
     const bbox = new Box3().setFromObject(this.actorController.group);
     const size = new Vector3();
     bbox.getSize(size);
     const maxSpan = Math.max(size.x, size.y, size.z, 1.5);
-    const dist = Math.max(8, maxSpan * 2.8);
+    const dist = Math.max(8, maxSpan * 2.8) * this.cameraDistance;
     const camX = -dist * 0.85;
-    const camY = Math.max(3.5, dist * 0.45);
+    const camY = Math.max(2.5, dist * 0.45);
     const targetY = size.y > 0 ? Math.max(0.5, size.y * 0.45) : 0.5;
     return {
       camOffset: new Vector3(camX, camY, 0),
@@ -46749,6 +46996,9 @@ class ThreeActing {
       this.camera.position.set(pos.x + camOffset.x, pos.y + camOffset.y, pos.z + camOffset.z);
       this.actingCameraTarget.set(pos.x + targetOffset.x, pos.y + targetOffset.y, pos.z + targetOffset.z);
       this.camera.lookAt(this.actingCameraTarget);
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.resetAllDithering();
+      }
     }
   }
   bindEvents() {
@@ -46792,6 +47042,21 @@ class ThreeActing {
     window.addEventListener("keydown", this.keydownHandler, { capture: true });
     window.addEventListener("keyup", this.keyupHandler, { capture: true });
     window.addEventListener("blur", this.blurHandler);
+    this.wheelHandler = (event) => {
+      if (!this.isHovered) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const delta = event.deltaY > 0 ? 0.1 : -0.1;
+      const newDist = Math.max(0.5, Math.min(2.5, Math.round((this.cameraDistance + delta) * 10) / 10));
+      this.setCameraDistance(newDist);
+      if (this.onCameraDistanceChange) {
+        this.onCameraDistanceChange(newDist);
+      }
+      if (this.onStateChange) {
+        this.onStateChange({ ...this.state, camera_distance: newDist, actors: this.getAccumulatedActors() });
+      }
+    };
+    canvas.addEventListener("wheel", this.wheelHandler, { passive: false });
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
         cancelAnimationFrame(this.resizeAnimationFrameId);
@@ -46804,6 +47069,7 @@ class ThreeActing {
     this.resizeObserver.observe(this.container);
   }
   updateActorMovement(dt) {
+    var _a;
     if (this.isPlaybackMode) {
       const curTime = this.playbackController.getCurrentTime();
       this.previousActorControllers.forEach((p2) => {
@@ -46811,18 +47077,25 @@ class ThreeActing {
       });
       if (this.isPlaying) {
         this.playbackController.update(dt, this.actorController);
+        if (this.playbackController.isEnded()) {
+          this.isPlaying = false;
+          if (this.actorController) {
+            const trajectory = this.playbackController.getTrajectory();
+            const finalAnim = ((_a = trajectory[trajectory.length - 1]) == null ? void 0 : _a.anim) || "Idle_A";
+            this.actorController.resetAnimation(finalAnim);
+          }
+        }
       } else if (this.actorController) {
         this.playbackController.evaluateAt(curTime, this.actorController, 0);
       }
       return;
     }
     if (this.isRecording) {
-      const curTime = this.recordingTime;
       this.previousActorControllers.forEach((p2) => {
-        p2.playbackController.evaluateAt(curTime, p2.controller, dt);
+        p2.playbackController.evaluateAt(this.recordingTime, p2.controller, dt);
       });
       if (this.actorController) {
-        const speedMult = this.state.actor_speed ?? 10;
+        const speedMult = this.activeRecordingSpeed || (this.state.actor_speed ?? 10);
         this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera);
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime));
         this.recordingTime += dt;
@@ -46924,6 +47197,39 @@ class ThreeActing {
       this.camera.position.lerp(idealCamPos, 0.12);
       this.actingCameraTarget.lerp(idealTarget, 0.12);
       this.camera.lookAt(this.actingCameraTarget);
+      if (this.instancedStageMesh) {
+        const camPos = this.camera.position;
+        const targetPos = this.actingCameraTarget;
+        const distToTarget = camPos.distanceTo(targetPos);
+        const occludedSet = /* @__PURE__ */ new Set();
+        if (distToTarget > 0.1) {
+          _tempCamDir.subVectors(targetPos, camPos).normalize();
+          _tempRight.crossVectors(_tempCamDir, _tempUp).normalize();
+          const r = 0.28;
+          const probeOffsets = [
+            new Vector3(0, 0, 0),
+            _tempRight.clone().multiplyScalar(r),
+            _tempRight.clone().multiplyScalar(-r),
+            new Vector3(0, r * 0.7, 0),
+            new Vector3(0, -r * 0.7, 0)
+          ];
+          for (const offset of probeOffsets) {
+            const origin = _tempOrigin.copy(camPos).add(offset);
+            const dir = _tempOffsetDir.subVectors(targetPos, origin).normalize();
+            this.actingRaycaster.set(origin, dir);
+            this.actingRaycaster.near = 0.1;
+            this.actingRaycaster.far = Math.max(0.2, distToTarget - 0.45);
+            const hits = this.actingRaycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false);
+            for (const hit of hits) {
+              if (hit.instanceId !== void 0 && hit.instanceId !== null) {
+                occludedSet.add(hit.instanceId);
+              }
+            }
+          }
+        }
+        this.instancedStageMesh.setOccludedInstances(occludedSet, 0.15);
+        this.instancedStageMesh.updateDither(dt);
+      }
     }
     updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget);
     this.renderer.render(this.scene, this.camera);
@@ -46950,6 +47256,9 @@ class ThreeActing {
     }
     if (newState.actor_speed !== void 0) {
       this.state.actor_speed = newState.actor_speed;
+    }
+    if (newState.camera_distance !== void 0) {
+      this.setCameraDistance(newState.camera_distance);
     }
     if (newState.duration !== void 0) {
       if (this.state.duration !== void 0 && this.state.duration !== newState.duration && this.trajectory.length > 0) {
@@ -46988,6 +47297,7 @@ class ThreeActing {
     this.state.scene_data = stageData;
     const stageEnv = new StageEnvironment();
     const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
+    this.instancedStageMesh = instancedStage;
     this.environmentMeshes = [instancedStage.getSurfaceMesh()];
     this.cachedSceneExtent = calculateStageExtent(this.clonedEnvGroup);
     updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget);
@@ -47092,6 +47402,7 @@ class ThreeActing {
     return this.scene;
   }
   dispose() {
+    var _a;
     if (this.spawnPointHelper) {
       this.spawnPointHelper.dispose();
     }
@@ -47115,6 +47426,9 @@ class ThreeActing {
     }
     if (this.blurHandler) {
       window.removeEventListener("blur", this.blurHandler);
+    }
+    if (this.wheelHandler && ((_a = this.renderer) == null ? void 0 : _a.domElement)) {
+      this.renderer.domElement.removeEventListener("wheel", this.wheelHandler);
     }
     if (this.debugPanel) {
       this.debugPanel.dispose();
@@ -47155,46 +47469,50 @@ const _hoisted_10$1 = {
   key: 2,
   class: "canvas-edit-toolbar left"
 };
-const _hoisted_11$1 = { class: "acting-toolbar" };
-const _hoisted_12$1 = ["title"];
-const _hoisted_13$1 = { class: "info-overlay" };
-const _hoisted_14$1 = {
+const _hoisted_11$1 = { class: "camera-dist-wrapper" };
+const _hoisted_12$1 = { class: "dist-popover-header" };
+const _hoisted_13$1 = { class: "dist-val" };
+const _hoisted_14$1 = { class: "dist-slider-row" };
+const _hoisted_15$1 = { class: "acting-toolbar" };
+const _hoisted_16$1 = ["title"];
+const _hoisted_17$1 = { class: "info-overlay" };
+const _hoisted_18$1 = {
   key: 0,
   class: "state-indicator playing"
 };
-const _hoisted_15$1 = {
+const _hoisted_19$1 = {
   key: 1,
   class: "state-indicator recording"
 };
-const _hoisted_16$1 = {
+const _hoisted_20$1 = {
   key: 2,
   class: "state-indicator counting"
 };
-const _hoisted_17$1 = {
+const _hoisted_21$1 = {
   key: 3,
   class: "state-indicator practice"
 };
-const _hoisted_18$1 = {
+const _hoisted_22$1 = {
   key: 4,
   class: "state-indicator recorded"
 };
-const _hoisted_19$1 = {
+const _hoisted_23$1 = {
   key: 1,
   class: "hint"
 };
-const _hoisted_20$1 = { class: "controls-modal-card" };
-const _hoisted_21$1 = { class: "modal-header" };
-const _hoisted_22$1 = { class: "modal-title-group" };
-const _hoisted_23$1 = { class: "modal-body" };
-const _hoisted_24$1 = {
+const _hoisted_24$1 = { class: "controls-modal-card" };
+const _hoisted_25$1 = { class: "modal-header" };
+const _hoisted_26$1 = { class: "modal-title-group" };
+const _hoisted_27$1 = { class: "modal-body" };
+const _hoisted_28$1 = {
   key: 0,
   class: "controls-list"
 };
-const _hoisted_25$1 = {
+const _hoisted_29$1 = {
   key: 1,
   class: "controls-list"
 };
-const _hoisted_26$1 = { class: "modal-footer" };
+const _hoisted_30$1 = { class: "modal-footer" };
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ActingWidget",
   props: {
@@ -47203,22 +47521,44 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     currentNode: {}
   },
   setup(__props, { expose: __expose }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const props = __props;
     const initialActorType = ((_a = props.initialState) == null ? void 0 : _a.actor_type) ?? "human";
     const initialActorSpeed = ((_b = props.initialState) == null ? void 0 : _b.actor_speed) ?? (initialActorType === "car" ? 20 : 10);
     const defaultActorColor = computed(() => initialActorType === "car" ? "#0284C7" : "#F1DFBF");
     const initialActorColor = ((_c = props.initialState) == null ? void 0 : _c.actor_color) ?? defaultActorColor.value;
+    const initialCameraDistance = ((_d = props.initialState) == null ? void 0 : _d.camera_distance) ?? 1;
     const state = /* @__PURE__ */ reactive({
       actor_type: initialActorType,
       actor_color: initialActorColor,
       actor_speed: initialActorSpeed,
-      duration: ((_d = props.initialState) == null ? void 0 : _d.duration) ?? 7,
-      spawn_point: (_e = props.initialState) == null ? void 0 : _e.spawn_point,
-      motion_data: ((_f = props.initialState) == null ? void 0 : _f.motion_data) ?? "",
-      scene_data: ((_g = props.initialState) == null ? void 0 : _g.scene_data) ?? null,
-      actors: ((_h = props.initialState) == null ? void 0 : _h.actors) ?? []
+      camera_distance: initialCameraDistance,
+      duration: ((_e = props.initialState) == null ? void 0 : _e.duration) ?? 7,
+      spawn_point: (_f = props.initialState) == null ? void 0 : _f.spawn_point,
+      motion_data: ((_g = props.initialState) == null ? void 0 : _g.motion_data) ?? "",
+      scene_data: ((_h = props.initialState) == null ? void 0 : _h.scene_data) ?? null,
+      actors: ((_i = props.initialState) == null ? void 0 : _i.actors) ?? []
     });
+    const cameraDistance = /* @__PURE__ */ ref(initialCameraDistance);
+    const showDistanceSlider = /* @__PURE__ */ ref(false);
+    const onDistanceSliderChange = () => {
+      if (threeActing) {
+        threeActing.setCameraDistance(cameraDistance.value);
+      }
+      state.camera_distance = cameraDistance.value;
+      if (props.onStateChange) {
+        props.onStateChange(state);
+      }
+    };
+    const resetCameraDistance = () => {
+      cameraDistance.value = 1;
+      onDistanceSliderChange();
+    };
+    const handleGlobalClick = () => {
+      if (showDistanceSlider.value) {
+        showDistanceSlider.value = false;
+      }
+    };
     const isCounting = /* @__PURE__ */ ref(false);
     const countdownVal = /* @__PURE__ */ ref(null);
     const isRecording = /* @__PURE__ */ ref(false);
@@ -47261,6 +47601,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         onRecordingFinished,
         connectedThreeScene: currentThreeScene
       });
+      threeActing.onCameraDistanceChange = (dist) => {
+        cameraDistance.value = dist;
+        state.camera_distance = dist;
+        if (props.onStateChange) {
+          props.onStateChange(state);
+        }
+      };
       if (state.motion_data) {
         isPlaying.value = true;
         threeActing.startPlayback(state.motion_data);
@@ -47363,6 +47710,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       if (newState.hasOwnProperty("actor_speed")) {
         state.actor_speed = newState.actor_speed;
       }
+      if (newState.hasOwnProperty("camera_distance")) {
+        state.camera_distance = newState.camera_distance;
+        cameraDistance.value = newState.camera_distance;
+      }
       if (newState.hasOwnProperty("duration")) {
         state.duration = newState.duration;
       }
@@ -47403,7 +47754,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     });
     const currentTime = /* @__PURE__ */ ref(0);
     const practiceElapsed = /* @__PURE__ */ ref(0);
-    const totalDuration = /* @__PURE__ */ ref(((_i = props.initialState) == null ? void 0 : _i.duration) ?? 7);
+    const totalDuration = /* @__PURE__ */ ref(((_j = props.initialState) == null ? void 0 : _j.duration) ?? 7);
     let timeFrameId = null;
     const updateTimeCounter = () => {
       if (threeActing) {
@@ -47428,6 +47779,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     onMounted(() => {
       timeFrameId = requestAnimationFrame(updateTimeCounter);
       window.addEventListener("keydown", handleEscapeKey);
+      window.addEventListener("click", handleGlobalClick);
     });
     onUnmounted(() => {
       if (timeFrameId !== null) {
@@ -47435,13 +47787,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         timeFrameId = null;
       }
       window.removeEventListener("keydown", handleEscapeKey);
+      window.removeEventListener("click", handleGlobalClick);
       cleanup();
     });
     const getThreeActing = () => threeActing;
     __expose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing });
     return (_ctx, _cache2) => {
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
-        !state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_2$1, [..._cache2[6] || (_cache2[6] = [
+        !state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_2$1, [..._cache2[10] || (_cache2[10] = [
           createBaseVNode("div", { class: "disabled-title" }, "Acting Canvas Disabled", -1),
           createBaseVNode("div", { class: "disabled-subtitle" }, "Connect a Stage or Acting 3D Node to activate.", -1)
         ])])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
@@ -47449,13 +47802,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             createVNode(StagingCanvas, { "init-scene": initScene })
           ]),
           countdownVal.value !== null ? (openBlock(), createElementBlock("div", _hoisted_5$1, [
-            _cache2[7] || (_cache2[7] = createBaseVNode("span", { class: "countdown-dot" }, null, -1)),
+            _cache2[11] || (_cache2[11] = createBaseVNode("span", { class: "countdown-dot" }, null, -1)),
             createTextVNode(" REC IN " + toDisplayString(countdownVal.value) + "s ", 1)
           ])) : createCommentVNode("", true),
           isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_6$1, [
             createBaseVNode("div", _hoisted_7$1, [
-              _cache2[8] || (_cache2[8] = createBaseVNode("span", { class: "rec-dot" }, null, -1)),
-              _cache2[9] || (_cache2[9] = createBaseVNode("span", { class: "rec-text" }, "RECORDING", -1)),
+              _cache2[12] || (_cache2[12] = createBaseVNode("span", { class: "rec-dot" }, null, -1)),
+              _cache2[13] || (_cache2[13] = createBaseVNode("span", { class: "rec-text" }, "RECORDING", -1)),
               createBaseVNode("span", _hoisted_8$1, toDisplayString(recordingElapsed.value.toFixed(1)) + "s / " + toDisplayString(state.duration) + "s", 1)
             ]),
             createBaseVNode("div", _hoisted_9$1, [
@@ -47465,30 +47818,80 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }, null, 4)
             ])
           ])) : createCommentVNode("", true),
-          !isRecording.value && !isPlaying.value && !isCounting.value && !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_10$1, [
-            createBaseVNode("button", {
-              class: "edit-btn",
-              title: "Reset Actor to Spawn Point",
-              onClick: withModifiers(resetActorToSpawn, ["stop"])
-            }, [
-              createVNode(unref(LocateFixed), { size: 16 })
-            ]),
-            createBaseVNode("button", {
-              class: normalizeClass(["edit-btn", { "active": activeSpawnMode.value === "translate" }]),
-              title: "Move Spawn Point (XYZ axes)",
-              onClick: _cache2[0] || (_cache2[0] = withModifiers(($event) => toggleSpawnMode("translate"), ["stop"]))
-            }, [
-              createVNode(unref(Move), { size: 16 })
-            ], 2),
-            createBaseVNode("button", {
-              class: normalizeClass(["edit-btn", { "active": activeSpawnMode.value === "rotate" }]),
-              title: "Rotate Spawn Heading (Y axis)",
-              onClick: _cache2[1] || (_cache2[1] = withModifiers(($event) => toggleSpawnMode("rotate"), ["stop"]))
-            }, [
-              createVNode(unref(RotateCw), { size: 16 })
-            ], 2)
+          !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_10$1, [
+            !isPlaying.value && !state.motion_data ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
+              createBaseVNode("button", {
+                class: "edit-btn",
+                title: "Reset Actor to Spawn Point",
+                onClick: withModifiers(resetActorToSpawn, ["stop"])
+              }, [
+                createVNode(unref(LocateFixed), { size: 16 })
+              ]),
+              createBaseVNode("button", {
+                class: normalizeClass(["edit-btn", { "active": activeSpawnMode.value === "translate" }]),
+                title: "Move Spawn Point (XYZ axes)",
+                onClick: _cache2[0] || (_cache2[0] = withModifiers(($event) => toggleSpawnMode("translate"), ["stop"]))
+              }, [
+                createVNode(unref(Move), { size: 16 })
+              ], 2),
+              createBaseVNode("button", {
+                class: normalizeClass(["edit-btn", { "active": activeSpawnMode.value === "rotate" }]),
+                title: "Rotate Spawn Heading (Y axis)",
+                onClick: _cache2[1] || (_cache2[1] = withModifiers(($event) => toggleSpawnMode("rotate"), ["stop"]))
+              }, [
+                createVNode(unref(RotateCw), { size: 16 })
+              ], 2),
+              _cache2[14] || (_cache2[14] = createBaseVNode("div", { class: "toolbar-divider" }, null, -1))
+            ], 64)) : createCommentVNode("", true),
+            createBaseVNode("div", _hoisted_11$1, [
+              createBaseVNode("button", {
+                class: normalizeClass(["edit-btn", { "active": showDistanceSlider.value }]),
+                title: "Adjust Camera Distance",
+                onClick: _cache2[2] || (_cache2[2] = withModifiers(($event) => showDistanceSlider.value = !showDistanceSlider.value, ["stop"]))
+              }, [
+                createVNode(unref(ZoomIn), { size: 16 })
+              ], 2),
+              showDistanceSlider.value ? (openBlock(), createElementBlock("div", {
+                key: 0,
+                class: "distance-popover",
+                onClick: _cache2[4] || (_cache2[4] = withModifiers(() => {
+                }, ["stop"])),
+                onMousedown: _cache2[5] || (_cache2[5] = withModifiers(() => {
+                }, ["stop"]))
+              }, [
+                createBaseVNode("div", _hoisted_12$1, [
+                  _cache2[15] || (_cache2[15] = createBaseVNode("span", { class: "dist-title" }, "DISTANCE", -1)),
+                  createBaseVNode("span", _hoisted_13$1, toDisplayString(cameraDistance.value.toFixed(1)) + "x", 1),
+                  createBaseVNode("button", {
+                    class: "dist-reset-btn",
+                    title: "Reset distance to 1.0x",
+                    onClick: withModifiers(resetCameraDistance, ["stop"])
+                  }, "↺")
+                ]),
+                createBaseVNode("div", _hoisted_14$1, [
+                  _cache2[16] || (_cache2[16] = createBaseVNode("span", { class: "dist-bound" }, "0.5x", -1)),
+                  withDirectives(createBaseVNode("input", {
+                    type: "range",
+                    min: "0.5",
+                    max: "2.5",
+                    step: "0.1",
+                    "onUpdate:modelValue": _cache2[3] || (_cache2[3] = ($event) => cameraDistance.value = $event),
+                    class: "dist-slider",
+                    onInput: onDistanceSliderChange
+                  }, null, 544), [
+                    [
+                      vModelText,
+                      cameraDistance.value,
+                      void 0,
+                      { number: true }
+                    ]
+                  ]),
+                  _cache2[17] || (_cache2[17] = createBaseVNode("span", { class: "dist-bound" }, "2.5x", -1))
+                ])
+              ], 32)) : createCommentVNode("", true)
+            ])
           ])) : createCommentVNode("", true),
-          createBaseVNode("div", _hoisted_11$1, [
+          createBaseVNode("div", _hoisted_15$1, [
             !isRecording.value && !isCounting.value && !state.motion_data ? (openBlock(), createElementBlock("button", {
               key: 0,
               class: "acting-btn rec-trigger",
@@ -47499,7 +47902,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 size: 13,
                 class: "btn-icon"
               }),
-              _cache2[10] || (_cache2[10] = createBaseVNode("span", null, "Record", -1))
+              _cache2[18] || (_cache2[18] = createBaseVNode("span", null, "Record", -1))
             ])) : createCommentVNode("", true),
             isRecording.value ? (openBlock(), createElementBlock("button", {
               key: 1,
@@ -47511,7 +47914,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 size: 12,
                 class: "btn-icon fill-icon"
               }),
-              _cache2[11] || (_cache2[11] = createBaseVNode("span", null, "Stop", -1))
+              _cache2[19] || (_cache2[19] = createBaseVNode("span", null, "Stop", -1))
             ])) : createCommentVNode("", true),
             state.motion_data && !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock(Fragment, { key: 2 }, [
               createBaseVNode("button", {
@@ -47524,7 +47927,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   class: "btn-icon"
                 })),
                 createBaseVNode("span", null, toDisplayString(isPlaying.value ? "Pause" : "Play"), 1)
-              ], 10, _hoisted_12$1),
+              ], 10, _hoisted_16$1),
               createBaseVNode("button", {
                 class: "acting-btn stop-btn",
                 title: "Stop and Reset Position",
@@ -47534,7 +47937,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   size: 12,
                   class: "btn-icon fill-icon"
                 }),
-                _cache2[12] || (_cache2[12] = createBaseVNode("span", null, "Stop", -1))
+                _cache2[20] || (_cache2[20] = createBaseVNode("span", null, "Stop", -1))
               ]),
               createBaseVNode("button", {
                 class: "acting-btn reset-btn",
@@ -47545,44 +47948,44 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   size: 12,
                   class: "btn-icon"
                 }),
-                _cache2[13] || (_cache2[13] = createBaseVNode("span", null, "Reset", -1))
+                _cache2[21] || (_cache2[21] = createBaseVNode("span", null, "Reset", -1))
               ])
             ], 64)) : createCommentVNode("", true)
           ])
         ])),
-        createBaseVNode("div", _hoisted_13$1, [
+        createBaseVNode("div", _hoisted_17$1, [
           state.scene_data ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
-            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_14$1, [
+            isPlaying.value ? (openBlock(), createElementBlock("div", _hoisted_18$1, [
               createVNode(unref(Play), {
                 size: 10,
                 class: "status-icon fill-icon"
               }),
-              _cache2[14] || (_cache2[14] = createTextVNode(" REPLAYING ", -1))
-            ])) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, [..._cache2[15] || (_cache2[15] = [
+              _cache2[22] || (_cache2[22] = createTextVNode(" REPLAYING ", -1))
+            ])) : isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_19$1, [..._cache2[23] || (_cache2[23] = [
               createBaseVNode("span", { class: "rec-dot" }, null, -1),
               createTextVNode(" RECORDING ", -1)
-            ])])) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_16$1, " STARTING IN " + toDisplayString(countdownVal.value) + "... ", 1)) : !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_17$1, [..._cache2[16] || (_cache2[16] = [
+            ])])) : isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_20$1, " STARTING IN " + toDisplayString(countdownVal.value) + "... ", 1)) : !state.motion_data ? (openBlock(), createElementBlock("div", _hoisted_21$1, [..._cache2[24] || (_cache2[24] = [
               createBaseVNode("span", { class: "practice-dot" }, null, -1),
               createTextVNode(" PRACTICE ", -1)
-            ])])) : (openBlock(), createElementBlock("div", _hoisted_18$1, [
+            ])])) : (openBlock(), createElementBlock("div", _hoisted_22$1, [
               createVNode(unref(Check), {
                 size: 11,
                 class: "status-icon"
               }),
-              _cache2[17] || (_cache2[17] = createTextVNode(" RECORDED ", -1))
+              _cache2[25] || (_cache2[25] = createTextVNode(" RECORDED ", -1))
             ])),
             createBaseVNode("button", {
               class: "info-help-btn",
               title: "View Keyboard Controls",
-              onClick: _cache2[2] || (_cache2[2] = ($event) => showHelpModal.value = true)
+              onClick: _cache2[6] || (_cache2[6] = ($event) => showHelpModal.value = true)
             }, [
               createVNode(unref(CircleQuestionMark), {
                 size: 13,
                 class: "info-icon"
               }),
-              _cache2[18] || (_cache2[18] = createBaseVNode("span", { class: "info-label" }, "Controls", -1))
+              _cache2[26] || (_cache2[26] = createBaseVNode("span", { class: "info-label" }, "Controls", -1))
             ])
-          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_19$1, "Waiting for stage link..."))
+          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_23$1, "Waiting for stage link..."))
         ]),
         state.scene_data ? (openBlock(), createElementBlock("div", {
           key: 2,
@@ -47599,35 +48002,35 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         showHelpModal.value ? (openBlock(), createElementBlock("div", {
           key: 3,
           class: "controls-modal-backdrop",
-          onClick: _cache2[5] || (_cache2[5] = withModifiers(($event) => showHelpModal.value = false, ["self"]))
+          onClick: _cache2[9] || (_cache2[9] = withModifiers(($event) => showHelpModal.value = false, ["self"]))
         }, [
-          createBaseVNode("div", _hoisted_20$1, [
-            createBaseVNode("div", _hoisted_21$1, [
-              createBaseVNode("div", _hoisted_22$1, [
-                _cache2[19] || (_cache2[19] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
+          createBaseVNode("div", _hoisted_24$1, [
+            createBaseVNode("div", _hoisted_25$1, [
+              createBaseVNode("div", _hoisted_26$1, [
+                _cache2[27] || (_cache2[27] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
                 createBaseVNode("span", {
                   class: normalizeClass(["actor-type-badge", state.actor_type])
                 }, toDisplayString(state.actor_type === "car" ? "CAR ACTOR" : "HUMAN ACTOR"), 3)
               ]),
               createBaseVNode("button", {
                 class: "modal-close-btn",
-                onClick: _cache2[3] || (_cache2[3] = ($event) => showHelpModal.value = false),
+                onClick: _cache2[7] || (_cache2[7] = ($event) => showHelpModal.value = false),
                 title: "Close"
               }, [
                 createVNode(unref(X), { size: 16 })
               ])
             ]),
-            createBaseVNode("div", _hoisted_23$1, [
-              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_24$1, [..._cache2[20] || (_cache2[20] = [
-                createStaticVNode('<div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>W</kbd> <span class="or" data-v-9fc2067c>or</span> <kbd data-v-9fc2067c>▲</kbd></div><span class="action-desc" data-v-9fc2067c>Accelerate</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>S</kbd> <span class="or" data-v-9fc2067c>or</span> <kbd data-v-9fc2067c>▼</kbd></div><span class="action-desc" data-v-9fc2067c>Brake / Reverse</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>A</kbd> <kbd data-v-9fc2067c>D</kbd> <span class="or" data-v-9fc2067c>or</span> <kbd data-v-9fc2067c>◀</kbd> <kbd data-v-9fc2067c>▶</kbd></div><span class="action-desc" data-v-9fc2067c>Steer Left / Right</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>Space</kbd></div><span class="action-desc" data-v-9fc2067c>Handbrake</span></div>', 4)
-              ])])) : (openBlock(), createElementBlock("div", _hoisted_25$1, [..._cache2[21] || (_cache2[21] = [
-                createStaticVNode('<div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>W</kbd> <kbd data-v-9fc2067c>A</kbd> <kbd data-v-9fc2067c>S</kbd> <kbd data-v-9fc2067c>D</kbd> <span class="or" data-v-9fc2067c>or</span> <kbd data-v-9fc2067c>Arrows</kbd></div><span class="action-desc" data-v-9fc2067c>Move</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>Shift</kbd> + Move</div><span class="action-desc" data-v-9fc2067c>Sprint (Fast Run)</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>C</kbd></div><span class="action-desc" data-v-9fc2067c>Crouch / Crouch Walk</span></div><div class="control-row" data-v-9fc2067c><div class="key-group" data-v-9fc2067c><kbd data-v-9fc2067c>Space</kbd> <span class="or" data-v-9fc2067c>or</span> <kbd data-v-9fc2067c>J</kbd></div><span class="action-desc" data-v-9fc2067c>Jump</span></div>', 4)
+            createBaseVNode("div", _hoisted_27$1, [
+              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_28$1, [..._cache2[28] || (_cache2[28] = [
+                createStaticVNode('<div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>W</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>▲</kbd></div><span class="action-desc" data-v-a37022a8>Accelerate</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>S</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>▼</kbd></div><span class="action-desc" data-v-a37022a8>Brake / Reverse</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>A</kbd> <kbd data-v-a37022a8>D</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>◀</kbd> <kbd data-v-a37022a8>▶</kbd></div><span class="action-desc" data-v-a37022a8>Steer Left / Right</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Space</kbd></div><span class="action-desc" data-v-a37022a8>Handbrake</span></div>', 4)
+              ])])) : (openBlock(), createElementBlock("div", _hoisted_29$1, [..._cache2[29] || (_cache2[29] = [
+                createStaticVNode('<div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>W</kbd> <kbd data-v-a37022a8>A</kbd> <kbd data-v-a37022a8>S</kbd> <kbd data-v-a37022a8>D</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>Arrows</kbd></div><span class="action-desc" data-v-a37022a8>Move</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Shift</kbd> + Move</div><span class="action-desc" data-v-a37022a8>Sprint (Fast Run)</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>C</kbd></div><span class="action-desc" data-v-a37022a8>Crouch / Crouch Walk</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Space</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>J</kbd></div><span class="action-desc" data-v-a37022a8>Jump</span></div>', 4)
               ])]))
             ]),
-            createBaseVNode("div", _hoisted_26$1, [
+            createBaseVNode("div", _hoisted_30$1, [
               createBaseVNode("button", {
                 class: "modal-ok-btn",
-                onClick: _cache2[4] || (_cache2[4] = ($event) => showHelpModal.value = false)
+                onClick: _cache2[8] || (_cache2[8] = ($event) => showHelpModal.value = false)
               }, "Got it")
             ])
           ])
@@ -47636,7 +48039,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-9fc2067c"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-a37022a8"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);
@@ -47670,7 +48073,8 @@ class CameraSpringArm {
         targetLookAt: targetLookAt.clone(),
         hitObstacle: false,
         hitDistance: idealDistance,
-        ditherOpacity: 1
+        ditherOpacity: 1,
+        hitInstanceIds: []
       };
     }
     this.boomDir.subVectors(idealCamPos, targetLookAt).normalize();
@@ -47682,6 +48086,7 @@ class CameraSpringArm {
     this.cameraUp.crossVectors(this.cameraRight, this.boomDir).normalize();
     let closestHitDistance = idealDistance;
     let hitObstacle = false;
+    const hitInstanceIds = [];
     if (obstacleRoot && obstacleRoot.visible) {
       const colliders = [];
       obstacleRoot.traverse((child) => {
@@ -47710,9 +48115,14 @@ class CameraSpringArm {
           this.raycaster.far = maxProbeDist;
           const hits = this.raycaster.intersectObjects(colliders, false);
           if (hits.length > 0) {
-            const hit = hits[0];
-            if (hit.distance < closestHitDistance) {
-              closestHitDistance = hit.distance;
+            for (const hit of hits) {
+              if (hit.instanceId !== void 0 && hit.instanceId !== null && !hitInstanceIds.includes(hit.instanceId)) {
+                hitInstanceIds.push(hit.instanceId);
+              }
+            }
+            const closest = hits[0];
+            if (closest.distance < closestHitDistance) {
+              closestHitDistance = closest.distance;
               hitObstacle = true;
             }
           }
@@ -47763,7 +48173,8 @@ class CameraSpringArm {
       targetLookAt: finalLookAt,
       hitObstacle,
       hitDistance: closestHitDistance,
-      ditherOpacity: this.currentDitherOpacity
+      ditherOpacity: this.currentDitherOpacity,
+      hitInstanceIds
     };
   }
 }
@@ -48258,7 +48669,8 @@ class ThreeDirecting {
         this.camera.lookAt(targetLookAt);
       }
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(1);
+        this.instancedStageMesh.setOccludedInstances([], 1);
+        this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Third Person") {
       const isCar = isCarTarget;
@@ -48288,7 +48700,8 @@ class ThreeDirecting {
       }
       this.camera.lookAt(this.tpvTarget);
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity);
+        this.instancedStageMesh.setOccludedInstances(springResult.hitInstanceIds, springResult.ditherOpacity);
+        this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Wide") {
       const isCar = isCarTarget;
@@ -48309,7 +48722,8 @@ class ThreeDirecting {
       }
       this.camera.lookAt(this.wideTarget);
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(1);
+        this.instancedStageMesh.setOccludedInstances([], 1);
+        this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Side") {
       const isCar = isCarTarget;
@@ -48339,7 +48753,8 @@ class ThreeDirecting {
       }
       this.camera.lookAt(this.sideTarget);
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity);
+        this.instancedStageMesh.setOccludedInstances(springResult.hitInstanceIds, springResult.ditherOpacity);
+        this.instancedStageMesh.updateDither(dt);
       }
     }
     const activeTarget = activeMode === "Wide" ? this.wideTarget : activeMode === "Side" ? this.sideTarget : this.tpvTarget;

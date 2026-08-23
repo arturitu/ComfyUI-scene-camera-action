@@ -565,7 +565,8 @@ export class ThreeDirecting {
       }
 
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(1.0)
+        this.instancedStageMesh.setOccludedInstances([], 1.0)
+        this.instancedStageMesh.updateDither(dt)
       }
 
     } else if (activeMode === 'Third Person') {
@@ -606,7 +607,8 @@ export class ThreeDirecting {
       this.camera.lookAt(this.tpvTarget)
 
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity)
+        this.instancedStageMesh.setOccludedInstances(springResult.hitInstanceIds, springResult.ditherOpacity)
+        this.instancedStageMesh.updateDither(dt)
       }
 
     } else if (activeMode === 'Wide') {
@@ -632,7 +634,8 @@ export class ThreeDirecting {
       this.camera.lookAt(this.wideTarget)
 
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(1.0)
+        this.instancedStageMesh.setOccludedInstances([], 1.0)
+        this.instancedStageMesh.updateDither(dt)
       }
 
     } else if (activeMode === 'Side') {
@@ -675,7 +678,8 @@ export class ThreeDirecting {
       this.camera.lookAt(this.sideTarget)
 
       if (this.instancedStageMesh) {
-        this.instancedStageMesh.setDitherOpacity(springResult.ditherOpacity)
+        this.instancedStageMesh.setOccludedInstances(springResult.hitInstanceIds, springResult.ditherOpacity)
+        this.instancedStageMesh.updateDither(dt)
       }
     }
 

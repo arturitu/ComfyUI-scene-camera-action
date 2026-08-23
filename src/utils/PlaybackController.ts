@@ -129,6 +129,10 @@ export class PlaybackController {
     return this.isPlaying
   }
 
+  public isEnded(): boolean {
+    return this.maxDuration > 0 && this.currentTime >= this.maxDuration && !this.isPlaying
+  }
+
   private isRecordingMode: boolean = false
 
   public setIsRecordingMode(active: boolean): void {

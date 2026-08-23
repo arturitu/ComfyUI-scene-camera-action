@@ -7,6 +7,7 @@ export interface SpringArmResult {
   hitObstacle: boolean
   hitDistance: number
   ditherOpacity: number
+  hitInstanceIds: number[]
 }
 
 export class CameraSpringArm {
@@ -50,7 +51,8 @@ export class CameraSpringArm {
         targetLookAt: targetLookAt.clone(),
         hitObstacle: false,
         hitDistance: idealDistance,
-        ditherOpacity: 1.0
+        ditherOpacity: 1.0,
+        hitInstanceIds: []
       }
     }
 
@@ -66,6 +68,7 @@ export class CameraSpringArm {
 
     let closestHitDistance = idealDistance
     let hitObstacle = false
+    const hitInstanceIds: number[] = []
 
     if (obstacleRoot && obstacleRoot.visible) {
       const colliders: THREE.Object3D[] = []
@@ -101,9 +104,14 @@ export class CameraSpringArm {
 
           const hits = this.raycaster.intersectObjects(colliders, false)
           if (hits.length > 0) {
-            const hit = hits[0]
-            if (hit.distance < closestHitDistance) {
-              closestHitDistance = hit.distance
+            for (const hit of hits) {
+              if (hit.instanceId !== undefined && hit.instanceId !== null && !hitInstanceIds.includes(hit.instanceId)) {
+                hitInstanceIds.push(hit.instanceId)
+              }
+            }
+            const closest = hits[0]
+            if (closest.distance < closestHitDistance) {
+              closestHitDistance = closest.distance
               hitObstacle = true
             }
           }
@@ -169,7 +177,8 @@ export class CameraSpringArm {
       targetLookAt: finalLookAt,
       hitObstacle,
       hitDistance: closestHitDistance,
-      ditherOpacity: this.currentDitherOpacity
+      ditherOpacity: this.currentDitherOpacity,
+      hitInstanceIds
     }
   }
 }

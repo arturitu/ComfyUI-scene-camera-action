@@ -244,8 +244,30 @@ export function injectDitherShader(
 
     shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity
 
+    const ditherVertexPars = `
+      attribute float instanceDither;
+      varying float vInstanceDither;
+    `
+    shader.vertexShader = ditherVertexPars + '\n' + shader.vertexShader
+
+    if (shader.vertexShader.includes('#include <begin_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
+      )
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        `void main() {
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
+      )
+    }
+
     const ditherFunction = `
       uniform float uDitherOpacity;
+      varying float vInstanceDither;
+
       float getDitherThreshold(vec2 pos) {
         int x = int(mod(pos.x, 4.0));
         int y = int(mod(pos.y, 4.0));
@@ -275,21 +297,24 @@ export function injectDitherShader(
 
     shader.fragmentShader = ditherFunction + '\n' + shader.fragmentShader
 
+    const ditherDiscardSnippet = `
+      float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
+      if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
+        discard;
+      }
+    `
+
     if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
       shader.fragmentShader = shader.fragmentShader.replace(
         '#include <dithering_fragment>',
         `#include <dithering_fragment>
-        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
-          discard;
-        }`
+        ${ditherDiscardSnippet}`
       )
     } else {
       shader.fragmentShader = shader.fragmentShader.replace(
         'void main() {',
         `void main() {
-        if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
-          discard;
-        }`
+        ${ditherDiscardSnippet}`
       )
     }
   }

@@ -10,12 +10,20 @@ import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
 import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
 import { StageEnvironment } from './staging/StageEnvironment'
+import { InstancedStageMesh } from './staging/InstancedStageMesh'
 import { SpawnPointHelper } from './staging/SpawnPointHelper'
+
+const _tempCamDir = new THREE.Vector3()
+const _tempRight = new THREE.Vector3()
+const _tempUp = new THREE.Vector3(0, 1, 0)
+const _tempOrigin = new THREE.Vector3()
+const _tempOffsetDir = new THREE.Vector3()
 
 export class ThreeActing {
   private container: HTMLElement
   private state: ActingState
   private onStateChange?: (state: ActingState) => void
+  public onCameraDistanceChange?: (dist: number) => void
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -57,10 +65,15 @@ export class ThreeActing {
 
   private debugPanel: DebugPanel | null = null
   private clonedEnvGroup: THREE.Group | null = null
+  private instancedStageMesh: InstancedStageMesh | null = null
+  private cameraDistance: number = 1.0
+  private actingRaycaster = new THREE.Raycaster()
+  private actingDitherOpacity = 1.0
 
   private keydownHandler!: (e: KeyboardEvent) => void
   private keyupHandler!: (e: KeyboardEvent) => void
   private blurHandler!: () => void
+  private wheelHandler?: (e: WheelEvent) => void
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
   private lastTime = performance.now()
@@ -73,11 +86,13 @@ export class ThreeActing {
     const initialStageData = options.initialState?.stage_data ?? options.initialState?.scene_data ?? { type: 'cube_stage', num_assets: 0, nodes: [] }
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null
     const defaultSpeed = options.initialState?.actor_speed ?? (options.initialState?.actor_type === 'car' ? 20.0 : 10.0)
+    this.cameraDistance = options.initialState?.camera_distance ?? 1.0
 
     this.state = {
       actor_type: options.initialState?.actor_type ?? 'human',
       actor_color: options.initialState?.actor_color,
       actor_speed: defaultSpeed,
+      camera_distance: this.cameraDistance,
       duration: options.initialState?.duration ?? 7.0,
       stage_data: initialStageData,
       scene_data: initialStageData,
@@ -291,6 +306,9 @@ export class ThreeActing {
   public stop(): void {
     this.isPlaying = false
     this.playbackController.stop()
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.resetAllDithering()
+    }
     const trajectory = this.playbackController.getTrajectory()
     if (trajectory.length > 0) {
       this.isPlaybackMode = true
@@ -477,9 +495,18 @@ export class ThreeActing {
     }
   }
 
+  public setCameraDistance(dist: number): void {
+    this.cameraDistance = Math.max(0.5, Math.min(2.5, Math.round(dist * 10) / 10))
+    this.state.camera_distance = this.cameraDistance
+  }
+
+  public getCameraDistance(): number {
+    return this.cameraDistance
+  }
+
   private getActorFramingOffsets(): { camOffset: THREE.Vector3; targetOffset: THREE.Vector3 } {
     if (!this.actorController) {
-      return { camOffset: new THREE.Vector3(-8, 4, 0), targetOffset: new THREE.Vector3(0, 0.5, 0) }
+      return { camOffset: new THREE.Vector3(-8 * this.cameraDistance, 4 * this.cameraDistance, 0), targetOffset: new THREE.Vector3(0, 0.5, 0) }
     }
 
     const bbox = new THREE.Box3().setFromObject(this.actorController.group)
@@ -487,9 +514,9 @@ export class ThreeActing {
     bbox.getSize(size)
 
     const maxSpan = Math.max(size.x, size.y, size.z, 1.5)
-    const dist = Math.max(8.0, maxSpan * 2.8)
+    const dist = Math.max(8.0, maxSpan * 2.8) * this.cameraDistance
     const camX = -dist * 0.85
-    const camY = Math.max(3.5, dist * 0.45)
+    const camY = Math.max(2.5, dist * 0.45)
     const targetY = size.y > 0 ? Math.max(0.5, size.y * 0.45) : 0.5
 
     return {
@@ -543,6 +570,9 @@ export class ThreeActing {
       this.camera.position.set(pos.x + camOffset.x, pos.y + camOffset.y, pos.z + camOffset.z)
       this.actingCameraTarget.set(pos.x + targetOffset.x, pos.y + targetOffset.y, pos.z + targetOffset.z)
       this.camera.lookAt(this.actingCameraTarget)
+      if (this.instancedStageMesh) {
+        this.instancedStageMesh.resetAllDithering()
+      }
     }
   }
 
@@ -597,6 +627,22 @@ export class ThreeActing {
     window.addEventListener('keyup', this.keyupHandler, { capture: true })
     window.addEventListener('blur', this.blurHandler)
 
+    this.wheelHandler = (event: WheelEvent) => {
+      if (!this.isHovered) return
+      event.preventDefault()
+      event.stopPropagation()
+      const delta = event.deltaY > 0 ? 0.1 : -0.1
+      const newDist = Math.max(0.5, Math.min(2.5, Math.round((this.cameraDistance + delta) * 10) / 10))
+      this.setCameraDistance(newDist)
+      if (this.onCameraDistanceChange) {
+        this.onCameraDistanceChange(newDist)
+      }
+      if (this.onStateChange) {
+        this.onStateChange({ ...this.state, camera_distance: newDist, actors: this.getAccumulatedActors() })
+      }
+    }
+    canvas.addEventListener('wheel', this.wheelHandler, { passive: false })
+
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
         cancelAnimationFrame(this.resizeAnimationFrameId)
@@ -617,20 +663,28 @@ export class ThreeActing {
       })
       if (this.isPlaying) {
         this.playbackController.update(dt, this.actorController)
+        if (this.playbackController.isEnded()) {
+          this.isPlaying = false
+          if (this.actorController) {
+            const trajectory = this.playbackController.getTrajectory()
+            const finalAnim = trajectory[trajectory.length - 1]?.anim || 'Idle_A'
+            this.actorController.resetAnimation(finalAnim)
+          }
+        }
       } else if (this.actorController) {
         this.playbackController.evaluateAt(curTime, this.actorController, 0)
       }
       return
     }
 
+    // --- Active Recording Mode ---
     if (this.isRecording) {
-      const curTime = this.recordingTime
       this.previousActorControllers.forEach(p => {
-        p.playbackController.evaluateAt(curTime, p.controller, dt)
+        p.playbackController.evaluateAt(this.recordingTime, p.controller, dt)
       })
 
       if (this.actorController) {
-        const speedMult = this.state.actor_speed ?? 10.0
+        const speedMult = this.activeRecordingSpeed || (this.state.actor_speed ?? 10.0)
         this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
 
         this.trajectory.push(this.actorController.getMotionState(this.recordingTime))
@@ -747,7 +801,7 @@ export class ThreeActing {
 
     this.updateActorMovement(dt)
 
-    // Camera following actor with dynamic framing lerp
+    // Camera following actor with dynamic framing lerp without SpringArm push, and with Dithering for occluding obstacles
     if (this.actorController) {
       const pos = this.actorController.position
       const { camOffset, targetOffset } = this.getActorFramingOffsets()
@@ -757,6 +811,45 @@ export class ThreeActing {
       this.camera.position.lerp(idealCamPos, 0.12)
       this.actingCameraTarget.lerp(idealTarget, 0.12)
       this.camera.lookAt(this.actingCameraTarget)
+
+      if (this.instancedStageMesh) {
+        const camPos = this.camera.position
+        const targetPos = this.actingCameraTarget
+        const distToTarget = camPos.distanceTo(targetPos)
+
+        const occludedSet = new Set<number>()
+
+        if (distToTarget > 0.1) {
+          _tempCamDir.subVectors(targetPos, camPos).normalize()
+          _tempRight.crossVectors(_tempCamDir, _tempUp).normalize()
+          const r = 0.28
+          const probeOffsets = [
+            new THREE.Vector3(0, 0, 0),
+            _tempRight.clone().multiplyScalar(r),
+            _tempRight.clone().multiplyScalar(-r),
+            new THREE.Vector3(0, r * 0.7, 0),
+            new THREE.Vector3(0, -r * 0.7, 0)
+          ]
+
+          for (const offset of probeOffsets) {
+            const origin = _tempOrigin.copy(camPos).add(offset)
+            const dir = _tempOffsetDir.subVectors(targetPos, origin).normalize()
+            this.actingRaycaster.set(origin, dir)
+            this.actingRaycaster.near = 0.1
+            this.actingRaycaster.far = Math.max(0.2, distToTarget - 0.45)
+
+            const hits = this.actingRaycaster.intersectObject(this.instancedStageMesh.getSurfaceMesh(), false)
+            for (const hit of hits) {
+              if (hit.instanceId !== undefined && hit.instanceId !== null) {
+                occludedSet.add(hit.instanceId)
+              }
+            }
+          }
+        }
+
+        this.instancedStageMesh.setOccludedInstances(occludedSet, 0.15)
+        this.instancedStageMesh.updateDither(dt)
+      }
     }
 
     config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
@@ -787,6 +880,9 @@ export class ThreeActing {
     }
     if (newState.actor_speed !== undefined) {
       this.state.actor_speed = newState.actor_speed
+    }
+    if (newState.camera_distance !== undefined) {
+      this.setCameraDistance(newState.camera_distance)
     }
     if (newState.duration !== undefined) {
       if (this.state.duration !== undefined && this.state.duration !== newState.duration && this.trajectory.length > 0) {
@@ -828,6 +924,7 @@ export class ThreeActing {
 
     const stageEnv = new StageEnvironment()
     const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
+    this.instancedStageMesh = instancedStage
     this.environmentMeshes = [instancedStage.getSurfaceMesh()]
 
     this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
@@ -974,6 +1071,9 @@ export class ThreeActing {
     }
     if (this.blurHandler) {
       window.removeEventListener('blur', this.blurHandler)
+    }
+    if (this.wheelHandler && this.renderer?.domElement) {
+      this.renderer.domElement.removeEventListener('wheel', this.wheelHandler)
     }
 
     if (this.debugPanel) {

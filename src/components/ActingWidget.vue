@@ -27,31 +27,68 @@
         </div>
       </div>
 
-      <!-- Spawn Point Toolbar (Left Side: 3 Buttons) -->
-      <div v-if="!isRecording && !isPlaying && !isCounting && !state.motion_data" class="canvas-edit-toolbar left">
-        <button
-          class="edit-btn"
-          title="Reset Actor to Spawn Point"
-          @click.stop="resetActorToSpawn"
-        >
-          <LocateFixed :size="16" />
-        </button>
-        <button
-          class="edit-btn"
-          :class="{ 'active': activeSpawnMode === 'translate' }"
-          title="Move Spawn Point (XYZ axes)"
-          @click.stop="toggleSpawnMode('translate')"
-        >
-          <Move :size="16" />
-        </button>
-        <button
-          class="edit-btn"
-          :class="{ 'active': activeSpawnMode === 'rotate' }"
-          title="Rotate Spawn Heading (Y axis)"
-          @click.stop="toggleSpawnMode('rotate')"
-        >
-          <RotateCw :size="16" />
-        </button>
+      <!-- Spawn Point & Camera Toolbar (Left Side) -->
+      <div v-if="!isRecording && !isCounting" class="canvas-edit-toolbar left">
+        <template v-if="!isPlaying && !state.motion_data">
+          <button
+            class="edit-btn"
+            title="Reset Actor to Spawn Point"
+            @click.stop="resetActorToSpawn"
+          >
+            <LocateFixed :size="16" />
+          </button>
+          <button
+            class="edit-btn"
+            :class="{ 'active': activeSpawnMode === 'translate' }"
+            title="Move Spawn Point (XYZ axes)"
+            @click.stop="toggleSpawnMode('translate')"
+          >
+            <Move :size="16" />
+          </button>
+          <button
+            class="edit-btn"
+            :class="{ 'active': activeSpawnMode === 'rotate' }"
+            title="Rotate Spawn Heading (Y axis)"
+            @click.stop="toggleSpawnMode('rotate')"
+          >
+            <RotateCw :size="16" />
+          </button>
+          <div class="toolbar-divider"></div>
+        </template>
+
+        <!-- Camera Distance Zoom Tool -->
+        <div class="camera-dist-wrapper">
+          <button
+            class="edit-btn"
+            :class="{ 'active': showDistanceSlider }"
+            title="Adjust Camera Distance"
+            @click.stop="showDistanceSlider = !showDistanceSlider"
+          >
+            <ZoomIn :size="16" />
+          </button>
+
+          <!-- Camera Distance Popover -->
+          <div v-if="showDistanceSlider" class="distance-popover" @click.stop @mousedown.stop>
+            <div class="dist-popover-header">
+              <span class="dist-title">DISTANCE</span>
+              <span class="dist-val">{{ cameraDistance.toFixed(1) }}x</span>
+              <button class="dist-reset-btn" title="Reset distance to 1.0x" @click.stop="resetCameraDistance">↺</button>
+            </div>
+            <div class="dist-slider-row">
+              <span class="dist-bound">0.5x</span>
+              <input
+                type="range"
+                min="0.5"
+                max="2.5"
+                step="0.1"
+                v-model.number="cameraDistance"
+                class="dist-slider"
+                @input="onDistanceSliderChange"
+              />
+              <span class="dist-bound">2.5x</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Controls Overlay (Top Right / Bottom Center) -->
@@ -216,7 +253,8 @@ import {
   Check,
   CircleHelp,
   Repeat,
-  X
+  X,
+  ZoomIn
 } from 'lucide-vue-next'
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeActing } from '../ThreeActing'
@@ -232,17 +270,43 @@ const initialActorType = props.initialState?.actor_type ?? 'human'
 const initialActorSpeed = props.initialState?.actor_speed ?? (initialActorType === 'car' ? 20.0 : 10.0)
 const defaultActorColor = computed(() => initialActorType === 'car' ? '#0284C7' : '#F1DFBF')
 const initialActorColor = props.initialState?.actor_color ?? defaultActorColor.value
+const initialCameraDistance = props.initialState?.camera_distance ?? 1.0
 
 const state = reactive<ActingState>({
   actor_type: initialActorType,
   actor_color: initialActorColor,
   actor_speed: initialActorSpeed,
+  camera_distance: initialCameraDistance,
   duration: props.initialState?.duration ?? 7.0,
   spawn_point: props.initialState?.spawn_point,
   motion_data: props.initialState?.motion_data ?? '',
   scene_data: props.initialState?.scene_data ?? null as any,
   actors: props.initialState?.actors ?? []
 })
+
+const cameraDistance = ref(initialCameraDistance)
+const showDistanceSlider = ref(false)
+
+const onDistanceSliderChange = () => {
+  if (threeActing) {
+    threeActing.setCameraDistance(cameraDistance.value)
+  }
+  state.camera_distance = cameraDistance.value
+  if (props.onStateChange) {
+    props.onStateChange(state)
+  }
+}
+
+const resetCameraDistance = () => {
+  cameraDistance.value = 1.0
+  onDistanceSliderChange()
+}
+
+const handleGlobalClick = () => {
+  if (showDistanceSlider.value) {
+    showDistanceSlider.value = false
+  }
+}
 
 const actorColorVal = computed(() => state.actor_color || (state.actor_type === 'car' ? '#0284C7' : '#F1DFBF'))
 
@@ -306,6 +370,14 @@ const initScene = (container: HTMLElement) => {
     onRecordingFinished: onRecordingFinished,
     connectedThreeScene: currentThreeScene
   })
+
+  threeActing.onCameraDistanceChange = (dist: number) => {
+    cameraDistance.value = dist
+    state.camera_distance = dist
+    if (props.onStateChange) {
+      props.onStateChange(state)
+    }
+  }
 
   // Auto-play initially if there is saved motion data
   if (state.motion_data) {
@@ -432,6 +504,10 @@ const setState = (newState: Partial<ActingState>) => {
   if (newState.hasOwnProperty('actor_speed')) {
     state.actor_speed = newState.actor_speed as number
   }
+  if (newState.hasOwnProperty('camera_distance')) {
+    state.camera_distance = newState.camera_distance as number
+    cameraDistance.value = newState.camera_distance as number
+  }
   if (newState.hasOwnProperty('duration')) {
     state.duration = newState.duration as number
   }
@@ -510,6 +586,7 @@ const formattedTime = computed(() => {
 onMounted(() => {
   timeFrameId = requestAnimationFrame(updateTimeCounter)
   window.addEventListener('keydown', handleEscapeKey)
+  window.addEventListener('click', handleGlobalClick)
 })
 
 onUnmounted(() => {
@@ -518,6 +595,7 @@ onUnmounted(() => {
     timeFrameId = null
   }
   window.removeEventListener('keydown', handleEscapeKey)
+  window.removeEventListener('click', handleGlobalClick)
   cleanup()
 })
 
@@ -715,6 +793,117 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   background: #3d4974;
   color: #ffffff;
   border-color: #5d6d9e;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: auto 2px;
+}
+
+.camera-dist-wrapper {
+  position: relative;
+}
+
+.distance-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 170px;
+  background: rgba(14, 13, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 8px 10px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  z-index: 50;
+  box-sizing: border-box;
+}
+
+.dist-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.dist-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #a08090;
+}
+
+.dist-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ff3366;
+  font-family: monospace;
+}
+
+.dist-reset-btn {
+  background: transparent;
+  border: none;
+  color: #8c8c9e;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.dist-reset-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dist-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dist-bound {
+  font-size: 9px;
+  color: #606070;
+  font-family: monospace;
+  flex-shrink: 0;
+}
+
+.dist-slider {
+  flex: 1;
+  min-width: 0;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.dist-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff3366;
+  cursor: pointer;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.dist-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff3366;
+  cursor: pointer;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Acting Toolbar styling */

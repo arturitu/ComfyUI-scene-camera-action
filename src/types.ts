@@ -71,6 +71,7 @@ export interface ActingState {
   actor_type?: 'human' | 'car'
   actor_color?: string
   actor_speed: number
+  camera_distance?: number
   duration: number
   spawn_point?: SpawnPoint
   motion_data?: string

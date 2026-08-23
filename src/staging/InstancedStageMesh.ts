@@ -15,6 +15,9 @@ export class InstancedStageMesh {
   private edgeMaterial!: THREE.ShaderMaterial
   private interleavedBuffer!: THREE.InstancedInterleavedBuffer
   private ditherUniform = { uDitherOpacity: { value: 1.0 } }
+  private currentDithers: Float32Array = new Float32Array(INITIAL_CAPACITY).fill(1.0)
+  private targetDithers: Float32Array = new Float32Array(INITIAL_CAPACITY).fill(1.0)
+  private ditherAttribute!: THREE.InstancedBufferAttribute
 
   private capacity: number = INITIAL_CAPACITY
   private _count: number = 0
@@ -52,7 +55,10 @@ export class InstancedStageMesh {
         attribute vec4 instanceMatrix1;
         attribute vec4 instanceMatrix2;
         attribute vec4 instanceMatrix3;
+        attribute float instanceDither;
+        varying float vInstanceDither;
         void main() {
+          vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
           mat4 instanceMatrix = mat4(instanceMatrix0, instanceMatrix1, instanceMatrix2, instanceMatrix3);
           vec4 worldPosition = instanceMatrix * vec4(position, 1.0);
           vec4 mvPosition = viewMatrix * worldPosition;
@@ -66,6 +72,7 @@ export class InstancedStageMesh {
         uniform vec3 diffuse;
         uniform float opacity;
         uniform float uDitherOpacity;
+        varying float vInstanceDither;
 
         float getDitherThreshold(vec2 pos) {
           int x = int(mod(pos.x, 4.0));
@@ -94,7 +101,8 @@ export class InstancedStageMesh {
         }
 
         void main() {
-          if (uDitherOpacity < 0.999 && uDitherOpacity < getDitherThreshold(gl_FragCoord.xy)) {
+          float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
+          if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
             discard;
           }
           vec4 diffuseColor = vec4(diffuse, opacity);
@@ -134,8 +142,20 @@ export class InstancedStageMesh {
 
     this.capacity = newCapacity
 
-    // 1. Solid Faces InstancedMesh
-    this.surfaceMesh = new THREE.InstancedMesh(this.unitBoxGeometry, this.surfaceMaterial, this.capacity)
+    const oldDithers = this.currentDithers
+    this.currentDithers = new Float32Array(this.capacity).fill(1.0)
+    this.targetDithers = new Float32Array(this.capacity).fill(1.0)
+    if (oldDithers && oldCount > 0) {
+      this.currentDithers.set(oldDithers.subarray(0, Math.min(oldCount, this.capacity)))
+      this.targetDithers.set(oldDithers.subarray(0, Math.min(oldCount, this.capacity)))
+    }
+    this.ditherAttribute = new THREE.InstancedBufferAttribute(this.currentDithers, 1)
+    this.ditherAttribute.setUsage(THREE.DynamicDrawUsage)
+
+    // 1. Solid Faces InstancedMesh with cloned geometry containing instanceDither attribute
+    const surfaceGeo = this.unitBoxGeometry.clone()
+    surfaceGeo.setAttribute('instanceDither', this.ditherAttribute)
+    this.surfaceMesh = new THREE.InstancedMesh(surfaceGeo, this.surfaceMaterial, this.capacity)
     this.surfaceMesh.name = '__stage_instanced_surface__'
     this.surfaceMesh.castShadow = true
     this.surfaceMesh.receiveShadow = true
@@ -157,6 +177,7 @@ export class InstancedStageMesh {
     instancedEdgeGeo.setAttribute('instanceMatrix1', new THREE.InterleavedBufferAttribute(this.interleavedBuffer, 4, 4))
     instancedEdgeGeo.setAttribute('instanceMatrix2', new THREE.InterleavedBufferAttribute(this.interleavedBuffer, 4, 8))
     instancedEdgeGeo.setAttribute('instanceMatrix3', new THREE.InterleavedBufferAttribute(this.interleavedBuffer, 4, 12))
+    instancedEdgeGeo.setAttribute('instanceDither', this.ditherAttribute)
     instancedEdgeGeo.instanceCount = oldCount
 
     this.edgeLines = new THREE.LineSegments(instancedEdgeGeo, this.edgeMaterial)
@@ -204,6 +225,59 @@ export class InstancedStageMesh {
 
   public getSurfaceMesh(): THREE.InstancedMesh {
     return this.surfaceMesh
+  }
+
+  /**
+   * Sets target dither for specific occluding instances.
+   * Occluded instances smoothly fade to occludedOpacity, all others stay/return to 1.0 (opaque).
+   */
+  public setOccludedInstances(occludedIds: Set<number> | number[] | Iterable<number>, occludedOpacity = 0.15): void {
+    const occludedSet = occludedIds instanceof Set ? occludedIds : new Set(occludedIds)
+    for (let i = 0; i < this._count; i++) {
+      this.targetDithers[i] = occludedSet.has(i) ? occludedOpacity : 1.0
+    }
+  }
+
+  /**
+   * Per-frame smooth interpolation of instance dither values.
+   */
+  public updateDither(dt: number = 0.016): void {
+    if (this._count === 0) return
+    let changed = false
+    const lerpFactor = Math.min(1.0, dt * 14.0)
+
+    for (let i = 0; i < this._count; i++) {
+      const cur = this.currentDithers[i]
+      const target = this.targetDithers[i]
+      if (Math.abs(cur - target) > 0.005) {
+        this.currentDithers[i] = cur + (target - cur) * lerpFactor
+        changed = true
+      } else if (cur !== target) {
+        this.currentDithers[i] = target
+        changed = true
+      }
+    }
+
+    if (changed && this.ditherAttribute) {
+      this.ditherAttribute.needsUpdate = true
+    }
+  }
+
+  /**
+   * Immediately resets all instances to 1.0 (fully opaque).
+   */
+  public resetAllDithering(): void {
+    let changed = false
+    for (let i = 0; i < this.capacity; i++) {
+      if (this.currentDithers[i] !== 1.0 || this.targetDithers[i] !== 1.0) {
+        this.currentDithers[i] = 1.0
+        this.targetDithers[i] = 1.0
+        changed = true
+      }
+    }
+    if (changed && this.ditherAttribute) {
+      this.ditherAttribute.needsUpdate = true
+    }
   }
 
   public setDitherOpacity(opacity: number): void {

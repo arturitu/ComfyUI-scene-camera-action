@@ -93,6 +93,10 @@ export abstract class BaseActor {
     this.group.rotation.set(0, ry, 0)
   }
 
+  public getCurrentAnimationName(): string {
+    return 'Idle_A'
+  }
+
   public getMotionState(t: number): MotionFrame {
     _tempEuler.setFromQuaternion(this.group.quaternion, 'YXZ')
     return {
