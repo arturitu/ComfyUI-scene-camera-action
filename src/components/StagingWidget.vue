@@ -337,33 +337,39 @@ const setMode = (mode: 'translate' | 'rotate' | 'scale') => {
   }
 }
 
-const toggleGroup = () => {
+const addAsset = () => {
   if (threeScene) {
-    threeScene.toggleGroup()
+    threeScene.addNewAsset()
   }
 }
 
-const deleteSelected = () => {
+const deleteAsset = () => {
   if (threeScene) {
-    threeScene.deleteSelected()
+    threeScene.deleteSelectedAsset()
   }
 }
 
-const duplicateSelected = () => {
+const duplicateAsset = () => {
   if (threeScene) {
-    threeScene.duplicateSelected()
+    threeScene.duplicateSelectedAsset()
   }
 }
 
-const addNewCube = () => {
+const selectAll = () => {
   if (threeScene) {
-    threeScene.addNewCube()
+    threeScene.selectAll()
   }
 }
 
-const setSpawnPoint = () => {
+const groupSelected = () => {
   if (threeScene) {
-    threeScene.setSpawnPointAtCursor()
+    threeScene.groupSelected()
+  }
+}
+
+const ungroupSelected = () => {
+  if (threeScene) {
+    threeScene.ungroupSelected()
   }
 }
 

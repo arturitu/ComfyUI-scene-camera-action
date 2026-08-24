@@ -36542,6 +36542,36 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         threeScene.setTransformMode(activeMode.value);
       }
     };
+    const addAsset = () => {
+      if (threeScene) {
+        threeScene.addNewAsset();
+      }
+    };
+    const deleteAsset = () => {
+      if (threeScene) {
+        threeScene.deleteSelectedAsset();
+      }
+    };
+    const duplicateAsset = () => {
+      if (threeScene) {
+        threeScene.duplicateSelectedAsset();
+      }
+    };
+    const selectAll = () => {
+      if (threeScene) {
+        threeScene.selectAll();
+      }
+    };
+    const groupSelected = () => {
+      if (threeScene) {
+        threeScene.groupSelected();
+      }
+    };
+    const ungroupSelected = () => {
+      if (threeScene) {
+        threeScene.ungroupSelected();
+      }
+    };
     const setState = (newState) => {
       if (newState.selectedPreset) {
         selectedPreset.value = newState.selectedPreset;
@@ -36571,13 +36601,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createBaseVNode("div", _hoisted_2$2, [
           createBaseVNode("div", _hoisted_3$2, [
-            _cache2[10] || (_cache2[10] = createBaseVNode("span", { class: "preset-label" }, "STAGE:", -1)),
+            _cache2[4] || (_cache2[4] = createBaseVNode("span", { class: "preset-label" }, "STAGE:", -1)),
             createBaseVNode("select", {
               class: "preset-select",
               value: selectedPreset.value,
               onChange: onPresetSelectChange
             }, [
-              _cache2[9] || (_cache2[9] = createBaseVNode("option", { value: "__NEW__" }, "+ New Stage...", -1)),
+              _cache2[3] || (_cache2[3] = createBaseVNode("option", { value: "__NEW__" }, "+ New Stage...", -1)),
               selectedPreset.value && selectedPreset.value !== "__NEW__" && !presetFiles.value.includes(selectedPreset.value) ? (openBlock(), createElementBlock("option", {
                 key: 0,
                 value: selectedPreset.value
@@ -36636,22 +36666,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn add-btn",
               title: "Add asset",
-              onClick: _cache2[3] || (_cache2[3] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.addAsset && _ctx.addAsset(...args),
-                ["stop"]
-              ))
+              onClick: withModifiers(addAsset, ["stop"])
             }, [
               createVNode(unref(Plus), { size: 16 })
             ]),
             createBaseVNode("button", {
               class: "edit-btn duplicate-btn",
               title: "Duplicate selected asset",
-              onClick: _cache2[4] || (_cache2[4] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.duplicateAsset && _ctx.duplicateAsset(...args),
-                ["stop"]
-              )),
+              onClick: withModifiers(duplicateAsset, ["stop"]),
               disabled: !hasSelection.value
             }, [
               createVNode(unref(Copy), { size: 15 })
@@ -36659,22 +36681,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn select-all-btn",
               title: "Select all assets",
-              onClick: _cache2[5] || (_cache2[5] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.selectAll && _ctx.selectAll(...args),
-                ["stop"]
-              ))
+              onClick: withModifiers(selectAll, ["stop"])
             }, [
               createVNode(unref(SquareDashedMousePointer), { size: 16 })
             ]),
             createBaseVNode("button", {
               class: "edit-btn group-btn",
               title: "Group selected assets",
-              onClick: _cache2[6] || (_cache2[6] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.groupSelected && _ctx.groupSelected(...args),
-                ["stop"]
-              )),
+              onClick: withModifiers(groupSelected, ["stop"]),
               disabled: !canGroup.value
             }, [
               createVNode(unref(Group$1), { size: 16 })
@@ -36682,11 +36696,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn ungroup-btn",
               title: "Ungroup selected group",
-              onClick: _cache2[7] || (_cache2[7] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.ungroupSelected && _ctx.ungroupSelected(...args),
-                ["stop"]
-              )),
+              onClick: withModifiers(ungroupSelected, ["stop"]),
               disabled: !canUngroup.value
             }, [
               createVNode(unref(Ungroup), { size: 16 })
@@ -36694,11 +36704,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn delete-btn",
               title: "Delete selected asset",
-              onClick: _cache2[8] || (_cache2[8] = withModifiers(
-                //@ts-ignore
-                (...args) => _ctx.deleteAsset && _ctx.deleteAsset(...args),
-                ["stop"]
-              )),
+              onClick: withModifiers(deleteAsset, ["stop"]),
               disabled: !hasSelection.value
             }, [
               createVNode(unref(Trash2), { size: 15 })
@@ -36715,8 +36721,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           onClick: withModifiers(cancelSwitch, ["self"])
         }, [
           createBaseVNode("div", { class: "confirm-modal" }, [
-            _cache2[11] || (_cache2[11] = createBaseVNode("h3", null, "Unsaved Changes", -1)),
-            _cache2[12] || (_cache2[12] = createBaseVNode("p", null, "You have unsaved modifications in the current scene. What would you like to do before switching?", -1)),
+            _cache2[5] || (_cache2[5] = createBaseVNode("h3", null, "Unsaved Changes", -1)),
+            _cache2[6] || (_cache2[6] = createBaseVNode("p", null, "You have unsaved modifications in the current scene. What would you like to do before switching?", -1)),
             createBaseVNode("div", { class: "modal-buttons" }, [
               createBaseVNode("button", {
                 class: "modal-btn save",
@@ -36737,7 +36743,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const StagingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-96ee0423"]]);
+const StagingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-449ad9f3"]]);
 const CENTER = 0;
 const AVERAGE = 1;
 const SAH = 2;
