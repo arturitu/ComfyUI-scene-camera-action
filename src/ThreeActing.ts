@@ -12,6 +12,7 @@ import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
 import { SpawnPointHelper } from './staging/SpawnPointHelper'
+import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigation'
 
 const _tempCamDir = new THREE.Vector3()
 const _tempRight = new THREE.Vector3()
@@ -83,6 +84,7 @@ export class ThreeActing {
   private resizeAnimationFrameId: number | null = null
   private lastTime = performance.now()
   private onRecordingFinished?: (jsonString: string) => void
+  private unsubGraphNav?: () => void
 
   constructor(options: ThreeActingOptions) {
     this.container = options.container
@@ -119,6 +121,12 @@ export class ThreeActing {
     if (this.state.motion_data) {
       this.loadTrajectory(this.state.motion_data)
     }
+
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce()
+      }
+    })
 
     this.renderOnce()
     this.requestFrames(10)
@@ -988,7 +996,9 @@ export class ThreeActing {
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.renderFrame(dt)
+    if (this.isRecording || this.isCountingCountdown || !isComfyGraphNavigating()) {
+      this.renderFrame(dt)
+    }
 
     if (this.remainingFrames > 0) {
       this.remainingFrames--
@@ -1202,6 +1212,11 @@ export class ThreeActing {
   }
 
   public dispose(): void {
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav()
+      this.unsubGraphNav = undefined
+    }
+
     if (this.spawnPointHelper) {
       this.spawnPointHelper.dispose()
     }

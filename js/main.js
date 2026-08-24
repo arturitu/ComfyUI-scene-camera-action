@@ -7138,23 +7138,23 @@ const WebGPUCoordinateSystem = 2001;
 class EventDispatcher {
   addEventListener(type, listener) {
     if (this._listeners === void 0) this._listeners = {};
-    const listeners = this._listeners;
-    if (listeners[type] === void 0) {
-      listeners[type] = [];
+    const listeners2 = this._listeners;
+    if (listeners2[type] === void 0) {
+      listeners2[type] = [];
     }
-    if (listeners[type].indexOf(listener) === -1) {
-      listeners[type].push(listener);
+    if (listeners2[type].indexOf(listener) === -1) {
+      listeners2[type].push(listener);
     }
   }
   hasEventListener(type, listener) {
     if (this._listeners === void 0) return false;
-    const listeners = this._listeners;
-    return listeners[type] !== void 0 && listeners[type].indexOf(listener) !== -1;
+    const listeners2 = this._listeners;
+    return listeners2[type] !== void 0 && listeners2[type].indexOf(listener) !== -1;
   }
   removeEventListener(type, listener) {
     if (this._listeners === void 0) return;
-    const listeners = this._listeners;
-    const listenerArray = listeners[type];
+    const listeners2 = this._listeners;
+    const listenerArray = listeners2[type];
     if (listenerArray !== void 0) {
       const index = listenerArray.indexOf(listener);
       if (index !== -1) {
@@ -7164,8 +7164,8 @@ class EventDispatcher {
   }
   dispatchEvent(event) {
     if (this._listeners === void 0) return;
-    const listeners = this._listeners;
-    const listenerArray = listeners[event.type];
+    const listeners2 = this._listeners;
+    const listenerArray = listeners2[event.type];
     if (listenerArray !== void 0) {
       event.target = this;
       const array = listenerArray.slice(0);
@@ -35454,6 +35454,75 @@ class StageEnvironment {
     return true;
   }
 }
+let isGraphNavigating = false;
+let graphNavTimeout = null;
+const listeners = /* @__PURE__ */ new Set();
+function isComfyGraphNavigating() {
+  return isGraphNavigating;
+}
+function onGraphNavigationChange(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+function setGraphNavigating(active, debounceMs = 120) {
+  {
+    if (!isGraphNavigating) {
+      isGraphNavigating = true;
+      listeners.forEach((fn) => fn(true));
+    }
+    if (graphNavTimeout !== null) {
+      clearTimeout(graphNavTimeout);
+      graphNavTimeout = null;
+    }
+    graphNavTimeout = window.setTimeout(() => {
+      isGraphNavigating = false;
+      graphNavTimeout = null;
+      listeners.forEach((fn) => fn(false));
+    }, debounceMs);
+  }
+}
+function initGraphNavigationTracker(app2) {
+  var _a;
+  const canvasEl = (_a = app2 == null ? void 0 : app2.canvas) == null ? void 0 : _a.canvas;
+  if (!canvasEl) return;
+  canvasEl.addEventListener("wheel", () => {
+    if (!document.querySelector(".canvas-container:hover")) {
+      setGraphNavigating(true, 150);
+    }
+  }, { passive: true });
+  canvasEl.addEventListener("pointermove", () => {
+    const c = app2.canvas;
+    if (c && (c.dragging_canvas || c.node_dragged || c.selected_nodes_dragging || c.pointer_is_down || c.connecting_node)) {
+      setGraphNavigating(true, 120);
+    }
+  }, { passive: true });
+  canvasEl.addEventListener("pointerdown", () => {
+    if (!document.querySelector(".three-container:hover")) {
+      setGraphNavigating(true, 150);
+    }
+  }, { passive: true });
+  window.addEventListener("pointerup", () => {
+    if (isComfyGraphNavigating()) {
+      setGraphNavigating(true, 50);
+    }
+  }, { passive: true });
+  if (app2.canvas) {
+    const origOnNodeMoved = app2.canvas.onNodeMoved;
+    app2.canvas.onNodeMoved = function() {
+      origOnNodeMoved == null ? void 0 : origOnNodeMoved.apply(this, arguments);
+      setGraphNavigating(true, 120);
+    };
+    if (app2.canvas.ds) {
+      const origChangeDelta = app2.canvas.ds.changeDelta;
+      if (typeof origChangeDelta === "function") {
+        app2.canvas.ds.changeDelta = function() {
+          origChangeDelta.apply(this, arguments);
+          setGraphNavigating(true, 120);
+        };
+      }
+    }
+  }
+}
 const _tempCamDir$1 = new Vector3();
 class ThreeStaging {
   constructor(options) {
@@ -35484,6 +35553,7 @@ class ThreeStaging {
     __publicField(this, "resizeObserver", null);
     __publicField(this, "resizeAnimationFrameId", null);
     __publicField(this, "cachedSceneExtent", 15);
+    __publicField(this, "unsubGraphNav");
     var _a, _b;
     this.container = options.container;
     this.onStateChange = options.onStateChange;
@@ -35876,6 +35946,11 @@ class ThreeStaging {
       });
     });
     this.resizeObserver.observe(this.container);
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce();
+      }
+    });
   }
   onResize() {
     const w = this.container.clientWidth;
@@ -35920,7 +35995,9 @@ class ThreeStaging {
     this.renderer.render(this.scene, this.camera);
   }
   animate() {
-    this.renderFrame();
+    if (!isComfyGraphNavigating()) {
+      this.renderFrame();
+    }
     this.animationId = requestAnimationFrame(() => this.animate());
   }
   setTransformMode(mode) {
@@ -35980,6 +36057,10 @@ class ThreeStaging {
     }
     if (this.windowPointerDownHandler) {
       window.removeEventListener("pointerdown", this.windowPointerDownHandler);
+    }
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav();
+      this.unsubGraphNav = void 0;
     }
     if (this.controls) {
       this.controls.dispose();
@@ -46562,6 +46643,7 @@ class ThreeActing {
     __publicField(this, "resizeAnimationFrameId", null);
     __publicField(this, "lastTime", performance.now());
     __publicField(this, "onRecordingFinished");
+    __publicField(this, "unsubGraphNav");
     __publicField(this, "lastBuiltPlaybackMode", null);
     __publicField(this, "isPlaybackMode", false);
     __publicField(this, "isCountingCountdown", false);
@@ -46595,6 +46677,11 @@ class ThreeActing {
     if (this.state.motion_data) {
       this.loadTrajectory(this.state.motion_data);
     }
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce();
+      }
+    });
     this.renderOnce();
     this.requestFrames(10);
   }
@@ -47347,7 +47434,9 @@ class ThreeActing {
     const time = performance.now();
     const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
     this.lastTime = time;
-    this.renderFrame(dt);
+    if (this.isRecording || this.isCountingCountdown || !isComfyGraphNavigating()) {
+      this.renderFrame(dt);
+    }
     if (this.remainingFrames > 0) {
       this.remainingFrames--;
     }
@@ -47537,6 +47626,10 @@ class ThreeActing {
   }
   dispose() {
     var _a;
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav();
+      this.unsubGraphNav = void 0;
+    }
     if (this.spawnPointHelper) {
       this.spawnPointHelper.dispose();
     }
@@ -48357,6 +48450,7 @@ class ThreeDirecting {
     __publicField(this, "lastTime", performance.now());
     __publicField(this, "resizeObserver", null);
     __publicField(this, "resizeAnimationFrameId", null);
+    __publicField(this, "unsubGraphNav");
     __publicField(this, "actorList", []);
     __publicField(this, "keyframes", []);
     __publicField(this, "isPlaying", true);
@@ -48561,6 +48655,11 @@ class ThreeDirecting {
       });
     });
     this.resizeObserver.observe(this.container);
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce();
+      }
+    });
   }
   getStageData() {
     let actingPayload = this.state.acting_data;
@@ -48935,7 +49034,9 @@ class ThreeDirecting {
     const time = performance.now();
     const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
     this.lastTime = time;
-    this.renderFrame(dt);
+    if (this.isRecordingVideo || !isComfyGraphNavigating()) {
+      this.renderFrame(dt);
+    }
     this.animationId = requestAnimationFrame(() => this.animate());
   }
   setState(newState) {
@@ -49124,6 +49225,10 @@ class ThreeDirecting {
     return maxD > 0 ? maxD : 7;
   }
   dispose() {
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav();
+      this.unsubGraphNav = void 0;
+    }
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
@@ -51121,6 +51226,7 @@ app.registerExtension({
         return origWheel.apply(this, arguments);
       };
     }
+    initGraphNavigationTracker(app);
   },
   nodeCreated(node) {
     var _a, _b, _c, _d, _e;

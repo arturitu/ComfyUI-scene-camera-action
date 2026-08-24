@@ -7,6 +7,7 @@ import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
 import { StagingSelectionManager } from './staging/StagingSelectionManager'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
+import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigation'
 
 const _tempCamDir = new THREE.Vector3()
 
@@ -42,6 +43,7 @@ export class ThreeStaging {
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
   private cachedSceneExtent = 15.0
+  private unsubGraphNav?: () => void
 
   constructor(options: ThreeStagingOptions) {
     this.container = options.container
@@ -519,6 +521,12 @@ export class ThreeStaging {
       })
     })
     this.resizeObserver.observe(this.container)
+
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce()
+      }
+    })
   }
 
   private onResize(): void {
@@ -573,7 +581,9 @@ export class ThreeStaging {
   }
 
   private animate(): void {
-    this.renderFrame()
+    if (!isComfyGraphNavigating()) {
+      this.renderFrame()
+    }
     this.animationId = requestAnimationFrame(() => this.animate())
   }
 
@@ -640,6 +650,11 @@ export class ThreeStaging {
     }
     if (this.windowPointerDownHandler) {
       window.removeEventListener('pointerdown', this.windowPointerDownHandler)
+    }
+
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav()
+      this.unsubGraphNav = undefined
     }
 
     if (this.controls) {

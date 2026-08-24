@@ -7,6 +7,7 @@ import { PlaybackController } from './utils/PlaybackController'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { CameraSpringArm } from './utils/CameraSpringArm'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
+import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigation'
 
 export class ThreeDirecting {
   private container: HTMLElement
@@ -37,6 +38,7 @@ export class ThreeDirecting {
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
+  private unsubGraphNav?: () => void
 
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
@@ -262,6 +264,12 @@ export class ThreeDirecting {
       })
     })
     this.resizeObserver.observe(this.container)
+
+    this.unsubGraphNav = onGraphNavigationChange((navigating) => {
+      if (!navigating) {
+        this.renderOnce()
+      }
+    })
   }
 
   public getStageData(): any {
@@ -714,7 +722,9 @@ export class ThreeDirecting {
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.renderFrame(dt)
+    if (this.isRecordingVideo || !isComfyGraphNavigating()) {
+      this.renderFrame(dt)
+    }
 
     this.animationId = requestAnimationFrame(() => this.animate())
   }
@@ -940,6 +950,11 @@ export class ThreeDirecting {
   }
 
   public dispose(): void {
+    if (this.unsubGraphNav) {
+      this.unsubGraphNav()
+      this.unsubGraphNav = undefined
+    }
+
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null

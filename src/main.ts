@@ -3,6 +3,7 @@ import StagingWidget from './components/StagingWidget.vue'
 import ActingWidget from './components/ActingWidget.vue'
 import DirectingWidget from './components/DirectingWidget.vue'
 import type { SceneState, StageState, ActingState, DirectingState, SceneAppExposed, StageAppExposed, ActingAppExposed, DirectingAppExposed } from './types'
+import { initGraphNavigationTracker } from './graphNavigation'
 
 const { app } = window.comfyAPI.app
 
@@ -1394,6 +1395,8 @@ app.registerExtension({
         return origWheel.apply(this, arguments as any);
       };
     }
+
+    initGraphNavigationTracker(app);
   },
 
   nodeCreated(node: ComfyNode) {
