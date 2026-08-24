@@ -226,9 +226,24 @@ export const SPRING_ARM_OTS_THRESHOLD = 1.25    // Distance threshold to blend i
 export const SPRING_ARM_ZOOM_IN_SPEED = 26.0    // Fast snap response when obstacle enters
 export const SPRING_ARM_ZOOM_OUT_SPEED = 4.5    // Smooth damped recovery when obstacle clears
 
+// Stage Fade Config (Rounded Box / Cuadrado con bordes redondeados)
+export const STAGE_FADE_ENABLED = true
+export const STAGE_FADE_INNER_RADIUS = 40.0
+export const STAGE_FADE_OUTER_RADIUS = 50.0
+export const STAGE_FADE_CORNER_RADIUS = 10.0
+
+export const stageFadeUniforms = {
+  uStageFadeEnabled: { value: STAGE_FADE_ENABLED ? 1.0 : 0.0 },
+  uStageFadeInnerRadius: { value: STAGE_FADE_INNER_RADIUS },
+  uStageFadeOuterRadius: { value: STAGE_FADE_OUTER_RADIUS },
+  uStageFadeCornerRadius: { value: STAGE_FADE_CORNER_RADIUS },
+  uStageFadeBgColor: { value: new THREE.Color(BACKGROUND_COLOR) },
+}
+
 /**
- * Injects a 4x4 screen-space Bayer dither pattern discard logic into a THREE.Material.
- * This guarantees zero alpha-sorting or depth-buffer artifacts while smoothly fading occluding geometry.
+ * Injects a 4x4 screen-space Bayer dither pattern discard logic and rounded-box stage boundary fade into a THREE.Material.
+ * This guarantees zero alpha-sorting or depth-buffer artifacts while smoothly fading occluding geometry
+ * and seamlessly blending outer stage edges into the background color.
  */
 export function injectDitherShader(
   material: THREE.Material,
@@ -243,10 +258,16 @@ export function injectDitherShader(
     }
 
     shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity
+    shader.uniforms.uStageFadeEnabled = stageFadeUniforms.uStageFadeEnabled
+    shader.uniforms.uStageFadeInnerRadius = stageFadeUniforms.uStageFadeInnerRadius
+    shader.uniforms.uStageFadeOuterRadius = stageFadeUniforms.uStageFadeOuterRadius
+    shader.uniforms.uStageFadeCornerRadius = stageFadeUniforms.uStageFadeCornerRadius
+    shader.uniforms.uStageFadeBgColor = stageFadeUniforms.uStageFadeBgColor
 
     const ditherVertexPars = `
       attribute float instanceDither;
       varying float vInstanceDither;
+      varying vec3 vStageWorldPos;
     `
     shader.vertexShader = ditherVertexPars + '\n' + shader.vertexShader
 
@@ -264,9 +285,47 @@ export function injectDitherShader(
       )
     }
 
+    if (shader.vertexShader.includes('#include <worldpos_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <worldpos_vertex>',
+        `#include <worldpos_vertex>
+        #ifdef USE_INSTANCING
+          vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(transformed, 1.0))).xyz;
+        #else
+          vStageWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        #endif`
+      )
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        `void main() {
+        #ifdef USE_INSTANCING
+          vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(position, 1.0))).xyz;
+        #else
+          vStageWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        #endif`
+      )
+    }
+
     const ditherFunction = `
       uniform float uDitherOpacity;
+      uniform float uStageFadeEnabled;
+      uniform float uStageFadeInnerRadius;
+      uniform float uStageFadeOuterRadius;
+      uniform float uStageFadeCornerRadius;
+      uniform vec3 uStageFadeBgColor;
       varying float vInstanceDither;
+      varying vec3 vStageWorldPos;
+
+      float getStageRoundedBoxDist(vec2 p) {
+        float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+        float s = max(0.0, uStageFadeOuterRadius - cr);
+        vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+        if (q.x > 0.0 && q.y > 0.0) {
+          return s + length(q);
+        }
+        return max(abs(p.x), abs(p.y));
+      }
 
       float getDitherThreshold(vec2 pos) {
         int x = int(mod(pos.x, 4.0));
@@ -298,6 +357,12 @@ export function injectDitherShader(
     shader.fragmentShader = ditherFunction + '\n' + shader.fragmentShader
 
     const ditherDiscardSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+        if (distBox >= uStageFadeOuterRadius) {
+          discard;
+        }
+      }
       float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
       if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
         discard;
@@ -317,8 +382,117 @@ export function injectDitherShader(
         ${ditherDiscardSnippet}`
       )
     }
+
+    const stageFadeColorBlendSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+        float fadeFactor = smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, uStageFadeBgColor, fadeFactor);
+      }
+    `
+
+    if (shader.fragmentShader.includes('#include <colorspace_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <colorspace_fragment>',
+        `${stageFadeColorBlendSnippet}
+        #include <colorspace_fragment>`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor =',
+        `${stageFadeColorBlendSnippet}
+        gl_FragColor =`
+      )
+    }
   }
 
   material.needsUpdate = true
   return ditherUniform
+}
+export const injectStageShader = injectDitherShader
+
+/**
+ * Injects rounded-box distance fade into Line materials (such as GridHelper).
+ */
+export function injectGridFadeShader(material: THREE.Material): void {
+  const originalOnBeforeCompile = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer)
+    }
+
+    shader.uniforms.uStageFadeEnabled = stageFadeUniforms.uStageFadeEnabled
+    shader.uniforms.uStageFadeInnerRadius = stageFadeUniforms.uStageFadeInnerRadius
+    shader.uniforms.uStageFadeOuterRadius = stageFadeUniforms.uStageFadeOuterRadius
+    shader.uniforms.uStageFadeCornerRadius = stageFadeUniforms.uStageFadeCornerRadius
+
+    const vertexPars = `
+      varying vec3 vGridWorldPos;
+    `
+    shader.vertexShader = vertexPars + '\n' + shader.vertexShader
+
+    if (shader.vertexShader.includes('#include <begin_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vGridWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+      )
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        `void main() {
+        vGridWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`
+      )
+    }
+
+    const fragmentPars = `
+      uniform float uStageFadeEnabled;
+      uniform float uStageFadeInnerRadius;
+      uniform float uStageFadeOuterRadius;
+      uniform float uStageFadeCornerRadius;
+      varying vec3 vGridWorldPos;
+
+      float getGridRoundedBoxDist(vec2 p) {
+        float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+        float s = max(0.0, uStageFadeOuterRadius - cr);
+        vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+        if (q.x > 0.0 && q.y > 0.0) {
+          return s + length(q);
+        }
+        return max(abs(p.x), abs(p.y));
+      }
+    `
+    shader.fragmentShader = fragmentPars + '\n' + shader.fragmentShader
+
+    const gridFadeSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getGridRoundedBoxDist(vGridWorldPos.xz);
+        if (distBox >= uStageFadeOuterRadius) {
+          discard;
+        }
+        float lineFade = 1.0 - smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+        diffuseColor.a *= lineFade;
+        if (diffuseColor.a < 0.005) {
+          discard;
+        }
+      }
+    `
+
+    if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        ${gridFadeSnippet}`
+      )
+    } else if (shader.fragmentShader.includes('#include <colorspace_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <colorspace_fragment>',
+        `${gridFadeSnippet}
+        #include <colorspace_fragment>`
+      )
+    }
+  }
+
+  material.transparent = true
+  material.needsUpdate = true
 }

@@ -46,6 +46,10 @@ export class InstancedStageMesh {
         diffuse: { value: new THREE.Color(config.EDGE_COLOR) },
         opacity: { value: config.EDGE_OPACITY },
         uDitherOpacity: this.ditherUniform.uDitherOpacity,
+        uStageFadeEnabled: config.stageFadeUniforms.uStageFadeEnabled,
+        uStageFadeInnerRadius: config.stageFadeUniforms.uStageFadeInnerRadius,
+        uStageFadeOuterRadius: config.stageFadeUniforms.uStageFadeOuterRadius,
+        uStageFadeCornerRadius: config.stageFadeUniforms.uStageFadeCornerRadius,
         ...THREE.UniformsLib.fog,
       },
       vertexShader: `
@@ -57,10 +61,12 @@ export class InstancedStageMesh {
         attribute vec4 instanceMatrix3;
         attribute float instanceDither;
         varying float vInstanceDither;
+        varying vec3 vStageWorldPos;
         void main() {
           vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
           mat4 instanceMatrix = mat4(instanceMatrix0, instanceMatrix1, instanceMatrix2, instanceMatrix3);
           vec4 worldPosition = instanceMatrix * vec4(position, 1.0);
+          vStageWorldPos = worldPosition.xyz;
           vec4 mvPosition = viewMatrix * worldPosition;
           gl_Position = projectionMatrix * mvPosition;
           #include <fog_vertex>
@@ -72,7 +78,22 @@ export class InstancedStageMesh {
         uniform vec3 diffuse;
         uniform float opacity;
         uniform float uDitherOpacity;
+        uniform float uStageFadeEnabled;
+        uniform float uStageFadeInnerRadius;
+        uniform float uStageFadeOuterRadius;
+        uniform float uStageFadeCornerRadius;
         varying float vInstanceDither;
+        varying vec3 vStageWorldPos;
+
+        float getStageRoundedBoxDist(vec2 p) {
+          float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+          float s = max(0.0, uStageFadeOuterRadius - cr);
+          vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+          if (q.x > 0.0 && q.y > 0.0) {
+            return s + length(q);
+          }
+          return max(abs(p.x), abs(p.y));
+        }
 
         float getDitherThreshold(vec2 pos) {
           int x = int(mod(pos.x, 4.0));
@@ -101,11 +122,30 @@ export class InstancedStageMesh {
         }
 
         void main() {
+          if (uStageFadeEnabled > 0.5) {
+            float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+            if (distBox >= uStageFadeOuterRadius) {
+              discard;
+            }
+          }
+
           float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
           if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
             discard;
           }
-          vec4 diffuseColor = vec4(diffuse, opacity);
+
+          float fadeMultiplier = 1.0;
+          if (uStageFadeEnabled > 0.5) {
+            float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+            fadeMultiplier = 1.0 - smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+          }
+
+          float finalAlpha = opacity * fadeMultiplier;
+          if (finalAlpha < 0.005) {
+            discard;
+          }
+
+          vec4 diffuseColor = vec4(diffuse, finalAlpha);
           gl_FragColor = diffuseColor;
 
           #ifdef USE_FOG
@@ -114,7 +154,7 @@ export class InstancedStageMesh {
             #else
               float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
             #endif
-            gl_FragColor.a = opacity * (1.0 - fogFactor);
+            gl_FragColor.a = finalAlpha * (1.0 - fogFactor);
           #endif
 
           #include <colorspace_fragment>

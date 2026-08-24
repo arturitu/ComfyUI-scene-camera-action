@@ -7,6 +7,7 @@ import { PlaybackController } from './utils/PlaybackController'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { CameraSpringArm } from './utils/CameraSpringArm'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
+import { DebugPanel } from './utils/DebugPanel'
 import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigation'
 
 export class ThreeDirecting {
@@ -19,6 +20,7 @@ export class ThreeDirecting {
   private renderer!: THREE.WebGLRenderer
   private actorController: BaseActor | null = null
   private animationId: number | null = null
+  private debugPanel: DebugPanel | null = null
 
   private clonedEnvGroup: THREE.Group | null = null
   private instancedStageMesh: InstancedStageMesh | null = null
@@ -253,6 +255,8 @@ export class ThreeDirecting {
     const stageSetup = stageEnv.initStage(this.scene)
 
     this.buildSceneEnvironment()
+
+    this.debugPanel = new DebugPanel(this.container, 'Directing Debug Controls')
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
@@ -973,6 +977,11 @@ export class ThreeDirecting {
     if (this.instancedStageMesh) {
       this.instancedStageMesh.dispose()
       this.instancedStageMesh = null
+    }
+
+    if (this.debugPanel) {
+      this.debugPanel.dispose()
+      this.debugPanel = null
     }
 
     if (this.renderer) {

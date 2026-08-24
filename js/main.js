@@ -34346,6 +34346,16 @@ const SPRING_ARM_MIN_DISTANCE = 0.55;
 const SPRING_ARM_OTS_THRESHOLD = 1.25;
 const SPRING_ARM_ZOOM_IN_SPEED = 26;
 const SPRING_ARM_ZOOM_OUT_SPEED = 4.5;
+const STAGE_FADE_INNER_RADIUS = 40;
+const STAGE_FADE_OUTER_RADIUS = 50;
+const STAGE_FADE_CORNER_RADIUS = 10;
+const stageFadeUniforms = {
+  uStageFadeEnabled: { value: 1 },
+  uStageFadeInnerRadius: { value: STAGE_FADE_INNER_RADIUS },
+  uStageFadeOuterRadius: { value: STAGE_FADE_OUTER_RADIUS },
+  uStageFadeCornerRadius: { value: STAGE_FADE_CORNER_RADIUS },
+  uStageFadeBgColor: { value: new Color(BACKGROUND_COLOR) }
+};
 function injectDitherShader(material, uniformHolder) {
   const ditherUniform = uniformHolder || { uDitherOpacity: { value: 1 } };
   const originalOnBeforeCompile = material.onBeforeCompile;
@@ -34354,9 +34364,15 @@ function injectDitherShader(material, uniformHolder) {
       originalOnBeforeCompile(shader, renderer2);
     }
     shader.uniforms.uDitherOpacity = ditherUniform.uDitherOpacity;
+    shader.uniforms.uStageFadeEnabled = stageFadeUniforms.uStageFadeEnabled;
+    shader.uniforms.uStageFadeInnerRadius = stageFadeUniforms.uStageFadeInnerRadius;
+    shader.uniforms.uStageFadeOuterRadius = stageFadeUniforms.uStageFadeOuterRadius;
+    shader.uniforms.uStageFadeCornerRadius = stageFadeUniforms.uStageFadeCornerRadius;
+    shader.uniforms.uStageFadeBgColor = stageFadeUniforms.uStageFadeBgColor;
     const ditherVertexPars = `
       attribute float instanceDither;
       varying float vInstanceDither;
+      varying vec3 vStageWorldPos;
     `;
     shader.vertexShader = ditherVertexPars + "\n" + shader.vertexShader;
     if (shader.vertexShader.includes("#include <begin_vertex>")) {
@@ -34372,9 +34388,46 @@ function injectDitherShader(material, uniformHolder) {
         vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
       );
     }
+    if (shader.vertexShader.includes("#include <worldpos_vertex>")) {
+      shader.vertexShader = shader.vertexShader.replace(
+        "#include <worldpos_vertex>",
+        `#include <worldpos_vertex>
+        #ifdef USE_INSTANCING
+          vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(transformed, 1.0))).xyz;
+        #else
+          vStageWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        #endif`
+      );
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        "void main() {",
+        `void main() {
+        #ifdef USE_INSTANCING
+          vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(position, 1.0))).xyz;
+        #else
+          vStageWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        #endif`
+      );
+    }
     const ditherFunction = `
       uniform float uDitherOpacity;
+      uniform float uStageFadeEnabled;
+      uniform float uStageFadeInnerRadius;
+      uniform float uStageFadeOuterRadius;
+      uniform float uStageFadeCornerRadius;
+      uniform vec3 uStageFadeBgColor;
       varying float vInstanceDither;
+      varying vec3 vStageWorldPos;
+
+      float getStageRoundedBoxDist(vec2 p) {
+        float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+        float s = max(0.0, uStageFadeOuterRadius - cr);
+        vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+        if (q.x > 0.0 && q.y > 0.0) {
+          return s + length(q);
+        }
+        return max(abs(p.x), abs(p.y));
+      }
 
       float getDitherThreshold(vec2 pos) {
         int x = int(mod(pos.x, 4.0));
@@ -34404,6 +34457,12 @@ function injectDitherShader(material, uniformHolder) {
     `;
     shader.fragmentShader = ditherFunction + "\n" + shader.fragmentShader;
     const ditherDiscardSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+        if (distBox >= uStageFadeOuterRadius) {
+          discard;
+        }
+      }
       float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
       if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
         discard;
@@ -34422,9 +34481,105 @@ function injectDitherShader(material, uniformHolder) {
         ${ditherDiscardSnippet}`
       );
     }
+    const stageFadeColorBlendSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+        float fadeFactor = smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, uStageFadeBgColor, fadeFactor);
+      }
+    `;
+    if (shader.fragmentShader.includes("#include <colorspace_fragment>")) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <colorspace_fragment>",
+        `${stageFadeColorBlendSnippet}
+        #include <colorspace_fragment>`
+      );
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "gl_FragColor =",
+        `${stageFadeColorBlendSnippet}
+        gl_FragColor =`
+      );
+    }
   };
   material.needsUpdate = true;
   return ditherUniform;
+}
+const injectStageShader = injectDitherShader;
+function injectGridFadeShader(material) {
+  const originalOnBeforeCompile = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, renderer2) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile(shader, renderer2);
+    }
+    shader.uniforms.uStageFadeEnabled = stageFadeUniforms.uStageFadeEnabled;
+    shader.uniforms.uStageFadeInnerRadius = stageFadeUniforms.uStageFadeInnerRadius;
+    shader.uniforms.uStageFadeOuterRadius = stageFadeUniforms.uStageFadeOuterRadius;
+    shader.uniforms.uStageFadeCornerRadius = stageFadeUniforms.uStageFadeCornerRadius;
+    const vertexPars = `
+      varying vec3 vGridWorldPos;
+    `;
+    shader.vertexShader = vertexPars + "\n" + shader.vertexShader;
+    if (shader.vertexShader.includes("#include <begin_vertex>")) {
+      shader.vertexShader = shader.vertexShader.replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+        vGridWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+      );
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        "void main() {",
+        `void main() {
+        vGridWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`
+      );
+    }
+    const fragmentPars = `
+      uniform float uStageFadeEnabled;
+      uniform float uStageFadeInnerRadius;
+      uniform float uStageFadeOuterRadius;
+      uniform float uStageFadeCornerRadius;
+      varying vec3 vGridWorldPos;
+
+      float getGridRoundedBoxDist(vec2 p) {
+        float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+        float s = max(0.0, uStageFadeOuterRadius - cr);
+        vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+        if (q.x > 0.0 && q.y > 0.0) {
+          return s + length(q);
+        }
+        return max(abs(p.x), abs(p.y));
+      }
+    `;
+    shader.fragmentShader = fragmentPars + "\n" + shader.fragmentShader;
+    const gridFadeSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getGridRoundedBoxDist(vGridWorldPos.xz);
+        if (distBox >= uStageFadeOuterRadius) {
+          discard;
+        }
+        float lineFade = 1.0 - smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+        diffuseColor.a *= lineFade;
+        if (diffuseColor.a < 0.005) {
+          discard;
+        }
+      }
+    `;
+    if (shader.fragmentShader.includes("#include <dithering_fragment>")) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <dithering_fragment>",
+        `#include <dithering_fragment>
+        ${gridFadeSnippet}`
+      );
+    } else if (shader.fragmentShader.includes("#include <colorspace_fragment>")) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        "#include <colorspace_fragment>",
+        `${gridFadeSnippet}
+        #include <colorspace_fragment>`
+      );
+    }
+  };
+  material.transparent = true;
+  material.needsUpdate = true;
 }
 function r2(val) {
   return Math.round((val + Number.EPSILON) * 100) / 100;
@@ -35022,6 +35177,10 @@ class InstancedStageMesh {
         diffuse: { value: new Color(EDGE_COLOR) },
         opacity: { value: EDGE_OPACITY },
         uDitherOpacity: this.ditherUniform.uDitherOpacity,
+        uStageFadeEnabled: stageFadeUniforms.uStageFadeEnabled,
+        uStageFadeInnerRadius: stageFadeUniforms.uStageFadeInnerRadius,
+        uStageFadeOuterRadius: stageFadeUniforms.uStageFadeOuterRadius,
+        uStageFadeCornerRadius: stageFadeUniforms.uStageFadeCornerRadius,
         ...UniformsLib.fog
       },
       vertexShader: `
@@ -35033,10 +35192,12 @@ class InstancedStageMesh {
         attribute vec4 instanceMatrix3;
         attribute float instanceDither;
         varying float vInstanceDither;
+        varying vec3 vStageWorldPos;
         void main() {
           vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
           mat4 instanceMatrix = mat4(instanceMatrix0, instanceMatrix1, instanceMatrix2, instanceMatrix3);
           vec4 worldPosition = instanceMatrix * vec4(position, 1.0);
+          vStageWorldPos = worldPosition.xyz;
           vec4 mvPosition = viewMatrix * worldPosition;
           gl_Position = projectionMatrix * mvPosition;
           #include <fog_vertex>
@@ -35048,7 +35209,22 @@ class InstancedStageMesh {
         uniform vec3 diffuse;
         uniform float opacity;
         uniform float uDitherOpacity;
+        uniform float uStageFadeEnabled;
+        uniform float uStageFadeInnerRadius;
+        uniform float uStageFadeOuterRadius;
+        uniform float uStageFadeCornerRadius;
         varying float vInstanceDither;
+        varying vec3 vStageWorldPos;
+
+        float getStageRoundedBoxDist(vec2 p) {
+          float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+          float s = max(0.0, uStageFadeOuterRadius - cr);
+          vec2 q = max(abs(p) - vec2(s), vec2(0.0));
+          if (q.x > 0.0 && q.y > 0.0) {
+            return s + length(q);
+          }
+          return max(abs(p.x), abs(p.y));
+        }
 
         float getDitherThreshold(vec2 pos) {
           int x = int(mod(pos.x, 4.0));
@@ -35077,11 +35253,30 @@ class InstancedStageMesh {
         }
 
         void main() {
+          if (uStageFadeEnabled > 0.5) {
+            float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+            if (distBox >= uStageFadeOuterRadius) {
+              discard;
+            }
+          }
+
           float effDither = uDitherOpacity * (vInstanceDither > 0.0 ? vInstanceDither : 1.0);
           if (effDither < 0.999 && effDither < getDitherThreshold(gl_FragCoord.xy)) {
             discard;
           }
-          vec4 diffuseColor = vec4(diffuse, opacity);
+
+          float fadeMultiplier = 1.0;
+          if (uStageFadeEnabled > 0.5) {
+            float distBox = getStageRoundedBoxDist(vStageWorldPos.xz);
+            fadeMultiplier = 1.0 - smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+          }
+
+          float finalAlpha = opacity * fadeMultiplier;
+          if (finalAlpha < 0.005) {
+            discard;
+          }
+
+          vec4 diffuseColor = vec4(diffuse, finalAlpha);
           gl_FragColor = diffuseColor;
 
           #ifdef USE_FOG
@@ -35090,7 +35285,7 @@ class InstancedStageMesh {
             #else
               float fogFactor = smoothstep( fogNear, fogFar, vFogDepth );
             #endif
-            gl_FragColor.a = opacity * (1.0 - fogFactor);
+            gl_FragColor.a = finalAlpha * (1.0 - fogFactor);
           #endif
 
           #include <colorspace_fragment>
@@ -35398,13 +35593,19 @@ class StageEnvironment {
       GRID_COLOR_GRID
     );
     gridHelper.position.y = GRID_Y;
+    if (Array.isArray(gridHelper.material)) {
+      gridHelper.material.forEach((m) => injectGridFadeShader(m));
+    } else {
+      injectGridFadeShader(gridHelper.material);
+    }
     targetScene.add(gridHelper);
-    const floorGeo = new PlaneGeometry(100, 100);
+    const floorGeo = new PlaneGeometry(140, 140);
     const floorMat = new MeshStandardMaterial({
       color: FLOOR_COLOR,
       roughness: FLOOR_ROUGHNESS,
       metalness: FLOOR_METALNESS
     });
+    injectStageShader(floorMat);
     const floorMesh = new Mesh(floorGeo, floorMat);
     floorMesh.name = "floor";
     floorMesh.rotation.x = -Math.PI / 2;
@@ -46164,6 +46365,7 @@ class GUI {
   }
 }
 const STORAGE_KEY = "acting_debug_options";
+const STAGE_FADE_STORAGE_KEY = "stage_fade_options";
 class DebugPanel {
   constructor(parentContainer, title = "3D Debug Controls") {
     __publicField(this, "gui");
@@ -46182,6 +46384,62 @@ class DebugPanel {
     domElement.style.borderRadius = "6px";
     domElement.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.4)";
     this.gui.close();
+    this.setupStageFadeControls();
+  }
+  loadSavedFadeConfig() {
+    try {
+      const saved = localStorage.getItem(STAGE_FADE_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+    }
+    return null;
+  }
+  saveFadeConfig(params) {
+    try {
+      localStorage.setItem(STAGE_FADE_STORAGE_KEY, JSON.stringify(params));
+    } catch (e) {
+    }
+  }
+  setupStageFadeControls() {
+    const saved = this.loadSavedFadeConfig();
+    if (saved) {
+      if (typeof saved.enabled === "boolean") {
+        stageFadeUniforms.uStageFadeEnabled.value = saved.enabled ? 1 : 0;
+      }
+      if (typeof saved.innerRadius === "number") {
+        stageFadeUniforms.uStageFadeInnerRadius.value = saved.innerRadius;
+      }
+      if (typeof saved.outerRadius === "number") {
+        stageFadeUniforms.uStageFadeOuterRadius.value = saved.outerRadius;
+      }
+      if (typeof saved.cornerRadius === "number") {
+        stageFadeUniforms.uStageFadeCornerRadius.value = saved.cornerRadius;
+      }
+    }
+    const fadeFolder = this.gui.addFolder("Stage Edge Fade");
+    const fadeParams = {
+      enabled: stageFadeUniforms.uStageFadeEnabled.value > 0.5,
+      innerRadius: stageFadeUniforms.uStageFadeInnerRadius.value,
+      outerRadius: stageFadeUniforms.uStageFadeOuterRadius.value,
+      cornerRadius: stageFadeUniforms.uStageFadeCornerRadius.value
+    };
+    fadeFolder.add(fadeParams, "enabled").name("Fade Enabled").onChange((val) => {
+      stageFadeUniforms.uStageFadeEnabled.value = val ? 1 : 0;
+      this.saveFadeConfig(fadeParams);
+    });
+    fadeFolder.add(fadeParams, "innerRadius", 0, 100, 1).name("Inner Extent (m)").onChange((val) => {
+      stageFadeUniforms.uStageFadeInnerRadius.value = val;
+      this.saveFadeConfig(fadeParams);
+    });
+    fadeFolder.add(fadeParams, "outerRadius", 5, 120, 1).name("Outer Extent (m)").onChange((val) => {
+      stageFadeUniforms.uStageFadeOuterRadius.value = val;
+      this.saveFadeConfig(fadeParams);
+    });
+    fadeFolder.add(fadeParams, "cornerRadius", 0, 50, 1).name("Corner Radius (m)").onChange((val) => {
+      stageFadeUniforms.uStageFadeCornerRadius.value = val;
+      this.saveFadeConfig(fadeParams);
+    });
+    fadeFolder.close();
   }
   loadSavedConfig() {
     try {
@@ -48433,6 +48691,7 @@ class ThreeDirecting {
     __publicField(this, "renderer");
     __publicField(this, "actorController", null);
     __publicField(this, "animationId", null);
+    __publicField(this, "debugPanel", null);
     __publicField(this, "clonedEnvGroup", null);
     __publicField(this, "instancedStageMesh", null);
     __publicField(this, "connectedThreeActing", null);
@@ -48645,6 +48904,7 @@ class ThreeDirecting {
     const stageEnv = new StageEnvironment();
     stageEnv.initStage(this.scene);
     this.buildSceneEnvironment();
+    this.debugPanel = new DebugPanel(this.container, "Directing Debug Controls");
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrameId !== null) {
         cancelAnimationFrame(this.resizeAnimationFrameId);
@@ -49244,6 +49504,10 @@ class ThreeDirecting {
     if (this.instancedStageMesh) {
       this.instancedStageMesh.dispose();
       this.instancedStageMesh = null;
+    }
+    if (this.debugPanel) {
+      this.debugPanel.dispose();
+      this.debugPanel = null;
     }
     if (this.renderer) {
       this.renderer.dispose();

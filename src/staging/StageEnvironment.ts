@@ -67,14 +67,20 @@ export class StageEnvironment {
       config.GRID_COLOR_GRID
     )
     gridHelper.position.y = config.GRID_Y
+    if (Array.isArray(gridHelper.material)) {
+      gridHelper.material.forEach((m) => config.injectGridFadeShader(m))
+    } else {
+      config.injectGridFadeShader(gridHelper.material)
+    }
     targetScene.add(gridHelper)
 
-    const floorGeo = new THREE.PlaneGeometry(100, 100)
+    const floorGeo = new THREE.PlaneGeometry(140, 140)
     const floorMat = new THREE.MeshStandardMaterial({
       color: config.FLOOR_COLOR,
       roughness: config.FLOOR_ROUGHNESS,
       metalness: config.FLOOR_METALNESS,
     })
+    config.injectStageShader(floorMat)
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
