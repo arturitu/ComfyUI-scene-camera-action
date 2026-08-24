@@ -1,5 +1,5 @@
 <template>
-  <div ref="containerRef" class="canvas-container"></div>
+  <div ref="containerRef" class="canvas-container" @pointerdown.stop @mousedown.stop></div>
 </template>
 
 <script setup lang="ts">

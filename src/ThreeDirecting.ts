@@ -18,6 +18,7 @@ export class ThreeDirecting {
   private renderer!: THREE.WebGLRenderer
   private actorController: BaseActor | null = null
   private animationId: number | null = null
+
   private clonedEnvGroup: THREE.Group | null = null
   private instancedStageMesh: InstancedStageMesh | null = null
   private connectedThreeActing: any = null
@@ -36,7 +37,6 @@ export class ThreeDirecting {
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
   private resizeAnimationFrameId: number | null = null
-
 
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
@@ -210,8 +210,6 @@ export class ThreeDirecting {
     }
   }
 
-
-
   private initThreeJS(): void {
     const width = this.container.clientWidth || 400
     const height = this.container.clientHeight || 350
@@ -221,7 +219,7 @@ export class ThreeDirecting {
     this.scene.background = bgColor
     this.scene.fog = new THREE.Fog(bgColor, config.FOG_NEAR, config.FOG_FAR)
 
-    this.camera = new THREE.PerspectiveCamera(50, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
+    this.camera = new THREE.PerspectiveCamera(config.CAMERA_FOV, width / height, config.CAMERA_NEAR, config.CAMERA_FAR)
     this.camera.position.set(-8, 4, 0)
     this.camera.lookAt(0, 0, 0)
 
@@ -238,6 +236,8 @@ export class ThreeDirecting {
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.style.cursor = 'default'
+
     canvas.addEventListener('webglcontextlost', (event: Event) => {
       event.preventDefault()
       if (this.animationId !== null) {
@@ -696,19 +696,27 @@ export class ThreeDirecting {
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h, false)
+    this.renderOnce()
+  }
+
+  public renderOnce(): void {
+    this.renderFrame(0.016)
+  }
+
+  private renderFrame(dt: number): void {
+    this.updateActorMovement(dt)
+    this.updateCamera()
+    this.renderer.render(this.scene, this.camera)
   }
 
   private animate(): void {
-    this.animationId = requestAnimationFrame(() => this.animate())
-
     const time = performance.now()
     const dt = Math.min((time - this.lastTime) / 1000, 0.1)
     this.lastTime = time
 
-    this.updateActorMovement(dt)
-    this.updateCamera()
+    this.renderFrame(dt)
 
-    this.renderer.render(this.scene, this.camera)
+    this.animationId = requestAnimationFrame(() => this.animate())
   }
 
   public setState(newState: Partial<DirectingState>): void {
@@ -722,6 +730,7 @@ export class ThreeDirecting {
     if (newState.directing_data !== undefined) {
       this.state.directing_data = newState.directing_data
     }
+    this.renderOnce()
   }
 
   private mediaRecorder: MediaRecorder | null = null
@@ -731,7 +740,6 @@ export class ThreeDirecting {
     this.lastCameraMode = null
     this.playbackController.setCurrentTime(0)
     this.playbackController.play()
-    this.isPlaying = true
 
     // Enforce fixed 720p (1280x720) WebGL rendering resolution independent of container canvas size
     const targetWidth = 1280
@@ -911,6 +919,7 @@ export class ThreeDirecting {
     this.forceHardCutNextCameraUpdate = true
     this.updateActorMovement(0)
     this.updateCamera()
+    this.renderOnce()
   }
 
   public getCurrentTime(): number {

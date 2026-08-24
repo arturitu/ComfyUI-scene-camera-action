@@ -120,7 +120,7 @@
                   :class="{ active: kf.mode === mode.id }"
                   @click.stop="changeKeyframeMode(kf, mode.id)"
                 >
-                  {{ mode.label }}
+                  {{ mode?.label || mode?.id || '' }}
                 </button>
               </div>
 
@@ -132,8 +132,8 @@
                   class="target-select"
                   @change.stop="changeKeyframeTarget(kf, ($event.target as HTMLSelectElement).value)"
                 >
-                  <option v-for="act in getAvailableActorsForMode(kf.mode)" :key="act.id" :value="act.id">
-                    {{ act.label }}
+                  <option v-for="act in getAvailableActorsForMode(kf.mode)" :key="act?.id || act" :value="act?.id || act">
+                    {{ act?.label || act?.id || act || '' }}
                   </option>
                 </select>
               </div>
@@ -269,7 +269,7 @@ const state = reactive<DirectingState>({
 
 const keyframes = ref<Keyframe[]>(parseKeyframes(state.directing_data))
 const selectedKeyframe = ref<Keyframe | null>(null)
-const isPlaying = ref(true)
+const isPlaying = ref(false)
 const currentTime = ref(0)
 const duration = ref(7.0)
 const trackRef = ref<HTMLElement | null>(null)
@@ -383,7 +383,7 @@ const initScene = (el: HTMLElement) => {
       if (props.onStateChange) {
         props.onStateChange({ ...state, ...newState })
       }
-    },
+    }
   })
   threeDirecting.setKeyframes(keyframes.value)
   availableActorsList.value = threeDirecting.getAvailableActors()
@@ -492,8 +492,8 @@ const resetKeyframeFov = (kf: Keyframe) => {
 
 const isCarTarget = (kf: Keyframe): boolean => {
   const target = kf.actor_target || 'actor_1'
-  const found = availableActors.value.find(a => a.id === target)
-  return found ? found.label.toLowerCase().includes('car') : false
+  const found = availableActors.value.find(a => a?.id === target)
+  return found?.label ? found.label.toLowerCase().includes('car') : false
 }
 
 const getDistanceConfig = (mode: string, kf?: Keyframe) => {
@@ -860,7 +860,11 @@ const setConnectedThreeActing = (threeActing: any) => {
   }
 }
 
-defineExpose({ setState, cleanup, setConnectedThreeActing })
+const renderOnce = () => {
+  threeDirecting?.renderOnce()
+}
+
+defineExpose({ setState, renderOnce, cleanup, setConnectedThreeActing })
 </script>
 
 <style scoped>
@@ -1521,5 +1525,59 @@ defineExpose({ setState, cleanup, setConnectedThreeActing })
   color: #a0a8b8;
   letter-spacing: 0.5px;
   white-space: nowrap;
+}
+
+.directing-top-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 20;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.activity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: all 0.2s ease;
+  background: rgba(16, 20, 30, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.activity-pill.live {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.activity-pill.live .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.activity-pill.standby {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+  border: 1px solid rgba(107, 114, 128, 0.25);
+}
+
+.activity-pill.standby .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b7280;
 }
 </style>

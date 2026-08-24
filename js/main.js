@@ -6945,8 +6945,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       return openBlock(), createElementBlock("div", {
         ref_key: "containerRef",
         ref: containerRef,
-        class: "canvas-container"
-      }, null, 512);
+        class: "canvas-container",
+        onPointerdown: _cache2[0] || (_cache2[0] = withModifiers(() => {
+        }, ["stop"])),
+        onMousedown: _cache2[1] || (_cache2[1] = withModifiers(() => {
+        }, ["stop"]))
+      }, null, 544);
     };
   }
 });
@@ -6957,7 +6961,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const StagingCanvas = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-d2c71602"]]);
+const StagingCanvas = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-0d598fd0"]]);
 /**
  * @license
  * Copyright 2010-2024 Three.js Authors
@@ -35470,7 +35474,6 @@ class ThreeStaging {
     __publicField(this, "animationId", null);
     __publicField(this, "controls");
     __publicField(this, "transformControls");
-    __publicField(this, "isHovered", false);
     __publicField(this, "globalWheelHandler");
     __publicField(this, "pointerDownHandler");
     __publicField(this, "pointerUpHandler");
@@ -35524,12 +35527,6 @@ class ThreeStaging {
     canvas.style.width = "100%";
     canvas.style.height = "100%";
     canvas.style.cursor = "grab";
-    canvas.addEventListener("mouseenter", () => {
-      this.isHovered = true;
-    });
-    canvas.addEventListener("mouseleave", () => {
-      this.isHovered = false;
-    });
     canvas.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
       if (this.animationId !== null) {
@@ -35543,7 +35540,6 @@ class ThreeStaging {
     this.scene.add(this.instancedStageMesh.getGroup());
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
     this.transformControls.size = 2;
-    this.transformControls.addEventListener("change", () => this.renderer.render(this.scene, this.camera));
     this.transformControls.addEventListener("dragging-changed", (event) => {
       var _a, _b;
       this.controls.enabled = !event.value;
@@ -35761,14 +35757,9 @@ class ThreeStaging {
     this.controls.addEventListener("end", () => {
       canvas.style.cursor = "grab";
     });
-    this.container.addEventListener("mouseenter", () => {
-      this.isHovered = true;
-    });
-    this.container.addEventListener("mouseleave", () => {
-      this.isHovered = false;
-    });
     this.globalWheelHandler = (e) => {
-      if (!this.isHovered) return;
+      const isTarget = e.target === canvas || this.container && this.container.contains(e.target);
+      if (!isTarget) return;
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
@@ -35806,10 +35797,9 @@ class ThreeStaging {
             if (!curr.visible) return false;
             curr = curr.parent;
           }
-          const name = hit.object.name;
-          return name && name !== "" && name !== "helper" || activeAxis !== null;
+          return true;
         });
-        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some((h2) => ["X", "Y", "Z", "XY", "YZ", "XZ", "E", "R", "S", "XYZE"].includes(h2.object.name)))) {
+        if (visibleGizmoIntersects.length > 0 && activeAxis) {
           return;
         }
       }
@@ -35853,21 +35843,19 @@ class ThreeStaging {
               if (this.onTransformModeChange) {
                 this.onTransformModeChange(modeToUse);
               }
+            } else {
+              this.updateSelectionUI();
             }
-            const cycleInfo = candidates.length > 1 ? { index: targetIndex + 1, total: candidates.length } : void 0;
-            this.updateSelectionUI(cycleInfo);
           }
-        } else {
-          this.selectionManager.setSelectedObjects([]);
-          this.updateSelectionUI();
+          return;
         }
-      } else {
+      }
+      if (this.selectionManager.getSelectedObjects().length > 0) {
         this.selectionManager.setSelectedObjects([]);
         this.updateSelectionUI();
       }
     };
     this.windowPointerDownHandler = (event) => {
-      if (event.button !== 0) return;
       if (this.container && !this.container.contains(event.target)) {
         if (this.selectionManager.getSelectedObjects().length > 0) {
           this.selectionManager.setSelectedObjects([]);
@@ -35897,9 +35885,11 @@ class ThreeStaging {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h2, false);
   }
-  animate() {
+  renderOnce() {
+    this.renderFrame();
+  }
+  renderFrame() {
     var _a;
-    this.animationId = requestAnimationFrame(() => this.animate());
     if (this.controls) {
       this.controls.target.x = Math.max(-42, Math.min(MAX_PAN, this.controls.target.x));
       this.controls.target.z = Math.max(-42, Math.min(MAX_PAN, this.controls.target.z));
@@ -35929,6 +35919,10 @@ class ThreeStaging {
     this.selectionManager.updateBoxHelpers();
     this.renderer.render(this.scene, this.camera);
   }
+  animate() {
+    this.renderFrame();
+    this.animationId = requestAnimationFrame(() => this.animate());
+  }
   setTransformMode(mode) {
     this.transformMode = mode;
     if (mode) {
@@ -35947,6 +35941,7 @@ class ThreeStaging {
         this.transformControls.detach();
       }
     }
+    this.renderOnce();
   }
   setState(newState) {
     if (newState.nodes !== void 0) {
@@ -35959,6 +35954,7 @@ class ThreeStaging {
     if (newState.num_assets !== void 0) {
       this.state.num_assets = newState.num_assets;
     }
+    this.renderOnce();
   }
   dispose() {
     if (this.animationId !== null) {
@@ -36264,36 +36260,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         threeScene.setTransformMode(activeMode.value);
       }
     };
-    const addAsset = () => {
-      if (threeScene) {
-        threeScene.addNewAsset();
-      }
-    };
-    const deleteAsset = () => {
-      if (threeScene) {
-        threeScene.deleteSelectedAsset();
-      }
-    };
-    const duplicateAsset = () => {
-      if (threeScene) {
-        threeScene.duplicateSelectedAsset();
-      }
-    };
-    const selectAll = () => {
-      if (threeScene) {
-        threeScene.selectAll();
-      }
-    };
-    const groupSelected = () => {
-      if (threeScene) {
-        threeScene.groupSelected();
-      }
-    };
-    const ungroupSelected = () => {
-      if (threeScene) {
-        threeScene.ungroupSelected();
-      }
-    };
     const setState = (newState) => {
       if (newState.selectedPreset) {
         selectedPreset.value = newState.selectedPreset;
@@ -36306,6 +36272,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
       isDirty2.value = isStateDifferent(state, originalPresetState);
     };
+    const renderOnce = () => {
+      threeScene == null ? void 0 : threeScene.renderOnce();
+    };
     const cleanup = () => {
       if (threeScene) {
         threeScene.dispose();
@@ -36315,18 +36284,18 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const getThreeScene = () => {
       return threeScene;
     };
-    __expose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetList });
+    __expose({ setState, renderOnce, cleanup, getThreeScene, saveCurrentPreset, fetchPresetList });
     return (_ctx, _cache2) => {
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createBaseVNode("div", _hoisted_2$2, [
           createBaseVNode("div", _hoisted_3$2, [
-            _cache2[4] || (_cache2[4] = createBaseVNode("span", { class: "preset-label" }, "STAGE:", -1)),
+            _cache2[10] || (_cache2[10] = createBaseVNode("span", { class: "preset-label" }, "STAGE:", -1)),
             createBaseVNode("select", {
               class: "preset-select",
               value: selectedPreset.value,
               onChange: onPresetSelectChange
             }, [
-              _cache2[3] || (_cache2[3] = createBaseVNode("option", { value: "__NEW__" }, "+ New Stage...", -1)),
+              _cache2[9] || (_cache2[9] = createBaseVNode("option", { value: "__NEW__" }, "+ New Stage...", -1)),
               selectedPreset.value && selectedPreset.value !== "__NEW__" && !presetFiles.value.includes(selectedPreset.value) ? (openBlock(), createElementBlock("option", {
                 key: 0,
                 value: selectedPreset.value
@@ -36385,14 +36354,22 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn add-btn",
               title: "Add asset",
-              onClick: withModifiers(addAsset, ["stop"])
+              onClick: _cache2[3] || (_cache2[3] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.addAsset && _ctx.addAsset(...args),
+                ["stop"]
+              ))
             }, [
               createVNode(unref(Plus), { size: 16 })
             ]),
             createBaseVNode("button", {
               class: "edit-btn duplicate-btn",
               title: "Duplicate selected asset",
-              onClick: withModifiers(duplicateAsset, ["stop"]),
+              onClick: _cache2[4] || (_cache2[4] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.duplicateAsset && _ctx.duplicateAsset(...args),
+                ["stop"]
+              )),
               disabled: !hasSelection.value
             }, [
               createVNode(unref(Copy), { size: 15 })
@@ -36400,14 +36377,22 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn select-all-btn",
               title: "Select all assets",
-              onClick: withModifiers(selectAll, ["stop"])
+              onClick: _cache2[5] || (_cache2[5] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.selectAll && _ctx.selectAll(...args),
+                ["stop"]
+              ))
             }, [
               createVNode(unref(SquareDashedMousePointer), { size: 16 })
             ]),
             createBaseVNode("button", {
               class: "edit-btn group-btn",
               title: "Group selected assets",
-              onClick: withModifiers(groupSelected, ["stop"]),
+              onClick: _cache2[6] || (_cache2[6] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.groupSelected && _ctx.groupSelected(...args),
+                ["stop"]
+              )),
               disabled: !canGroup.value
             }, [
               createVNode(unref(Group$1), { size: 16 })
@@ -36415,7 +36400,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn ungroup-btn",
               title: "Ungroup selected group",
-              onClick: withModifiers(ungroupSelected, ["stop"]),
+              onClick: _cache2[7] || (_cache2[7] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.ungroupSelected && _ctx.ungroupSelected(...args),
+                ["stop"]
+              )),
               disabled: !canUngroup.value
             }, [
               createVNode(unref(Ungroup), { size: 16 })
@@ -36423,7 +36412,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createBaseVNode("button", {
               class: "edit-btn delete-btn",
               title: "Delete selected asset",
-              onClick: withModifiers(deleteAsset, ["stop"]),
+              onClick: _cache2[8] || (_cache2[8] = withModifiers(
+                //@ts-ignore
+                (...args) => _ctx.deleteAsset && _ctx.deleteAsset(...args),
+                ["stop"]
+              )),
               disabled: !hasSelection.value
             }, [
               createVNode(unref(Trash2), { size: 15 })
@@ -36440,8 +36433,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           onClick: withModifiers(cancelSwitch, ["self"])
         }, [
           createBaseVNode("div", { class: "confirm-modal" }, [
-            _cache2[5] || (_cache2[5] = createBaseVNode("h3", null, "Unsaved Changes", -1)),
-            _cache2[6] || (_cache2[6] = createBaseVNode("p", null, "You have unsaved modifications in the current scene. What would you like to do before switching?", -1)),
+            _cache2[11] || (_cache2[11] = createBaseVNode("h3", null, "Unsaved Changes", -1)),
+            _cache2[12] || (_cache2[12] = createBaseVNode("p", null, "You have unsaved modifications in the current scene. What would you like to do before switching?", -1)),
             createBaseVNode("div", { class: "modal-buttons" }, [
               createBaseVNode("button", {
                 class: "modal-btn save",
@@ -36462,7 +36455,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const StagingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-38bcd4c5"]]);
+const StagingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-96ee0423"]]);
 const CENTER = 0;
 const AVERAGE = 1;
 const SAH = 2;
@@ -46528,6 +46521,10 @@ class ThreeActing {
     __publicField(this, "actorController");
     __publicField(this, "animationId", null);
     __publicField(this, "isHovered", false);
+    __publicField(this, "isInteracting", false);
+    __publicField(this, "remainingFrames", 0);
+    __publicField(this, "activityStatus", "standby");
+    __publicField(this, "onActivityStatusChange");
     __publicField(this, "connectedThreeStage", null);
     __publicField(this, "connectedThreeScene", null);
     __publicField(this, "keysPressed", {});
@@ -46572,6 +46569,7 @@ class ThreeActing {
     this.container = options.container;
     this.onStateChange = options.onStateChange;
     this.onRecordingFinished = options.onRecordingFinished;
+    this.onActivityStatusChange = options.onActivityStatusChange;
     const initialStageData = ((_a = options.initialState) == null ? void 0 : _a.stage_data) ?? ((_b = options.initialState) == null ? void 0 : _b.scene_data) ?? { type: "cube_stage", num_assets: 0, nodes: [] };
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null;
     const defaultSpeed = ((_c = options.initialState) == null ? void 0 : _c.actor_speed) ?? (((_d = options.initialState) == null ? void 0 : _d.actor_type) === "car" ? 20 : 10);
@@ -46597,7 +46595,8 @@ class ThreeActing {
     if (this.state.motion_data) {
       this.loadTrajectory(this.state.motion_data);
     }
-    this.animate();
+    this.renderOnce();
+    this.requestFrames(10);
   }
   setConnectedThreeStage(threeStage) {
     this.connectedThreeStage = threeStage;
@@ -46610,12 +46609,17 @@ class ThreeActing {
   startRecording() {
     this.trajectory = [];
     this.isRecording = true;
+    this.isCountingCountdown = false;
     this.recordingTime = 0;
     this.practiceTime = 0;
     this.isPlaying = false;
     this.isPlaybackMode = false;
+    this.isInteracting = false;
     this.activeRecordingTargetDuration = this.state.duration ?? 7;
     this.activeRecordingSpeed = this.state.actor_speed ?? 1;
+    if (this.actorController) {
+      this.trajectory.push(this.actorController.getMotionState(0));
+    }
     this.previousActorControllers.forEach((p2) => {
       p2.playbackController.setCurrentTime(0);
       p2.playbackController.evaluateAt(0, p2.controller, 0, true);
@@ -46626,6 +46630,7 @@ class ThreeActing {
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = false;
     }
+    this.startAnimationLoop();
   }
   getAccumulatedActors() {
     const upstream = (this.previousActorsData || []).filter(
@@ -46646,7 +46651,10 @@ class ThreeActing {
   }
   stopRecording() {
     this.isRecording = false;
+    this.isCountingCountdown = false;
     this.isPlaying = false;
+    this.keysPressed = {};
+    this.isInteracting = false;
     const allActors = this.getAccumulatedActors();
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = true;
@@ -46671,12 +46679,16 @@ class ThreeActing {
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, actors: allActors });
     }
+    this.requestFrames(35);
     return json;
   }
   resetRecording() {
     this.isRecording = false;
+    this.isCountingCountdown = false;
     this.isPlaying = false;
     this.isPlaybackMode = false;
+    this.keysPressed = {};
+    this.isInteracting = false;
     this.recordingTime = 0;
     this.practiceTime = 0;
     this.trajectory = [];
@@ -46690,6 +46702,7 @@ class ThreeActing {
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, motion_data: void 0, actors: accumulated });
     }
+    this.requestFrames(35);
   }
   buildPreviousActors(actorsRecords) {
     const newRecords = actorsRecords || [];
@@ -46709,8 +46722,6 @@ class ThreeActing {
     this.previousActorControllers = [];
     this.previousActorsData = newRecords;
     this.previousActorsData.forEach((rec) => {
-      var _a;
-      if (this.isPlaybackMode && (rec.isDownstreamPeer || ((_a = rec.id) == null ? void 0 : _a.startsWith("actor_ds_")))) return;
       let traj = rec.trajectory || rec.motion_data;
       if (typeof traj === "string" && traj.trim()) {
         try {
@@ -46735,10 +46746,17 @@ class ThreeActing {
       });
     });
   }
+  getPreviousActorsCount() {
+    return this.previousActorControllers.length;
+  }
   getTrajectory() {
     return this.trajectory;
   }
   startPlayback(motionData) {
+    this.isRecording = false;
+    this.isCountingCountdown = false;
+    this.keysPressed = {};
+    this.isInteracting = false;
     if (motionData) {
       this.loadTrajectory(motionData);
     }
@@ -46748,19 +46766,26 @@ class ThreeActing {
       this.isPlaying = true;
       this.buildPreviousActors(this.previousActorsData);
       this.playbackController.start();
+      this.startAnimationLoop();
     }
   }
   play() {
+    this.isRecording = false;
+    this.isCountingCountdown = false;
+    this.keysPressed = {};
+    this.isInteracting = false;
     if (this.playbackController.getTrajectory().length > 0) {
       this.isRecording = false;
       this.isPlaybackMode = true;
       this.isPlaying = true;
       this.playbackController.play();
+      this.startAnimationLoop();
     }
   }
   pause() {
     this.isPlaying = false;
     this.playbackController.pause();
+    this.requestFrames(35);
   }
   stop() {
     var _a;
@@ -46784,6 +46809,7 @@ class ThreeActing {
         this.actorController.resetAnimation("Idle_A");
       }
     }
+    this.requestFrames(35);
   }
   stopPlayback() {
     this.stop();
@@ -46865,6 +46891,7 @@ class ThreeActing {
     canvas.style.left = "0";
     canvas.style.width = "100%";
     canvas.style.height = "100%";
+    canvas.style.cursor = "default";
     canvas.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
       if (this.animationId !== null) {
@@ -46883,9 +46910,19 @@ class ThreeActing {
     this.scene.add(this.spawnPointHelper.group);
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
     this.transformControls.size = 1.8;
+    this.transformControls.enabled = false;
     this.transformControls.detach();
     this.scene.add(this.transformControls.getHelper());
+    this.transformControls.addEventListener("change", () => {
+      this.requestFrames(2);
+    });
     this.transformControls.addEventListener("dragging-changed", (event) => {
+      this.isInteracting = !!event.value;
+      if (event.value) {
+        this.startAnimationLoop();
+      } else {
+        this.requestFrames(35);
+      }
       if (!event.value) {
         if (this.spawnPointHelper && this.actorController) {
           const sp = this.spawnPointHelper.getSpawnPoint();
@@ -46904,6 +46941,7 @@ class ThreeActing {
         this.actorController.group.position.set(sp.px, sp.py, sp.pz);
         this.actorController.group.rotation.y = sp.ry;
       }
+      this.requestFrames(10);
     });
     this.debugPanel = new DebugPanel(this.container);
     this.debugPanel.attachThreeActing(this);
@@ -46958,22 +46996,26 @@ class ThreeActing {
   setSpawnTransformMode(mode) {
     if (!this.transformControls || !this.spawnPointHelper) return;
     if (this.transformControls.object === this.spawnPointHelper.group && this.transformControls.mode === mode) {
+      this.transformControls.enabled = false;
       this.transformControls.detach();
       return;
     }
     if (mode === "translate") {
+      this.transformControls.enabled = true;
       this.transformControls.setMode("translate");
       this.transformControls.showX = true;
       this.transformControls.showY = true;
       this.transformControls.showZ = true;
       this.transformControls.attach(this.spawnPointHelper.group);
     } else if (mode === "rotate") {
+      this.transformControls.enabled = true;
       this.transformControls.setMode("rotate");
       this.transformControls.showX = false;
       this.transformControls.showY = true;
       this.transformControls.showZ = false;
       this.transformControls.attach(this.spawnPointHelper.group);
     } else {
+      this.transformControls.enabled = false;
       this.transformControls.detach();
     }
   }
@@ -47001,14 +47043,28 @@ class ThreeActing {
       }
     }
   }
+  onNodePointerEnter() {
+    this.isHovered = true;
+    this.startAnimationLoop();
+  }
+  onNodePointerLeave() {
+    this.isHovered = false;
+    this.keysPressed = {};
+    this.isInteracting = false;
+    this.requestFrames(35);
+  }
   bindEvents() {
     const canvas = this.renderer.domElement;
-    canvas.addEventListener("mouseenter", () => {
-      this.isHovered = true;
+    canvas.addEventListener("pointerdown", () => {
+      this.isInteracting = true;
+      this.startAnimationLoop();
     });
-    canvas.addEventListener("mouseleave", () => {
-      this.isHovered = false;
-      this.keysPressed = {};
+    window.addEventListener("pointerup", () => {
+      this.isInteracting = false;
+    });
+    canvas.addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      this.stopAnimationLoop();
     });
     this.keydownHandler = (event) => {
       if (event.metaKey || event.code.startsWith("Meta") || event.code.startsWith("OS")) {
@@ -47028,6 +47084,7 @@ class ThreeActing {
       event.stopPropagation();
       event.stopImmediatePropagation();
       this.keysPressed[event.code] = true;
+      this.startAnimationLoop();
     };
     this.keyupHandler = (event) => {
       if (this.isHovered || this.keysPressed[event.code]) {
@@ -47035,9 +47092,11 @@ class ThreeActing {
         event.stopImmediatePropagation();
       }
       this.keysPressed[event.code] = false;
+      this.requestFrames(35);
     };
     this.blurHandler = () => {
       this.keysPressed = {};
+      this.requestFrames(35);
     };
     window.addEventListener("keydown", this.keydownHandler, { capture: true });
     window.addEventListener("keyup", this.keyupHandler, { capture: true });
@@ -47055,6 +47114,7 @@ class ThreeActing {
       if (this.onStateChange) {
         this.onStateChange({ ...this.state, camera_distance: newDist, actors: this.getAccumulatedActors() });
       }
+      this.requestFrames(25);
     };
     canvas.addEventListener("wheel", this.wheelHandler, { passive: false });
     this.resizeObserver = new ResizeObserver(() => {
@@ -47090,6 +47150,16 @@ class ThreeActing {
       }
       return;
     }
+    if (this.isCountingCountdown) {
+      this.previousActorControllers.forEach((p2) => {
+        p2.playbackController.evaluateAt(0, p2.controller, 0, true);
+      });
+      if (this.actorController) {
+        const speedMult = this.state.actor_speed ?? 10;
+        this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera);
+      }
+      return;
+    }
     if (this.isRecording) {
       this.previousActorControllers.forEach((p2) => {
         p2.playbackController.evaluateAt(this.recordingTime, p2.controller, dt);
@@ -47119,6 +47189,7 @@ class ThreeActing {
     }
   }
   getPracticeTime() {
+    if (this.isCountingCountdown) return 0;
     const loopDur = Math.max(0.1, this.state.duration ?? 7);
     return this.practiceTime % loopDur;
   }
@@ -47162,20 +47233,61 @@ class ThreeActing {
     this.camera.aspect = w / h2;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h2, false);
+    this.renderOnce();
   }
   setCountingState(counting) {
     this.isCountingCountdown = counting;
     if (counting) {
+      this.practiceTime = 0;
+      this.recordingTime = 0;
       if (this.spawnPointHelper) {
         this.spawnPointHelper.group.visible = false;
       }
       if (this.transformControls) {
         this.transformControls.detach();
       }
+      this.resetActorPosition();
+      this.previousActorControllers.forEach((p2) => {
+        p2.playbackController.setCurrentTime(0);
+        p2.playbackController.evaluateAt(0, p2.controller, 0, true);
+      });
+      this.startAnimationLoop();
+    } else {
+      this.requestFrames(35);
     }
   }
-  animate() {
-    this.animationId = requestAnimationFrame(() => this.animate());
+  setActivityStatus(status) {
+    var _a;
+    if (this.activityStatus !== status) {
+      this.activityStatus = status;
+      (_a = this.onActivityStatusChange) == null ? void 0 : _a.call(this, status);
+    }
+  }
+  renderOnce() {
+    this.renderFrame(0.016);
+  }
+  requestFrames(count = 30) {
+    this.remainingFrames = Math.max(this.remainingFrames, count);
+    if (this.animationId === null) {
+      this.lastTime = performance.now();
+      this.animationId = requestAnimationFrame(() => this.animate());
+    }
+  }
+  startAnimationLoop() {
+    this.setActivityStatus("live");
+    if (this.animationId === null) {
+      this.lastTime = performance.now();
+      this.animationId = requestAnimationFrame(() => this.animate());
+    }
+  }
+  stopAnimationLoop() {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+    this.setActivityStatus("standby");
+  }
+  renderFrame(dt) {
     if (this.spawnPointHelper) {
       const shouldBeVisible = !this.isPlaying && !this.isRecording && !this.isCountingCountdown;
       if (this.spawnPointHelper.group.visible !== shouldBeVisible) {
@@ -47185,9 +47297,6 @@ class ThreeActing {
         }
       }
     }
-    const time = performance.now();
-    const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
-    this.lastTime = time;
     this.updateActorMovement(dt);
     if (this.actorController) {
       const pos = this.actorController.position;
@@ -47234,10 +47343,34 @@ class ThreeActing {
     updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget);
     this.renderer.render(this.scene, this.camera);
   }
+  animate() {
+    const time = performance.now();
+    const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
+    this.lastTime = time;
+    this.renderFrame(dt);
+    if (this.remainingFrames > 0) {
+      this.remainingFrames--;
+    }
+    const hasKeys = this.isHovered && Object.values(this.keysPressed).some(Boolean);
+    const isTransforming = !!(this.transformControls && this.transformControls.dragging);
+    const isActivelyEngaged = this.isRecording || this.isCountingCountdown || this.isHovered || this.isInteracting || isTransforming || hasKeys;
+    if (isActivelyEngaged) {
+      this.setActivityStatus("live");
+    } else {
+      this.setActivityStatus("standby");
+    }
+    const shouldContinue = isActivelyEngaged || this.remainingFrames > 0;
+    if (shouldContinue) {
+      this.animationId = requestAnimationFrame(() => this.animate());
+    } else {
+      this.stopAnimationLoop();
+    }
+  }
   setStageData(stageData) {
     this.state.stage_data = { ...stageData };
     this.state.scene_data = { ...stageData };
     this.buildStageEnvironment();
+    this.renderOnce();
   }
   setSceneData(sceneData) {
     this.setStageData(sceneData);
@@ -47282,6 +47415,7 @@ class ThreeActing {
       this.state.scene_data = { ...newStageData };
       this.buildStageEnvironment();
     }
+    this.renderOnce();
   }
   buildStageEnvironment() {
     var _a, _b;
@@ -47444,37 +47578,37 @@ class ThreeActing {
     this.scene.clear();
   }
 }
-const _hoisted_1$1 = { class: "three-container" };
-const _hoisted_2$1 = {
+const _hoisted_1$1 = {
   key: 0,
   class: "disabled-overlay"
 };
-const _hoisted_3$1 = {
+const _hoisted_2$1 = {
   key: 1,
   class: "canvas-wrapper"
 };
-const _hoisted_4$1 = { class: "canvas-aspect-container" };
-const _hoisted_5$1 = {
+const _hoisted_3$1 = { class: "canvas-aspect-container" };
+const _hoisted_4$1 = {
   key: 0,
   class: "countdown-badge"
 };
-const _hoisted_6$1 = {
+const _hoisted_5$1 = {
   key: 1,
   class: "recording-overlay"
 };
-const _hoisted_7$1 = { class: "rec-header" };
-const _hoisted_8$1 = { class: "rec-timer" };
-const _hoisted_9$1 = { class: "progress-track" };
-const _hoisted_10$1 = {
+const _hoisted_6$1 = { class: "rec-header" };
+const _hoisted_7$1 = { class: "rec-timer" };
+const _hoisted_8$1 = { class: "progress-track" };
+const _hoisted_9$1 = {
   key: 2,
   class: "canvas-edit-toolbar left"
 };
-const _hoisted_11$1 = { class: "camera-dist-wrapper" };
-const _hoisted_12$1 = { class: "dist-popover-header" };
-const _hoisted_13$1 = { class: "dist-val" };
-const _hoisted_14$1 = { class: "dist-slider-row" };
-const _hoisted_15$1 = { class: "acting-toolbar" };
-const _hoisted_16$1 = ["title"];
+const _hoisted_10$1 = { class: "camera-dist-wrapper" };
+const _hoisted_11$1 = { class: "dist-popover-header" };
+const _hoisted_12$1 = { class: "dist-val" };
+const _hoisted_13$1 = { class: "dist-slider-row" };
+const _hoisted_14$1 = { class: "acting-toolbar" };
+const _hoisted_15$1 = ["title"];
+const _hoisted_16$1 = { class: "activity-text" };
 const _hoisted_17$1 = { class: "info-overlay" };
 const _hoisted_18$1 = {
   key: 0,
@@ -47496,23 +47630,25 @@ const _hoisted_22$1 = {
   key: 4,
   class: "state-indicator recorded"
 };
-const _hoisted_23$1 = {
+const _hoisted_23$1 = ["title"];
+const _hoisted_24$1 = { class: "info-label" };
+const _hoisted_25$1 = {
   key: 1,
   class: "hint"
 };
-const _hoisted_24$1 = { class: "controls-modal-card" };
-const _hoisted_25$1 = { class: "modal-header" };
-const _hoisted_26$1 = { class: "modal-title-group" };
-const _hoisted_27$1 = { class: "modal-body" };
-const _hoisted_28$1 = {
+const _hoisted_26$1 = { class: "controls-modal-card" };
+const _hoisted_27$1 = { class: "modal-header" };
+const _hoisted_28$1 = { class: "modal-title-group" };
+const _hoisted_29$1 = { class: "modal-body" };
+const _hoisted_30$1 = {
   key: 0,
   class: "controls-list"
 };
-const _hoisted_29$1 = {
+const _hoisted_31$1 = {
   key: 1,
   class: "controls-list"
 };
-const _hoisted_30$1 = { class: "modal-footer" };
+const _hoisted_32$1 = { class: "modal-footer" };
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ActingWidget",
   props: {
@@ -47559,6 +47695,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         showDistanceSlider.value = false;
       }
     };
+    const actorControlsLabel = computed(() => {
+      const type = state.actor_type || "human";
+      const capitalized = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+      return `${capitalized} controls`;
+    });
     const isCounting = /* @__PURE__ */ ref(false);
     const countdownVal = /* @__PURE__ */ ref(null);
     const isRecording = /* @__PURE__ */ ref(false);
@@ -47566,6 +47707,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const isPlaying = /* @__PURE__ */ ref(false);
     const showHelpModal = /* @__PURE__ */ ref(false);
     const activeSpawnMode = /* @__PURE__ */ ref(null);
+    const activityStatus = /* @__PURE__ */ ref("standby");
     const toggleSpawnMode = (mode) => {
       if (activeSpawnMode.value === mode) {
         activeSpawnMode.value = null;
@@ -47599,6 +47741,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           }
         },
         onRecordingFinished,
+        onActivityStatusChange: (status) => {
+          activityStatus.value = status;
+        },
         connectedThreeScene: currentThreeScene
       });
       threeActing.onCameraDistanceChange = (dist) => {
@@ -47616,6 +47761,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const startCountdown = () => {
       if (isCounting.value || isRecording.value) return;
       activeSpawnMode.value = null;
+      currentTime.value = 0;
+      recordingElapsed.value = 0;
+      practiceElapsed.value = 0;
       if (threeActing) {
         threeActing.setSpawnTransformMode(null);
         threeActing.setCountingState(true);
@@ -47635,6 +47783,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           clearInterval(interval);
           countdownVal.value = null;
           isCounting.value = false;
+          if (threeActing) {
+            threeActing.setCountingState(false);
+          }
           isRecording.value = true;
           recordingElapsed.value = 0;
           if (threeActing) {
@@ -47658,27 +47809,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       isPlaying.value = true;
       if (threeActing) {
         threeActing.startPlayback(json);
-      }
-    };
-    const togglePlay = () => {
-      if (isPlaying.value) {
-        isPlaying.value = false;
-        if (threeActing) {
-          threeActing.pause();
-        }
-      } else {
-        if (state.motion_data) {
-          isPlaying.value = true;
-          if (threeActing) {
-            threeActing.play();
-          }
-        }
-      }
-    };
-    const stopPlayback = () => {
-      isPlaying.value = false;
-      if (threeActing) {
-        threeActing.stop();
       }
     };
     const resetToInteractive = () => {
@@ -47754,11 +47884,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     });
     const currentTime = /* @__PURE__ */ ref(0);
     const practiceElapsed = /* @__PURE__ */ ref(0);
+    const previousActorsCount = /* @__PURE__ */ ref(0);
     const totalDuration = /* @__PURE__ */ ref(((_j = props.initialState) == null ? void 0 : _j.duration) ?? 7);
     let timeFrameId = null;
     const updateTimeCounter = () => {
       if (threeActing) {
-        if (isRecording.value) {
+        if (typeof threeActing.getPreviousActorsCount === "function") {
+          previousActorsCount.value = threeActing.getPreviousActorsCount();
+        }
+        if (isCounting.value) {
+          currentTime.value = 0;
+          recordingElapsed.value = 0;
+          practiceElapsed.value = 0;
+        } else if (isRecording.value) {
           recordingElapsed.value = threeActing.recordingTime;
           currentTime.value = threeActing.recordingTime;
         } else if (isPlaying.value || threeActing.isPlaybackMode) {
@@ -47771,6 +47909,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       }
       timeFrameId = requestAnimationFrame(updateTimeCounter);
     };
+    const hasOtherActors = computed(() => {
+      if (previousActorsCount.value > 0) return true;
+      return Array.isArray(state.actors) && state.actors.length > 0;
+    });
+    const showTimeCounter = computed(() => {
+      if (!state.scene_data) return false;
+      if (isRecording.value || isCounting.value || !!state.motion_data) return true;
+      return hasOtherActors.value;
+    });
     const formattedTime = computed(() => {
       const cur = Math.max(0, currentTime.value).toFixed(1);
       const dur = Math.max(0, totalDuration.value).toFixed(1);
@@ -47791,34 +47938,55 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       cleanup();
     });
     const getThreeActing = () => threeActing;
-    __expose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing });
+    const widgetContainerRef = /* @__PURE__ */ ref(null);
+    const onNodePointerEnter = () => {
+      threeActing == null ? void 0 : threeActing.onNodePointerEnter();
+    };
+    const onNodePointerLeave = (e) => {
+      if (e && e.relatedTarget && widgetContainerRef.value) {
+        if (widgetContainerRef.value.contains(e.relatedTarget)) {
+          return;
+        }
+      }
+      threeActing == null ? void 0 : threeActing.onNodePointerLeave();
+    };
+    const renderOnce = () => {
+      threeActing == null ? void 0 : threeActing.renderOnce();
+    };
+    __expose({ setState, renderOnce, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing, onNodePointerEnter, onNodePointerLeave });
     return (_ctx, _cache2) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$1, [
-        !state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_2$1, [..._cache2[10] || (_cache2[10] = [
+      return openBlock(), createElementBlock("div", {
+        ref_key: "widgetContainerRef",
+        ref: widgetContainerRef,
+        class: "three-container",
+        onMouseenter: onNodePointerEnter,
+        onMouseleave: onNodePointerLeave
+      }, [
+        !state.scene_data ? (openBlock(), createElementBlock("div", _hoisted_1$1, [..._cache2[10] || (_cache2[10] = [
           createBaseVNode("div", { class: "disabled-title" }, "Acting Canvas Disabled", -1),
           createBaseVNode("div", { class: "disabled-subtitle" }, "Connect a Stage or Acting 3D Node to activate.", -1)
-        ])])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
-          createBaseVNode("div", _hoisted_4$1, [
+        ])])) : (openBlock(), createElementBlock("div", _hoisted_2$1, [
+          createBaseVNode("div", _hoisted_3$1, [
             createVNode(StagingCanvas, { "init-scene": initScene })
           ]),
-          countdownVal.value !== null ? (openBlock(), createElementBlock("div", _hoisted_5$1, [
+          countdownVal.value !== null ? (openBlock(), createElementBlock("div", _hoisted_4$1, [
             _cache2[11] || (_cache2[11] = createBaseVNode("span", { class: "countdown-dot" }, null, -1)),
             createTextVNode(" REC IN " + toDisplayString(countdownVal.value) + "s ", 1)
           ])) : createCommentVNode("", true),
-          isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_6$1, [
-            createBaseVNode("div", _hoisted_7$1, [
+          isRecording.value ? (openBlock(), createElementBlock("div", _hoisted_5$1, [
+            createBaseVNode("div", _hoisted_6$1, [
               _cache2[12] || (_cache2[12] = createBaseVNode("span", { class: "rec-dot" }, null, -1)),
               _cache2[13] || (_cache2[13] = createBaseVNode("span", { class: "rec-text" }, "RECORDING", -1)),
-              createBaseVNode("span", _hoisted_8$1, toDisplayString(recordingElapsed.value.toFixed(1)) + "s / " + toDisplayString(state.duration) + "s", 1)
+              createBaseVNode("span", _hoisted_7$1, toDisplayString(recordingElapsed.value.toFixed(1)) + "s / " + toDisplayString(state.duration) + "s", 1)
             ]),
-            createBaseVNode("div", _hoisted_9$1, [
+            createBaseVNode("div", _hoisted_8$1, [
               createBaseVNode("div", {
                 class: "progress-fill",
                 style: normalizeStyle({ width: recordingElapsed.value / state.duration * 100 + "%" })
               }, null, 4)
             ])
           ])) : createCommentVNode("", true),
-          !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_10$1, [
+          !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock("div", _hoisted_9$1, [
             !isPlaying.value && !state.motion_data ? (openBlock(), createElementBlock(Fragment, { key: 0 }, [
               createBaseVNode("button", {
                 class: "edit-btn",
@@ -47843,7 +48011,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               ], 2),
               _cache2[14] || (_cache2[14] = createBaseVNode("div", { class: "toolbar-divider" }, null, -1))
             ], 64)) : createCommentVNode("", true),
-            createBaseVNode("div", _hoisted_11$1, [
+            createBaseVNode("div", _hoisted_10$1, [
               createBaseVNode("button", {
                 class: normalizeClass(["edit-btn", { "active": showDistanceSlider.value }]),
                 title: "Adjust Camera Distance",
@@ -47859,16 +48027,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 onMousedown: _cache2[5] || (_cache2[5] = withModifiers(() => {
                 }, ["stop"]))
               }, [
-                createBaseVNode("div", _hoisted_12$1, [
+                createBaseVNode("div", _hoisted_11$1, [
                   _cache2[15] || (_cache2[15] = createBaseVNode("span", { class: "dist-title" }, "DISTANCE", -1)),
-                  createBaseVNode("span", _hoisted_13$1, toDisplayString(cameraDistance.value.toFixed(1)) + "x", 1),
+                  createBaseVNode("span", _hoisted_12$1, toDisplayString(cameraDistance.value.toFixed(1)) + "x", 1),
                   createBaseVNode("button", {
                     class: "dist-reset-btn",
                     title: "Reset distance to 1.0x",
                     onClick: withModifiers(resetCameraDistance, ["stop"])
                   }, "↺")
                 ]),
-                createBaseVNode("div", _hoisted_14$1, [
+                createBaseVNode("div", _hoisted_13$1, [
                   _cache2[16] || (_cache2[16] = createBaseVNode("span", { class: "dist-bound" }, "0.5x", -1)),
                   withDirectives(createBaseVNode("input", {
                     type: "range",
@@ -47891,9 +48059,28 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               ], 32)) : createCommentVNode("", true)
             ])
           ])) : createCommentVNode("", true),
-          createBaseVNode("div", _hoisted_15$1, [
-            !isRecording.value && !isCounting.value && !state.motion_data ? (openBlock(), createElementBlock("button", {
+          createBaseVNode("div", _hoisted_14$1, [
+            createBaseVNode("div", {
+              class: normalizeClass(["activity-pill", activityStatus.value]),
+              title: activityStatus.value === "live" ? "Rendering active (60 FPS)" : "Standby (GPU resources saved)"
+            }, [
+              _cache2[18] || (_cache2[18] = createBaseVNode("span", { class: "activity-dot" }, null, -1)),
+              createBaseVNode("span", _hoisted_16$1, toDisplayString(activityStatus.value === "live" ? "Live" : "Standby"), 1)
+            ], 10, _hoisted_15$1),
+            showTimeCounter.value ? (openBlock(), createElementBlock("div", {
               key: 0,
+              class: normalizeClass(["time-counter-pill", { practice: !state.motion_data && !isCounting.value && !isRecording.value, counting: isCounting.value, recording: isRecording.value, playing: isPlaying.value }])
+            }, [
+              !state.motion_data && !isCounting.value && !isRecording.value ? (openBlock(), createBlock(unref(Repeat), {
+                key: 0,
+                size: 11,
+                class: "loop-icon",
+                title: "Practice Loop"
+              })) : createCommentVNode("", true),
+              createBaseVNode("span", null, toDisplayString(formattedTime.value), 1)
+            ], 2)) : createCommentVNode("", true),
+            !isRecording.value && !isCounting.value && !state.motion_data ? (openBlock(), createElementBlock("button", {
+              key: 1,
               class: "acting-btn rec-trigger",
               title: "Start Recording",
               onClick: startCountdown
@@ -47902,10 +48089,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 size: 13,
                 class: "btn-icon"
               }),
-              _cache2[18] || (_cache2[18] = createBaseVNode("span", null, "Record", -1))
+              _cache2[19] || (_cache2[19] = createBaseVNode("span", null, "Record", -1))
             ])) : createCommentVNode("", true),
             isRecording.value ? (openBlock(), createElementBlock("button", {
-              key: 1,
+              key: 2,
               class: "acting-btn rec-stop",
               title: "Stop Recording",
               onClick: stopRecording
@@ -47914,43 +48101,20 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 size: 12,
                 class: "btn-icon fill-icon"
               }),
-              _cache2[19] || (_cache2[19] = createBaseVNode("span", null, "Stop", -1))
+              _cache2[20] || (_cache2[20] = createBaseVNode("span", null, "Stop", -1))
             ])) : createCommentVNode("", true),
-            state.motion_data && !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock(Fragment, { key: 2 }, [
-              createBaseVNode("button", {
-                class: normalizeClass(["acting-btn play-btn", { "playing": isPlaying.value }]),
-                title: isPlaying.value ? "Pause Playback" : "Play Playback",
-                onClick: togglePlay
-              }, [
-                (openBlock(), createBlock(resolveDynamicComponent(isPlaying.value ? unref(Pause) : unref(Play)), {
-                  size: 12,
-                  class: "btn-icon"
-                })),
-                createBaseVNode("span", null, toDisplayString(isPlaying.value ? "Pause" : "Play"), 1)
-              ], 10, _hoisted_16$1),
-              createBaseVNode("button", {
-                class: "acting-btn stop-btn",
-                title: "Stop and Reset Position",
-                onClick: stopPlayback
-              }, [
-                createVNode(unref(Square), {
-                  size: 12,
-                  class: "btn-icon fill-icon"
-                }),
-                _cache2[20] || (_cache2[20] = createBaseVNode("span", null, "Stop", -1))
-              ]),
-              createBaseVNode("button", {
-                class: "acting-btn reset-btn",
-                title: "Clear Recording and Reset to Keyboard",
-                onClick: resetToInteractive
-              }, [
-                createVNode(unref(RotateCcw), {
-                  size: 12,
-                  class: "btn-icon"
-                }),
-                _cache2[21] || (_cache2[21] = createBaseVNode("span", null, "Reset", -1))
-              ])
-            ], 64)) : createCommentVNode("", true)
+            state.motion_data && !isRecording.value && !isCounting.value ? (openBlock(), createElementBlock("button", {
+              key: 3,
+              class: "acting-btn reset-btn",
+              title: "Clear Recording and Reset to Keyboard",
+              onClick: resetToInteractive
+            }, [
+              createVNode(unref(RotateCcw), {
+                size: 12,
+                class: "btn-icon"
+              }),
+              _cache2[21] || (_cache2[21] = createBaseVNode("span", null, "Reset", -1))
+            ])) : createCommentVNode("", true)
           ])
         ])),
         createBaseVNode("div", _hoisted_17$1, [
@@ -47976,38 +48140,26 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             ])),
             createBaseVNode("button", {
               class: "info-help-btn",
-              title: "View Keyboard Controls",
+              title: `View ${actorControlsLabel.value}`,
               onClick: _cache2[6] || (_cache2[6] = ($event) => showHelpModal.value = true)
             }, [
               createVNode(unref(CircleQuestionMark), {
                 size: 13,
                 class: "info-icon"
               }),
-              _cache2[26] || (_cache2[26] = createBaseVNode("span", { class: "info-label" }, "Controls", -1))
-            ])
-          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_23$1, "Waiting for stage link..."))
+              createBaseVNode("span", _hoisted_24$1, toDisplayString(actorControlsLabel.value), 1)
+            ], 8, _hoisted_23$1)
+          ], 64)) : (openBlock(), createElementBlock("div", _hoisted_25$1, "Waiting for stage link..."))
         ]),
-        state.scene_data ? (openBlock(), createElementBlock("div", {
-          key: 2,
-          class: normalizeClass(["time-counter-overlay", { practice: !state.motion_data, recording: isRecording.value, playing: isPlaying.value }])
-        }, [
-          !state.motion_data ? (openBlock(), createBlock(unref(Repeat), {
-            key: 0,
-            size: 12,
-            class: "loop-icon",
-            title: "Practice Loop"
-          })) : createCommentVNode("", true),
-          createTextVNode(" " + toDisplayString(formattedTime.value), 1)
-        ], 2)) : createCommentVNode("", true),
         showHelpModal.value ? (openBlock(), createElementBlock("div", {
-          key: 3,
+          key: 2,
           class: "controls-modal-backdrop",
           onClick: _cache2[9] || (_cache2[9] = withModifiers(($event) => showHelpModal.value = false, ["self"]))
         }, [
-          createBaseVNode("div", _hoisted_24$1, [
-            createBaseVNode("div", _hoisted_25$1, [
-              createBaseVNode("div", _hoisted_26$1, [
-                _cache2[27] || (_cache2[27] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
+          createBaseVNode("div", _hoisted_26$1, [
+            createBaseVNode("div", _hoisted_27$1, [
+              createBaseVNode("div", _hoisted_28$1, [
+                _cache2[26] || (_cache2[26] = createBaseVNode("h3", { class: "modal-title" }, "Keyboard Controls", -1)),
                 createBaseVNode("span", {
                   class: normalizeClass(["actor-type-badge", state.actor_type])
                 }, toDisplayString(state.actor_type === "car" ? "CAR ACTOR" : "HUMAN ACTOR"), 3)
@@ -48020,14 +48172,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(X), { size: 16 })
               ])
             ]),
-            createBaseVNode("div", _hoisted_27$1, [
-              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_28$1, [..._cache2[28] || (_cache2[28] = [
-                createStaticVNode('<div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>W</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>▲</kbd></div><span class="action-desc" data-v-a37022a8>Accelerate</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>S</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>▼</kbd></div><span class="action-desc" data-v-a37022a8>Brake / Reverse</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>A</kbd> <kbd data-v-a37022a8>D</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>◀</kbd> <kbd data-v-a37022a8>▶</kbd></div><span class="action-desc" data-v-a37022a8>Steer Left / Right</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Space</kbd></div><span class="action-desc" data-v-a37022a8>Handbrake</span></div>', 4)
-              ])])) : (openBlock(), createElementBlock("div", _hoisted_29$1, [..._cache2[29] || (_cache2[29] = [
-                createStaticVNode('<div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>W</kbd> <kbd data-v-a37022a8>A</kbd> <kbd data-v-a37022a8>S</kbd> <kbd data-v-a37022a8>D</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>Arrows</kbd></div><span class="action-desc" data-v-a37022a8>Move</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Shift</kbd> + Move</div><span class="action-desc" data-v-a37022a8>Sprint (Fast Run)</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>C</kbd></div><span class="action-desc" data-v-a37022a8>Crouch / Crouch Walk</span></div><div class="control-row" data-v-a37022a8><div class="key-group" data-v-a37022a8><kbd data-v-a37022a8>Space</kbd> <span class="or" data-v-a37022a8>or</span> <kbd data-v-a37022a8>J</kbd></div><span class="action-desc" data-v-a37022a8>Jump</span></div>', 4)
+            createBaseVNode("div", _hoisted_29$1, [
+              state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_30$1, [..._cache2[27] || (_cache2[27] = [
+                createStaticVNode('<div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>W</kbd> <span class="or" data-v-20e64531>or</span> <kbd data-v-20e64531>▲</kbd></div><span class="action-desc" data-v-20e64531>Accelerate</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>S</kbd> <span class="or" data-v-20e64531>or</span> <kbd data-v-20e64531>▼</kbd></div><span class="action-desc" data-v-20e64531>Brake / Reverse</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>A</kbd> <kbd data-v-20e64531>D</kbd> <span class="or" data-v-20e64531>or</span> <kbd data-v-20e64531>◀</kbd> <kbd data-v-20e64531>▶</kbd></div><span class="action-desc" data-v-20e64531>Steer Left / Right</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>Space</kbd></div><span class="action-desc" data-v-20e64531>Handbrake</span></div>', 4)
+              ])])) : (openBlock(), createElementBlock("div", _hoisted_31$1, [..._cache2[28] || (_cache2[28] = [
+                createStaticVNode('<div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>W</kbd> <kbd data-v-20e64531>A</kbd> <kbd data-v-20e64531>S</kbd> <kbd data-v-20e64531>D</kbd> <span class="or" data-v-20e64531>or</span> <kbd data-v-20e64531>Arrows</kbd></div><span class="action-desc" data-v-20e64531>Move</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>Shift</kbd> + Move</div><span class="action-desc" data-v-20e64531>Sprint (Fast Run)</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>C</kbd></div><span class="action-desc" data-v-20e64531>Crouch / Crouch Walk</span></div><div class="control-row" data-v-20e64531><div class="key-group" data-v-20e64531><kbd data-v-20e64531>Space</kbd> <span class="or" data-v-20e64531>or</span> <kbd data-v-20e64531>J</kbd></div><span class="action-desc" data-v-20e64531>Jump</span></div>', 4)
               ])]))
             ]),
-            createBaseVNode("div", _hoisted_30$1, [
+            createBaseVNode("div", _hoisted_32$1, [
               createBaseVNode("button", {
                 class: "modal-ok-btn",
                 onClick: _cache2[8] || (_cache2[8] = ($event) => showHelpModal.value = false)
@@ -48035,11 +48187,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             ])
           ])
         ])) : createCommentVNode("", true)
-      ]);
+      ], 544);
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-a37022a8"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-20e64531"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);
@@ -48372,7 +48524,7 @@ class ThreeDirecting {
     const bgColor = new Color(BACKGROUND_COLOR);
     this.scene.background = bgColor;
     this.scene.fog = new Fog(bgColor, FOG_NEAR, FOG_FAR);
-    this.camera = new PerspectiveCamera(50, width / height, CAMERA_NEAR, CAMERA_FAR);
+    this.camera = new PerspectiveCamera(CAMERA_FOV, width / height, CAMERA_NEAR, CAMERA_FAR);
     this.camera.position.set(-8, 4, 0);
     this.camera.lookAt(0, 0, 0);
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true });
@@ -48388,6 +48540,7 @@ class ThreeDirecting {
     canvas.style.left = "0";
     canvas.style.width = "100%";
     canvas.style.height = "100%";
+    canvas.style.cursor = "default";
     canvas.addEventListener("webglcontextlost", (event) => {
       event.preventDefault();
       if (this.animationId !== null) {
@@ -48768,15 +48921,22 @@ class ThreeDirecting {
     this.camera.aspect = w / h2;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h2, false);
+    this.renderOnce();
   }
-  animate() {
-    this.animationId = requestAnimationFrame(() => this.animate());
-    const time = performance.now();
-    const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
-    this.lastTime = time;
+  renderOnce() {
+    this.renderFrame(0.016);
+  }
+  renderFrame(dt) {
     this.updateActorMovement(dt);
     this.updateCamera();
     this.renderer.render(this.scene, this.camera);
+  }
+  animate() {
+    const time = performance.now();
+    const dt = Math.min((time - this.lastTime) / 1e3, 0.1);
+    this.lastTime = time;
+    this.renderFrame(dt);
+    this.animationId = requestAnimationFrame(() => this.animate());
   }
   setState(newState) {
     if (newState.camera_mode !== void 0) {
@@ -48789,12 +48949,12 @@ class ThreeDirecting {
     if (newState.directing_data !== void 0) {
       this.state.directing_data = newState.directing_data;
     }
+    this.renderOnce();
   }
   startRecording(fps = 30) {
     this.lastCameraMode = null;
     this.playbackController.setCurrentTime(0);
     this.playbackController.play();
-    this.isPlaying = true;
     const targetWidth = 1280;
     const targetHeight = 720;
     this.renderer.setSize(targetWidth, targetHeight, false);
@@ -48946,6 +49106,7 @@ class ThreeDirecting {
     this.forceHardCutNextCameraUpdate = true;
     this.updateActorMovement(0);
     this.updateCamera();
+    this.renderOnce();
   }
   getCurrentTime() {
     return this.playbackController.getCurrentTime();
@@ -49063,7 +49224,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     const keyframes = /* @__PURE__ */ ref(parseKeyframes(state.directing_data));
     const selectedKeyframe = /* @__PURE__ */ ref(null);
-    const isPlaying = /* @__PURE__ */ ref(true);
+    const isPlaying = /* @__PURE__ */ ref(false);
     const currentTime = /* @__PURE__ */ ref(0);
     const duration = /* @__PURE__ */ ref(7);
     const trackRef = /* @__PURE__ */ ref(null);
@@ -49266,8 +49427,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
     const isCarTarget = (kf) => {
       const target = kf.actor_target || "actor_1";
-      const found = availableActors.value.find((a) => a.id === target);
-      return found ? found.label.toLowerCase().includes("car") : false;
+      const found = availableActors.value.find((a) => (a == null ? void 0 : a.id) === target);
+      return (found == null ? void 0 : found.label) ? found.label.toLowerCase().includes("car") : false;
     };
     const getDistanceConfig = (mode, kf) => {
       const isCar = kf ? isCarTarget(kf) : false;
@@ -49578,7 +49739,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         availableActorsList.value = threeDirecting.getAvailableActors();
       }
     };
-    __expose({ setState, cleanup, setConnectedThreeActing });
+    const renderOnce = () => {
+      threeDirecting == null ? void 0 : threeDirecting.renderOnce();
+    };
+    __expose({ setState, renderOnce, cleanup, setConnectedThreeActing });
     return (_ctx, _cache2) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         !hasActingData.value ? (openBlock(), createElementBlock("div", _hoisted_2, [
@@ -49693,7 +49857,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           key: mode.id,
                           class: normalizeClass(["mode-pill", { active: kf.mode === mode.id }]),
                           onClick: withModifiers(($event) => changeKeyframeMode(kf, mode.id), ["stop"])
-                        }, toDisplayString(mode.label), 11, _hoisted_15);
+                        }, toDisplayString((mode == null ? void 0 : mode.label) || (mode == null ? void 0 : mode.id) || ""), 11, _hoisted_15);
                       }), 64))
                     ]),
                     getAvailableActorsForMode(kf.mode).length > 0 ? (openBlock(), createElementBlock("div", _hoisted_16, [
@@ -49705,9 +49869,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }, [
                         (openBlock(true), createElementBlock(Fragment, null, renderList(getAvailableActorsForMode(kf.mode), (act) => {
                           return openBlock(), createElementBlock("option", {
-                            key: act.id,
-                            value: act.id
-                          }, toDisplayString(act.label), 9, _hoisted_18);
+                            key: (act == null ? void 0 : act.id) || act,
+                            value: (act == null ? void 0 : act.id) || act
+                          }, toDisplayString((act == null ? void 0 : act.label) || (act == null ? void 0 : act.id) || act || ""), 9, _hoisted_18);
                         }), 128))
                       ], 40, _hoisted_17)
                     ])) : createCommentVNode("", true),
@@ -49779,7 +49943,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-4920d117"]]);
+const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7f352518"]]);
 const { app } = window.comfyAPI.app;
 (() => {
   const cssUrl = new URL(
@@ -49864,6 +50028,7 @@ function hideNodeWidget(node, name) {
   const w = (_a = node.widgets) == null ? void 0 : _a.find((w2) => w2.name === name);
   if (w) {
     w.type = "hidden";
+    if (!w.label) w.label = w.name || "";
     w.computeSize = () => [0, -4];
     w.draw = () => {
     };
@@ -50067,6 +50232,7 @@ function createSceneNodeWidget(node) {
       serialize: false
     }
   );
+  widget.label = widget.name || "Stage Preview";
   instance.widget = widget;
   const origOnConnectionsChange = node.onConnectionsChange;
   node.onConnectionsChange = function(slotType, slotIndex, isConnected, link, ioSlot) {
@@ -50725,7 +50891,19 @@ function createActingNodeWidget(node) {
       serialize: false
     }
   );
+  widget.label = widget.name || "Acting Preview";
   instance.widget = widget;
+  instance.container.addEventListener("mouseenter", () => {
+    var _a2, _b;
+    (_b = (_a2 = instance.exposed).onNodePointerEnter) == null ? void 0 : _b.call(_a2);
+  });
+  instance.container.addEventListener("mouseleave", (e) => {
+    var _a2, _b;
+    if (e.relatedTarget && instance.container.contains(e.relatedTarget)) {
+      return;
+    }
+    (_b = (_a2 = instance.exposed).onNodePointerLeave) == null ? void 0 : _b.call(_a2);
+  });
   bindActingWidgetCallbacks(node, instance.exposed);
   const origOnConfigure = node.onConfigure;
   node.onConfigure = function(info) {
@@ -50864,6 +51042,7 @@ function createDirectingNodeWidget(node) {
       serialize: false
     }
   );
+  widget.label = widget.name || "Directing Preview";
   instance.widget = widget;
   const origOnConnectionsChange = node.onConnectionsChange;
   node.onConnectionsChange = function(slotType, slotIndex, isConnected, link, ioSlot) {

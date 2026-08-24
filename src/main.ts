@@ -130,6 +130,7 @@ function hideNodeWidget(node: ComfyNode, name: string): void {
   const w = node.widgets?.find((w: any) => w.name === name)
   if (w) {
     w.type = 'hidden' as any
+    if (!w.label) w.label = w.name || ''
     ;(w as any).computeSize = () => [0, -4]
     ;(w as any).draw = () => {}
   }
@@ -351,6 +352,7 @@ function createSceneNodeWidget(node: ComfyNode): DOMWidgetInstance {
       serialize: false
     }
   )
+  widget.label = widget.name || 'Stage Preview'
 
   instance.widget = widget
 
@@ -1119,8 +1121,20 @@ function createActingNodeWidget(node: ComfyNode): DOMWidgetInstance {
       serialize: false
     }
   )
+  widget.label = widget.name || 'Acting Preview'
 
   instance.widget = widget
+
+  instance.container.addEventListener('mouseenter', () => {
+    (instance.exposed as any).onNodePointerEnter?.()
+  })
+  instance.container.addEventListener('mouseleave', (e: MouseEvent) => {
+    if (e.relatedTarget && instance.container.contains(e.relatedTarget as Node)) {
+      return
+    }
+    (instance.exposed as any).onNodePointerLeave?.()
+  })
+
   bindActingWidgetCallbacks(node, instance.exposed)
 
   // Hook onConfigure for workflow graph reloads
@@ -1285,6 +1299,7 @@ function createDirectingNodeWidget(node: ComfyNode): DOMWidgetInstance {
       serialize: false
     }
   )
+  widget.label = widget.name || 'Directing Preview'
 
   instance.widget = widget
 

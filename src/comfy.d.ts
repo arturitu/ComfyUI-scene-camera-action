@@ -1,5 +1,6 @@
 interface ComfyWidget {
   name: string
+  label?: string
   value: unknown
   type?: string
   callback?: (value: unknown) => void
@@ -8,6 +9,7 @@ interface ComfyWidget {
 
 interface ComfyInput {
   name: string
+  label?: string
   type: string
   link: number | null
 }
@@ -51,6 +53,7 @@ interface ComfyNode {
 
 interface DOMWidgetInstance {
   name: string
+  label?: string
   type: string
   element: HTMLElement
   options: Record<string, unknown>

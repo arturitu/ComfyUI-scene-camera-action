@@ -87,6 +87,7 @@ export interface ThreeStageOptions {
   onTransformModeChange?: (mode: 'translate' | 'rotate' | 'scale' | null) => void
   onSelectionChange?: (hasSelection: boolean) => void
   onSelectionInfoChange?: (info: { selectedCount: number; hasGroupSelected: boolean; canGroup: boolean; canUngroup: boolean; cycleInfo?: { index: number; total: number } }) => void
+  onActivityStatusChange?: (status: 'live' | 'standby') => void
 }
 
 export type ThreeSceneOptions = ThreeStageOptions
@@ -97,6 +98,7 @@ export interface ThreeActingOptions {
   initialState?: Partial<ActingState>
   onStateChange?: (state: ActingState) => void
   onRecordingFinished?: (trajectoryJson: string) => void
+  onActivityStatusChange?: (status: 'live' | 'standby') => void
   connectedThreeStage?: any
   connectedThreeScene?: any
 }
@@ -106,6 +108,7 @@ export interface StageAppExposed {
   cleanup: () => void
   getThreeScene: () => any
   getThreeStaging?: () => any
+  renderOnce?: () => void
 }
 
 export type SceneAppExposed = StageAppExposed
@@ -117,6 +120,9 @@ export interface ActingAppExposed {
   setConnectedThreeStage: (threeStage: any) => void
   setConnectedThreeScene?: (threeScene: any) => void
   getThreeActing?: () => any
+  renderOnce?: () => void
+  onNodePointerEnter?: () => void
+  onNodePointerLeave?: () => void
 }
 
 export interface DirectingKeyframe {
@@ -138,12 +144,14 @@ export interface ThreeDirectingOptions {
   container: HTMLElement
   initialState?: Partial<DirectingState>
   onStateChange?: (state: DirectingState) => void
+  onActivityStatusChange?: (status: 'live' | 'standby') => void
 }
 
 export interface DirectingAppExposed {
   setState: (state: Partial<DirectingState>) => void
   cleanup: () => void
   setConnectedThreeActing?: (threeActing: any) => void
+  renderOnce?: () => void
 }
 
 export interface CustomNodeInstance {

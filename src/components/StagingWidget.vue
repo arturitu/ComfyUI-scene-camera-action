@@ -337,45 +337,33 @@ const setMode = (mode: 'translate' | 'rotate' | 'scale') => {
   }
 }
 
-const addAsset = () => {
+const toggleGroup = () => {
   if (threeScene) {
-    threeScene.addNewAsset()
+    threeScene.toggleGroup()
   }
 }
 
-const deleteAsset = () => {
+const deleteSelected = () => {
   if (threeScene) {
-    threeScene.deleteSelectedAsset()
+    threeScene.deleteSelected()
   }
 }
 
-const duplicateAsset = () => {
+const duplicateSelected = () => {
   if (threeScene) {
-    threeScene.duplicateSelectedAsset()
+    threeScene.duplicateSelected()
   }
 }
 
-const selectAll = () => {
+const addNewCube = () => {
   if (threeScene) {
-    threeScene.selectAll()
+    threeScene.addNewCube()
   }
 }
 
-const selectSpawnPoint = () => {
+const setSpawnPoint = () => {
   if (threeScene) {
-    threeScene.selectSpawnPoint()
-  }
-}
-
-const groupSelected = () => {
-  if (threeScene) {
-    threeScene.groupSelected()
-  }
-}
-
-const ungroupSelected = () => {
-  if (threeScene) {
-    threeScene.ungroupSelected()
+    threeScene.setSpawnPointAtCursor()
   }
 }
 
@@ -392,6 +380,10 @@ const setState = (newState: Partial<SceneState>) => {
   isDirty.value = isStateDifferent(state, originalPresetState)
 }
 
+const renderOnce = () => {
+  threeScene?.renderOnce()
+}
+
 const cleanup = () => {
   if (threeScene) {
     threeScene.dispose()
@@ -403,7 +395,7 @@ const getThreeScene = () => {
   return threeScene
 }
 
-defineExpose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetList })
+defineExpose({ setState, renderOnce, cleanup, getThreeScene, saveCurrentPreset, fetchPresetList })
 </script>
 
 <style scoped>
@@ -690,5 +682,47 @@ defineExpose({ setState, cleanup, getThreeScene, saveCurrentPreset, fetchPresetL
   background: #252b3b;
   color: #aaaaaa;
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.activity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: all 0.2s ease;
+  margin-right: 4px;
+}
+
+.activity-pill.live {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.activity-pill.live .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.activity-pill.standby {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+  border: 1px solid rgba(107, 114, 128, 0.25);
+}
+
+.activity-pill.standby .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b7280;
 }
 </style>

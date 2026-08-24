@@ -30,7 +30,6 @@ export class ThreeStaging {
   private animationId: number | null = null
   private controls!: MapControls
   private transformControls!: TransformControls
-  private isHovered = false
 
   private globalWheelHandler?: (e: WheelEvent) => void
   private pointerDownHandler?: (e: PointerEvent) => void
@@ -96,8 +95,6 @@ export class ThreeStaging {
     canvas.style.height = '100%'
     canvas.style.cursor = 'grab'
 
-    canvas.addEventListener('mouseenter', () => { this.isHovered = true })
-    canvas.addEventListener('mouseleave', () => { this.isHovered = false })
     canvas.addEventListener('webglcontextlost', (event: Event) => {
       event.preventDefault()
       if (this.animationId !== null) {
@@ -117,7 +114,6 @@ export class ThreeStaging {
     // TransformControls
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
     this.transformControls.size = 2.0
-    this.transformControls.addEventListener('change', () => this.renderer.render(this.scene, this.camera))
     this.transformControls.addEventListener('dragging-changed', (event: any) => {
       this.controls.enabled = !event.value
 
@@ -376,16 +372,10 @@ export class ThreeStaging {
       canvas.style.cursor = 'grab'
     })
 
-    this.container.addEventListener('mouseenter', () => {
-      this.isHovered = true
-    })
-
-    this.container.addEventListener('mouseleave', () => {
-      this.isHovered = false
-    })
-
     this.globalWheelHandler = (e: WheelEvent) => {
-      if (!this.isHovered) return
+      const activeEl = document.activeElement
+      const isTarget = e.target === canvas || (this.container && this.container.contains(e.target as Node))
+      if (!isTarget) return
       e.preventDefault()
       e.stopPropagation()
       e.stopImmediatePropagation()
@@ -432,10 +422,10 @@ export class ThreeStaging {
             if (!curr.visible) return false
             curr = curr.parent
           }
-          const name = hit.object.name
-          return (name && name !== '' && name !== 'helper') || activeAxis !== null
+          return true
         })
-        if (visibleGizmoIntersects.length > 0 && (activeAxis !== null || visibleGizmoIntersects.some(h => ['X', 'Y', 'Z', 'XY', 'YZ', 'XZ', 'E', 'R', 'S', 'XYZE'].includes(h.object.name)))) {
+
+        if (visibleGizmoIntersects.length > 0 && activeAxis) {
           return
         }
       }
@@ -491,23 +481,22 @@ export class ThreeStaging {
               if (this.onTransformModeChange) {
                 this.onTransformModeChange(modeToUse)
               }
+            } else {
+              this.updateSelectionUI()
             }
-
-            const cycleInfo = candidates.length > 1 ? { index: targetIndex + 1, total: candidates.length } : undefined
-            this.updateSelectionUI(cycleInfo)
           }
-        } else {
-          this.selectionManager.setSelectedObjects([])
-          this.updateSelectionUI()
+          return
         }
-      } else {
+      }
+
+      // Clicked on empty space / floor
+      if (this.selectionManager.getSelectedObjects().length > 0) {
         this.selectionManager.setSelectedObjects([])
         this.updateSelectionUI()
       }
     }
 
     this.windowPointerDownHandler = (event: PointerEvent) => {
-      if (event.button !== 0) return
       if (this.container && !this.container.contains(event.target as Node)) {
         if (this.selectionManager.getSelectedObjects().length > 0) {
           this.selectionManager.setSelectedObjects([])
@@ -542,8 +531,11 @@ export class ThreeStaging {
     this.renderer.setSize(w, h, false)
   }
 
-  private animate(): void {
-    this.animationId = requestAnimationFrame(() => this.animate())
+  public renderOnce(): void {
+    this.renderFrame()
+  }
+
+  private renderFrame(): void {
     if (this.controls) {
       this.controls.target.x = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.x))
       this.controls.target.z = Math.max(-config.MAX_PAN, Math.min(config.MAX_PAN, this.controls.target.z))
@@ -580,6 +572,11 @@ export class ThreeStaging {
     this.renderer.render(this.scene, this.camera)
   }
 
+  private animate(): void {
+    this.renderFrame()
+    this.animationId = requestAnimationFrame(() => this.animate())
+  }
+
   public setTransformMode(mode: 'translate' | 'rotate' | 'scale' | null): void {
     this.transformMode = mode
     if (mode) {
@@ -598,6 +595,7 @@ export class ThreeStaging {
         this.transformControls.detach()
       }
     }
+    this.renderOnce()
   }
 
   public setState(newState: Partial<SceneState>): void {
@@ -611,6 +609,7 @@ export class ThreeStaging {
     if (newState.num_assets !== undefined) {
       this.state.num_assets = newState.num_assets
     }
+    this.renderOnce()
   }
 
   public dispose(): void {

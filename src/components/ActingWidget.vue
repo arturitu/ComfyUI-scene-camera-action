@@ -1,5 +1,5 @@
 <template>
-  <div class="three-container">
+  <div ref="widgetContainerRef" class="three-container" @mouseenter="onNodePointerEnter" @mouseleave="onNodePointerLeave">
     <div v-if="!state.scene_data" class="disabled-overlay">
       <div class="disabled-title">Acting Canvas Disabled</div>
       <div class="disabled-subtitle">Connect a Stage or Acting 3D Node to activate.</div>
@@ -93,6 +93,21 @@
 
       <!-- Controls Overlay (Top Right / Bottom Center) -->
       <div class="acting-toolbar">
+        <div class="activity-pill" :class="activityStatus" :title="activityStatus === 'live' ? 'Rendering active (60 FPS)' : 'Standby (GPU resources saved)'">
+          <span class="activity-dot"></span>
+          <span class="activity-text">{{ activityStatus === 'live' ? 'Live' : 'Standby' }}</span>
+        </div>
+
+        <!-- Time Counter attached to Top Toolbar -->
+        <div
+          v-if="showTimeCounter"
+          class="time-counter-pill"
+          :class="{ practice: !state.motion_data && !isCounting && !isRecording, counting: isCounting, recording: isRecording, playing: isPlaying }"
+        >
+          <Repeat v-if="!state.motion_data && !isCounting && !isRecording" :size="11" class="loop-icon" title="Practice Loop" />
+          <span>{{ formattedTime }}</span>
+        </div>
+
         <button
           v-if="!isRecording && !isCounting && !state.motion_data"
           class="acting-btn rec-trigger"
@@ -113,23 +128,6 @@
         </button>
 
         <template v-if="state.motion_data && !isRecording && !isCounting">
-          <button
-            class="acting-btn play-btn"
-            :class="{ 'playing': isPlaying }"
-            :title="isPlaying ? 'Pause Playback' : 'Play Playback'"
-            @click="togglePlay"
-          >
-            <component :is="isPlaying ? Pause : Play" :size="12" class="btn-icon" />
-            <span>{{ isPlaying ? 'Pause' : 'Play' }}</span>
-          </button>
-          <button
-            class="acting-btn stop-btn"
-            title="Stop and Reset Position"
-            @click="stopPlayback"
-          >
-            <Square :size="12" class="btn-icon fill-icon" />
-            <span>Stop</span>
-          </button>
           <button
             class="acting-btn reset-btn"
             title="Clear Recording and Reset to Keyboard"
@@ -160,20 +158,14 @@
           <Check :size="11" class="status-icon" /> RECORDED
         </div>
         
-        <button class="info-help-btn" title="View Keyboard Controls" @click="showHelpModal = true">
+        <button class="info-help-btn" :title="`View ${actorControlsLabel}`" @click="showHelpModal = true">
           <CircleHelp :size="13" class="info-icon" />
-          <span class="info-label">Controls</span>
+          <span class="info-label">{{ actorControlsLabel }}</span>
         </button>
       </template>
       <template v-else>
         <div class="hint">Waiting for stage link...</div>
       </template>
-    </div>
-
-    <!-- Time Counter Overlay (Bottom Right) -->
-    <div v-if="state.scene_data" class="time-counter-overlay" :class="{ practice: !state.motion_data, recording: isRecording, playing: isPlaying }">
-      <Repeat v-if="!state.motion_data" :size="12" class="loop-icon" title="Practice Loop" />
-      {{ formattedTime }}
     </div>
 
     <!-- Help / Keyboard Controls Modal (Scoped to Acting Widget container) -->
@@ -310,6 +302,12 @@ const handleGlobalClick = () => {
 
 const actorColorVal = computed(() => state.actor_color || (state.actor_type === 'car' ? '#0284C7' : '#F1DFBF'))
 
+const actorControlsLabel = computed(() => {
+  const type = state.actor_type || 'human'
+  const capitalized = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+  return `${capitalized} controls`
+})
+
 const onColorChange = (e: Event) => {
   const hex = (e.target as HTMLInputElement).value
   state.actor_color = hex
@@ -328,6 +326,7 @@ const recordingElapsed = ref(0)
 const isPlaying = ref(false)
 const showHelpModal = ref(false)
 const activeSpawnMode = ref<'translate' | 'rotate' | null>(null)
+const activityStatus = ref<'live' | 'standby'>('standby')
 
 const toggleSpawnMode = (mode: 'translate' | 'rotate') => {
   if (activeSpawnMode.value === mode) {
@@ -368,6 +367,9 @@ const initScene = (container: HTMLElement) => {
       }
     },
     onRecordingFinished: onRecordingFinished,
+    onActivityStatusChange: (status) => {
+      activityStatus.value = status
+    },
     connectedThreeScene: currentThreeScene
   })
 
@@ -396,6 +398,9 @@ const updateRecordProgress = () => {
 const startCountdown = () => {
   if (isCounting.value || isRecording.value) return
   activeSpawnMode.value = null
+  currentTime.value = 0
+  recordingElapsed.value = 0
+  practiceElapsed.value = 0
   if (threeActing) {
     threeActing.setSpawnTransformMode(null)
     threeActing.setCountingState(true)
@@ -418,6 +423,9 @@ const startCountdown = () => {
       clearInterval(interval)
       countdownVal.value = null
       isCounting.value = false
+      if (threeActing) {
+        threeActing.setCountingState(false)
+      }
 
       // Start recording
       isRecording.value = true
@@ -558,12 +566,20 @@ watch(() => state.actor_color, (newColor) => {
 
 const currentTime = ref(0)
 const practiceElapsed = ref(0)
+const previousActorsCount = ref(0)
 const totalDuration = ref(props.initialState?.duration ?? 7.0)
 let timeFrameId: number | null = null
 
 const updateTimeCounter = () => {
   if (threeActing) {
-    if (isRecording.value) {
+    if (typeof (threeActing as any).getPreviousActorsCount === 'function') {
+      previousActorsCount.value = (threeActing as any).getPreviousActorsCount()
+    }
+    if (isCounting.value) {
+      currentTime.value = 0
+      recordingElapsed.value = 0
+      practiceElapsed.value = 0
+    } else if (isRecording.value) {
       recordingElapsed.value = (threeActing as any).recordingTime
       currentTime.value = (threeActing as any).recordingTime
     } else if (isPlaying.value || (threeActing as any).isPlaybackMode) {
@@ -576,6 +592,17 @@ const updateTimeCounter = () => {
   }
   timeFrameId = requestAnimationFrame(updateTimeCounter)
 }
+
+const hasOtherActors = computed(() => {
+  if (previousActorsCount.value > 0) return true
+  return Array.isArray(state.actors) && state.actors.length > 0
+})
+
+const showTimeCounter = computed(() => {
+  if (!state.scene_data) return false
+  if (isRecording.value || isCounting.value || !!state.motion_data) return true
+  return hasOtherActors.value
+})
 
 const formattedTime = computed(() => {
   const cur = Math.max(0, currentTime.value).toFixed(1)
@@ -600,8 +627,26 @@ onUnmounted(() => {
 })
 
 const getThreeActing = () => threeActing
+const widgetContainerRef = ref<HTMLElement | null>(null)
 
-defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing })
+const onNodePointerEnter = () => {
+  threeActing?.onNodePointerEnter()
+}
+
+const onNodePointerLeave = (e?: MouseEvent) => {
+  if (e && e.relatedTarget && widgetContainerRef.value) {
+    if (widgetContainerRef.value.contains(e.relatedTarget as Node)) {
+      return
+    }
+  }
+  threeActing?.onNodePointerLeave()
+}
+
+const renderOnce = () => {
+  threeActing?.renderOnce()
+}
+
+defineExpose({ setState, renderOnce, cleanup, setConnectedThreeStage, setConnectedThreeScene, getThreeActing, onNodePointerEnter, onNodePointerLeave })
 </script>
 
 <style scoped>
@@ -912,7 +957,8 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   top: 12px;
   right: 12px;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   z-index: 20;
 }
 
@@ -1111,40 +1157,47 @@ defineExpose({ setState, cleanup, setConnectedThreeStage, setConnectedThreeScene
   to { transform: scale(1.05); opacity: 1; }
 }
 
-.time-counter-overlay {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(20, 16, 25, 0.85);
-  border: 1px solid rgba(255, 0, 127, 0.4);
-  border-radius: 6px;
-  padding: 5px 9px;
-  font-size: 11px;
+.time-counter-pill {
+  background: rgba(12, 12, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 10px;
   font-weight: bold;
   color: #ffffff;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   font-family: monospace;
-  pointer-events: none;
-  z-index: 10;
   letter-spacing: 0.5px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  user-select: none;
+  transition: all 0.2s ease;
+  line-height: 1;
 }
 
-.time-counter-overlay.practice {
+.time-counter-pill.practice {
   border-color: rgba(0, 255, 170, 0.4);
-  color: #e6fff7;
+  color: #00ffaa;
+  background: rgba(0, 255, 170, 0.1);
 }
 
-.time-counter-overlay.recording {
+.time-counter-pill.counting {
+  border-color: rgba(255, 0, 127, 0.6);
+  color: #ff007f;
+  background: rgba(255, 0, 127, 0.12);
+}
+
+.time-counter-pill.recording {
   border-color: rgba(255, 51, 102, 0.6);
-  color: #ff99b3;
+  color: #ff3366;
+  background: rgba(255, 51, 102, 0.15);
 }
 
-.time-counter-overlay.playing {
+.time-counter-pill.playing {
   border-color: rgba(0, 255, 255, 0.4);
-  color: #e0ffff;
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.1);
 }
 
 .loop-icon {
@@ -1323,5 +1376,47 @@ kbd {
 .modal-ok-btn:hover {
   background: #80ffff;
   transform: translateY(-1px);
+}
+
+.activity-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  user-select: none;
+  transition: all 0.2s ease;
+  margin-right: 4px;
+}
+
+.activity-pill.live {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.activity-pill.live .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.activity-pill.standby {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+  border: 1px solid rgba(107, 114, 128, 0.25);
+}
+
+.activity-pill.standby .activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b7280;
 }
 </style>

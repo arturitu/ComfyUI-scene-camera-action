@@ -32,6 +32,11 @@ export class ThreeActing {
   private actorController!: BaseActor
   private animationId: number | null = null
   private isHovered = false
+  private isInteracting = false
+  private remainingFrames = 0
+  private activityStatus: 'live' | 'standby' = 'standby'
+  private onActivityStatusChange?: (status: 'live' | 'standby') => void
+
   private connectedThreeStage: any = null
   private connectedThreeScene: any = null
   private keysPressed: Record<string, boolean> = {}
@@ -83,6 +88,7 @@ export class ThreeActing {
     this.container = options.container
     this.onStateChange = options.onStateChange
     this.onRecordingFinished = options.onRecordingFinished
+    this.onActivityStatusChange = options.onActivityStatusChange
     const initialStageData = options.initialState?.stage_data ?? options.initialState?.scene_data ?? { type: 'cube_stage', num_assets: 0, nodes: [] }
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null
     const defaultSpeed = options.initialState?.actor_speed ?? (options.initialState?.actor_type === 'car' ? 20.0 : 10.0)
@@ -114,7 +120,8 @@ export class ThreeActing {
       this.loadTrajectory(this.state.motion_data)
     }
 
-    this.animate()
+    this.renderOnce()
+    this.requestFrames(10)
   }
 
   public setConnectedThreeStage(threeStage: any): void {
@@ -129,12 +136,18 @@ export class ThreeActing {
   public startRecording(): void {
     this.trajectory = []
     this.isRecording = true
+    this.isCountingCountdown = false
     this.recordingTime = 0
     this.practiceTime = 0
     this.isPlaying = false
     this.isPlaybackMode = false
+    this.isInteracting = false
     this.activeRecordingTargetDuration = this.state.duration ?? 7.0
     this.activeRecordingSpeed = this.state.actor_speed ?? 1.0
+
+    if (this.actorController) {
+      this.trajectory.push(this.actorController.getMotionState(0))
+    }
 
     this.previousActorControllers.forEach(p => {
       p.playbackController.setCurrentTime(0)
@@ -147,6 +160,7 @@ export class ThreeActing {
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = false
     }
+    this.startAnimationLoop()
   }
 
   public getAccumulatedActors(): any[] {
@@ -166,7 +180,10 @@ export class ThreeActing {
 
   public stopRecording(): string {
     this.isRecording = false
+    this.isCountingCountdown = false
     this.isPlaying = false
+    this.keysPressed = {}
+    this.isInteracting = false
     const allActors = this.getAccumulatedActors()
 
     if (this.spawnPointHelper) {
@@ -195,13 +212,17 @@ export class ThreeActing {
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, actors: allActors })
     }
+    this.requestFrames(35)
     return json
   }
 
   public resetRecording(): void {
     this.isRecording = false
+    this.isCountingCountdown = false
     this.isPlaying = false
     this.isPlaybackMode = false
+    this.keysPressed = {}
+    this.isInteracting = false
     this.recordingTime = 0
     this.practiceTime = 0
     this.trajectory = []
@@ -215,6 +236,7 @@ export class ThreeActing {
     if (this.onStateChange) {
       this.onStateChange({ ...this.state, motion_data: undefined, actors: accumulated })
     }
+    this.requestFrames(35)
   }
 
   private lastBuiltPlaybackMode: boolean | null = null
@@ -242,9 +264,6 @@ export class ThreeActing {
     this.previousActorsData = newRecords
 
     this.previousActorsData.forEach((rec) => {
-      // In playback mode (reviewing own recording), never render downstream practice peers
-      if (this.isPlaybackMode && (rec.isDownstreamPeer || rec.id?.startsWith('actor_ds_'))) return
-
       let traj = rec.trajectory || rec.motion_data
       if (typeof traj === 'string' && traj.trim()) {
         try {
@@ -270,6 +289,10 @@ export class ThreeActing {
     })
   }
 
+  public getPreviousActorsCount(): number {
+    return this.previousActorControllers.length
+  }
+
   public getTrajectory(): Array<{ t: number; px: number; py: number; pz: number; rx: number; ry: number; rz: number }> {
     return this.trajectory
   }
@@ -277,6 +300,10 @@ export class ThreeActing {
   private isPlaybackMode: boolean = false
 
   public startPlayback(motionData?: string): void {
+    this.isRecording = false
+    this.isCountingCountdown = false
+    this.keysPressed = {}
+    this.isInteracting = false
     if (motionData) {
       this.loadTrajectory(motionData)
     }
@@ -286,21 +313,28 @@ export class ThreeActing {
       this.isPlaying = true
       this.buildPreviousActors(this.previousActorsData)
       this.playbackController.start()
+      this.startAnimationLoop()
     }
   }
 
   public play(): void {
+    this.isRecording = false
+    this.isCountingCountdown = false
+    this.keysPressed = {}
+    this.isInteracting = false
     if (this.playbackController.getTrajectory().length > 0) {
       this.isRecording = false
       this.isPlaybackMode = true
       this.isPlaying = true
       this.playbackController.play()
+      this.startAnimationLoop()
     }
   }
 
   public pause(): void {
     this.isPlaying = false
     this.playbackController.pause()
+    this.requestFrames(35)
   }
 
   public stop(): void {
@@ -324,6 +358,7 @@ export class ThreeActing {
         this.actorController.resetAnimation('Idle_A')
       }
     }
+    this.requestFrames(35)
   }
 
   public stopPlayback(): void {
@@ -414,6 +449,7 @@ export class ThreeActing {
     canvas.style.left = '0'
     canvas.style.width = '100%'
     canvas.style.height = '100%'
+    canvas.style.cursor = 'default'
     canvas.addEventListener('webglcontextlost', (event: Event) => {
       event.preventDefault()
       if (this.animationId !== null) {
@@ -439,10 +475,22 @@ export class ThreeActing {
 
     this.transformControls = new TransformControls(this.camera, this.renderer.domElement)
     this.transformControls.size = 1.8
+    this.transformControls.enabled = false
     this.transformControls.detach()
     this.scene.add(this.transformControls.getHelper())
 
+    this.transformControls.addEventListener('change', () => {
+      this.requestFrames(2)
+    })
+
     this.transformControls.addEventListener('dragging-changed', (event: any) => {
+      this.isInteracting = !!event.value
+      if (event.value) {
+        this.startAnimationLoop()
+      } else {
+        this.requestFrames(35)
+      }
+
       if (!event.value) {
         if (this.spawnPointHelper && this.actorController) {
           const sp = this.spawnPointHelper.getSpawnPoint()
@@ -463,6 +511,7 @@ export class ThreeActing {
         this.actorController.group.position.set(sp.px, sp.py, sp.pz)
         this.actorController.group.rotation.y = sp.ry
       }
+      this.requestFrames(10)
     })
 
     // Initialize Debug Panel with lil-gui
@@ -528,22 +577,26 @@ export class ThreeActing {
   public setSpawnTransformMode(mode: 'translate' | 'rotate' | null): void {
     if (!this.transformControls || !this.spawnPointHelper) return
     if (this.transformControls.object === this.spawnPointHelper.group && this.transformControls.mode === mode) {
+      this.transformControls.enabled = false
       this.transformControls.detach()
       return
     }
     if (mode === 'translate') {
+      this.transformControls.enabled = true
       this.transformControls.setMode('translate')
       this.transformControls.showX = true
       this.transformControls.showY = true
       this.transformControls.showZ = true
       this.transformControls.attach(this.spawnPointHelper.group)
     } else if (mode === 'rotate') {
+      this.transformControls.enabled = true
       this.transformControls.setMode('rotate')
       this.transformControls.showX = false
       this.transformControls.showY = true
       this.transformControls.showZ = false
       this.transformControls.attach(this.spawnPointHelper.group)
     } else {
+      this.transformControls.enabled = false
       this.transformControls.detach()
     }
   }
@@ -576,15 +629,31 @@ export class ThreeActing {
     }
   }
 
+  public onNodePointerEnter(): void {
+    this.isHovered = true
+    this.startAnimationLoop()
+  }
+
+  public onNodePointerLeave(): void {
+    this.isHovered = false
+    this.keysPressed = {}
+    this.isInteracting = false
+    this.requestFrames(35)
+  }
+
   private bindEvents(): void {
     const canvas = this.renderer.domElement
 
-    canvas.addEventListener('mouseenter', () => {
-      this.isHovered = true
+    canvas.addEventListener('pointerdown', () => {
+      this.isInteracting = true
+      this.startAnimationLoop()
     })
-    canvas.addEventListener('mouseleave', () => {
-      this.isHovered = false
-      this.keysPressed = {}
+    window.addEventListener('pointerup', () => {
+      this.isInteracting = false
+    })
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
+      event.preventDefault()
+      this.stopAnimationLoop()
     })
 
     this.keydownHandler = (event: KeyboardEvent) => {
@@ -609,6 +678,7 @@ export class ThreeActing {
       event.stopImmediatePropagation()
 
       this.keysPressed[event.code] = true
+      this.startAnimationLoop()
     }
 
     this.keyupHandler = (event: KeyboardEvent) => {
@@ -617,10 +687,12 @@ export class ThreeActing {
         event.stopImmediatePropagation()
       }
       this.keysPressed[event.code] = false
+      this.requestFrames(35)
     }
 
     this.blurHandler = () => {
       this.keysPressed = {}
+      this.requestFrames(35)
     }
 
     window.addEventListener('keydown', this.keydownHandler, { capture: true })
@@ -640,6 +712,7 @@ export class ThreeActing {
       if (this.onStateChange) {
         this.onStateChange({ ...this.state, camera_distance: newDist, actors: this.getAccumulatedActors() })
       }
+      this.requestFrames(25)
     }
     canvas.addEventListener('wheel', this.wheelHandler, { passive: false })
 
@@ -673,6 +746,18 @@ export class ThreeActing {
         }
       } else if (this.actorController) {
         this.playbackController.evaluateAt(curTime, this.actorController, 0)
+      }
+      return
+    }
+
+    // --- Active Countdown Mode (3, 2, 1...) ---
+    if (this.isCountingCountdown) {
+      this.previousActorControllers.forEach(p => {
+        p.playbackController.evaluateAt(0, p.controller, 0, true)
+      })
+      if (this.actorController) {
+        const speedMult = this.state.actor_speed ?? 10.0
+        this.actorController.updatePhysics(dt, this.keysPressed, speedMult, this.colliderBVH, this.camera)
       }
       return
     }
@@ -714,6 +799,7 @@ export class ThreeActing {
   }
 
   public getPracticeTime(): number {
+    if (this.isCountingCountdown) return 0
     const loopDur = Math.max(0.1, this.state.duration ?? 7.0)
     return this.practiceTime % loopDur
   }
@@ -766,6 +852,7 @@ export class ThreeActing {
     this.camera.aspect = w / h
     this.camera.updateProjectionMatrix()
     this.renderer.setSize(w, h, false)
+    this.renderOnce()
   }
 
   private isCountingCountdown: boolean = false
@@ -773,18 +860,61 @@ export class ThreeActing {
   public setCountingState(counting: boolean): void {
     this.isCountingCountdown = counting
     if (counting) {
+      this.practiceTime = 0
+      this.recordingTime = 0
       if (this.spawnPointHelper) {
         this.spawnPointHelper.group.visible = false
       }
       if (this.transformControls) {
         this.transformControls.detach()
       }
+      this.resetActorPosition()
+      this.previousActorControllers.forEach(p => {
+        p.playbackController.setCurrentTime(0)
+        p.playbackController.evaluateAt(0, p.controller, 0, true)
+      })
+      this.startAnimationLoop()
+    } else {
+      this.requestFrames(35)
     }
   }
 
-  private animate(): void {
-    this.animationId = requestAnimationFrame(() => this.animate())
+  private setActivityStatus(status: 'live' | 'standby'): void {
+    if (this.activityStatus !== status) {
+      this.activityStatus = status
+      this.onActivityStatusChange?.(status)
+    }
+  }
 
+  public renderOnce(): void {
+    this.renderFrame(0.016)
+  }
+
+  public requestFrames(count: number = 30): void {
+    this.remainingFrames = Math.max(this.remainingFrames, count)
+    if (this.animationId === null) {
+      this.lastTime = performance.now()
+      this.animationId = requestAnimationFrame(() => this.animate())
+    }
+  }
+
+  public startAnimationLoop(): void {
+    this.setActivityStatus('live')
+    if (this.animationId === null) {
+      this.lastTime = performance.now()
+      this.animationId = requestAnimationFrame(() => this.animate())
+    }
+  }
+
+  public stopAnimationLoop(): void {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId)
+      this.animationId = null
+    }
+    this.setActivityStatus('standby')
+  }
+
+  private renderFrame(dt: number): void {
     if (this.spawnPointHelper) {
       const shouldBeVisible = !this.isPlaying && !this.isRecording && !this.isCountingCountdown
       if (this.spawnPointHelper.group.visible !== shouldBeVisible) {
@@ -794,10 +924,6 @@ export class ThreeActing {
         }
       }
     }
-
-    const time = performance.now()
-    const dt = Math.min((time - this.lastTime) / 1000, 0.1)
-    this.lastTime = time
 
     this.updateActorMovement(dt)
 
@@ -857,10 +983,41 @@ export class ThreeActing {
     this.renderer.render(this.scene, this.camera)
   }
 
+  private animate(): void {
+    const time = performance.now()
+    const dt = Math.min((time - this.lastTime) / 1000, 0.1)
+    this.lastTime = time
+
+    this.renderFrame(dt)
+
+    if (this.remainingFrames > 0) {
+      this.remainingFrames--
+    }
+
+    const hasKeys = this.isHovered && Object.values(this.keysPressed).some(Boolean)
+    const isTransforming = !!(this.transformControls && (this.transformControls as any).dragging)
+    const isActivelyEngaged = this.isRecording || this.isCountingCountdown || this.isHovered || this.isInteracting || isTransforming || hasKeys
+
+    if (isActivelyEngaged) {
+      this.setActivityStatus('live')
+    } else {
+      this.setActivityStatus('standby')
+    }
+
+    const shouldContinue = isActivelyEngaged || this.remainingFrames > 0
+
+    if (shouldContinue) {
+      this.animationId = requestAnimationFrame(() => this.animate())
+    } else {
+      this.stopAnimationLoop()
+    }
+  }
+
   public setStageData(stageData: StageState): void {
     this.state.stage_data = { ...stageData }
     this.state.scene_data = { ...stageData }
     this.buildStageEnvironment()
+    this.renderOnce()
   }
   public setSceneData(sceneData: StageState): void {
     this.setStageData(sceneData)
@@ -906,6 +1063,7 @@ export class ThreeActing {
       this.state.scene_data = { ...newStageData }
       this.buildStageEnvironment()
     }
+    this.renderOnce()
   }
 
   public buildStageEnvironment(): void {
