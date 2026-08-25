@@ -45,6 +45,15 @@ export class CarActor extends BaseActor {
       this.bodyMat.color.set(hexColor)
     }
   }
+
+  protected override getSlopeProbes(): { frontZ: number; rearZ: number; halfWidth: number } {
+    return {
+      frontZ: 1.35 * this.scale,
+      rearZ: 1.35 * this.scale,
+      halfWidth: 0.85 * this.scale
+    }
+  }
+
   private currentSpeed: number = 0
   private currentSteerAngle: number = 0
 
@@ -54,23 +63,23 @@ export class CarActor extends BaseActor {
   private rearRightWheelGroup: THREE.Group | null = null
   private wheelRollingGroup: THREE.Group[] = []
 
-  private bodySuspensionGroup: THREE.Group | null = null
   private pitchAngle: number = 0
   private rollAngle: number = 0
   private prevSpeed: number = 0
   private prevPlaybackSpeed: number = 0
+  private bodySuspensionGroup: THREE.Group | null = null
 
   constructor() {
     super()
     this.buildMesh()
   }
 
-  public getType(): 'car' {
+  public getType(): 'human' | 'car' | 'quadruped' {
     return 'car'
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return new THREE.Vector3(-0.45, 1.15, 0.15)
+    return new THREE.Vector3(-0.45 * this.scale, 1.15 * this.scale, 0.15 * this.scale)
   }
 
   public override onPlaybackMotion(distMoved: number, angularVel: number, _animName?: string, frameDt: number = 0.016): void {
@@ -85,7 +94,7 @@ export class CarActor extends BaseActor {
     if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle
 
     if (distMoved > 0.001) {
-      const rollDelta = distMoved / 0.38
+      const rollDelta = distMoved / (0.38 * this.scale)
       this.wheelRollingGroup.forEach((w) => {
         w.rotation.x += rollDelta
       })
@@ -257,12 +266,12 @@ export class CarActor extends BaseActor {
       this.rearRightWheelGroup
     )
 
-    // Elevate carGroup so tires rest 100% flush on top of floor Y = 0
-    carGroup.position.y = 0.22
+    // CarGroup rests with tire bottoms flush on floor Y = 0
+    carGroup.position.y = 0.0
     this.group.add(carGroup)
 
     // 5. Car Collider Wireframe Visualizer
-    const colliderGeo = new THREE.BoxGeometry(2.00, 1.20, 4.30)
+    const colliderGeo = new THREE.BoxGeometry(1.90, 1.30, 4.20)
     const colliderMat = new THREE.MeshBasicMaterial({
       color: 0x00ffff,
       wireframe: true,
@@ -272,7 +281,7 @@ export class CarActor extends BaseActor {
       opacity: 0.85,
     })
     this.colliderWireframe = new THREE.Mesh(colliderGeo, colliderMat)
-    this.colliderWireframe.position.set(0, 0.85, 0)
+    this.colliderWireframe.position.set(0, 0.65, 0)
     this.colliderWireframe.renderOrder = 1000
     this.colliderWireframe.visible = this.showCollider
     this.group.add(this.colliderWireframe)
@@ -295,29 +304,43 @@ export class CarActor extends BaseActor {
       this.jump()
     }
 
-    const maxForwardSpeed = speedMultiplier * 1.5
-    const maxReverseSpeed = speedMultiplier * 0.6
+    const maxForwardSpeed = speedMultiplier * 1.0
+    const maxReverseSpeed = speedMultiplier * 0.45
 
-    const accel = 18.0 * dt
-    const brake = 30.0 * dt
-    const drag = 8.0 * dt
+    const accel = 12.0 * dt
+    const brake = 25.0 * dt
+    const drag = 6.0 * dt
+
+    // Slope gravity resistance
+    let slopeForce = 0
+    if (this.isOnGround && Math.abs(this.rampPitchAngle) > 0.02) {
+      // When rampPitchAngle < 0 (pitched up going uphill), sin is negative, pulling speed back
+      slopeForce = 15.0 * Math.sin(this.rampPitchAngle) * dt
+    }
 
     // 1. Movement input logic
     if (isW) {
       if (this.currentSpeed < maxForwardSpeed) {
-        this.currentSpeed = Math.min(maxForwardSpeed, this.currentSpeed + accel)
+        this.currentSpeed = Math.min(maxForwardSpeed, this.currentSpeed + accel + slopeForce)
+      } else {
+        this.currentSpeed += slopeForce
       }
     } else if (isS) {
       if (this.currentSpeed > 0) {
-        this.currentSpeed = Math.max(0, this.currentSpeed - brake)
+        this.currentSpeed = Math.max(0, this.currentSpeed - brake + slopeForce)
       } else if (this.currentSpeed > -maxReverseSpeed) {
-        this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel)
+        this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel + slopeForce)
+      } else {
+        this.currentSpeed += slopeForce
       }
     } else {
       if (this.currentSpeed > 0) {
-        this.currentSpeed = Math.max(0, this.currentSpeed - drag)
+        this.currentSpeed = Math.max(0, this.currentSpeed - drag + slopeForce)
       } else if (this.currentSpeed < 0) {
-        this.currentSpeed = Math.min(0, this.currentSpeed + drag)
+        this.currentSpeed = Math.min(0, this.currentSpeed + drag + slopeForce)
+      } else if (Math.abs(slopeForce) > 0.05) {
+        // Roll down slopes when in neutral
+        this.currentSpeed += slopeForce
       }
     }
 
@@ -329,7 +352,7 @@ export class CarActor extends BaseActor {
     if (steerInput !== 0 && Math.abs(this.currentSpeed) > 0.05) {
       const turnDir = this.currentSpeed < 0 ? -1 : 1
       const turnFactor = Math.min(1.0, Math.abs(this.currentSpeed) / 3.0)
-      this.rotationY += steerInput * turnDir * 2.2 * turnFactor * dt
+      this.rotationY += steerInput * turnDir * (2.2 / Math.max(0.2, this.scale)) * turnFactor * dt
     }
 
     let targetSteer = 0
@@ -341,7 +364,7 @@ export class CarActor extends BaseActor {
     if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle
 
     if (Math.abs(this.currentSpeed) > 0.01) {
-      const rollDelta = (this.currentSpeed * dt) / 0.2
+      const rollDelta = (this.currentSpeed * dt) / (0.2 * this.scale)
       this.wheelRollingGroup.forEach((w) => {
         w.rotation.x += rollDelta
       })
@@ -354,17 +377,17 @@ export class CarActor extends BaseActor {
     const speedRatio = Math.min(1.0, Math.abs(this.currentSpeed) / Math.max(0.1, maxForwardSpeed))
     const normalizedTurn = Math.max(-1.0, Math.min(1.0, (this.currentSteerAngle / 0.45) * speedRatio))
 
-    let targetPitch = 0
+    let targetSuspensionPitch = 0
     if (this.currentSpeed > 0.05) {
-      targetPitch = -0.052 * speedRatio
+      targetSuspensionPitch = -0.052 * speedRatio
     } else if (this.currentSpeed < -0.05) {
-      targetPitch = 0.035 * speedRatio
+      targetSuspensionPitch = 0.035 * speedRatio
     }
 
-    targetPitch += Math.max(-0.04, Math.min(0.04, speedDelta * -0.003))
+    targetSuspensionPitch += Math.max(-0.04, Math.min(0.04, speedDelta * -0.003))
     const targetRoll = -0.09 * normalizedTurn
 
-    this.pitchAngle += (targetPitch - this.pitchAngle) * Math.min(1.0, 10.0 * dt)
+    this.pitchAngle += (targetSuspensionPitch - this.pitchAngle) * Math.min(1.0, 10.0 * dt)
     this.rollAngle += (targetRoll - this.rollAngle) * Math.min(1.0, 10.0 * dt)
 
     if (this.bodySuspensionGroup) {
@@ -372,78 +395,121 @@ export class CarActor extends BaseActor {
       this.bodySuspensionGroup.rotation.z = this.rollAngle
     }
 
-    // 4. Movement integration & Collision shapecast
-    this.velocity.x = Math.sin(this.rotationY) * this.currentSpeed
-    this.velocity.z = Math.cos(this.rotationY) * this.currentSpeed
-
-    const physicsSteps = 5
-    const stepDt = dt / physicsSteps
-    let touchGround = false
-
     const forwardX = Math.sin(this.rotationY)
     const forwardZ = Math.cos(this.rotationY)
-    const rightX = Math.cos(this.rotationY)
-    const rightZ = -Math.sin(this.rotationY)
+    const slopeCos = Math.cos(this.rampPitchAngle)
+    this.velocity.x = forwardX * this.currentSpeed * slopeCos
+    this.velocity.z = forwardZ * this.currentSpeed * slopeCos
+
+    // 1. Movement integration & Wall collision shapecast (Single central capsule)
+    const physicsSteps = 5
+    const stepDt = dt / physicsSteps
+    const activeR = 0.85 * this.scale
+    const activeH = 0.50 * this.scale
 
     for (let step = 0; step < physicsSteps; step++) {
-      this.velocity.y -= 30 * stepDt
-      this.position.addScaledVector(this.velocity, stepDt)
+      if (!this.isOnGround) {
+        this.velocity.y -= 30.0 * stepDt
+      }
+      this.position.x += this.velocity.x * stepDt
+      this.position.z += this.velocity.z * stepDt
+      this.position.y += this.velocity.y * stepDt
 
       if (colliderBVH) {
-        const radius = 0.38
-        const height = 0.20
+        _tempSegment.start.set(this.position.x, this.position.y + activeR, this.position.z)
+        _tempSegment.end.set(this.position.x, this.position.y + activeR + activeH, this.position.z)
 
-        _tempSegment.start.set(this.position.x, this.position.y + radius, this.position.z)
-        _tempSegment.end.set(this.position.x, this.position.y + radius + height, this.position.z)
-
-        _tempCapsuleBounds.min.set(this.position.x - 2.0, this.position.y - 0.5, this.position.z - 2.0)
-        _tempCapsuleBounds.max.set(this.position.x + 2.0, this.position.y + radius + height + 1.5, this.position.z + 2.0)
+        const boundMargin = Math.max(2.5, 2.5 * this.scale)
+        _tempCapsuleBounds.min.set(this.position.x - boundMargin, this.position.y - 0.5, this.position.z - boundMargin)
+        _tempCapsuleBounds.max.set(this.position.x + boundMargin, this.position.y + activeH + activeR + boundMargin, this.position.z + boundMargin)
 
         colliderBVH.shapecast({
           intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
           intersectsTriangle: (tri: any) => {
             const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
-            const dist = Math.sqrt(distSq)
-
-            if (dist < radius) {
-              const depth = radius - dist
+            if (distSq < activeR * activeR) {
+              const dist = Math.sqrt(distSq)
+              const depth = activeR - dist
               _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
-              if (_tempDir.y > 0.3) {
-                touchGround = true
-              }
-              this.position.addScaledVector(_tempDir, depth)
-              if (Math.abs(_tempDir.y) < 0.5) {
-                this.currentSpeed *= 0.8
+
+              // Only resolve horizontal wall collisions (walls have normal.y < 0.55)
+              if (_tempDir.y < 0.55) {
+                _tempDir.y = 0
+                _tempDir.normalize()
+                this.position.addScaledVector(_tempDir, depth)
+
+                // Wall sliding: project velocity onto wall tangent plane
+                const dot = this.velocity.x * _tempDir.x + this.velocity.z * _tempDir.z
+                if (dot < 0) {
+                  this.velocity.x -= _tempDir.x * dot
+                  this.velocity.z -= _tempDir.z * dot
+                  this.currentSpeed = Math.sign(this.currentSpeed || 1) * Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z)
+                }
               }
             }
           }
         })
-
-        if (touchGround && this.velocity.y <= 0) {
-          this.velocity.y = 0
-          this.isOnGround = true
-        }
-      } else {
-        if (this.position.y <= config.GROUND_Y) {
-          this.position.y = config.GROUND_Y
-          this.velocity.y = 0
-          this.isOnGround = true
-          touchGround = true
-        }
       }
     }
 
-    if (!touchGround && colliderBVH) {
+    // 2. Exact Dual-Axle Ground Sampling for ground & ramps
+    const halfWheelbase = 1.30 * this.scale
+    const wheelbase = 2.60 * this.scale
+    const frontX = this.position.x + forwardX * halfWheelbase
+    const frontZ = this.position.z + forwardZ * halfWheelbase
+    const rearX = this.position.x - forwardX * halfWheelbase
+    const rearZ = this.position.z - forwardZ * halfWheelbase
+
+    const frontG = this.sampleGround(frontX, frontZ, colliderBVH, this.position.y)
+    const rearG = this.sampleGround(rearX, rearZ, colliderBVH, this.position.y)
+
+    let groundFound = false
+    let targetGroundY = config.GROUND_Y
+    let targetPitch = 0
+
+    if (frontG.hit && rearG.hit && Math.abs(frontG.y - rearG.y) < wheelbase * 1.15) {
+      groundFound = true
+      targetGroundY = (frontG.y + rearG.y) / 2.0
+      const rawPitch = -Math.atan2(frontG.y - rearG.y, wheelbase)
+      targetPitch = Math.max(-0.85, Math.min(0.85, rawPitch))
+    } else if (frontG.hit || rearG.hit) {
+      groundFound = true
+      const bestG = (frontG.hit && (!rearG.hit || Math.abs(frontG.y - this.position.y) <= Math.abs(rearG.y - this.position.y))) ? frontG : rearG
+      targetGroundY = bestG.y
+      if (bestG.normal.y >= 0.55 && bestG.normal.y < 0.995) {
+        const dot = forwardX * bestG.normal.x + forwardZ * bestG.normal.z
+        targetPitch = Math.max(-0.85, Math.min(0.85, Math.asin(dot)))
+      } else {
+        targetPitch = 0
+      }
+    }
+
+    // 3. Ground Snap vs Airborne
+    if (groundFound) {
+      if (this.position.y <= targetGroundY + 0.35 && this.velocity.y <= 0) {
+        this.position.y = targetGroundY
+        this.velocity.y = 0
+        this.isOnGround = true
+      } else if (this.position.y <= targetGroundY) {
+        this.position.y = targetGroundY
+        this.velocity.y = 0
+        this.isOnGround = true
+      } else {
+        this.isOnGround = false
+      }
+    } else {
       this.isOnGround = false
     }
 
-    this.group.position.copy(this.position)
-
-    // 5. Universal Ramp Slope Orientation via Orthonormal Basis
-    this.updateSlopeOrientation(dt, colliderBVH, 15.0)
-
     if (this.position.y < -10.0) {
       this.resetToOrigin()
+      return
     }
+
+    this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1.0, 15.0 * dt)
+
+    this.group.position.copy(this.position)
+    _tempEuler.set(this.rampPitchAngle, this.rotationY, 0, 'YXZ')
+    this.group.quaternion.setFromEuler(_tempEuler)
   }
 }

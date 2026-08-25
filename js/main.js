@@ -33620,7 +33620,7 @@ function intersectObjectWithRay(object, raycaster, includeInvisible) {
   }
   return false;
 }
-const _tempEuler$2 = new Euler();
+const _tempEuler$3 = new Euler();
 const _alignVector = new Vector3(0, 1, 0);
 const _zeroVector = new Vector3(0, 0, 0);
 const _lookAtMatrix = new Matrix4();
@@ -33997,28 +33997,28 @@ class TransformControlsGizmo extends Object3D {
         if (handle.name === "AXIS") {
           handle.visible = !!this.axis;
           if (this.axis === "X") {
-            _tempQuaternion.setFromEuler(_tempEuler$2.set(0, 0, 0));
+            _tempQuaternion.setFromEuler(_tempEuler$3.set(0, 0, 0));
             handle.quaternion.copy(quaternion).multiply(_tempQuaternion);
             if (Math.abs(_alignVector.copy(_unitX).applyQuaternion(quaternion).dot(this.eye)) > 0.9) {
               handle.visible = false;
             }
           }
           if (this.axis === "Y") {
-            _tempQuaternion.setFromEuler(_tempEuler$2.set(0, 0, Math.PI / 2));
+            _tempQuaternion.setFromEuler(_tempEuler$3.set(0, 0, Math.PI / 2));
             handle.quaternion.copy(quaternion).multiply(_tempQuaternion);
             if (Math.abs(_alignVector.copy(_unitY).applyQuaternion(quaternion).dot(this.eye)) > 0.9) {
               handle.visible = false;
             }
           }
           if (this.axis === "Z") {
-            _tempQuaternion.setFromEuler(_tempEuler$2.set(0, Math.PI / 2, 0));
+            _tempQuaternion.setFromEuler(_tempEuler$3.set(0, Math.PI / 2, 0));
             handle.quaternion.copy(quaternion).multiply(_tempQuaternion);
             if (Math.abs(_alignVector.copy(_unitZ).applyQuaternion(quaternion).dot(this.eye)) > 0.9) {
               handle.visible = false;
             }
           }
           if (this.axis === "XYZE") {
-            _tempQuaternion.setFromEuler(_tempEuler$2.set(0, Math.PI / 2, 0));
+            _tempQuaternion.setFromEuler(_tempEuler$3.set(0, Math.PI / 2, 0));
             _alignVector.copy(this.rotationAxis);
             handle.quaternion.setFromRotationMatrix(_lookAtMatrix.lookAt(_zeroVector, _alignVector, _unitY));
             handle.quaternion.multiply(_tempQuaternion);
@@ -34225,23 +34225,29 @@ const CAMERA_DISTANCE_CONFIG = {
   "Side": { min: 1.5, max: 20, default: 4.5, step: 0.1 },
   "First Person": { min: 0, max: 0, default: 0, step: 0 }
 };
-function getCameraDistanceConfig(mode, isCar = false) {
+function getCameraDistanceConfig(mode, isCar = false, scale = 1) {
   const base = CAMERA_DISTANCE_CONFIG[mode] || { min: 1, max: 60, default: 10, step: 0.5 };
+  const s = Math.max(0.1, scale);
   if (isCar && (mode === "Side" || mode === "Third Person")) {
     return {
-      min: 3.5,
-      max: base.max,
-      default: mode === "Third Person" ? 6.5 : 6.5,
+      min: Math.round(3.5 * s * 10) / 10,
+      max: Math.round(base.max * s * 10) / 10,
+      default: Math.round(6.5 * s * 10) / 10,
       step: base.step
     };
   }
-  return base;
+  return {
+    min: Math.round(Math.max(0.5, base.min * s) * 10) / 10,
+    max: Math.round(base.max * s * 10) / 10,
+    default: Math.round(base.default * s * 10) / 10,
+    step: base.step
+  };
 }
-function getDefaultCameraDistance(mode, isCar = false) {
-  if (mode === "Third Person") return isCar ? 6.5 : 3.5;
-  if (mode === "Side") return isCar ? 6.5 : 4.5;
-  if (mode === "Wide") return isCar ? 18 : 16;
-  return getCameraDistanceConfig(mode, isCar).default;
+function getDefaultCameraDistance(mode, isCar = false, scale = 1) {
+  if (mode === "Third Person") return Math.round((isCar ? 6.5 : 3.5) * scale * 10) / 10;
+  if (mode === "Side") return Math.round((isCar ? 6.5 : 4.5) * scale * 10) / 10;
+  if (mode === "Wide") return Math.round((isCar ? 18 : 16) * scale * 10) / 10;
+  return getCameraDistanceConfig(mode, isCar, scale).default;
 }
 const FOG_NEAR = 1;
 const FOG_FAR = 160;
@@ -43604,7 +43610,7 @@ function parallelTraverse(a, b, callback) {
     parallelTraverse(a.children[i], b.children[i], callback);
   }
 }
-const _tempEuler$1 = new Euler();
+const _tempEuler$2 = new Euler();
 const _tempRay = new Ray();
 const _tempNormal = new Vector3();
 const _tempHitPoint = new Vector3();
@@ -43614,6 +43620,9 @@ const _tempSlopeRight = new Vector3();
 const _tempSlopeFwd = new Vector3();
 const _tempBasisMat = new Matrix4();
 const _tempTargetQuat = new Quaternion();
+new Vector3();
+new Vector3();
+new Vector3();
 class BaseActor {
   constructor() {
     __publicField(this, "group");
@@ -43627,6 +43636,7 @@ class BaseActor {
     __publicField(this, "showCollider", false);
     __publicField(this, "lastSpawnPoint");
     __publicField(this, "actorColor", "#F1DFBF");
+    __publicField(this, "scale", 1);
     this.group = new Group();
     this.group.name = "actorGroup";
     this.group.position.copy(this.position);
@@ -43635,6 +43645,20 @@ class BaseActor {
   setActorColor(hexColor) {
     if (!hexColor) return;
     this.actorColor = hexColor;
+  }
+  setActorScale(scale) {
+    if (typeof scale !== "number" || isNaN(scale)) return;
+    this.scale = Math.max(0.3, Math.min(2, scale));
+    this.group.scale.set(this.scale, this.scale, this.scale);
+  }
+  getDisplayCollider() {
+    return this.showCollider;
+  }
+  setDisplayCollider(val) {
+    this.showCollider = val;
+    if (this.colliderWireframe) {
+      this.colliderWireframe.visible = val;
+    }
   }
   resetToOrigin(sp) {
     if (sp) {
@@ -43653,11 +43677,22 @@ class BaseActor {
     this.isOnGround = true;
     this.group.position.copy(this.position);
     this.group.rotation.set(0, this.rotationY, 0);
+    this.group.scale.set(this.scale, this.scale, this.scale);
+  }
+  /**
+   * Returns probe points in local space [x, z] relative to actor center for ramp slope calculations.
+   */
+  getSlopeProbes() {
+    return {
+      frontZ: 0.8 * this.scale,
+      rearZ: 0.8 * this.scale,
+      halfWidth: 0.3 * this.scale
+    };
   }
   calculateRampIncline(dt, colliderBVH, forwardX, forwardZ, rightX, rightZ, options = {}) {
-    const aheadOffset = options.aheadOffset ?? 0;
-    const rayOriginHeight = options.rayOriginHeight ?? 1.5;
-    const maxRayDistance = options.maxRayDistance ?? 4;
+    const aheadOffset = (options.aheadOffset ?? 0) * this.scale;
+    const rayOriginHeight = Math.max(1.8, (options.rayOriginHeight ?? 1.8) * this.scale);
+    const maxRayDistance = Math.max(5, (options.maxRayDistance ?? 5) * this.scale);
     const minNormalY = options.minNormalY ?? 0.3;
     const clampThreshold = options.clampThreshold ?? 0.99;
     const lerpSpeed = options.lerpSpeed ?? 12;
@@ -43689,29 +43724,52 @@ class BaseActor {
     this.rampRollAngle += (targetRampRoll - this.rampRollAngle) * Math.min(1, lerpSpeed * dt);
     return { pitch: this.rampPitchAngle, roll: this.rampRollAngle };
   }
+  sampleGround(x, z, colliderBVH, currentY) {
+    if (!colliderBVH) {
+      return { y: GROUND_Y, normal: new Vector3(0, 1, 0), hit: true };
+    }
+    const rayOriginHeight = Math.max(1.5, 1.5 * this.scale);
+    const maxDropDistance = Math.max(2.5, 2.5 * this.scale);
+    const totalRayDistance = rayOriginHeight + maxDropDistance;
+    _tempRay.origin.set(x, currentY + rayOriginHeight, z);
+    _tempRay.direction.set(0, -1, 0);
+    const hit = colliderBVH.raycastFirst(_tempRay);
+    if (hit && hit.face && hit.face.normal && hit.face.normal.y >= 0.55 && hit.distance <= totalRayDistance) {
+      return { y: currentY + rayOriginHeight - hit.distance, normal: hit.face.normal, hit: true };
+    }
+    return { y: -100, normal: new Vector3(0, 1, 0), hit: false };
+  }
   /**
-   * Universal slope alignment using orthonormal basis matrix.
-   * Eliminates gimbal lock, lag, and 180-degree flip bugs on ramps.
+   * Universal slope alignment using surface normal & orthonormal basis matrix.
+   * Accurately orients actors to ramps at any scale while completely ignoring vertical walls.
    */
   updateSlopeOrientation(dt, colliderBVH, lerpSpeed = 15) {
     if (!this.isOnGround || !colliderBVH) {
-      _tempEuler$1.set(0, this.rotationY, 0, "YXZ");
-      _tempTargetQuat.setFromEuler(_tempEuler$1);
+      _tempEuler$2.set(0, this.rotationY, 0, "YXZ");
+      _tempTargetQuat.setFromEuler(_tempEuler$2);
       this.group.quaternion.slerp(_tempTargetQuat, Math.min(1, 8 * dt));
       return;
     }
-    _tempRay.origin.set(this.position.x, this.position.y + 1.5, this.position.z);
+    const rayOriginHeight = Math.max(1.8, 1.8 * this.scale);
+    const maxRayDistance = Math.max(5, 5 * this.scale);
+    _tempRay.origin.set(this.position.x, this.position.y + rayOriginHeight, this.position.z);
     _tempRay.direction.set(0, -1, 0);
     const hit = colliderBVH.raycastFirst(_tempRay);
-    if (hit && hit.distance < 4 && hit.face && hit.face.normal) {
-      const normal = hit.face.normal;
-      if (normal.y > 0.3) {
+    if (hit && hit.distance < maxRayDistance && hit.face && hit.face.normal) {
+      const groundNormal = hit.face.normal;
+      if (groundNormal.y >= 0.55) {
+        if (groundNormal.y > 0.995) {
+          _tempEuler$2.set(0, this.rotationY, 0, "YXZ");
+          _tempTargetQuat.setFromEuler(_tempEuler$2);
+          this.group.quaternion.slerp(_tempTargetQuat, Math.min(1, lerpSpeed * dt));
+          return;
+        }
         const fwdX = Math.sin(this.rotationY);
         const fwdZ = Math.cos(this.rotationY);
         _tempFlatFwd.set(fwdX, 0, fwdZ);
-        _tempUp$1.copy(normal).normalize();
+        _tempUp$1.copy(groundNormal).normalize();
         _tempSlopeRight.crossVectors(_tempUp$1, _tempFlatFwd);
-        if (_tempSlopeRight.lengthSq() < 1e-5) {
+        if (_tempSlopeRight.lengthSq() < 1e-4) {
           _tempSlopeRight.set(Math.cos(this.rotationY), 0, -Math.sin(this.rotationY));
         } else {
           _tempSlopeRight.normalize();
@@ -43723,24 +43781,18 @@ class BaseActor {
         return;
       }
     }
-    _tempEuler$1.set(0, this.rotationY, 0, "YXZ");
-    _tempTargetQuat.setFromEuler(_tempEuler$1);
+    _tempEuler$2.set(0, this.rotationY, 0, "YXZ");
+    _tempTargetQuat.setFromEuler(_tempEuler$2);
     this.group.quaternion.slerp(_tempTargetQuat, Math.min(1, 8 * dt));
   }
   jump() {
     if (this.isOnGround) {
-      this.velocity.y = 11;
+      this.velocity.y = 11 * Math.sqrt(this.scale);
       this.isOnGround = false;
     }
   }
-  setDisplayCollider(visible) {
-    this.showCollider = visible;
-    if (this.colliderWireframe) {
-      this.colliderWireframe.visible = visible;
-    }
-  }
   getFPVOffset() {
-    return new Vector3(0, 1.5, 0.1);
+    return new Vector3(0, 1.5 * this.scale, 0.1 * this.scale);
   }
   isCrouching() {
     return false;
@@ -43758,15 +43810,15 @@ class BaseActor {
     return "Idle_A";
   }
   getMotionState(t) {
-    _tempEuler$1.setFromQuaternion(this.group.quaternion, "YXZ");
+    _tempEuler$2.setFromQuaternion(this.group.quaternion, "YXZ");
     return {
       t: Math.round(t * 1e3) / 1e3,
       px: Math.round(this.group.position.x * 1e3) / 1e3,
       py: Math.round(this.group.position.y * 1e3) / 1e3,
       pz: Math.round(this.group.position.z * 1e3) / 1e3,
-      rx: Math.round(_tempEuler$1.x * 1e3) / 1e3,
-      ry: Math.round(this.rotationY * 1e3) / 1e3,
-      rz: Math.round(_tempEuler$1.z * 1e3) / 1e3
+      rx: Math.round(_tempEuler$2.x * 1e3) / 1e3,
+      ry: Math.round(_tempEuler$2.y * 1e3) / 1e3,
+      rz: Math.round(_tempEuler$2.z * 1e3) / 1e3
     };
   }
   applyMotionFrame(frame, diffY = 0, dt = 0.016, isHardCut = false) {
@@ -43776,9 +43828,10 @@ class BaseActor {
     this.position.set(frame.px ?? 0, frame.py ?? GROUND_Y, frame.pz ?? 0);
     this.rotationY = frame.ry ?? 0;
     const rx = frame.rx ?? 0;
+    const ry = frame.ry ?? 0;
     const rz = frame.rz ?? 0;
-    _tempEuler$1.set(rx, this.rotationY, rz, "YXZ");
-    this.group.quaternion.setFromEuler(_tempEuler$1);
+    _tempEuler$2.set(rx, ry, rz, "YXZ");
+    this.group.quaternion.setFromEuler(_tempEuler$2);
     this.group.position.copy(this.position);
     const dx = this.position.x - prevX;
     const dz = this.position.z - prevZ;
@@ -43806,7 +43859,7 @@ class BaseActor {
           tri.getNormal(_tempNormal);
           if (_tempNormal.y > 0.3) {
             if (_tempRay.intersectTriangle(tri.a, tri.b, tri.c, false, _tempHitPoint)) {
-              if (_tempHitPoint.y <= this.position.y + 1.2) {
+              if (_tempHitPoint.y <= this.position.y + 1.2 * this.scale) {
                 if (highestBelow === null || _tempHitPoint.y > highestBelow) {
                   highestBelow = _tempHitPoint.y;
                 }
@@ -43872,7 +43925,7 @@ const _tempVecA$1 = new Vector3();
 const _tempVecB$1 = new Vector3();
 const _tempSegment$1 = new Line3();
 const _tempCapsuleBounds$1 = new Box3();
-const _tempEuler = new Euler();
+const _tempEuler$1 = new Euler();
 const assetsCache = /* @__PURE__ */ new Map();
 const assetsLoadingPromises = /* @__PURE__ */ new Map();
 function loadSkinnedAssets(modelUrl, animsUrl) {
@@ -43990,12 +44043,13 @@ class SkinnedActor extends BaseActor {
     const targetAnim = requested && this.animationsMap.has(requested) ? requested : defaultIdle;
     let animTimeScale = 1;
     const instantSpeed = frameDt > 0 && !isHardCut ? distMoved / frameDt : 0;
+    const currentScale = Math.max(0.2, this.scale);
     if (targetAnim === this.getDefaultWalkAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed));
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.walkBaseSpeed * currentScale)));
     } else if (targetAnim === this.getDefaultSprintAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.sprintBaseSpeed));
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.sprintBaseSpeed * currentScale)));
     } else if (targetAnim === this.getDefaultCrouchWalkAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed));
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.crouchWalkBaseSpeed * currentScale)));
     }
     let fadeDuration = 0.15;
     if (isHardCut || frameDt === 0) {
@@ -44254,7 +44308,7 @@ class SkinnedActor extends BaseActor {
       let diff = targetRotationY - this.rotationY;
       while (diff < -Math.PI) diff += Math.PI * 2;
       while (diff > Math.PI) diff -= Math.PI * 2;
-      const dynamicTurnSpeed = 6.5 + speed * 2;
+      const dynamicTurnSpeed = (6.5 + speed * 2) / Math.max(0.2, this.scale);
       const lerpFactor = 1 - Math.exp(-dynamicTurnSpeed * Math.max(1e-3, dt));
       this.rotationY += diff * lerpFactor;
       while (this.rotationY < -Math.PI) this.rotationY += Math.PI * 2;
@@ -44274,30 +44328,28 @@ class SkinnedActor extends BaseActor {
     const standingH = this.getStandingCapsuleHeight();
     const crouchR = this.getCrouchingCapsuleRadius();
     const crouchH = this.getCrouchingCapsuleHeight();
-    const activeR = isCrouch ? crouchR : standingR;
-    const activeH = isCrouch ? crouchH : standingH;
+    const activeR = (isCrouch ? crouchR : standingR) * this.scale;
+    const activeH = (isCrouch ? crouchH : standingH) * this.scale;
     this.isHorizontalCapsule();
     if (this.colliderWireframe instanceof Mesh) {
       this.colliderWireframe.geometry = isCrouch ? this.crouchingWireframeGeo : this.standingWireframeGeo;
       this.colliderWireframe.position.y = this.getColliderCenterY(isCrouch);
     }
-    Math.sin(this.rotationY);
-    Math.cos(this.rotationY);
+    const forwardX = Math.sin(this.rotationY);
+    const forwardZ = Math.cos(this.rotationY);
     for (let step = 0; step < physicsSteps; step++) {
-      if (this.isOnGround) {
-        this.velocity.y = -30 * stepDt;
-      } else {
+      if (!this.isOnGround) {
         this.velocity.y -= 30 * stepDt;
       }
-      this.position.addScaledVector(this.velocity, stepDt);
+      this.position.x += this.velocity.x * stepDt;
+      this.position.z += this.velocity.z * stepDt;
+      this.position.y += this.velocity.y * stepDt;
       if (colliderBVH) {
-        _tempSegment$1.start.copy(this.position);
-        _tempSegment$1.start.y += activeR;
-        _tempSegment$1.end.copy(this.position);
-        _tempSegment$1.end.y += activeR + activeH;
-        _tempCapsuleBounds$1.min.set(this.position.x - 1.5, this.position.y - 0.5, this.position.z - 1.5);
-        _tempCapsuleBounds$1.max.set(this.position.x + 1.5, this.position.y + activeH + 1.5, this.position.z + 1.5);
-        this.isOnGround = false;
+        _tempSegment$1.start.set(this.position.x, this.position.y + activeR, this.position.z);
+        _tempSegment$1.end.set(this.position.x, this.position.y + activeR + activeH, this.position.z);
+        const boundMargin = Math.max(2, 2 * this.scale);
+        _tempCapsuleBounds$1.min.set(this.position.x - boundMargin, this.position.y - 0.5, this.position.z - boundMargin);
+        _tempCapsuleBounds$1.max.set(this.position.x + boundMargin, this.position.y + activeH + activeR + boundMargin, this.position.z + boundMargin);
         colliderBVH.shapecast({
           intersectsBounds: (box) => box.intersectsBox(_tempCapsuleBounds$1),
           intersectsTriangle: (tri) => {
@@ -44306,35 +44358,61 @@ class SkinnedActor extends BaseActor {
               const dist = Math.sqrt(distSq);
               const depth = activeR - dist;
               _tempDir$1.subVectors(_tempVecB$1, _tempVecA$1).normalize();
-              _tempSegment$1.start.addScaledVector(_tempDir$1, depth);
-              _tempSegment$1.end.addScaledVector(_tempDir$1, depth);
+              if (_tempDir$1.y < 0.55) {
+                _tempDir$1.y = 0;
+                _tempDir$1.normalize();
+                this.position.addScaledVector(_tempDir$1, depth);
+                const dot = this.velocity.x * _tempDir$1.x + this.velocity.z * _tempDir$1.z;
+                if (dot < 0) {
+                  this.velocity.x -= _tempDir$1.x * dot;
+                  this.velocity.z -= _tempDir$1.z * dot;
+                }
+              }
             }
           }
         });
-        _tempVecA$1.copy(this.position);
-        this.position.copy(_tempSegment$1.start);
-        this.position.y -= activeR;
-        _tempVecB$1.subVectors(this.position, _tempVecA$1);
-        const deltaLen = _tempVecB$1.length();
-        if (deltaLen > 1e-5) {
-          const normalY = _tempVecB$1.y / deltaLen;
-          if (_tempVecB$1.y > 0 && normalY > 0.25) {
-            this.isOnGround = true;
-          }
-        }
-        if (this.isOnGround && this.velocity.y <= 0) {
-          this.velocity.y = 0;
-          this.isUserJumping = false;
-          this.airborneTime = 0;
+      }
+    }
+    let groundFound = false;
+    let targetGroundY = GROUND_Y;
+    let targetPitch = 0;
+    if (this.getType() === "quadruped") {
+      const fwdOffset = 0.55 * this.scale;
+      const rearOffset = 0.65 * this.scale;
+      const wheelbase = fwdOffset + rearOffset;
+      const frontX = this.position.x + forwardX * fwdOffset;
+      const frontZ = this.position.z + forwardZ * fwdOffset;
+      const rearX = this.position.x - forwardX * rearOffset;
+      const rearZ = this.position.z - forwardZ * rearOffset;
+      const frontG = this.sampleGround(frontX, frontZ, colliderBVH, this.position.y);
+      const rearG = this.sampleGround(rearX, rearZ, colliderBVH, this.position.y);
+      if (frontG.hit && rearG.hit && Math.abs(frontG.y - rearG.y) < wheelbase * 1.15) {
+        groundFound = true;
+        targetGroundY = (frontG.y + rearG.y) / 2;
+        const rawPitch = -Math.atan2(frontG.y - rearG.y, wheelbase);
+        targetPitch = Math.max(-0.85, Math.min(0.85, rawPitch));
+      } else if (frontG.hit || rearG.hit) {
+        groundFound = true;
+        const bestG = frontG.hit && (!rearG.hit || Math.abs(frontG.y - this.position.y) <= Math.abs(rearG.y - this.position.y)) ? frontG : rearG;
+        targetGroundY = bestG.y;
+        if (bestG.normal.y >= 0.55 && bestG.normal.y < 0.995) {
+          const dot = forwardX * bestG.normal.x + forwardZ * bestG.normal.z;
+          targetPitch = Math.max(-0.85, Math.min(0.85, Math.asin(dot)));
         } else {
-          this.airborneTime += stepDt;
-          if (this.airborneTime > 0.35 && this.velocity.y < -3) {
-            this.isUserJumping = true;
-          }
+          targetPitch = 0;
         }
-      } else {
-        if (this.position.y <= GROUND_Y) {
-          this.position.y = GROUND_Y;
+      }
+    } else {
+      const g = this.sampleGround(this.position.x, this.position.z, colliderBVH, this.position.y);
+      if (g.hit) {
+        groundFound = true;
+        targetGroundY = g.y;
+      }
+    }
+    if (groundFound) {
+      if (this.isUserJumping) {
+        if (this.position.y <= targetGroundY && this.velocity.y <= 0) {
+          this.position.y = targetGroundY;
           this.velocity.y = 0;
           this.isOnGround = true;
           this.isUserJumping = false;
@@ -44342,7 +44420,25 @@ class SkinnedActor extends BaseActor {
         } else {
           this.isOnGround = false;
         }
+      } else {
+        if (this.position.y <= targetGroundY + 0.35 && this.velocity.y <= 0) {
+          this.position.y = targetGroundY;
+          this.velocity.y = 0;
+          this.isOnGround = true;
+          this.airborneTime = 0;
+        } else if (this.position.y <= targetGroundY) {
+          this.position.y = targetGroundY;
+          this.velocity.y = 0;
+          this.isOnGround = true;
+          this.airborneTime = 0;
+        } else {
+          this.isOnGround = false;
+          this.airborneTime += dt;
+        }
       }
+    } else {
+      this.isOnGround = false;
+      this.airborneTime += dt;
     }
     if (this.position.y < -10) {
       this.resetToOrigin();
@@ -44350,10 +44446,12 @@ class SkinnedActor extends BaseActor {
     }
     this.group.position.copy(this.position);
     if (this.shouldInclineOnRamps()) {
-      this.updateSlopeOrientation(dt, colliderBVH, 15);
+      this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1, 15 * dt);
+      _tempEuler$1.set(this.rampPitchAngle, this.rotationY, 0, "YXZ");
+      this.group.quaternion.setFromEuler(_tempEuler$1);
     } else {
-      _tempEuler.set(0, this.rotationY, 0, "YXZ");
-      this.group.quaternion.setFromEuler(_tempEuler);
+      _tempEuler$1.set(0, this.rotationY, 0, "YXZ");
+      this.group.quaternion.setFromEuler(_tempEuler$1);
     }
     let targetAnimation = this.getDefaultIdleAnim();
     let animTimeScale = 1;
@@ -44367,7 +44465,7 @@ class SkinnedActor extends BaseActor {
     } else if (isCrouch) {
       if (isMoving) {
         targetAnimation = this.getDefaultCrouchWalkAnim();
-        animTimeScale = Math.max(0.2, speed / this.crouchWalkBaseSpeed);
+        animTimeScale = Math.max(0.2, speed / (this.crouchWalkBaseSpeed * Math.max(0.2, this.scale)));
       } else {
         targetAnimation = this.getDefaultCrouchIdleAnim();
         animTimeScale = 1;
@@ -44375,10 +44473,10 @@ class SkinnedActor extends BaseActor {
     } else if (isMoving) {
       if (isShift) {
         targetAnimation = this.getDefaultSprintAnim();
-        animTimeScale = Math.max(0.2, speed / this.sprintBaseSpeed);
+        animTimeScale = Math.max(0.2, speed / (this.sprintBaseSpeed * Math.max(0.2, this.scale)));
       } else {
         targetAnimation = this.getDefaultWalkAnim();
-        animTimeScale = Math.max(0.2, speed / this.walkBaseSpeed);
+        animTimeScale = Math.max(0.2, speed / (this.walkBaseSpeed * Math.max(0.2, this.scale)));
       }
     } else {
       targetAnimation = this.getDefaultIdleAnim();
@@ -44420,7 +44518,7 @@ class HumanActor extends SkinnedActor {
     return "human";
   }
   getFPVOffset() {
-    return this.isCrouching() ? new Vector3(0, 0.85, 0.1) : new Vector3(0, 1.65, 0.1);
+    return this.isCrouching() ? new Vector3(0, 0.85 * this.scale, 0.1 * this.scale) : new Vector3(0, 1.65 * this.scale, 0.1 * this.scale);
   }
   getModelUrl() {
     return humanCubesGlb;
@@ -44459,7 +44557,7 @@ class HumanActor extends SkinnedActor {
     return 0.6;
   }
   getModelYOffset() {
-    return 0.25;
+    return 0;
   }
 }
 const _tempVecA = new Vector3();
@@ -44470,6 +44568,7 @@ new Vector3();
 const _tempSegment = new Line3();
 const _tempCapsuleBounds = new Box3();
 new Ray();
+const _tempEuler = new Euler();
 class CarActor extends BaseActor {
   constructor() {
     super();
@@ -44482,11 +44581,11 @@ class CarActor extends BaseActor {
     __publicField(this, "rearLeftWheelGroup", null);
     __publicField(this, "rearRightWheelGroup", null);
     __publicField(this, "wheelRollingGroup", []);
-    __publicField(this, "bodySuspensionGroup", null);
     __publicField(this, "pitchAngle", 0);
     __publicField(this, "rollAngle", 0);
     __publicField(this, "prevSpeed", 0);
     __publicField(this, "prevPlaybackSpeed", 0);
+    __publicField(this, "bodySuspensionGroup", null);
     this.buildMesh();
   }
   setActorColor(hexColor) {
@@ -44496,11 +44595,18 @@ class CarActor extends BaseActor {
       this.bodyMat.color.set(hexColor);
     }
   }
+  getSlopeProbes() {
+    return {
+      frontZ: 1.35 * this.scale,
+      rearZ: 1.35 * this.scale,
+      halfWidth: 0.85 * this.scale
+    };
+  }
   getType() {
     return "car";
   }
   getFPVOffset() {
-    return new Vector3(-0.45, 1.15, 0.15);
+    return new Vector3(-0.45 * this.scale, 1.15 * this.scale, 0.15 * this.scale);
   }
   onPlaybackMotion(distMoved, angularVel, _animName, frameDt = 0.016) {
     const dt = Math.max(1e-3, frameDt);
@@ -44512,7 +44618,7 @@ class CarActor extends BaseActor {
     if (this.frontLeftWheelGroup) this.frontLeftWheelGroup.rotation.y = this.currentSteerAngle;
     if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle;
     if (distMoved > 1e-3) {
-      const rollDelta = distMoved / 0.38;
+      const rollDelta = distMoved / (0.38 * this.scale);
       this.wheelRollingGroup.forEach((w) => {
         w.rotation.x += rollDelta;
       });
@@ -44651,9 +44757,9 @@ class CarActor extends BaseActor {
       this.rearLeftWheelGroup,
       this.rearRightWheelGroup
     );
-    carGroup.position.y = 0.22;
+    carGroup.position.y = 0;
     this.group.add(carGroup);
-    const colliderGeo = new BoxGeometry(2, 1.2, 4.3);
+    const colliderGeo = new BoxGeometry(1.9, 1.3, 4.2);
     const colliderMat = new MeshBasicMaterial({
       color: 65535,
       wireframe: true,
@@ -44663,7 +44769,7 @@ class CarActor extends BaseActor {
       opacity: 0.85
     });
     this.colliderWireframe = new Mesh(colliderGeo, colliderMat);
-    this.colliderWireframe.position.set(0, 0.85, 0);
+    this.colliderWireframe.position.set(0, 0.65, 0);
     this.colliderWireframe.renderOrder = 1e3;
     this.colliderWireframe.visible = this.showCollider;
     this.group.add(this.colliderWireframe);
@@ -44677,26 +44783,36 @@ class CarActor extends BaseActor {
     if (isSpace && this.isOnGround) {
       this.jump();
     }
-    const maxForwardSpeed = speedMultiplier * 1.5;
-    const maxReverseSpeed = speedMultiplier * 0.6;
-    const accel = 18 * dt;
-    const brake = 30 * dt;
-    const drag = 8 * dt;
+    const maxForwardSpeed = speedMultiplier * 1;
+    const maxReverseSpeed = speedMultiplier * 0.45;
+    const accel = 12 * dt;
+    const brake = 25 * dt;
+    const drag = 6 * dt;
+    let slopeForce = 0;
+    if (this.isOnGround && Math.abs(this.rampPitchAngle) > 0.02) {
+      slopeForce = 15 * Math.sin(this.rampPitchAngle) * dt;
+    }
     if (isW) {
       if (this.currentSpeed < maxForwardSpeed) {
-        this.currentSpeed = Math.min(maxForwardSpeed, this.currentSpeed + accel);
+        this.currentSpeed = Math.min(maxForwardSpeed, this.currentSpeed + accel + slopeForce);
+      } else {
+        this.currentSpeed += slopeForce;
       }
     } else if (isS) {
       if (this.currentSpeed > 0) {
-        this.currentSpeed = Math.max(0, this.currentSpeed - brake);
+        this.currentSpeed = Math.max(0, this.currentSpeed - brake + slopeForce);
       } else if (this.currentSpeed > -maxReverseSpeed) {
-        this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel);
+        this.currentSpeed = Math.max(-maxReverseSpeed, this.currentSpeed - accel + slopeForce);
+      } else {
+        this.currentSpeed += slopeForce;
       }
     } else {
       if (this.currentSpeed > 0) {
-        this.currentSpeed = Math.max(0, this.currentSpeed - drag);
+        this.currentSpeed = Math.max(0, this.currentSpeed - drag + slopeForce);
       } else if (this.currentSpeed < 0) {
-        this.currentSpeed = Math.min(0, this.currentSpeed + drag);
+        this.currentSpeed = Math.min(0, this.currentSpeed + drag + slopeForce);
+      } else if (Math.abs(slopeForce) > 0.05) {
+        this.currentSpeed += slopeForce;
       }
     }
     let steerInput = 0;
@@ -44705,7 +44821,7 @@ class CarActor extends BaseActor {
     if (steerInput !== 0 && Math.abs(this.currentSpeed) > 0.05) {
       const turnDir = this.currentSpeed < 0 ? -1 : 1;
       const turnFactor = Math.min(1, Math.abs(this.currentSpeed) / 3);
-      this.rotationY += steerInput * turnDir * 2.2 * turnFactor * dt;
+      this.rotationY += steerInput * turnDir * (2.2 / Math.max(0.2, this.scale)) * turnFactor * dt;
     }
     let targetSteer = 0;
     if (isA) targetSteer += 0.45;
@@ -44714,7 +44830,7 @@ class CarActor extends BaseActor {
     if (this.frontLeftWheelGroup) this.frontLeftWheelGroup.rotation.y = this.currentSteerAngle;
     if (this.frontRightWheelGroup) this.frontRightWheelGroup.rotation.y = this.currentSteerAngle;
     if (Math.abs(this.currentSpeed) > 0.01) {
-      const rollDelta = this.currentSpeed * dt / 0.2;
+      const rollDelta = this.currentSpeed * dt / (0.2 * this.scale);
       this.wheelRollingGroup.forEach((w) => {
         w.rotation.x += rollDelta;
       });
@@ -44723,78 +44839,116 @@ class CarActor extends BaseActor {
     this.prevSpeed = this.currentSpeed;
     const speedRatio = Math.min(1, Math.abs(this.currentSpeed) / Math.max(0.1, maxForwardSpeed));
     const normalizedTurn = Math.max(-1, Math.min(1, this.currentSteerAngle / 0.45 * speedRatio));
-    let targetPitch = 0;
+    let targetSuspensionPitch = 0;
     if (this.currentSpeed > 0.05) {
-      targetPitch = -0.052 * speedRatio;
+      targetSuspensionPitch = -0.052 * speedRatio;
     } else if (this.currentSpeed < -0.05) {
-      targetPitch = 0.035 * speedRatio;
+      targetSuspensionPitch = 0.035 * speedRatio;
     }
-    targetPitch += Math.max(-0.04, Math.min(0.04, speedDelta * -3e-3));
+    targetSuspensionPitch += Math.max(-0.04, Math.min(0.04, speedDelta * -3e-3));
     const targetRoll = -0.09 * normalizedTurn;
-    this.pitchAngle += (targetPitch - this.pitchAngle) * Math.min(1, 10 * dt);
+    this.pitchAngle += (targetSuspensionPitch - this.pitchAngle) * Math.min(1, 10 * dt);
     this.rollAngle += (targetRoll - this.rollAngle) * Math.min(1, 10 * dt);
     if (this.bodySuspensionGroup) {
       this.bodySuspensionGroup.rotation.x = this.pitchAngle;
       this.bodySuspensionGroup.rotation.z = this.rollAngle;
     }
-    this.velocity.x = Math.sin(this.rotationY) * this.currentSpeed;
-    this.velocity.z = Math.cos(this.rotationY) * this.currentSpeed;
+    const forwardX = Math.sin(this.rotationY);
+    const forwardZ = Math.cos(this.rotationY);
+    const slopeCos = Math.cos(this.rampPitchAngle);
+    this.velocity.x = forwardX * this.currentSpeed * slopeCos;
+    this.velocity.z = forwardZ * this.currentSpeed * slopeCos;
     const physicsSteps = 5;
     const stepDt = dt / physicsSteps;
-    let touchGround = false;
-    Math.sin(this.rotationY);
-    Math.cos(this.rotationY);
-    Math.cos(this.rotationY);
-    -Math.sin(this.rotationY);
+    const activeR = 0.85 * this.scale;
+    const activeH = 0.5 * this.scale;
     for (let step = 0; step < physicsSteps; step++) {
-      this.velocity.y -= 30 * stepDt;
-      this.position.addScaledVector(this.velocity, stepDt);
+      if (!this.isOnGround) {
+        this.velocity.y -= 30 * stepDt;
+      }
+      this.position.x += this.velocity.x * stepDt;
+      this.position.z += this.velocity.z * stepDt;
+      this.position.y += this.velocity.y * stepDt;
       if (colliderBVH) {
-        const radius = 0.38;
-        const height = 0.2;
-        _tempSegment.start.set(this.position.x, this.position.y + radius, this.position.z);
-        _tempSegment.end.set(this.position.x, this.position.y + radius + height, this.position.z);
-        _tempCapsuleBounds.min.set(this.position.x - 2, this.position.y - 0.5, this.position.z - 2);
-        _tempCapsuleBounds.max.set(this.position.x + 2, this.position.y + radius + height + 1.5, this.position.z + 2);
+        _tempSegment.start.set(this.position.x, this.position.y + activeR, this.position.z);
+        _tempSegment.end.set(this.position.x, this.position.y + activeR + activeH, this.position.z);
+        const boundMargin = Math.max(2.5, 2.5 * this.scale);
+        _tempCapsuleBounds.min.set(this.position.x - boundMargin, this.position.y - 0.5, this.position.z - boundMargin);
+        _tempCapsuleBounds.max.set(this.position.x + boundMargin, this.position.y + activeH + activeR + boundMargin, this.position.z + boundMargin);
         colliderBVH.shapecast({
           intersectsBounds: (box) => box.intersectsBox(_tempCapsuleBounds),
           intersectsTriangle: (tri) => {
             const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB);
-            const dist = Math.sqrt(distSq);
-            if (dist < radius) {
-              const depth = radius - dist;
+            if (distSq < activeR * activeR) {
+              const dist = Math.sqrt(distSq);
+              const depth = activeR - dist;
               _tempDir.subVectors(_tempVecB, _tempVecA).normalize();
-              if (_tempDir.y > 0.3) {
-                touchGround = true;
-              }
-              this.position.addScaledVector(_tempDir, depth);
-              if (Math.abs(_tempDir.y) < 0.5) {
-                this.currentSpeed *= 0.8;
+              if (_tempDir.y < 0.55) {
+                _tempDir.y = 0;
+                _tempDir.normalize();
+                this.position.addScaledVector(_tempDir, depth);
+                const dot = this.velocity.x * _tempDir.x + this.velocity.z * _tempDir.z;
+                if (dot < 0) {
+                  this.velocity.x -= _tempDir.x * dot;
+                  this.velocity.z -= _tempDir.z * dot;
+                  this.currentSpeed = Math.sign(this.currentSpeed || 1) * Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
+                }
               }
             }
           }
         });
-        if (touchGround && this.velocity.y <= 0) {
-          this.velocity.y = 0;
-          this.isOnGround = true;
-        }
-      } else {
-        if (this.position.y <= GROUND_Y) {
-          this.position.y = GROUND_Y;
-          this.velocity.y = 0;
-          this.isOnGround = true;
-          touchGround = true;
-        }
       }
     }
-    if (!touchGround && colliderBVH) {
+    const halfWheelbase = 1.3 * this.scale;
+    const wheelbase = 2.6 * this.scale;
+    const frontX = this.position.x + forwardX * halfWheelbase;
+    const frontZ = this.position.z + forwardZ * halfWheelbase;
+    const rearX = this.position.x - forwardX * halfWheelbase;
+    const rearZ = this.position.z - forwardZ * halfWheelbase;
+    const frontG = this.sampleGround(frontX, frontZ, colliderBVH, this.position.y);
+    const rearG = this.sampleGround(rearX, rearZ, colliderBVH, this.position.y);
+    let groundFound = false;
+    let targetGroundY = GROUND_Y;
+    let targetPitch = 0;
+    if (frontG.hit && rearG.hit && Math.abs(frontG.y - rearG.y) < wheelbase * 1.15) {
+      groundFound = true;
+      targetGroundY = (frontG.y + rearG.y) / 2;
+      const rawPitch = -Math.atan2(frontG.y - rearG.y, wheelbase);
+      targetPitch = Math.max(-0.85, Math.min(0.85, rawPitch));
+    } else if (frontG.hit || rearG.hit) {
+      groundFound = true;
+      const bestG = frontG.hit && (!rearG.hit || Math.abs(frontG.y - this.position.y) <= Math.abs(rearG.y - this.position.y)) ? frontG : rearG;
+      targetGroundY = bestG.y;
+      if (bestG.normal.y >= 0.55 && bestG.normal.y < 0.995) {
+        const dot = forwardX * bestG.normal.x + forwardZ * bestG.normal.z;
+        targetPitch = Math.max(-0.85, Math.min(0.85, Math.asin(dot)));
+      } else {
+        targetPitch = 0;
+      }
+    }
+    if (groundFound) {
+      if (this.position.y <= targetGroundY + 0.35 && this.velocity.y <= 0) {
+        this.position.y = targetGroundY;
+        this.velocity.y = 0;
+        this.isOnGround = true;
+      } else if (this.position.y <= targetGroundY) {
+        this.position.y = targetGroundY;
+        this.velocity.y = 0;
+        this.isOnGround = true;
+      } else {
+        this.isOnGround = false;
+      }
+    } else {
       this.isOnGround = false;
     }
-    this.group.position.copy(this.position);
-    this.updateSlopeOrientation(dt, colliderBVH, 15);
     if (this.position.y < -10) {
       this.resetToOrigin();
+      return;
     }
+    this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1, 15 * dt);
+    this.group.position.copy(this.position);
+    _tempEuler.set(this.rampPitchAngle, this.rotationY, 0, "YXZ");
+    this.group.quaternion.setFromEuler(_tempEuler);
   }
 }
 const quadrupedCubesGlb = "data:model/gltf-binary;base64,Z2xURgIAAAD43AAAZDYAAEpTT057ImFzc2V0Ijp7ImdlbmVyYXRvciI6Iktocm9ub3MgZ2xURiBCbGVuZGVyIEkvTyB2NS4yLjM5IiwidmVyc2lvbiI6IjIuMCJ9LCJzY2VuZSI6MCwic2NlbmVzIjpbeyJuYW1lIjoiU2NlbmUiLCJub2RlcyI6WzUwXX1dLCJub2RlcyI6W3sibmFtZSI6IkJhY2tfTGVnX1RpcF9MIiwicm90YXRpb24iOlstMC4wMjEzODM4OTY0NzAwNjk4ODUsLTQuODQ5NjkwNjQwMTg1MTQ1ZS0wNywxLjgzMTg2NjIxNDI3NDY2OWUtMDgsMC45OTk3NzEzNTY1ODI2NDE2XSwidHJhbnNsYXRpb24iOlsxLjUwNjA1NTE5MTY2OTAyZS0wOCwwLjA1NzA4MzAzMzAyNTI2NDc0LDEuMTE5NjAzNjA5ODIyNjYxNGUtMDhdfSx7ImNoaWxkcmVuIjpbMF0sIm5hbWUiOiJCYWNrX0xlZ19Gb290XzFfTCIsInJvdGF0aW9uIjpbLTAuNDE0ODY2NTY2NjU4MDIsMC4wMDA1MzQ4OTAxNjEzNjE1NDUzLC0yLjEyNTI0ODI4Mzg0NjMwMzhlLTA1LDAuOTA5ODgyMTI4MjM4Njc4XSwic2NhbGUiOlswLjk5OTk5OTk0MDM5NTM1NTIsMSwwLjk5OTk5OTk0MDM5NTM1NTJdLCJ0cmFuc2xhdGlvbiI6WzEuODA0MjU1NTg5Mzc3MTM1ZS0wOCwwLjEwNjM2MzU3OTYzMDg1MTc1LDQuODc0ODkxNjAxNTAyODk1ZS0wOV19LHsiY2hpbGRyZW4iOlsxXSwibmFtZSI6IkJhY2tfTGVnX0Zvb3RfTCIsInJvdGF0aW9uIjpbLTAuMjM2MTM2MTUzMzQwMzM5NjYsLTAuMDAwMzI3NzUwNjMzMDA1MDUyOCwwLjAwMDMwOTcwNzQ4MDQ4Mjc1NzEsMC45NzE3MTk5MjA2MzUyMjM0XSwic2NhbGUiOlsxLDAuOTk5OTk5ODIxMTg2MDY1NywwLjk5OTk5OTgyMTE4NjA2NTddLCJ0cmFuc2xhdGlvbiI6WzIuMDI1NzE3NTQ5MjU4ODQzZS0wOCwwLjI0MzU5NjY3MzAxMTc3OTc5LC0xLjg5ODYyNDc1OTYzMzA5NGUtMDddfSx7ImNoaWxkcmVuIjpbMl0sIm5hbWUiOiJCYWNrX0xlZ19BbmtsZV9MIiwicm90YXRpb24iOlstMC40MTM3MTc1OTc3MjMwMDcyLDMuNjEzMzU0MDU2MTQyMjcwNmUtMDUsMy4xNTMzNzQ5Mjc5MzMzMjhlLTA1LDAuOTEwNDA1Mjc4MjA1ODcxNl0sInNjYWxlIjpbMSwxLjAwMDAwMDExOTIwOTI4OTYsMV0sInRyYW5zbGF0aW9uIjpbMS40NDMzNjgwOTE3MTM2MzcxZS0wOCwwLjQzMzU0NTc5ODA2MzI3ODIsMS40MzE5MjY2NDgzNjUzMzM3ZS0wN119LHsiY2hpbGRyZW4iOlszXSwibmFtZSI6IkJhY2tfTGVnX0xvd2VyX0wiLCJyb3RhdGlvbiI6WzAuNTAzMTUxMTc4MzU5OTg1NCwtMC4wMDAxMTQ0OTY3NzU0OTUzNTQwOSwwLjAwMDExOTU3ODQ5MzQ2Nzk5Nzc2LDAuODY0MTk4NDQ2MjczODAzN10sInNjYWxlIjpbMSwxLjAwMDAwMDExOTIwOTI4OTYsMV0sInRyYW5zbGF0aW9uIjpbOS41MzUxNDI0NTMzODczOGUtMDksMC4zMjc5MjE2Mjg5NTIwMjYzNywxLjU0NzI4Njk1NjMzODIxMmUtMDddfSx7ImNoaWxkcmVuIjpbNF0sIm5hbWUiOiJCYWNrX0xlZ19VcHBlcl9MIiwicm90YXRpb24iOlstMC43MTI5MTcwODk0NjIyODAzLC0wLjA2ODEyOTU5MTY0MzgxMDI3LDAuMDYyNjA2OTkwMzM3MzcxODMsMC42OTUxMTcyMzUxODM3MTU4XSwic2NhbGUiOlsxLDAuOTk5OTk5ODgwNzkwNzEwNCwwLjk5OTk5OTg4MDc5MDcxMDRdLCJ0cmFuc2xhdGlvbiI6Wy0xLjExNzU4NzA4OTUzODU3NDJlLTA4LDAuNDY5ODM2NzcxNDg4MTg5NywxLjczNzQ5ODY3ODI2NzAwMmUtMDddfSx7ImNoaWxkcmVuIjpbNV0sIm5hbWUiOiJCYWNrX0xlZ19QZWx2aXNfTCIsInJvdGF0aW9uIjpbMC45Njc5NzUxOTkyMjI1NjQ3LDAuMDkwNjA1NzIwODc3NjQ3NCwtMC4wMTkwODAxNTgzMjMwNDk1NDUsMC4yMzMzNDYzNzI4NDI3ODg3XSwic2NhbGUiOlswLjk5OTk5OTc2MTU4MTQyMDksMC45OTk5OTk5NDAzOTUzNTUyLDAuOTk5OTk4OTI3MTE2Mzk0XSwidHJhbnNsYXRpb24iOlswLjA3Mzk1Mjc3OTE3Mzg1MTAxLDAuNDc5NjQ3MTI5Nzc0MDkzNjMsLTAuMTQ0OTU1NTQ1NjYzODMzNjJdfSx7Im5hbWUiOiJCYWNrX0xlZ19UaXBfUiIsInJvdGF0aW9uIjpbLTAuMDIxMzgzOTQ2NzYxNDg4OTE0LDQuMDIzMDMzMDAwMDY2Nzg5ZS0wNywtMS40OTg4NDUxMzY4OTM1Nzg1ZS0wOCwwLjk5OTc3MTM1NjU4MjY0MTZdLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDAuOTk5OTk5OTQwMzk1MzU1Ml0sInRyYW5zbGF0aW9uIjpbLTQuNDgyNDM4NTk4MDc0NjIzZS0wOCwwLjA1NzA4Mjk5MjA0NzA3MTQ2LDQuMTA1Mjg4NTUzNTQ2NDE2ZS0wOV19LHsiY2hpbGRyZW4iOls3XSwibmFtZSI6IkJhY2tfTGVnX0Zvb3RfMV9SIiwicm90YXRpb24iOlstMC40MTQ4NjYzMjgyMzk0NDA5LC0wLjAwMDUzNDg3Mzk3OTYzMTgxMTQsMi4xMjEzNDY1NTE1NzU2OThlLTA1LDAuOTA5ODgyMjQ3NDQ3OTY3NV0sInNjYWxlIjpbMC45OTk5OTk4ODA3OTA3MTA0LDAuOTk5OTk5ODIxMTg2MDY1NywwLjk5OTk5OTg4MDc5MDcxMDRdLCJ0cmFuc2xhdGlvbiI6WzIuMjY4Mjc5Nzg2MjIxNjgzZS0wOSwwLjEwNjM2MzQ2MDQyMTU2MjIsOS45NDE4Njg0ODQwMjAyMzNlLTA4XX0seyJjaGlsZHJlbiI6WzhdLCJuYW1lIjoiQmFja19MZWdfRm9vdF9SIiwicm90YXRpb24iOlstMC4yMzYxMzY0ODExNjU4ODU5MywwLjAwMDMyNzc1MTc2ODA1NDQ0MDYsLTAuMDAwMzA5NjY0MjkwMzk4MzU5MywwLjk3MTcxOTgwMTQyNTkzMzhdLCJzY2FsZSI6WzEuMDAwMDAwMTE5MjA5Mjg5NiwxLDAuOTk5OTk5OTQwMzk1MzU1Ml0sInRyYW5zbGF0aW9uIjpbLTIuMjE1MDc0MzQ2MTY3OTY2N2UtMDgsMC4yNDM1OTY2MjgzMDgyOTYyLC0xLjg2ODQ2NTkxNTMyMjMwMzhlLTA4XX0seyJjaGlsZHJlbiI6WzldLCJuYW1lIjoiQmFja19MZWdfQW5rbGVfUiIsInJvdGF0aW9uIjpbLTAuNDEzNzE3Nzc2NTM2OTQxNTMsLTMuNjE0Njk1NzQyNzI2MzI2ZS0wNSwtMy4xNTM3MjYzNTY2ODYwOTNlLTA1LDAuOTEwNDA1MjE4NjAxMjI2OF0sInNjYWxlIjpbMSwwLjk5OTk5OTk0MDM5NTM1NTIsMV0sInRyYW5zbGF0aW9uIjpbLTIuNTYzMTM3OTY4NTM2NDY2NGUtMDgsMC40MzM1NDUzNTEwMjg0NDI0LDIuNDc4NTczMTUxMTY1NjE5NWUtMDddfSx7ImNoaWxkcmVuIjpbMTBdLCJuYW1lIjoiQmFja19MZWdfTG93ZXJfUiIsInJvdGF0aW9uIjpbMC41MDMxNTE0NzYzODMyMDkyLDAuMDAwMTE0NTM1MTM0MzQzODk2MDYsLTAuMDAwMTE5NTk1Mzk1NTE3NTM1NTEsMC44NjQxOTgyNjc0NTk4Njk0XSwidHJhbnNsYXRpb24iOls2LjMxNTUzMTIwOTExMTIxNGUtMDksMC4zMjc5MjEwMzI5MDU1Nzg2LC04LjAyNzM4MjEzNjc4ODIxOWUtMDhdfSx7ImNoaWxkcmVuIjpbMTFdLCJuYW1lIjoiQmFja19MZWdfVXBwZXJfUiIsInJvdGF0aW9uIjpbLTAuNzEyOTE3MjY4Mjc2MjE0NiwwLjA2ODEyOTU4NDE5MzIyOTY4LC0wLjA2MjYwNzAzNTA0MDg1NTQxLDAuNjk1MTE3MDU2MzY5NzgxNV0sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDEsMV0sInRyYW5zbGF0aW9uIjpbLTEuNDkwMTE2MTE5Mzg0NzY1NmUtMDgsMC40Njk4MzY3NzE0ODgxODk3LDEuMjI5MzQ1Nzk4NDkyNDMxNmUtMDddfSx7ImNoaWxkcmVuIjpbMTJdLCJuYW1lIjoiQmFja19MZWdfUGVsdmlzX1IiLCJyb3RhdGlvbiI6WzAuOTY3OTc1MTM5NjE3OTE5OSwtMC4wOTA2MDY5NzI1NzUxODc2OCwwLjAxOTA4NTUxNTI5MDQ5ODczNCwwLjIzMzM0NTc3Njc5NjM0MDk0XSwic2NhbGUiOlswLjk5OTk5OTk0MDM5NTM1NTIsMSwwLjk5OTk5OTgyMTE4NjA2NTddLCJ0cmFuc2xhdGlvbiI6Wy0wLjA3Mzk1MTI1MTgwNDgyODY0LDAuNDc5NjQ3Mjc4Nzg1NzA1NTcsLTAuMTQ0OTU2MjE2MjE2MDg3MzRdfSx7Im5hbWUiOiJGcm9udF9MZWdfVGlwX0wiLCJyb3RhdGlvbiI6Wy0wLjAzNjY4Mzc2MDU4MzQwMDcyNiw2LjQwOTIwMjkxMDYxNzc1MWUtMDcsMS40NjU0MzIyOTEwNzAxMDEyZS0wNywwLjk5OTMyNjk0NDM1MTE5NjNdLCJ0cmFuc2xhdGlvbiI6WzEuMzUzMzEzOTA1MzgzNDAyZS0wOCwwLjA4MjgzNTE1Mjc0NTI0Njg5LC05LjU5MzQ2MzgwMTEzODU2OWUtMTBdfSx7ImNoaWxkcmVuIjpbMTRdLCJuYW1lIjoiRnJvbnRfTGVnX0Zvb3RfTCIsInJvdGF0aW9uIjpbLTAuNTI5NzE2MjUzMjgwNjM5NiwtMC4wMTM2OTYwNTU4NTkzMjczMTYsMC4wMDA5Mzc0NzgwMzQ3NTcwNzc3LDAuODQ4MDYzODI2NTYwOTc0MV0sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDEuMDAwMDAwMTE5MjA5Mjg5NiwxLjAwMDAwMDExOTIwOTI4OTZdLCJ0cmFuc2xhdGlvbiI6WzMuNzgzNDk3OTU5Mzc1MzgxNWUtMDksMC4xMDAxNDYxNTIwNzkxMDUzOCwtNC43MjY0NjIwNjYxNzM1NTM1ZS0wOF19LHsiY2hpbGRyZW4iOlsxNV0sIm5hbWUiOiJGcm9udF9MZWdfQW5rbGVfTCIsInJvdGF0aW9uIjpbLTAuMTY1NzU1MzMxNTE2MjY1ODcsMC4wMDk1OTkwMTg4NDE5ODE4ODgsLTAuMDA5NzUzMDIxNDExNTk3NzI5LDAuOTg2MDcyMDAzODQxNDAwMV0sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDEsMC45OTk5OTk4ODA3OTA3MTA0XSwidHJhbnNsYXRpb24iOlsxLjY3ODkyNzIxOTQ3MjgyNTVlLTA5LDAuMzYxMTUwMTQ1NTMwNzAwNyw0LjA0MzUyMjQ5NDYxMjI2MTdlLTA4XX0seyJjaGlsZHJlbiI6WzE2XSwibmFtZSI6IkZyb250X0xlZ19Mb3dlcl9MIiwicm90YXRpb24iOlstMC4xODU2NjY0NzE3MTk3NDE4Miw0LjQ2Nzk4NzY3MzcwNjM3NWUtMDUsLTUuNjM1ODM1MjU5NDU0MzI1ZS0wNSwwLjk4MjYxMjg0ODI4MTg2MDRdLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDAuOTk5OTk5ODgwNzkwNzEwNF0sInRyYW5zbGF0aW9uIjpbMy4yNTAyNjEyMTU3MjU5MTM2ZS0wOCwwLjQwOTkwNjY4NTM1MjMyNTQ0LC02LjM1NTU0ODk3NTk4OTIyMjVlLTA5XX0seyJjaGlsZHJlbiI6WzE3XSwibmFtZSI6IkZyb250X0xlZ19VcHBlcl9MIiwicm90YXRpb24iOlswLjYxMTgwNjUxMTg3ODk2NzMsMC4xMDc0MTQ1NjU5ODA0MzQ0MiwtMC4wMDE3MDY4MDIwNTMzNzcwMzIzLDAuNzgzNjc4NTMxNjQ2NzI4NV0sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDAuOTk5OTk5OTQwMzk1MzU1MiwwLjk5OTk5OTk0MDM5NTM1NTJdLCJ0cmFuc2xhdGlvbiI6WzMuNTM5MDI1NzgzNTM4ODE4NGUtMDgsMC41MDgwNDI4NzE5NTIwNTY5LDEuNjAxODc0ODI4MzM4NjIzZS0wN119LHsiY2hpbGRyZW4iOlsxOF0sIm5hbWUiOiJGcm9udF9MZWdfU2hvdWxkZXJfTCIsInJvdGF0aW9uIjpbMC40NTIyNzEwNzQwNTY2MjUzNywtMC4wNDY4ODUzNjAwMzIzMjAwMiwtMC4wOTY2OTA5MzA0MjYxMjA3NiwwLjg4NTM4MzI0ODMyOTE2MjZdLCJzY2FsZSI6WzEsMS4wMDAwMDAxMTkyMDkyODk2LDAuOTk5OTk5ODgwNzkwNzEwNF0sInRyYW5zbGF0aW9uIjpbMC4wODQyOTE4ODI4MTI5NzY4NCwtMC4yNTA5NTM3OTM1MjU2OTU4LC0wLjIwMTMzNzAyNDU2OTUxMTRdfSx7Im5hbWUiOiJGcm9udF9MZWdfVGlwX1IiLCJyb3RhdGlvbiI6Wy0wLjAzNjY4Mzc2MDU4MzQwMDcyNiwtNi4zMjMxMDkwMDUyNzk1NDhlLTA3LC0xLjQ2MDQ2MzE4MTUwMTgzNjVlLTA3LDAuOTk5MzI2OTQ0MzUxMTk2M10sInRyYW5zbGF0aW9uIjpbLTEuNTA5ODc0ODkxNzgwNzgyNWUtMDksMC4wODI4MzUxMjI5NDI5MjQ1LC0zLjA4Mzk4Mjg0Njg3NDI3OGUtMDldfSx7ImNoaWxkcmVuIjpbMjBdLCJuYW1lIjoiRnJvbnRfTGVnX0Zvb3RfUiIsInJvdGF0aW9uIjpbLTAuNTI5NzE2MTM0MDcxMzUwMSwwLjAxMzY5NjA2NjEwMzg3NTYzNywtMC4wMDA5Mzc0NDg4NzI3MTg5NiwwLjg0ODA2Mzg4NjE2NTYxODldLCJzY2FsZSI6WzAuOTk5OTk5ODgwNzkwNzEwNCwxLDFdLCJ0cmFuc2xhdGlvbiI6Wy0zLjA4NTAwNjAyODQxMzc3MjZlLTA4LDAuMTAwMTQ2MDU1MjIxNTU3NjIsLTQuNjMzMzI5ODA4NzEyMDA1NmUtMDhdfSx7ImNoaWxkcmVuIjpbMjFdLCJuYW1lIjoiRnJvbnRfTGVnX0Fua2xlX1IiLCJyb3RhdGlvbiI6Wy0wLjE2NTc1NTUyNTIzMTM2MTQsLTAuMDA5NTk5MDMwMDE3ODUyNzgzLDAuMDA5NzUzMDM4MTc1NDA0MDcyLDAuOTg2MDcxOTQ0MjM2NzU1NF0sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDAuOTk5OTk5ODgwNzkwNzEwNCwwLjk5OTk5OTg4MDc5MDcxMDRdLCJ0cmFuc2xhdGlvbiI6Wy0zLjQ2Mzk5MjQ3MDY0MjU1MmUtMDgsMC4zNjExNDk5OTY1MTkwODg3NSw5LjQ0NDE5Mjk4MzIxMDA4N2UtMDldfSx7ImNoaWxkcmVuIjpbMjJdLCJuYW1lIjoiRnJvbnRfTGVnX0xvd2VyX1IiLCJyb3RhdGlvbiI6Wy0wLjE4NTY2NjU2MTEyNjcwODk4LC00LjQ3MjA2MjkzNzU2NjA3OWUtMDUsNS42MzIxMDg1MTM5NjQzNGUtMDUsMC45ODI2MTI3ODg2NzcyMTU2XSwidHJhbnNsYXRpb24iOlstNy4wOTIyMzk2ODQ0MjUyOTRlLTA5LDAuNDA5OTA2NTk1OTQ1MzU4MywyLjkwNTA2MjUwMTY2Nzk5ODdlLTA4XX0seyJjaGlsZHJlbiI6WzIzXSwibmFtZSI6IkZyb250X0xlZ19VcHBlcl9SIiwicm90YXRpb24iOlswLjYxMTgwNjUxMTg3ODk2NzMsLTAuMTA3NDE0NDk4OTI1MjA5MDUsMC4wMDE3MDY4NTQzMjM4NTY1MzI2LDAuNzgzNjc4NTMxNjQ2NzI4NV0sInNjYWxlIjpbMC45OTk5OTk4ODA3OTA3MTA0LDAuOTk5OTk5OTQwMzk1MzU1MiwxXSwidHJhbnNsYXRpb24iOlsyLjk4MDIzMjIzODc2OTUzMTJlLTA4LDAuNTA4MDQyODEyMzQ3NDEyMSwtMi45ODAyMzIyMzg3Njk1MzEyZS0wOF19LHsiY2hpbGRyZW4iOlsyNF0sIm5hbWUiOiJGcm9udF9MZWdfU2hvdWxkZXJfUiIsInJvdGF0aW9uIjpbMC40NTIyNzM0NTgyNDI0MTY0LDAuMDQ2OTA5NjM0MDIzOTA0OCwwLjA5NjY3OTcwOTg1MTc0MTc5LDAuODg1MzgxOTk2NjMxNjIyM10sInNjYWxlIjpbMC45OTk5OTk5NDAzOTUzNTUyLDEsMV0sInRyYW5zbGF0aW9uIjpbLTAuMDg0MzAzNTIwNjE5ODY5MjMsLTAuMjUwOTUzODgyOTMyNjYyOTYsLTAuMjAxMzMyNzMzMDM1MDg3NTldfSx7Im5hbWUiOiJDaGluX1RpcCIsInJvdGF0aW9uIjpbLTAuMDc2MTQ1NDAzMDg3MTM5MTMsMy45MzM5ODg0MjM5MDk3OTU1ZS0wOCwtNy41OTAzMDM4NTIxMTE5MDJlLTA4LDAuOTk3MDk2NzE3MzU3NjM1NV0sInNjYWxlIjpbMSwxLDAuOTk5OTk5OTQwMzk1MzU1Ml0sInRyYW5zbGF0aW9uIjpbLTUuOTI5MTExMzY4NTQxMTI5ZS0xNCwwLjEzNDM1ODg5NzgwNTIxMzkzLDUuOTYwNDY0NDc3NTM5MDYzZS0wOF19LHsiY2hpbGRyZW4iOlsyNl0sIm5hbWUiOiJDaGluIiwicm90YXRpb24iOlswLjE1OTY3Nzc3MzcxNDA2NTU1LDguNDkzMzMxMDUxNzk1Mzk0ZS0wNywxLjU0ODgzNDgzODE2MDkyODVlLTA4LDAuOTg3MTY5MjA2MTQyNDI1NV0sInRyYW5zbGF0aW9uIjpbLTEuMjQwNTU1Nzc1NDM5MTMzOWUtMDYsLTAuMDA3MjUwODE1NjI5OTU5MTA2NCwwLjEwNzk0NDkwNTc1NzkwNDA1XX0seyJuYW1lIjoiRWFyX1RpcF9MIiwicm90YXRpb24iOlswLjAwNTk5MzE4ODgyNDUwNDYxNCwwLjAwNDU3NzMzNjgzMjg4MDk3NCwtMC4wNTI0NDQ5MTI0OTMyMjg5MSwwLjk5ODU5NTM1Njk0MTIyMzFdLCJzY2FsZSI6WzEsMC45OTk5OTk4ODA3OTA3MTA0LDFdLCJ0cmFuc2xhdGlvbiI6Wy0xLjExNzU4NzA4OTUzODU3NDJlLTA4LDAuMTU2Mjg0MzYyMDc3NzEzLC0yLjAxMTY1Njc2MTE2OTQzMzZlLTA3XX0seyJjaGlsZHJlbiI6WzI4XSwibmFtZSI6IkVhcl9MIiwicm90YXRpb24iOlstMC43NTExMjEwNDQxNTg5MzU1LC0wLjEzOTA3Mzc1OTMxNzM5ODA3LC0wLjA1MTAyMTc2MjE5MjI0OTMsMC42NDMzMjkyMDMxMjg4MTQ3XSwic2NhbGUiOlswLjk5OTk5OTg4MDc5MDcxMDQsMC45OTk5OTk4ODA3OTA3MTA0LDAuOTk5OTk5ODgwNzkwNzEwNF0sInRyYW5zbGF0aW9uIjpbMC4xNzYyMDQzMjM3Njg2MTU3MiwtMC4zMjAzODU3NTQxMDg0Mjg5NiwtMC4xNjQwMjQwMTAzMDA2MzYzXX0seyJuYW1lIjoiRWFyX1RpcF9SIiwicm90YXRpb24iOlswLjAwNTk5MzQ0MDc0NzI2MTA0NywtMC4wMDQ1NzczOTczNjg4NDgzMjQsMC4wNTI0NDQ3OTcwMDkyMjk2NiwwLjk5ODU5NTM1Njk0MTIyMzFdLCJzY2FsZSI6WzAuOTk5OTk5ODgwNzkwNzEwNCwwLjk5OTk5OTg4MDc5MDcxMDQsMC45OTk5OTk4MjExODYwNjU3XSwidHJhbnNsYXRpb24iOls4LjE5NTYzODY1NjYxNjIxMWUtMDgsMC4xNTYyODQ4Mzg5MTQ4NzEyMiwtMi4wNDg5MDk2NjQxNTQwNTI3ZS0wOF19LHsiY2hpbGRyZW4iOlszMF0sIm5hbWUiOiJFYXJfUiIsInJvdGF0aW9uIjpbLTAuNzUxMTIxMTAzNzYzNTgwMywwLjEzOTA3NDI4MDg1ODAzOTg2LDAuMDUxMDIyMzY5NDE0NTY3OTUsMC42NDMzMjkwODM5MTk1MjUxXSwic2NhbGUiOlswLjk5OTk5OTk0MDM5NTM1NTIsMC45OTk5OTk5NDAzOTUzNTUyLDEuMDAwMDAwMTE5MjA5Mjg5Nl0sInRyYW5zbGF0aW9uIjpbLTAuMTc2MjA3MTk5NjkyNzI2MTQsLTAuMzIwMzg1NTE1Njg5ODQ5ODUsLTAuMTY0MDIzNDQ0MDU2NTEwOTNdfSx7Im5hbWUiOiJIZWFkLnRpcCIsInJvdGF0aW9uIjpbLTAuMDcwMjc1ODI4MjQyMzAxOTQsLTMuNzE5NTMxNDkxNjk3MTI1NmUtMDcsNy45ODUxOTIyNDA3NjY5OTJlLTA4LDAuOTk3NTI3NTk5MzM0NzE2OF0sInNjYWxlIjpbMSwxLjAwMDAwMDExOTIwOTI4OTYsMV0sInRyYW5zbGF0aW9uIjpbLTEuOTE4NDY1Mzg2NTUyMjcwNWUtMTMsMC4xNzU5MzI1ODYxOTMwODQ3MiwxLjE5MjA4MjgwNTgwMDk2NDdlLTA3XX0seyJjaGlsZHJlbiI6WzI3LDI5LDMxLDMyXSwibmFtZSI6Ik5vc2UiLCJyb3RhdGlvbiI6WzAuMDU4NzUwMjc5MjQ3NzYwNzcsMy4zOTI0NDg3NzUyMzAxNWUtMDcsLTYuNDgxNDM3MjUzNTY5MzExZS0wOCwwLjk5ODI3MjcxNjk5OTA1NF0sInRyYW5zbGF0aW9uIjpbMCwwLjMwOTY4MzQ0MjExNTc4MzcsLTIuMDg2MTgxNjA5NjgzOTkwMmUtMDddfSx7ImNoaWxkcmVuIjpbMzNdLCJuYW1lIjoiSGVhZCIsInJvdGF0aW9uIjpbMC4zNzYwMDcxNjk0ODUwOTIxNiw5Ljg3MDI4NDQyOTc4MDQ0ZS0wNywtMS4wNzAxNzg5Njc2NjU5MjQ2ZS0wNywwLjkyNjYxNjc4NzkxMDQ2MTRdLCJ0cmFuc2xhdGlvbiI6WzEuMTM2ODY4Mzc3MjE2MTYwM2UtMTMsMC4xODk0Njc1NDkzMjQwMzU2NCw4Ljk0MDMwNzMzODg4OTM5N2UtMDhdfSx7ImNoaWxkcmVuIjpbMzRdLCJuYW1lIjoiU3BpbmVfNCIsInJvdGF0aW9uIjpbLTAuMDI5MDYyMjA3Nzg4MjI4OTksMS45MzQwMTQxMDc5NzM3ODA1ZS0wNiwtMi44Mzk1MDM4NDk4Mjc0NTE2ZS0wNywwLjk5OTU3NzY0MTQ4NzEyMTZdLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDFdLCJ0cmFuc2xhdGlvbiI6WzQuNTQ3NDczNTA4ODY0NjQxZS0xMywwLjIyODg4MzI2NjQ0ODk3NDYsMi45Nzk1MjQwMDUyOTc2NjI0ZS0wOF19LHsiY2hpbGRyZW4iOlszNV0sIm5hbWUiOiJTcGluZV8zIiwicm90YXRpb24iOlstMC4wNjgzNjYxNDc1Nzc3NjI2LDkuOTA5MTU4NTA3MDcwOTdlLTA2LDEuMzYzMzg3MzU1MDEzNDAxMmUtMDYsMC45OTc2NjAyNzkyNzM5ODY4XSwic2NhbGUiOlsxLDEsMC45OTk5OTk5NDAzOTUzNTUyXSwidHJhbnNsYXRpb24iOlstMS41OTE2MTU3MjgxMDI2MjQ0ZS0xMiwwLjE4ODQ4MDc5NDQyOTc3OTA1LDguOTM4MzU5MDMwNzA3OTQzZS0wOF19LHsiY2hpbGRyZW4iOlsxOSwyNSwzNl0sIm5hbWUiOiJTcGluZV8yLjAwMSIsInJvdGF0aW9uIjpbLTAuMTIyMzYyMTE0NDg5MDc4NTIsMi44NDM3NTA5MDU4Njc2MzdlLTA3LDMuMDQxMzAxMzk3Mzg4NDUxN2UtMDYsMC45OTI0ODU1MjMyMjM4NzddLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDFdLCJ0cmFuc2xhdGlvbiI6WzkuNjYzMzgxMjA2MzM3MzYzZS0xMywwLjQwMTQwNzE4MjIxNjY0NDMsNC44NDEwNTM0MjQ3OTc3OTJlLTA4XX0seyJuYW1lIjoiU3RvbWFjaF90aXAiLCJyb3RhdGlvbiI6Wy0wLjE3ODQ4MDI5NzMyNzA0MTYzLDEuMzYxMDIwMDc0NDE5NjI3N2UtMDksLTguMDg4NjM3NzQxODIxMDAzZS0wNywwLjk4Mzk0MzUyMTk3NjQ3MV0sInNjYWxlIjpbMSwwLjk5OTk5OTg4MDc5MDcxMDQsMC45OTk5OTk5NDAzOTUzNTUyXSwidHJhbnNsYXRpb24iOlstMy4yNjQwNTU2OTIzOTc5NmUtMTMsMC4xODUxMzAwMDAxMTQ0NDA5MiwtMi4yMzUxNzU3Nzc3OTgzMDRlLTA4XX0seyJjaGlsZHJlbiI6WzM4XSwibmFtZSI6IlN0b21hY2giLCJyb3RhdGlvbiI6WzAuODYwOTU1NzE1MTc5NDQzNCw4LjQwODg3MTUwODQzNjI3OGUtMDYsLTkuODE2NDYxODk3NTcxNTcxZS0wNiwwLjUwODY3OTk4NjAwMDA2MV0sInNjYWxlIjpbMSwxLjAwMDAwMDExOTIwOTI4OTYsMS4wMDAwMDAxMTkyMDkyODk2XSwidHJhbnNsYXRpb24iOlsyLjM0MzM5ODgxODk5MzU5MTdlLTA2LC0wLjA1ODQwMDMwMzEyNTM4MTQ3LDAuMTAwMDUwMjI1ODUzOTE5OThdfSx7ImNoaWxkcmVuIjpbMzcsMzldLCJuYW1lIjoiU3BpbmVfMiIsInJvdGF0aW9uIjpbLTAuMDU3MTIxMjczMTMwMTc4NDUsMi4zNzMzNzM4OTk4OTk4ODg4ZS0wNSwzLjQwMjE0OTMzMjAzMjQyMjVlLTA2LDAuOTk4MzY3MzA5NTcwMzEyNV0sInNjYWxlIjpbMSwxLDAuOTk5OTk5OTQwMzk1MzU1Ml0sInRyYW5zbGF0aW9uIjpbMS44MTgyNzg4NjA4MTAwOTY0ZS0xMSwwLjMxMjUwNTQ4MzYyNzMxOTM0LC01LjUyNzI5MDk4MDQ2NzExNDRlLTA4XX0seyJjaGlsZHJlbiI6WzQwXSwibmFtZSI6IlNwaW5lXzEiLCJyb3RhdGlvbiI6Wy0wLjA0NDUzODg4OTA4MDI4NjAyNiwtNC4wMjkxMzU3NDM2MjE3MzdlLTA1LDguMzA4MzAwMDM5MDYxNTc4ZS0wNywwLjk5OTAwNzcwMTg3Mzc3OTNdLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDFdLCJ0cmFuc2xhdGlvbiI6Wy02LjgyODc1OTc3OTg2NDQxM2UtMTIsMC40NDA1OTY2Njk5MTIzMzgyNiwyLjk4MDIzMTk1NDU1MjQzN2UtMDddfSx7Im5hbWUiOiJUYWlsX1RpcCIsInJvdGF0aW9uIjpbLTAuMDA5MTg4Mjc0ODUyOTMxNSw4LjI0NTExMjMyNjIyMTcxNWUtMDgsLTYuMTc5OTg0MDk3Nzk4Mjk3ZS0wNywwLjk5OTk1Nzc5OTkxMTQ5OV0sInNjYWxlIjpbMSwwLjk5OTk5OTk0MDM5NTM1NTIsMC45OTk5OTk4ODA3OTA3MTA0XSwidHJhbnNsYXRpb24iOls5LjIzNzA1NTU2NDg4MTMwMmUtMTQsMC4yNDAwNjI5MzcxNDA0NjQ3OCwtMi42ODIyMDk4Njc1NDM4NjFlLTA3XX0seyJjaGlsZHJlbiI6WzQyXSwibmFtZSI6IlRhaWxfRW5kIiwicm90YXRpb24iOlstMC4wMDYwNDQzMDcyNTc5ODAxMDgsLTMuMTU0NzEzNjgxMzk2OTdlLTA3LDQuMTg2NDMzOTU1MDU1NjkwNmUtMDcsMC45OTk5ODE3NjA5Nzg2OTg3XSwidHJhbnNsYXRpb24iOlsxLjcwNTMwMjU2NTgyNDI0MDRlLTEzLDAuMzE0MTUyMjQwNzUzMTczODMsLTEuOTM3MTU2MDcxMTA3ODkyOGUtMDddfSx7ImNoaWxkcmVuIjpbNDNdLCJuYW1lIjoiVGFpbF9NaWQuMDAxIiwicm90YXRpb24iOlswLjAzMDk2MzY3NzkxMjk1MDUxNiwtNS45NDk1MjA0MzE4NjkzNTk1ZS0wOSw3LjIwODIzMjk0Mzg2NzE4OGUtMDgsMC45OTk1MjA1NDAyMzc0MjY4XSwic2NhbGUiOlsxLDAuOTk5OTk5ODgwNzkwNzEwNCwxXSwidHJhbnNsYXRpb24iOlsyLjI3MzczNjc1NDQzMjMyMDZlLTEzLDAuNDIxNTE4NzEzMjM1ODU1MSwtMi4zMDk2ODQxMDYxOTQyNTRlLTA3XX0seyJjaGlsZHJlbiI6WzQ0XSwibmFtZSI6IlRhaWxfTWlkIiwicm90YXRpb24iOlstMC4wMDk1MTgxNjIzNDczNzYzNDcsMy42MDAyNTYzNzc0NjczMDM1ZS0wNywtMi44NDE5OTY4NjAwNzAxMzk1ZS0wOCwwLjk5OTk1NDcwMDQ2OTk3MDddLCJzY2FsZSI6WzEsMC45OTk5OTk5NDAzOTUzNTUyLDFdLCJ0cmFuc2xhdGlvbiI6Wy0yLjkzNjUzOTkwMDEzMzUzOWUtMTQsMC4yNjQzNjY2MjY3Mzk1MDE5NSwtMS45NjUwOTA2MzI0Mzg2NTk3ZS0wN119LHsiY2hpbGRyZW4iOls0NV0sIm5hbWUiOiJUYWlsX0Jhc2UiLCJyb3RhdGlvbiI6WzAuOTk4OTUyMDMxMTM1NTU5MSwtMi45NTczNzMyMjYzMDg4NDZlLTA3LDIuNjU0NDYzNzQyMTQ2NjE3N2UtMDYsMC4wNDU3NzAwMDA2NjYzNzk5M10sInNjYWxlIjpbMSwxLDEuMDAwMDE3Mjg1MzQ2OTg0OV0sInRyYW5zbGF0aW9uIjpbLTMuODU5MzA5NDU4Njc1ODUyNWUtMDcsLTAuMTAxNTc2NTc0MTQ2NzQ3NTksMC4wMDQ2Mjk0MTgyNTM4OTg2MjFdfSx7ImNoaWxkcmVuIjpbNiwxMyw0MSw0Nl0sIm5hbWUiOiJIaXBzIiwicm90YXRpb24iOlstMC45OTg3MTY4OTA4MTE5MjAyLDEuMzgyMTI5Mzk3NTk3OTY0M2UtMDcsLTIuNjQ0NTYyOTgyODIzMTE3NmUtMDYsMC4wNTA2NDIzMTUyOTgzMTg4Nl0sInNjYWxlIjpbMSwwLjk5OTk5OTk0MDM5NTM1NTIsMS4wMDAwMjYxMDY4MzQ0MTE2XSwidHJhbnNsYXRpb24iOlstMi44NDIyNDU0ODE5Mzk3NTllLTE0LDAuNzI2ODA0NjczNjcxNzIyNCwxLjA2OTA0MzI3ODY5NDE1MjhdfSx7ImNoaWxkcmVuIjpbNDddLCJuYW1lIjoicm9vdCIsInJvdGF0aW9uIjpbLTAuNzA3MTA2NzY5MDg0OTMwNCwwLDAsMC43MDcxMDY3NjkwODQ5MzA0XX0seyJtZXNoIjowLCJuYW1lIjoiQ3ViZVF1YWRydXBlZCIsInNraW4iOjB9LHsiY2hpbGRyZW4iOls0OSw0OF0sIm5hbWUiOiJBcm1hdHVyZSJ9XSwibWF0ZXJpYWxzIjpbeyJkb3VibGVTaWRlZCI6dHJ1ZSwibmFtZSI6IkN1YmVRdWFkcnVwZWRfTWF0ZXJpYWwiLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlswLjg1MDAwMDAyMzg0MTg1NzksMC41NTAwMDAwMTE5MjA5MjksMC4zMTk5OTk5OTI4NDc0NDI2LDFdLCJtZXRhbGxpY0ZhY3RvciI6MCwicm91Z2huZXNzRmFjdG9yIjowLjYwMDAwMDAyMzg0MTg1Nzl9fV0sIm1lc2hlcyI6W3sibmFtZSI6IkN1YmVRdWFkcnVwZWRfTWVzaCIsInByaW1pdGl2ZXMiOlt7ImF0dHJpYnV0ZXMiOnsiUE9TSVRJT04iOjAsIk5PUk1BTCI6MSwiSk9JTlRTXzAiOjIsIldFSUdIVFNfMCI6M30sImluZGljZXMiOjQsIm1hdGVyaWFsIjowfV19XSwic2tpbnMiOlt7ImludmVyc2VCaW5kTWF0cmljZXMiOjUsImpvaW50cyI6WzQ4LDQ3LDYsNSw0LDMsMiwxLDAsMTMsMTIsMTEsMTAsOSw4LDcsNDEsNDAsMzcsMTksMTgsMTcsMTYsMTUsMTQsMjUsMjQsMjMsMjIsMjEsMjAsMzYsMzUsMzQsMzMsMjcsMjYsMjksMjgsMzEsMzAsMzIsMzksMzgsNDYsNDUsNDQsNDMsNDJdLCJuYW1lIjoiQXJtYXR1cmUifV0sImFjY2Vzc29ycyI6W3siYnVmZmVyVmlldyI6MCwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQiOjg0MCwibWF4IjpbMC4yNDgwMTQyNzEyNTkzMDc4NiwxLjU5OTAzOTQzNTM4NjY1NzcsMS4zOTg1NDk2NzU5NDE0NjczXSwibWluIjpbLTAuMjQ4MDQ3MDY4NzE1MDk1NTIsMC4wMTQ4NzkwNDc4NzA2MzU5ODYsLTEuODM5Mzg1MTUxODYzMDk4MV0sInR5cGUiOiJWRUMzIn0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJjb3VudCI6ODQwLCJ0eXBlIjoiVkVDMyJ9LHsiYnVmZmVyVmlldyI6MiwiY29tcG9uZW50VHlwZSI6NTEyMSwiY291bnQiOjg0MCwidHlwZSI6IlZFQzQifSx7ImJ1ZmZlclZpZXciOjMsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo4NDAsInR5cGUiOiJWRUM0In0seyJidWZmZXJWaWV3Ijo0LCJjb21wb25lbnRUeXBlIjo1MTIzLCJjb3VudCI6MTI2MCwidHlwZSI6IlNDQUxBUiJ9LHsiYnVmZmVyVmlldyI6NSwiY29tcG9uZW50VHlwZSI6NTEyNiwiY291bnQi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1hztvoqKYT/Z7yO+IvBhv/xY4r5j18W91hztvoqKYT/Z7yO+IvBhv/xY4r78/Xq/EX8uPl68yb2pUBo+8v5gP4a65z5j18W91hztvoqKYT/8/Xq/EX8uPl68yb2pUBo+8v5gP4a65z5S4Xk/cFk1vvUFAT5j18W91hztvoqKYT8AAAAA/L99PvcDeL8AAAAAMT98P4yzLj43438/nOvrvPRd5bsAAAAA/L99PvcDeL8AAAAAMT98P4yzLj4G43+/I73svMld5bsAAAAAMT98P4yzLj4AAAAA11u8vvcLbj8G43+/I73svMld5bsAAAAAMT98P4yzLj4AAAAA11u8vvcLbj83438/nOvrvPRd5bsAAAAA/L99PvcDeL8AAAAARU1wv56IsL43438/nOvrvPRd5bsAAAAA/L99PvcDeL8AAAAARU1wv56IsL4G43+/I73svMld5bsAAAAA11u8vvcLbj8AAAAARU1wv56IsL4G43+/I73svMld5bsAAAAA11u8vvcLbj8AAAAARU1wv56IsL43438/nOvrvPRd5bsAAAAACtARvXbWf79rtdE42/B/P14fsLwU938/wimHvCe10TkAAAAACtARvXbWf79rtdE42/B/P14fsLxK93+/dIaFvFO10TkAAAAAAXryOzb+fz9rtdE42/B/P14fsLxK93+/dIaFvFO10TkAAAAAAXryOzb+fz9rtdE42/B/P14fsLwU938/wimHvCe10TkAAAAACtARvXbWf78U938/wimHvCe10TlrtdG42/B/v14fsDwAAAAACtARvXbWf79rtdG42/B/v14fsDxK93+/dIaFvFO10TkAAAAAAXryOzb+fz9rtdG42/B/v14fsDxK93+/dIaFvFO10TkAAAAAAXryOzb+fz8U938/wimHvCe10TlrtdG42/B/v14fsDzSFmI8YApwP0jPsb5KKn8/NFefvdBQrzypDr671QLLvvQCa7/SFmI8YApwP0jPsb6pDr671QLLvvQCa7+AwX+/vKcbvdwisDy5LJA7Kw+YPmBydD/SFmI8YApwP0jPsb6AwX+/vKcbvdwisDy5LJA7Kw+YPmBydD/SFmI8YApwP0jPsb5KKn8/NFefvdBQrzxKKn8/NFefvdBQrzypDr671QLLvvQCa7/SFmK8YApwv0jPsT6pDr671QLLvvQCa7/SFmK8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AQAAAAEAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAARAAAAEQAAABEAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAASAAAAEgAAABIAAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAfAAAAHwAAAB8AAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAhAAAAIQAAACEAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAiAAAAIgAAACIAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAlAAAAJQAAACUAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAjAAAAIwAAACMAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAAnAAAAJwAAACcAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAATAAAAEwAAABMAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAVAAAAFQAAABUAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAWAAAAFgAAABYAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAXAAAAFwAAABcAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAZAAAAGQAAABkAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAaAAAAGgAAABoAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAbAAAAGwAAABsAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAcAAAAHAAAABwAAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAdAAAAHQAAAB0AAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAtAAAALQAAAC0AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAuAAAALgAAAC4AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAAvAAAALwAAAC8AAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAACAAAAAgAAAAIAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAEAAAABAAAAAQAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAFAAAABQAAAAUAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAGAAAABgAAAAYAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAJAAAACQAAAAkAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAAKAAAACgAAAAoAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAALAAAACwAAAAsAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAAMAAAADAAAAAwAAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAANAAAADQAAAA0AAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAABAAQABgABAAYACQAMABUAEgAMABIADwAAAA0AEAAAABAAAwAHABMAFgAHABYACgACAAsAFwACABcADgAFABEAFAAFABQACAAZABwAHgAZAB4AIQAkAC0AKgAkACoAJwAYACUAKAAYACgAGwAfACsALgAfAC4AIgAaACMALwAaAC8AJgAdACkALAAdACwAIAAxADQANgAxADYAOQA9AEUAQgA9AEIAQAAwADwAPwAwAD8AMwA3AEMARgA3AEYAOgAyADsARwAyAEcAPgA1AEEARAA1AEQAOABJAEwATgBJAE4AUQBUAF0AWgBUAFoAVwBIAFUAWABIAFgASwBPAFsAXgBPAF4AUgBKAFMAXwBKAF8AVgBNAFkAXABNAFwAUABhAGQAZgBhAGYAaQBsAHUAcgBsAHIAbwBgAG0AcABgAHAAYwBnAHMAdgBnAHYAagBiAGsAdwBiAHcAbgBlAHEAdABlAHQAaAB5AHwAfgB5AH4AgQCEAI0AigCEAIoAhwB4AIUAiAB4AIgAewB/AIsAjgB/AI4AggB6AIMAjwB6AI8AhgB9AIkAjAB9AIwAgACQAJMAlgCQAJYAmQCdAKUAogCdAKIAoACRAJwAnwCRAJ8AlACXAKMApgCXAKYAmgCSAJsApwCSAKcAngCVAKEApACVAKQAmACoAKsArgCoAK4AsQC1AL0AugC1ALoAuACpALQAtwCpALcArACvALsAvgCvAL4AsgCqALMAvwCqAL8AtgCtALkAvACtALwAsADCAMUAxwDCAMcAygDNANYA0gDNANIAzwDBAM4A0ADBANAAwwDIANQA1wDIANcAywDAAMkA1QDAANUAzADEANEA0wDEANMAxgDYANsA3gDYAN4A4QDkAO4A6wDkAOsA5wDZAOUA6ADZAOgA3ADfAOoA7QDfAO0A4gDaAOMA7wDaAO8A5gDdAOkA7ADdAOwA4ADxAPMA9gDxAPYA+gD9AAcBBAH9AAQBAAHyAP4AAQHyAAEB9QD3AAIBBgH3AAYB+wDwAPkABQHwAAUB/AD0AP8AAwH0AAMB+AAKAQwBDgEKAQ4BEgEUAR0BGgEUARoBFwEIARUBGAEIARgBCwEPARsBHwEPAR8BEwEJAREBHgEJAR4BFgENARkBHAENARwBEAEhASQBJgEhASYBKQEtATYBMwEtATMBMAEgASwBLwEgAS8BIwEnATIBNQEnATUBKgEiASsBNwEiATcBLgElATEBNAElATQBKAE6ATwBPwE6AT8BQwFFAU4BSwFFAUsBSAE4AUQBRwE4AUcBOwE+AUoBTQE+AU0BQQE5AUIBTwE5AU8BRgE9AUkBTAE9AUwBQAFSAVQBVwFSAVcBWwFdAWUBYgFdAWIBYAFQAVwBXwFQAV8BUwFWAWMBZwFWAWcBWgFRAVkBZgFRAWYBXgFVAWEBZAFVAWQBWAFoAWsBbgFoAW4BcQF1AX0BegF1AXoBeAFpAXQBdwFpAXcBbAFvAXsBfgFvAX4BcgFqAXMBfwFqAX8BdgFtAXkBfAFtAXwBcAGAAYMBhgGAAYYBiQGNAZcBkwGNAZMBjwGCAY4BkAGCAZABhAGHAZIBlQGHAZUBigGBAYsBlgGBAZYBjAGFAZEBlAGFAZQBiAGZAZwBngGZAZ4BoQGlAa4BqwGlAasBqAGYAaQBpwGYAacBmwGfAaoBrQGfAa0BogGaAaMBrwGaAa8BpgGdAakBrAGdAawBoAGxAbQBtwGxAbcBugG+AccBwwG+AcMBwAGwAbwBvwGwAb8BswG2AcIBxQG2AcUBuQGyAbsBxgGyAcYBvQG1AcEBxAG1AcQBuAHIAcsBzwHIAc8B0gHWAd8B2wHWAdsB2AHKAdUB1wHKAdcBzAHOAdoB3QHOAd0B0QHJAdMB3gHJAd4B1AHNAdkB3AHNAdwB0AHgAeMB5gHgAeYB6QHtAfUB8gHtAfIB8AHhAewB7wHhAe8B5AHnAfMB9gHnAfYB6gHiAesB9wHiAfcB7gHlAfEB9AHlAfQB6AH5AfwB/gH5Af4BAQIEAg0CCgIEAgoCBwL4AQUCCAL4AQgC+wH/AQsCDgL/AQ4CAgL6AQMCDwL6AQ8CBgL9AQkCDAL9AQwCAAIQAhMCFgIQAhYCGQIdAiUCIgIdAiICIAIRAhwCHwIRAh8CFAIXAiMCJgIXAiYCGgISAhsCJwISAicCHgIVAiECJAIVAiQCGAIpAiwCLgIpAi4CMQI0Aj0COgI0AjoCNwIoAjUCOAIoAjgCKwIvAjsCPgIvAj4CMgIqAjMCPwIqAj8CNgItAjkCPAItAjwCMAJBAkQCRgJBAkYCSQJMAlUCUgJMAlICTwJAAk0CUAJAAlACQwJHAlMCVgJHAlYCSgJCAksCVwJCAlcCTgJFAlECVAJFAlQCSAJaAlwCXwJaAl8CYwJlAm4CawJlAmsCaAJYAmQCZwJYAmcCWwJeAmoCbQJeAm0CYQJZAmICbwJZAm8CZgJdAmkCbAJdAmwCYAJyAnQCdwJyAncCewJ9AoYCgwJ9AoMCgAJwAnwCfwJwAn8CcwJ2AoIChQJ2AoUCeQJxAnoChwJxAocCfgJ1AoEChAJ1AoQCeAKJAowCjgKJAo4CkQKWAp4CmgKWApoCmAKIApQClwKIApcCiwKPApsCnwKPAp8CkwKKApICnQKKAp0ClQKNApkCnAKNApwCkAKhAqQCpwKhAqcCqgKuArcCswKuArMCsAKgAqwCrwKgAq8CowKmArICtQKmArUCqQKiAqsCtgKiArYCrQKlArECtAKlArQCqAK4ArsCvwK4Ar8CwgLGAs8CywLGAssCyAK6AsUCxwK6AscCvAK+AsoCzQK+As0CwQK5AsMCzgK5As4CxAK9AskCzAK9AswCwALQAtMC1gLQAtYC2QLeAucC4wLeAuMC4ALSAt0C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";
@@ -44802,6 +44956,9 @@ const quadrupedAnimsGlb = "data:model/gltf-binary;base64,Z2xURgIAAABUUAQAwCIDAEp
 class QuadrupedActor extends SkinnedActor {
   constructor() {
     super();
+    __publicField(this, "walkBaseSpeed", 4.5);
+    __publicField(this, "sprintBaseSpeed", 8.5);
+    __publicField(this, "crouchWalkBaseSpeed", 2.5);
     this.buildMesh();
   }
   getType() {
@@ -44812,6 +44969,13 @@ class QuadrupedActor extends SkinnedActor {
   }
   shouldInclineOnRamps() {
     return true;
+  }
+  getSlopeProbes() {
+    return {
+      frontZ: 1.1 * this.scale,
+      rearZ: 1.1 * this.scale,
+      halfWidth: 0.35 * this.scale
+    };
   }
   getRampSlopeConfig() {
     return {
@@ -44836,7 +45000,7 @@ class QuadrupedActor extends SkinnedActor {
     return isCrouch ? 1.05 / 2 : 1.47 / 2;
   }
   getFPVOffset() {
-    return this.isCrouching() ? new Vector3(0, 0.75, 0.1) : new Vector3(0, 1.25, 0.1);
+    return this.isCrouching() ? new Vector3(0, 0.75 * this.scale, 0.1 * this.scale) : new Vector3(0, 1.25 * this.scale, 0.1 * this.scale);
   }
   getModelUrl() {
     return quadrupedCubesGlb;
@@ -44863,19 +45027,19 @@ class QuadrupedActor extends SkinnedActor {
     return "Jump_air";
   }
   getStandingCapsuleRadius() {
-    return 0.35;
+    return 0.45;
   }
   getStandingCapsuleHeight() {
-    return 0.7;
+    return 0.65;
   }
   getCrouchingCapsuleRadius() {
-    return 0.35;
+    return 0.45;
   }
   getCrouchingCapsuleHeight() {
     return 0.45;
   }
   getModelYOffset() {
-    return 0.18;
+    return 0;
   }
   getCustomActionAnimation(keysPressed) {
     if (keysPressed["KeyB"] || keysPressed["Keyb"] || keysPressed["b"] || keysPressed["B"]) {
@@ -47092,7 +47256,7 @@ class ThreeActing {
     __publicField(this, "lastBuiltPlaybackMode", null);
     __publicField(this, "isPlaybackMode", false);
     __publicField(this, "isCountingCountdown", false);
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     this.container = options.container;
     this.onStateChange = options.onStateChange;
     this.onRecordingFinished = options.onRecordingFinished;
@@ -47100,18 +47264,20 @@ class ThreeActing {
     const initialStageData = ((_a = options.initialState) == null ? void 0 : _a.stage_data) ?? ((_b = options.initialState) == null ? void 0 : _b.scene_data) ?? { type: "cube_stage", num_assets: 0, nodes: [] };
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null;
     const defaultSpeed = ((_c = options.initialState) == null ? void 0 : _c.actor_speed) ?? (((_d = options.initialState) == null ? void 0 : _d.actor_type) === "car" ? 20 : 10);
-    this.cameraDistance = ((_e = options.initialState) == null ? void 0 : _e.camera_distance) ?? 1;
+    const defaultScale = ((_e = options.initialState) == null ? void 0 : _e.actor_scale) ?? (((_f = options.initialState) == null ? void 0 : _f.actor_type) === "quadruped" ? 0.5 : 1);
+    this.cameraDistance = ((_g = options.initialState) == null ? void 0 : _g.camera_distance) ?? 1;
     this.state = {
-      actor_type: ((_f = options.initialState) == null ? void 0 : _f.actor_type) ?? "human",
-      actor_color: (_g = options.initialState) == null ? void 0 : _g.actor_color,
+      actor_type: ((_h = options.initialState) == null ? void 0 : _h.actor_type) ?? "human",
+      actor_color: (_i = options.initialState) == null ? void 0 : _i.actor_color,
       actor_speed: defaultSpeed,
+      actor_scale: defaultScale,
       camera_distance: this.cameraDistance,
-      duration: ((_h = options.initialState) == null ? void 0 : _h.duration) ?? 7,
+      duration: ((_j = options.initialState) == null ? void 0 : _j.duration) ?? 7,
       stage_data: initialStageData,
       scene_data: initialStageData,
-      motion_data: (_i = options.initialState) == null ? void 0 : _i.motion_data,
-      spawn_point: (_j = options.initialState) == null ? void 0 : _j.spawn_point,
-      actors: ((_k = options.initialState) == null ? void 0 : _k.actors) ?? []
+      motion_data: (_k = options.initialState) == null ? void 0 : _k.motion_data,
+      spawn_point: (_l = options.initialState) == null ? void 0 : _l.spawn_point,
+      actors: ((_m = options.initialState) == null ? void 0 : _m.actors) ?? []
     };
     this.playbackController = new PlaybackController();
     this.initThreeJS();
@@ -47171,11 +47337,13 @@ class ThreeActing {
         return !((_a = a.id) == null ? void 0 : _a.startsWith("actor_ds_")) && !a.isDownstreamPeer;
       }
     );
+    const currentScale = this.state.actor_scale ?? (this.getActorType() === "quadruped" ? 0.5 : 1);
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === "human" ? "#F1DFBF" : "#0284C7"),
       actor_speed: this.state.actor_speed,
+      actor_scale: currentScale,
       spawn_point: this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
       trajectory: this.trajectory || []
     };
@@ -47191,11 +47359,13 @@ class ThreeActing {
     if (this.spawnPointHelper) {
       this.spawnPointHelper.group.visible = true;
     }
+    const currentScale = this.state.actor_scale ?? (this.getActorType() === "quadruped" ? 0.5 : 1);
     const payload = {
       type: "acting_motion",
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === "human" ? "#F1DFBF" : "#0284C7"),
       actor_speed: this.state.actor_speed,
+      actor_scale: currentScale,
       duration: this.state.duration,
       spawn_point: this.state.spawn_point,
       trajectory: this.trajectory
@@ -47266,6 +47436,8 @@ class ThreeActing {
       const actorCtrl = ActorFactory.create(rec.actor_type || "human");
       const color = rec.actor_color || (rec.actor_type === "car" ? "#0284C7" : "#F1DFBF");
       actorCtrl.setActorColor(color);
+      const scale = rec.actor_scale || (rec.actor_type === "quadruped" ? 0.5 : 1);
+      actorCtrl.setActorScale(scale);
       const pbCtrl = new PlaybackController();
       pbCtrl.setTrajectory(traj);
       pbCtrl.start();
@@ -47487,6 +47659,8 @@ class ThreeActing {
     this.actorController = ActorFactory.create(charType);
     const color = this.state.actor_color || (charType === "car" ? "#0284C7" : "#F1DFBF");
     this.actorController.setActorColor(color);
+    const currentScale = this.state.actor_scale ?? (charType === "quadruped" ? 0.5 : 1);
+    this.actorController.setActorScale(currentScale);
     this.actorController.setDisplayCollider(this.displayActorCollider);
     this.scene.add(this.actorController.group);
     this.resetActorPosition();
@@ -47501,6 +47675,19 @@ class ThreeActing {
       this.onStateChange({ ...this.state, actor_color: color, actors: this.getAccumulatedActors() });
     }
   }
+  setActorScale(scale, triggerChange = true) {
+    if (typeof scale !== "number" || isNaN(scale)) return;
+    const normalizedScale = Math.max(0.3, Math.min(2, scale));
+    const isDifferent = this.state.actor_scale !== normalizedScale;
+    this.state.actor_scale = normalizedScale;
+    if (this.actorController) {
+      this.actorController.setActorScale(normalizedScale);
+      this.resetActorPosition();
+    }
+    if (isDifferent && triggerChange && this.onStateChange) {
+      this.onStateChange({ ...this.state, actor_scale: normalizedScale, actors: this.getAccumulatedActors() });
+    }
+  }
   setCameraDistance(dist) {
     this.cameraDistance = Math.max(0.5, Math.min(2.5, Math.round(dist * 10) / 10));
     this.state.camera_distance = this.cameraDistance;
@@ -47509,17 +47696,21 @@ class ThreeActing {
     return this.cameraDistance;
   }
   getActorFramingOffsets() {
+    const scale = this.state.actor_scale ?? (this.getActorType() === "quadruped" ? 0.5 : 1);
     if (!this.actorController) {
-      return { camOffset: new Vector3(-8 * this.cameraDistance, 4 * this.cameraDistance, 0), targetOffset: new Vector3(0, 0.5, 0) };
+      return {
+        camOffset: new Vector3(-8 * this.cameraDistance * scale, 4 * this.cameraDistance * scale, 0),
+        targetOffset: new Vector3(0, 0.5 * scale, 0)
+      };
     }
     const bbox = new Box3().setFromObject(this.actorController.group);
     const size = new Vector3();
     bbox.getSize(size);
-    const maxSpan = Math.max(size.x, size.y, size.z, 1.5);
-    const dist = Math.max(8, maxSpan * 2.8) * this.cameraDistance;
+    const maxSpan = Math.max(size.x, size.y, size.z, 1.5 * scale);
+    const dist = Math.max(8 * scale, maxSpan * 2.8) * this.cameraDistance;
     const camX = -dist * 0.85;
-    const camY = Math.max(2.5, dist * 0.45);
-    const targetY = size.y > 0 ? Math.max(0.5, size.y * 0.45) : 0.5;
+    const camY = Math.max(2.5 * scale, dist * 0.45);
+    const targetY = size.y > 0 ? Math.max(0.3 * scale, size.y * 0.45) : 0.5 * scale;
     return {
       camOffset: new Vector3(camX, camY, 0),
       targetOffset: new Vector3(0, targetY, 0)
@@ -47921,6 +48112,9 @@ class ThreeActing {
     if (newState.actor_color !== void 0) {
       this.setActorColor(newState.actor_color, false);
     }
+    if (newState.actor_scale !== void 0 && newState.actor_scale !== this.state.actor_scale) {
+      this.setActorScale(newState.actor_scale, false);
+    }
     if (newState.actor_speed !== void 0) {
       this.state.actor_speed = newState.actor_speed;
     }
@@ -48199,23 +48393,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     currentNode: {}
   },
   setup(__props, { expose: __expose }) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const props = __props;
     const initialActorType = ((_a = props.initialState) == null ? void 0 : _a.actor_type) ?? "human";
     const initialActorSpeed = ((_b = props.initialState) == null ? void 0 : _b.actor_speed) ?? (initialActorType === "car" ? 20 : 10);
+    const initialActorScale = ((_c = props.initialState) == null ? void 0 : _c.actor_scale) ?? (initialActorType === "quadruped" ? 0.5 : 1);
     const defaultActorColor = computed(() => initialActorType === "car" ? "#0284C7" : "#F1DFBF");
-    const initialActorColor = ((_c = props.initialState) == null ? void 0 : _c.actor_color) ?? defaultActorColor.value;
-    const initialCameraDistance = ((_d = props.initialState) == null ? void 0 : _d.camera_distance) ?? 1;
+    const initialActorColor = ((_d = props.initialState) == null ? void 0 : _d.actor_color) ?? defaultActorColor.value;
+    const initialCameraDistance = ((_e = props.initialState) == null ? void 0 : _e.camera_distance) ?? 1;
     const state = /* @__PURE__ */ reactive({
       actor_type: initialActorType,
       actor_color: initialActorColor,
       actor_speed: initialActorSpeed,
+      actor_scale: initialActorScale,
       camera_distance: initialCameraDistance,
-      duration: ((_e = props.initialState) == null ? void 0 : _e.duration) ?? 7,
-      spawn_point: (_f = props.initialState) == null ? void 0 : _f.spawn_point,
-      motion_data: ((_g = props.initialState) == null ? void 0 : _g.motion_data) ?? "",
-      scene_data: ((_h = props.initialState) == null ? void 0 : _h.scene_data) ?? null,
-      actors: ((_i = props.initialState) == null ? void 0 : _i.actors) ?? []
+      duration: ((_f = props.initialState) == null ? void 0 : _f.duration) ?? 7,
+      spawn_point: (_g = props.initialState) == null ? void 0 : _g.spawn_point,
+      motion_data: ((_h = props.initialState) == null ? void 0 : _h.motion_data) ?? "",
+      scene_data: ((_i = props.initialState) == null ? void 0 : _i.scene_data) ?? null,
+      actors: ((_j = props.initialState) == null ? void 0 : _j.actors) ?? []
     });
     const cameraDistance = /* @__PURE__ */ ref(initialCameraDistance);
     const showDistanceSlider = /* @__PURE__ */ ref(false);
@@ -48379,6 +48575,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       if (newState.hasOwnProperty("actor_color")) {
         state.actor_color = newState.actor_color;
       }
+      if (newState.hasOwnProperty("actor_scale")) {
+        state.actor_scale = newState.actor_scale;
+      }
       if (newState.hasOwnProperty("actor_speed")) {
         state.actor_speed = newState.actor_speed;
       }
@@ -48427,7 +48626,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const currentTime = /* @__PURE__ */ ref(0);
     const practiceElapsed = /* @__PURE__ */ ref(0);
     const previousActorsCount = /* @__PURE__ */ ref(0);
-    const totalDuration = /* @__PURE__ */ ref(((_j = props.initialState) == null ? void 0 : _j.duration) ?? 7);
+    const totalDuration = /* @__PURE__ */ ref(((_k = props.initialState) == null ? void 0 : _k.duration) ?? 7);
     let timeFrameId = null;
     const updateTimeCounter = () => {
       if (threeActing) {
@@ -48716,11 +48915,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             ]),
             createBaseVNode("div", _hoisted_29$1, [
               state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_30$1, [..._cache2[27] || (_cache2[27] = [
-                createStaticVNode('<div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>W</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>▲</kbd></div><span class="action-desc" data-v-00bd5f55>Accelerate</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>S</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>▼</kbd></div><span class="action-desc" data-v-00bd5f55>Brake / Reverse</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>A</kbd> <kbd data-v-00bd5f55>D</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>◀</kbd> <kbd data-v-00bd5f55>▶</kbd></div><span class="action-desc" data-v-00bd5f55>Steer Left / Right</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>Space</kbd></div><span class="action-desc" data-v-00bd5f55>Handbrake</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>▲</kbd></div><span class="action-desc" data-v-443e5214>Accelerate</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>S</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>▼</kbd></div><span class="action-desc" data-v-443e5214>Brake / Reverse</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>◀</kbd> <kbd data-v-443e5214>▶</kbd></div><span class="action-desc" data-v-443e5214>Steer Left / Right</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd></div><span class="action-desc" data-v-443e5214>Handbrake</span></div>', 4)
               ])])) : state.actor_type === "quadruped" ? (openBlock(), createElementBlock("div", _hoisted_31$1, [..._cache2[28] || (_cache2[28] = [
-                createStaticVNode('<div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>W</kbd> <kbd data-v-00bd5f55>A</kbd> <kbd data-v-00bd5f55>S</kbd> <kbd data-v-00bd5f55>D</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>Arrows</kbd></div><span class="action-desc" data-v-00bd5f55>Move</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>Shift</kbd> + Move</div><span class="action-desc" data-v-00bd5f55>Run</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>C</kbd></div><span class="action-desc" data-v-00bd5f55>Sit</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>B</kbd></div><span class="action-desc" data-v-00bd5f55>Bark</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>Space</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>J</kbd></div><span class="action-desc" data-v-00bd5f55>Jump</span></div>', 5)
+                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>S</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>Arrows</kbd></div><span class="action-desc" data-v-443e5214>Move</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Shift</kbd> + Move</div><span class="action-desc" data-v-443e5214>Run</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>C</kbd></div><span class="action-desc" data-v-443e5214>Sit</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>B</kbd></div><span class="action-desc" data-v-443e5214>Bark</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>J</kbd></div><span class="action-desc" data-v-443e5214>Jump</span></div>', 5)
               ])])) : (openBlock(), createElementBlock("div", _hoisted_32$1, [..._cache2[29] || (_cache2[29] = [
-                createStaticVNode('<div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>W</kbd> <kbd data-v-00bd5f55>A</kbd> <kbd data-v-00bd5f55>S</kbd> <kbd data-v-00bd5f55>D</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>Arrows</kbd></div><span class="action-desc" data-v-00bd5f55>Move</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>Shift</kbd> + Move</div><span class="action-desc" data-v-00bd5f55>Sprint (Fast Run)</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>C</kbd></div><span class="action-desc" data-v-00bd5f55>Crouch / Crouch Walk</span></div><div class="control-row" data-v-00bd5f55><div class="key-group" data-v-00bd5f55><kbd data-v-00bd5f55>Space</kbd> <span class="or" data-v-00bd5f55>or</span> <kbd data-v-00bd5f55>J</kbd></div><span class="action-desc" data-v-00bd5f55>Jump</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>S</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>Arrows</kbd></div><span class="action-desc" data-v-443e5214>Move</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Shift</kbd> + Move</div><span class="action-desc" data-v-443e5214>Sprint (Fast Run)</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>C</kbd></div><span class="action-desc" data-v-443e5214>Crouch / Crouch Walk</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>J</kbd></div><span class="action-desc" data-v-443e5214>Jump</span></div>', 4)
               ])]))
             ]),
             createBaseVNode("div", _hoisted_33$1, [
@@ -48735,7 +48934,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-00bd5f55"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-443e5214"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);
@@ -48945,13 +49144,16 @@ class ThreeDirecting {
   getAvailableActors() {
     const list = [];
     if (this.actorList.length === 0) {
-      list.push({ id: "actor_1", label: "Actor 1 (human)" });
+      list.push({ id: "actor_1", label: "Actor 1 (human)", actor_type: "human", scale: 1 });
       return list;
     }
     this.actorList.forEach((a, idx) => {
+      var _a;
       list.push({
         id: a.id,
-        label: `Actor ${idx + 1} (${a.record.actor_type || "human"})`
+        label: `Actor ${idx + 1} (${a.record.actor_type || "human"})`,
+        actor_type: a.record.actor_type || "human",
+        scale: ((_a = a.controller) == null ? void 0 : _a.scale) ?? (a.record.actor_type === "quadruped" ? 0.5 : 1)
       });
     });
     return list;
@@ -49032,6 +49234,8 @@ class ThreeDirecting {
       const actorCtrl = ActorFactory.create(rec.actor_type || "human");
       const color = rec.actor_color || (rec.actor_type === "car" ? "#0284C7" : "#F1DFBF");
       actorCtrl.setActorColor(color);
+      const scale = rec.actor_scale || (rec.actor_type === "quadruped" ? 0.5 : 1);
+      actorCtrl.setActorScale(scale);
       const pbCtrl = new PlaybackController();
       let traj = rec.trajectory || rec.motion_data;
       if (typeof traj === "string" && traj.trim()) {
@@ -49338,6 +49542,7 @@ class ThreeDirecting {
     this.lastActiveKeyframeId = activeKeyframe.id;
     this.lastTargetActorId = targetActorId;
     const targetActorType = ((_a = targetActorCtrl == null ? void 0 : targetActorCtrl.getType) == null ? void 0 : _a.call(targetActorCtrl)) || "human";
+    const targetActorScale = (targetActorCtrl == null ? void 0 : targetActorCtrl.scale) ?? 1;
     const isCarTarget = targetActorType === "car";
     const isQuadrupedTarget = targetActorType === "quadruped";
     if (this.lastCameraMode !== activeMode || isHardCut) {
@@ -49380,15 +49585,18 @@ class ThreeDirecting {
         this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Third Person") {
+      const scale = targetActorScale;
       const isCar = isCarTarget;
       const isQuadruped = isQuadrupedTarget;
       const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
-      const minDistance = isCar ? 3.5 : isQuadruped ? 2 : 1.5;
-      const defaultDist = isCar ? 6.5 : isQuadruped ? 3.5 : isCrouch ? 2.8 : 3.5;
+      const minDistance = (isCar ? 3.5 : isQuadruped ? 2 : 1.5) * scale;
+      const defaultDist = (isCar ? 6.5 : isQuadruped ? 3.5 : isCrouch ? 2.8 : 3.5) * scale;
       const userDist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
-      const camHeight = isCar ? 1.3 + 0.35 * Math.min(2, Math.max(0, (userDist - 3.5) / 3)) : isQuadruped ? (isCrouch ? 0.7 : 1.1) + 0.15 * Math.min(2, Math.max(0, (userDist - 2) / 2)) : isCrouch ? 1.1 : 1.52 + 0.15 * Math.min(2, Math.max(0, (userDist - 1.5) / 2));
+      const baseCamHeight = isCar ? 1.3 + 0.35 * Math.min(2, Math.max(0, (userDist / scale - 3.5) / 3)) : isQuadruped ? (isCrouch ? 0.7 : 1.1) + 0.15 * Math.min(2, Math.max(0, (userDist / scale - 2) / 2)) : isCrouch ? 1.1 : 1.52 + 0.15 * Math.min(2, Math.max(0, (userDist / scale - 1.5) / 2));
+      const camHeight = baseCamHeight * scale;
       const camDist = -userDist;
-      const targetYOffset = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.7 : isCrouch ? 1.1 : 1.52;
+      const baseTargetYOffset = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.7 : isCrouch ? 1.1 : 1.52;
+      const targetYOffset = baseTargetYOffset * scale;
       const backOffset = new Vector3(0, camHeight, camDist).applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
       const idealCamPos = charPos.clone().add(backOffset);
       const idealLookAt = new Vector3(charPos.x, charPos.y + targetYOffset, charPos.z);
@@ -49412,13 +49620,15 @@ class ThreeDirecting {
         this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Wide") {
+      const scale = targetActorScale;
       const isCar = isCarTarget;
       const isQuadruped = isQuadrupedTarget;
       const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
-      const minDistance = isCar ? 3.5 : isQuadruped ? 2 : 1.5;
-      const defaultDist = isCar ? 18 : 16;
+      const minDistance = (isCar ? 3.5 : isQuadruped ? 2 : 1.5) * scale;
+      const defaultDist = (isCar ? 18 : 16) * scale;
       const dist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
-      const targetOffsetY = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.7 : isCrouch ? 1.1 : 1.52;
+      const baseTargetYOffset = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.7 : isCrouch ? 1.1 : 1.52;
+      const targetOffsetY = baseTargetYOffset * scale;
       const actorCenter = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
       const idealCamPos = actorCenter.clone().add(new Vector3(-dist * 0.7, dist * 0.55, dist * 0.7));
       if (this.lastCameraMode !== "Wide" || isHardCut) {
@@ -49435,15 +49645,19 @@ class ThreeDirecting {
         this.instancedStageMesh.updateDither(dt);
       }
     } else if (activeMode === "Side") {
+      const scale = targetActorScale;
       const isCar = isCarTarget;
       const isQuadruped = isQuadrupedTarget;
       const isCrouch = (targetActorCtrl == null ? void 0 : targetActorCtrl.isCrouching()) ?? false;
-      const minDistance = isCar ? 3.5 : isQuadruped ? 2 : 1.5;
-      const defaultDist = isCar ? 6.5 : 4.5;
+      const minDistance = (isCar ? 3.5 : isQuadruped ? 2 : 1.5) * scale;
+      const defaultDist = (isCar ? 6.5 : 4.5) * scale;
       const userDist = Math.max(minDistance, activeKeyframe.distance !== void 0 ? activeKeyframe.distance : defaultDist);
-      const camHeight = isCar ? 0.9 + 0.3 * Math.min(2, Math.max(0, (userDist - 3.5) / 3)) : isQuadruped ? (isCrouch ? 0.7 : 1) + 0.15 * Math.min(2, Math.max(0, (userDist - 2) / 3)) : isCrouch ? 1.05 : 1.5 + 0.15 * Math.min(2, Math.max(0, (userDist - 1.5) / 3));
-      const sideVec = isCar ? new Vector3(-userDist, camHeight, 0) : isQuadruped ? new Vector3(-userDist, camHeight, 0.2) : new Vector3(-userDist, camHeight, 0.3);
-      const targetOffsetY = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.75 : isCrouch ? 1.1 : 1.52;
+      const baseCamHeight = isCar ? 0.9 + 0.3 * Math.min(2, Math.max(0, (userDist / scale - 3.5) / 3)) : isQuadruped ? (isCrouch ? 0.7 : 1) + 0.15 * Math.min(2, Math.max(0, (userDist / scale - 2) / 3)) : isCrouch ? 1.05 : 1.5 + 0.15 * Math.min(2, Math.max(0, (userDist / scale - 1.5) / 3));
+      const camHeight = baseCamHeight * scale;
+      const sideZOffset = (isCar ? 0 : isQuadruped ? 0.2 : 0.3) * scale;
+      const sideVec = new Vector3(-userDist, camHeight, sideZOffset);
+      const baseTargetYOffset = isCar ? 0.75 : isQuadruped ? isCrouch ? 0.5 : 0.75 : isCrouch ? 1.1 : 1.52;
+      const targetOffsetY = baseTargetYOffset * scale;
       const sideOffset = sideVec.applyAxisAngle(new Vector3(0, 1, 0), this.smoothedCameraYaw);
       const idealCamPos = charPos.clone().add(sideOffset);
       const idealLookAt = new Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z);
@@ -49992,26 +50206,28 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         threeDirecting.seekToTime(kf.t);
       }
     };
-    const isCarTarget = (kf) => {
+    const getTargetActorInfo = (kf) => {
       const target = kf.actor_target || "actor_1";
       const found = availableActors.value.find((a) => (a == null ? void 0 : a.id) === target);
-      return (found == null ? void 0 : found.label) ? found.label.toLowerCase().includes("car") : false;
+      const isCar = (found == null ? void 0 : found.label) ? found.label.toLowerCase().includes("car") : (found == null ? void 0 : found.actor_type) === "car";
+      const scale = typeof (found == null ? void 0 : found.scale) === "number" ? found.scale : (found == null ? void 0 : found.actor_type) === "quadruped" ? 0.5 : 1;
+      return { isCar, scale };
     };
     const getDistanceConfig = (mode, kf) => {
-      const isCar = kf ? isCarTarget(kf) : false;
-      return getCameraDistanceConfig(mode, isCar);
+      const { isCar, scale } = kf ? getTargetActorInfo(kf) : { isCar: false, scale: 1 };
+      return getCameraDistanceConfig(mode, isCar, scale);
     };
     const getKeyframeDistance = (kf) => {
-      const isCar = isCarTarget(kf);
+      const { isCar, scale } = getTargetActorInfo(kf);
       if (typeof kf.distance === "number") {
-        const cfg = getCameraDistanceConfig(kf.mode, isCar);
+        const cfg = getCameraDistanceConfig(kf.mode, isCar, scale);
         return Math.max(cfg.min, Math.min(cfg.max, kf.distance));
       }
-      return getDefaultCameraDistance(kf.mode, isCar);
+      return getDefaultCameraDistance(kf.mode, isCar, scale);
     };
     const changeKeyframeDistance = (kf, dist) => {
-      const isCar = isCarTarget(kf);
-      const cfg = getCameraDistanceConfig(kf.mode, isCar);
+      const { isCar, scale } = getTargetActorInfo(kf);
+      const cfg = getCameraDistanceConfig(kf.mode, isCar, scale);
       const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(dist * 10) / 10));
       kf.distance = clamped;
       syncKeyframes();
@@ -50020,8 +50236,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     };
     const resetKeyframeDistance = (kf) => {
-      const isCar = isCarTarget(kf);
-      kf.distance = getDefaultCameraDistance(kf.mode, isCar);
+      const { isCar, scale } = getTargetActorInfo(kf);
+      kf.distance = getDefaultCameraDistance(kf.mode, isCar, scale);
       syncKeyframes();
       if (threeDirecting) {
         threeDirecting.seekToTime(kf.t);
@@ -50510,7 +50726,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7f352518"]]);
+const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-bdaec712"]]);
 const { app } = window.comfyAPI.app;
 (() => {
   const cssUrl = new URL(
@@ -50546,6 +50762,7 @@ function sanitizeMotionDataPayload(raw) {
         actor_type: parsed.actor_type || "human",
         actor_color: parsed.actor_color || "#F1DFBF",
         actor_speed: parsed.actor_speed ?? 10,
+        actor_scale: parsed.actor_scale ?? (parsed.actor_type === "quadruped" ? 0.5 : 1),
         duration: parsed.duration ?? 7,
         spawn_point: parsed.spawn_point,
         trajectory: traj
@@ -50840,6 +51057,9 @@ function writeStoredActingProps(node, patch) {
   if (patch.spawn_point) {
     existing.spawn_point = patch.spawn_point;
   }
+  if (typeof patch.actor_scale === "number") {
+    existing.actor_scale = patch.actor_scale;
+  }
   node.properties[ACTING_PROP_KEY] = existing;
 }
 function findConnectedStageOrActingOrigin(actingNode) {
@@ -50957,6 +51177,7 @@ function getChainActorsForNode(actingNode) {
           actor_type: (dsThreeActing == null ? void 0 : dsThreeActing.getActorType) ? dsThreeActing.getActorType() : dsState.actor_type ?? "human",
           actor_color: dsState.actor_color || (dsState.actor_type === "car" ? "#0284C7" : "#F1DFBF"),
           actor_speed: dsState.actor_speed ?? 10,
+          actor_scale: dsState.actor_scale ?? (dsState.actor_type === "quadruped" ? 0.5 : 1),
           spawn_point: dsState.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
           trajectory: dsTraj
         });
@@ -51078,6 +51299,7 @@ function updateActingNodeState(actingNode) {
         stage_data: stageState,
         actor_type: charType,
         actor_color: currentActingState.actor_color,
+        actor_scale: currentActingState.actor_scale,
         duration: effectiveDuration,
         actors: allPeerActors
       });
@@ -51090,6 +51312,7 @@ function updateActingNodeState(actingNode) {
     stage_data: void 0,
     actor_type: charType,
     actor_color: currentActingState.actor_color,
+    actor_scale: currentActingState.actor_scale,
     actors: []
   });
   writeStoredActingProps(actingNode, {});
@@ -51282,13 +51505,18 @@ function getWidgetValueByNameOrIndex(node, name, defaultIdx, defaultValue) {
 function readActingStateFromNode(node) {
   var _a;
   const typeVal = getWidgetValueByNameOrIndex(node, "actor_type", 0, "human");
-  const defaultColor = typeVal === "car" ? "#0284C7" : "#F1DFBF";
+  const rawType = String(typeVal);
+  const normalizedType = rawType === "car" || rawType === "quadruped" ? rawType : "human";
+  const defaultColor = normalizedType === "car" ? "#0284C7" : "#F1DFBF";
+  const defaultScale = normalizedType === "quadruped" ? 0.5 : 1;
   const storedProps = readStoredActingProps(node);
-  const rawColor = (storedProps == null ? void 0 : storedProps.actor_color) ?? getWidgetValueByNameOrIndex(node, "actor_color", 2, defaultColor);
+  const rawColor = (storedProps == null ? void 0 : storedProps.actor_color) ?? getWidgetValueByNameOrIndex(node, "actor_color", 3, defaultColor);
   const cleanColor = parseCleanHexColor(rawColor, defaultColor);
   const speedVal = getWidgetValueByNameOrIndex(node, "actor_speed", 1, 10);
-  const durationVal = getWidgetValueByNameOrIndex(node, "duration", 3, 7);
-  const rawMotionData = getWidgetValueByNameOrIndex(node, "motion_data", 4, "");
+  const rawScale = (storedProps == null ? void 0 : storedProps.actor_scale) ?? getWidgetValueByNameOrIndex(node, "actor_scale", 2, defaultScale);
+  const scaleVal = typeof rawScale === "number" ? rawScale : parseFloat(String(rawScale));
+  const durationVal = getWidgetValueByNameOrIndex(node, "duration", 4, 7);
+  const rawMotionData = getWidgetValueByNameOrIndex(node, "motion_data", 5, "");
   const motionDataVal = typeof rawMotionData === "string" ? sanitizeMotionDataPayload(rawMotionData) : "";
   if (typeof rawMotionData === "string" && rawMotionData !== motionDataVal) {
     const motionWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "motion_data");
@@ -51306,12 +51534,11 @@ function readActingStateFromNode(node) {
     } catch (e) {
     }
   }
-  const rawType = String(typeVal);
-  const normalizedType = rawType === "car" || rawType === "quadruped" ? rawType : "human";
   return {
     actor_type: normalizedType,
     actor_color: cleanColor,
     actor_speed: typeof speedVal === "number" ? Math.max(1, Math.min(30, speedVal)) : normalizedType === "car" ? 20 : 10,
+    actor_scale: typeof scaleVal === "number" && !isNaN(scaleVal) ? Math.max(0.3, Math.min(2, scaleVal)) : defaultScale,
     duration: typeof durationVal === "number" ? Math.max(4, Math.min(15, durationVal)) : 7,
     motion_data: motionDataVal,
     spawn_point: storedProps == null ? void 0 : storedProps.spawn_point,
@@ -51342,6 +51569,7 @@ function createActingInstance(node) {
       actor_type: stored.actor_type ?? "human",
       actor_color: stored.actor_color,
       actor_speed: stored.actor_speed ?? 10,
+      actor_scale: stored.actor_scale ?? (stored.actor_type === "quadruped" ? 0.5 : 1),
       duration: stored.duration ?? 7,
       spawn_point: stored.spawn_point,
       motion_data: stored.motion_data ?? "",
@@ -51355,6 +51583,9 @@ function createActingInstance(node) {
       writeStoredActingProps(live, state);
       setWidgetValue(live, "duration", state.duration);
       setWidgetValue(live, "actor_speed", state.actor_speed);
+      if (typeof state.actor_scale === "number") {
+        setWidgetValue(live, "actor_scale", state.actor_scale);
+      }
       if (state.actor_color) {
         setWidgetValue(live, "actor_color", state.actor_color);
       }
@@ -51384,7 +51615,7 @@ function bindActingWidgetCallbacks(node, exposed) {
     };
   };
   wire("actor_type", (v) => {
-    var _a, _b;
+    var _a, _b, _c;
     const rawVal = String(v);
     const charType = rawVal === "car" || rawVal === "quadruped" ? rawVal : "human";
     const speedWidget = (_a = node.widgets) == null ? void 0 : _a.find((w) => w.name === "actor_speed");
@@ -51399,8 +51630,21 @@ function bindActingWidgetCallbacks(node, exposed) {
       colorWidget.value = targetColor;
       setWidgetValue(node, "actor_color", targetColor);
     }
-    exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed });
-    writeStoredActingProps(node, {});
+    const scaleWidget = (_c = node.widgets) == null ? void 0 : _c.find((w) => w.name === "actor_scale");
+    const targetScale = charType === "quadruped" ? 0.5 : 1;
+    if (scaleWidget) {
+      scaleWidget.value = targetScale;
+      setWidgetValue(node, "actor_scale", targetScale);
+    }
+    exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed, actor_scale: targetScale });
+    writeStoredActingProps(node, { actor_scale: targetScale });
+    syncGraph();
+  });
+  wire("actor_scale", (v) => {
+    const num = Number(v);
+    const clamped = isNaN(num) ? 1 : Math.max(0.3, Math.min(2, num));
+    exposed.setState({ actor_scale: clamped });
+    writeStoredActingProps(node, { actor_scale: clamped });
     syncGraph();
   });
   wire("actor_color", (v) => {
@@ -51416,6 +51660,9 @@ function bindActingWidgetCallbacks(node, exposed) {
     const st = readActingStateFromNode(node);
     if (st.actor_color) {
       exposed.setState({ actor_color: st.actor_color });
+    }
+    if (typeof st.actor_scale === "number") {
+      exposed.setState({ actor_scale: st.actor_scale });
     }
   };
   syncStateNow();

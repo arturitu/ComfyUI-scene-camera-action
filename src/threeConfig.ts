@@ -45,24 +45,30 @@ export const CAMERA_DISTANCE_CONFIG: Record<string, CameraDistanceRange> = {
   'First Person': { min: 0, max: 0, default: 0, step: 0 },
 }
 
-export function getCameraDistanceConfig(mode: string, isCar: boolean = false): CameraDistanceRange {
+export function getCameraDistanceConfig(mode: string, isCar: boolean = false, scale: number = 1.0): CameraDistanceRange {
   const base = CAMERA_DISTANCE_CONFIG[mode] || { min: 1, max: 60, default: 10, step: 0.5 }
+  const s = Math.max(0.1, scale)
   if (isCar && (mode === 'Side' || mode === 'Third Person')) {
     return {
-      min: 3.5,
-      max: base.max,
-      default: mode === 'Third Person' ? 6.5 : 6.5,
+      min: Math.round(3.5 * s * 10) / 10,
+      max: Math.round(base.max * s * 10) / 10,
+      default: Math.round(6.5 * s * 10) / 10,
       step: base.step
     }
   }
-  return base
+  return {
+    min: Math.round(Math.max(0.5, base.min * s) * 10) / 10,
+    max: Math.round(base.max * s * 10) / 10,
+    default: Math.round(base.default * s * 10) / 10,
+    step: base.step
+  }
 }
 
-export function getDefaultCameraDistance(mode: string, isCar: boolean = false): number {
-  if (mode === 'Third Person') return isCar ? 6.5 : 3.5
-  if (mode === 'Side') return isCar ? 6.5 : 4.5
-  if (mode === 'Wide') return isCar ? 18.0 : 16.0
-  return getCameraDistanceConfig(mode, isCar).default
+export function getDefaultCameraDistance(mode: string, isCar: boolean = false, scale: number = 1.0): number {
+  if (mode === 'Third Person') return Math.round((isCar ? 6.5 : 3.5) * scale * 10) / 10
+  if (mode === 'Side') return Math.round((isCar ? 6.5 : 4.5) * scale * 10) / 10
+  if (mode === 'Wide') return Math.round((isCar ? 18.0 : 16.0) * scale * 10) / 10
+  return getCameraDistanceConfig(mode, isCar, scale).default
 }
 
 // Fog Config

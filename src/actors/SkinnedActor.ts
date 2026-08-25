@@ -179,12 +179,13 @@ export abstract class SkinnedActor extends BaseActor {
     let animTimeScale = 1.0
 
     const instantSpeed = (frameDt > 0 && !isHardCut) ? distMoved / frameDt : 0
+    const currentScale = Math.max(0.2, this.scale)
     if (targetAnim === this.getDefaultWalkAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.walkBaseSpeed))
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.walkBaseSpeed * currentScale)))
     } else if (targetAnim === this.getDefaultSprintAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.sprintBaseSpeed))
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.sprintBaseSpeed * currentScale)))
     } else if (targetAnim === this.getDefaultCrouchWalkAnim()) {
-      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / this.crouchWalkBaseSpeed))
+      animTimeScale = Math.max(0.3, Math.min(2.5, instantSpeed / (this.crouchWalkBaseSpeed * currentScale)))
     }
 
     let fadeDuration = 0.15
@@ -511,7 +512,7 @@ export abstract class SkinnedActor extends BaseActor {
       while (diff < -Math.PI) diff += Math.PI * 2
       while (diff > Math.PI) diff -= Math.PI * 2
 
-      const dynamicTurnSpeed = 6.5 + (speed * 2.0)
+      const dynamicTurnSpeed = (6.5 + (speed * 2.0)) / Math.max(0.2, this.scale)
       const lerpFactor = 1.0 - Math.exp(-dynamicTurnSpeed * Math.max(0.001, dt))
       this.rotationY += diff * lerpFactor
 
@@ -538,8 +539,8 @@ export abstract class SkinnedActor extends BaseActor {
     const crouchR = this.getCrouchingCapsuleRadius()
     const crouchH = this.getCrouchingCapsuleHeight()
 
-    const activeR = isCrouch ? crouchR : standingR
-    const activeH = isCrouch ? crouchH : standingH
+    const activeR = (isCrouch ? crouchR : standingR) * this.scale
+    const activeH = (isCrouch ? crouchH : standingH) * this.scale
     const isHorizontal = this.isHorizontalCapsule()
 
     if (this.colliderWireframe instanceof THREE.Mesh) {
@@ -550,24 +551,24 @@ export abstract class SkinnedActor extends BaseActor {
     const forwardX = Math.sin(this.rotationY)
     const forwardZ = Math.cos(this.rotationY)
 
+    let touchGround = false
+
+    // 1. Movement integration & Wall collision shapecast
     for (let step = 0; step < physicsSteps; step++) {
-      if (this.isOnGround) {
-        this.velocity.y = -30.0 * stepDt
-      } else {
+      if (!this.isOnGround) {
         this.velocity.y -= 30.0 * stepDt
       }
-      this.position.addScaledVector(this.velocity, stepDt)
+      this.position.x += this.velocity.x * stepDt
+      this.position.z += this.velocity.z * stepDt
+      this.position.y += this.velocity.y * stepDt
 
       if (colliderBVH) {
-        _tempSegment.start.copy(this.position)
-        _tempSegment.start.y += activeR
-        _tempSegment.end.copy(this.position)
-        _tempSegment.end.y += activeR + activeH
+        _tempSegment.start.set(this.position.x, this.position.y + activeR, this.position.z)
+        _tempSegment.end.set(this.position.x, this.position.y + activeR + activeH, this.position.z)
 
-        _tempCapsuleBounds.min.set(this.position.x - 1.5, this.position.y - 0.5, this.position.z - 1.5)
-        _tempCapsuleBounds.max.set(this.position.x + 1.5, this.position.y + activeH + 1.5, this.position.z + 1.5)
-
-        this.isOnGround = false
+        const boundMargin = Math.max(2.0, 2.0 * this.scale)
+        _tempCapsuleBounds.min.set(this.position.x - boundMargin, this.position.y - 0.5, this.position.z - boundMargin)
+        _tempCapsuleBounds.max.set(this.position.x + boundMargin, this.position.y + activeH + activeR + boundMargin, this.position.z + boundMargin)
 
         colliderBVH.shapecast({
           intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
@@ -578,38 +579,71 @@ export abstract class SkinnedActor extends BaseActor {
               const depth = activeR - dist
               _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
 
-              _tempSegment.start.addScaledVector(_tempDir, depth)
-              _tempSegment.end.addScaledVector(_tempDir, depth)
+              // Only resolve horizontal wall collisions (walls have normal.y < 0.55)
+              if (_tempDir.y < 0.55) {
+                _tempDir.y = 0
+                _tempDir.normalize()
+                this.position.addScaledVector(_tempDir, depth)
+
+                // Wall sliding: project velocity onto wall tangent plane
+                const dot = this.velocity.x * _tempDir.x + this.velocity.z * _tempDir.z
+                if (dot < 0) {
+                  this.velocity.x -= _tempDir.x * dot
+                  this.velocity.z -= _tempDir.z * dot
+                }
+              }
             }
           }
         })
+      }
+    }
 
-        _tempVecA.copy(this.position)
-        this.position.copy(_tempSegment.start)
-        this.position.y -= activeR
+    // 2. Exact Ground & Ramp Sampling
+    let groundFound = false
+    let targetGroundY = config.GROUND_Y
+    let targetPitch = 0
 
-        _tempVecB.subVectors(this.position, _tempVecA)
-        const deltaLen = _tempVecB.length()
-        if (deltaLen > 0.00001) {
-          const normalY = _tempVecB.y / deltaLen
-          if (_tempVecB.y > 0 && normalY > 0.25) {
-            this.isOnGround = true
-          }
-        }
+    if (this.getType() === 'quadruped') {
+      const fwdOffset = 0.55 * this.scale
+      const rearOffset = 0.65 * this.scale
+      const wheelbase = fwdOffset + rearOffset
+      const frontX = this.position.x + forwardX * fwdOffset
+      const frontZ = this.position.z + forwardZ * fwdOffset
+      const rearX = this.position.x - forwardX * rearOffset
+      const rearZ = this.position.z - forwardZ * rearOffset
 
-        if (this.isOnGround && this.velocity.y <= 0) {
-          this.velocity.y = 0
-          this.isUserJumping = false
-          this.airborneTime = 0
+      const frontG = this.sampleGround(frontX, frontZ, colliderBVH, this.position.y)
+      const rearG = this.sampleGround(rearX, rearZ, colliderBVH, this.position.y)
+
+      if (frontG.hit && rearG.hit && Math.abs(frontG.y - rearG.y) < wheelbase * 1.15) {
+        groundFound = true
+        targetGroundY = (frontG.y + rearG.y) / 2.0
+        const rawPitch = -Math.atan2(frontG.y - rearG.y, wheelbase)
+        targetPitch = Math.max(-0.85, Math.min(0.85, rawPitch))
+      } else if (frontG.hit || rearG.hit) {
+        groundFound = true
+        const bestG = (frontG.hit && (!rearG.hit || Math.abs(frontG.y - this.position.y) <= Math.abs(rearG.y - this.position.y))) ? frontG : rearG
+        targetGroundY = bestG.y
+        if (bestG.normal.y >= 0.55 && bestG.normal.y < 0.995) {
+          const dot = forwardX * bestG.normal.x + forwardZ * bestG.normal.z
+          targetPitch = Math.max(-0.85, Math.min(0.85, Math.asin(dot)))
         } else {
-          this.airborneTime += stepDt
-          if (this.airborneTime > 0.35 && this.velocity.y < -3.0) {
-            this.isUserJumping = true
-          }
+          targetPitch = 0
         }
-      } else {
-        if (this.position.y <= config.GROUND_Y) {
-          this.position.y = config.GROUND_Y
+      }
+    } else {
+      const g = this.sampleGround(this.position.x, this.position.z, colliderBVH, this.position.y)
+      if (g.hit) {
+        groundFound = true
+        targetGroundY = g.y
+      }
+    }
+
+    // 3. Ground Snap vs Airborne
+    if (groundFound) {
+      if (this.isUserJumping) {
+        if (this.position.y <= targetGroundY && this.velocity.y <= 0) {
+          this.position.y = targetGroundY
           this.velocity.y = 0
           this.isOnGround = true
           this.isUserJumping = false
@@ -617,7 +651,25 @@ export abstract class SkinnedActor extends BaseActor {
         } else {
           this.isOnGround = false
         }
+      } else {
+        if (this.position.y <= targetGroundY + 0.35 && this.velocity.y <= 0) {
+          this.position.y = targetGroundY
+          this.velocity.y = 0
+          this.isOnGround = true
+          this.airborneTime = 0
+        } else if (this.position.y <= targetGroundY) {
+          this.position.y = targetGroundY
+          this.velocity.y = 0
+          this.isOnGround = true
+          this.airborneTime = 0
+        } else {
+          this.isOnGround = false
+          this.airborneTime += dt
+        }
       }
+    } else {
+      this.isOnGround = false
+      this.airborneTime += dt
     }
 
     if (this.position.y < -10.0) {
@@ -628,7 +680,9 @@ export abstract class SkinnedActor extends BaseActor {
     this.group.position.copy(this.position)
 
     if (this.shouldInclineOnRamps()) {
-      this.updateSlopeOrientation(dt, colliderBVH, 15.0)
+      this.rampPitchAngle += (targetPitch - this.rampPitchAngle) * Math.min(1.0, 15.0 * dt)
+      _tempEuler.set(this.rampPitchAngle, this.rotationY, 0, 'YXZ')
+      this.group.quaternion.setFromEuler(_tempEuler)
     } else {
       _tempEuler.set(0, this.rotationY, 0, 'YXZ')
       this.group.quaternion.setFromEuler(_tempEuler)
@@ -648,7 +702,7 @@ export abstract class SkinnedActor extends BaseActor {
     } else if (isCrouch) {
       if (isMoving) {
         targetAnimation = this.getDefaultCrouchWalkAnim()
-        animTimeScale = Math.max(0.2, speed / this.crouchWalkBaseSpeed)
+        animTimeScale = Math.max(0.2, speed / (this.crouchWalkBaseSpeed * Math.max(0.2, this.scale)))
       } else {
         targetAnimation = this.getDefaultCrouchIdleAnim()
         animTimeScale = 1.0
@@ -656,10 +710,10 @@ export abstract class SkinnedActor extends BaseActor {
     } else if (isMoving) {
       if (isShift) {
         targetAnimation = this.getDefaultSprintAnim()
-        animTimeScale = Math.max(0.2, speed / this.sprintBaseSpeed)
+        animTimeScale = Math.max(0.2, speed / (this.sprintBaseSpeed * Math.max(0.2, this.scale)))
       } else {
         targetAnimation = this.getDefaultWalkAnim()
-        animTimeScale = Math.max(0.2, speed / this.walkBaseSpeed)
+        animTimeScale = Math.max(0.2, speed / (this.walkBaseSpeed * Math.max(0.2, this.scale)))
       }
     } else {
       targetAnimation = this.getDefaultIdleAnim()

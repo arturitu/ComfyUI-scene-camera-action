@@ -55,6 +55,7 @@ export interface ActorRecord {
   actor_type: 'human' | 'car' | 'quadruped'
   actor_color?: string
   actor_speed: number
+  actor_scale?: number
   spawn_point?: SpawnPoint
   trajectory: MotionFrame[]
 }
@@ -71,6 +72,7 @@ export interface ActingState {
   actor_type?: 'human' | 'car' | 'quadruped'
   actor_color?: string
   actor_speed: number
+  actor_scale?: number
   camera_distance?: number
   duration: number
   spawn_point?: SpawnPoint

@@ -94,12 +94,14 @@ export class ThreeActing {
     const initialStageData = options.initialState?.stage_data ?? options.initialState?.scene_data ?? { type: 'cube_stage', num_assets: 0, nodes: [] }
     this.connectedThreeStage = options.connectedThreeStage ?? options.connectedThreeScene ?? null
     const defaultSpeed = options.initialState?.actor_speed ?? (options.initialState?.actor_type === 'car' ? 20.0 : 10.0)
+    const defaultScale = options.initialState?.actor_scale ?? (options.initialState?.actor_type === 'quadruped' ? 0.5 : 1.0)
     this.cameraDistance = options.initialState?.camera_distance ?? 1.0
 
     this.state = {
       actor_type: options.initialState?.actor_type ?? 'human',
       actor_color: options.initialState?.actor_color,
       actor_speed: defaultSpeed,
+      actor_scale: defaultScale,
       camera_distance: this.cameraDistance,
       duration: options.initialState?.duration ?? 7.0,
       stage_data: initialStageData,
@@ -175,11 +177,13 @@ export class ThreeActing {
     const upstream = (this.previousActorsData || []).filter(
       (a: any) => !a.id?.startsWith('actor_ds_') && !a.isDownstreamPeer
     )
+    const currentScale = this.state.actor_scale ?? (this.getActorType() === 'quadruped' ? 0.5 : 1.0)
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === 'human' ? '#F1DFBF' : '#0284C7'),
       actor_speed: this.state.actor_speed,
+      actor_scale: currentScale,
       spawn_point: this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
       trajectory: this.trajectory || []
     }
@@ -198,11 +202,13 @@ export class ThreeActing {
       this.spawnPointHelper.group.visible = true
     }
 
+    const currentScale = this.state.actor_scale ?? (this.getActorType() === 'quadruped' ? 0.5 : 1.0)
     const payload = {
       type: 'acting_motion',
       actor_type: this.getActorType(),
       actor_color: this.state.actor_color || (this.getActorType() === 'human' ? '#F1DFBF' : '#0284C7'),
       actor_speed: this.state.actor_speed,
+      actor_scale: currentScale,
       duration: this.state.duration,
       spawn_point: this.state.spawn_point,
       trajectory: this.trajectory
@@ -284,6 +290,8 @@ export class ThreeActing {
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
       const color = rec.actor_color || (rec.actor_type === 'car' ? '#0284C7' : '#F1DFBF')
       actorCtrl.setActorColor(color)
+      const scale = rec.actor_scale || (rec.actor_type === 'quadruped' ? 0.5 : 1.0)
+      actorCtrl.setActorScale(scale)
       const pbCtrl = new PlaybackController()
       pbCtrl.setTrajectory(traj)
       pbCtrl.start()
@@ -536,6 +544,8 @@ export class ThreeActing {
     this.actorController = ActorFactory.create(charType)
     const color = this.state.actor_color || (charType === 'car' ? '#0284C7' : '#F1DFBF')
     this.actorController.setActorColor(color)
+    const currentScale = this.state.actor_scale ?? (charType === 'quadruped' ? 0.5 : 1.0)
+    this.actorController.setActorScale(currentScale)
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
     this.resetActorPosition()
@@ -552,6 +562,20 @@ export class ThreeActing {
     }
   }
 
+  public setActorScale(scale: number, triggerChange: boolean = true): void {
+    if (typeof scale !== 'number' || isNaN(scale)) return
+    const normalizedScale = Math.max(0.3, Math.min(2.0, scale))
+    const isDifferent = this.state.actor_scale !== normalizedScale
+    this.state.actor_scale = normalizedScale
+    if (this.actorController) {
+      this.actorController.setActorScale(normalizedScale)
+      this.resetActorPosition()
+    }
+    if (isDifferent && triggerChange && this.onStateChange) {
+      this.onStateChange({ ...this.state, actor_scale: normalizedScale, actors: this.getAccumulatedActors() })
+    }
+  }
+
   public setCameraDistance(dist: number): void {
     this.cameraDistance = Math.max(0.5, Math.min(2.5, Math.round(dist * 10) / 10))
     this.state.camera_distance = this.cameraDistance
@@ -562,19 +586,23 @@ export class ThreeActing {
   }
 
   private getActorFramingOffsets(): { camOffset: THREE.Vector3; targetOffset: THREE.Vector3 } {
+    const scale = this.state.actor_scale ?? (this.getActorType() === 'quadruped' ? 0.5 : 1.0)
     if (!this.actorController) {
-      return { camOffset: new THREE.Vector3(-8 * this.cameraDistance, 4 * this.cameraDistance, 0), targetOffset: new THREE.Vector3(0, 0.5, 0) }
+      return {
+        camOffset: new THREE.Vector3(-8 * this.cameraDistance * scale, 4 * this.cameraDistance * scale, 0),
+        targetOffset: new THREE.Vector3(0, 0.5 * scale, 0)
+      }
     }
 
     const bbox = new THREE.Box3().setFromObject(this.actorController.group)
     const size = new THREE.Vector3()
     bbox.getSize(size)
 
-    const maxSpan = Math.max(size.x, size.y, size.z, 1.5)
-    const dist = Math.max(8.0, maxSpan * 2.8) * this.cameraDistance
+    const maxSpan = Math.max(size.x, size.y, size.z, 1.5 * scale)
+    const dist = Math.max(8.0 * scale, maxSpan * 2.8) * this.cameraDistance
     const camX = -dist * 0.85
-    const camY = Math.max(2.5, dist * 0.45)
-    const targetY = size.y > 0 ? Math.max(0.5, size.y * 0.45) : 0.5
+    const camY = Math.max(2.5 * scale, dist * 0.45)
+    const targetY = size.y > 0 ? Math.max(0.3 * scale, size.y * 0.45) : 0.5 * scale
 
     return {
       camOffset: new THREE.Vector3(camX, camY, 0),
@@ -1044,6 +1072,9 @@ export class ThreeActing {
     }
     if (newState.actor_color !== undefined) {
       this.setActorColor(newState.actor_color, false)
+    }
+    if (newState.actor_scale !== undefined && newState.actor_scale !== this.state.actor_scale) {
+      this.setActorScale(newState.actor_scale, false)
     }
     if (newState.actor_speed !== undefined) {
       this.state.actor_speed = newState.actor_speed

@@ -6,6 +6,10 @@ import quadrupedCubesGlb from '../assets/models/quadruped-cubes-rigged.glb'
 import quadrupedAnimsGlb from '../assets/models/quadruped-animations.glb'
 
 export class QuadrupedActor extends SkinnedActor {
+  public override walkBaseSpeed: number = 4.5
+  public override sprintBaseSpeed: number = 8.5
+  public override crouchWalkBaseSpeed: number = 2.5
+
   constructor() {
     super()
     this.buildMesh()
@@ -21,6 +25,14 @@ export class QuadrupedActor extends SkinnedActor {
 
   protected override shouldInclineOnRamps(): boolean {
     return true
+  }
+
+  protected override getSlopeProbes(): { frontZ: number; rearZ: number; halfWidth: number } {
+    return {
+      frontZ: 1.1 * this.scale,
+      rearZ: 1.1 * this.scale,
+      halfWidth: 0.35 * this.scale
+    }
   }
 
   protected override getRampSlopeConfig(): RampSlopeConfig {
@@ -50,7 +62,9 @@ export class QuadrupedActor extends SkinnedActor {
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return this.isCrouching() ? new THREE.Vector3(0, 0.75, 0.1) : new THREE.Vector3(0, 1.25, 0.1)
+    return this.isCrouching()
+      ? new THREE.Vector3(0, 0.75 * this.scale, 0.1 * this.scale)
+      : new THREE.Vector3(0, 1.25 * this.scale, 0.1 * this.scale)
   }
 
   public getModelUrl(): string {
@@ -86,15 +100,15 @@ export class QuadrupedActor extends SkinnedActor {
   }
 
   public getStandingCapsuleRadius(): number {
-    return 0.35
+    return 0.45
   }
 
   public getStandingCapsuleHeight(): number {
-    return 0.70
+    return 0.65
   }
 
   public getCrouchingCapsuleRadius(): number {
-    return 0.35
+    return 0.45
   }
 
   public getCrouchingCapsuleHeight(): number {
@@ -102,7 +116,7 @@ export class QuadrupedActor extends SkinnedActor {
   }
 
   public getModelYOffset(): number {
-    return 0.18
+    return 0.0
   }
 
   protected override getCustomActionAnimation(keysPressed: Record<string, boolean>): string | null {

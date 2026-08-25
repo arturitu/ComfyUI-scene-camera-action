@@ -490,29 +490,31 @@ const resetKeyframeFov = (kf: Keyframe) => {
   }
 }
 
-const isCarTarget = (kf: Keyframe): boolean => {
+const getTargetActorInfo = (kf: Keyframe): { isCar: boolean; scale: number } => {
   const target = kf.actor_target || 'actor_1'
-  const found = availableActors.value.find(a => a?.id === target)
-  return found?.label ? found.label.toLowerCase().includes('car') : false
+  const found: any = availableActors.value.find(a => a?.id === target)
+  const isCar = found?.label ? found.label.toLowerCase().includes('car') : (found?.actor_type === 'car')
+  const scale = typeof found?.scale === 'number' ? found.scale : (found?.actor_type === 'quadruped' ? 0.5 : 1.0)
+  return { isCar, scale }
 }
 
 const getDistanceConfig = (mode: string, kf?: Keyframe) => {
-  const isCar = kf ? isCarTarget(kf) : false
-  return getCameraDistanceConfig(mode, isCar)
+  const { isCar, scale } = kf ? getTargetActorInfo(kf) : { isCar: false, scale: 1.0 }
+  return getCameraDistanceConfig(mode, isCar, scale)
 }
 
 const getKeyframeDistance = (kf: Keyframe): number => {
-  const isCar = isCarTarget(kf)
+  const { isCar, scale } = getTargetActorInfo(kf)
   if (typeof kf.distance === 'number') {
-    const cfg = getCameraDistanceConfig(kf.mode, isCar)
+    const cfg = getCameraDistanceConfig(kf.mode, isCar, scale)
     return Math.max(cfg.min, Math.min(cfg.max, kf.distance))
   }
-  return getDefaultCameraDistance(kf.mode, isCar)
+  return getDefaultCameraDistance(kf.mode, isCar, scale)
 }
 
 const changeKeyframeDistance = (kf: Keyframe, dist: number) => {
-  const isCar = isCarTarget(kf)
-  const cfg = getCameraDistanceConfig(kf.mode, isCar)
+  const { isCar, scale } = getTargetActorInfo(kf)
+  const cfg = getCameraDistanceConfig(kf.mode, isCar, scale)
   const clamped = Math.max(cfg.min, Math.min(cfg.max, Math.round(dist * 10) / 10))
   kf.distance = clamped
   syncKeyframes()
@@ -522,8 +524,8 @@ const changeKeyframeDistance = (kf: Keyframe, dist: number) => {
 }
 
 const resetKeyframeDistance = (kf: Keyframe) => {
-  const isCar = isCarTarget(kf)
-  kf.distance = getDefaultCameraDistance(kf.mode, isCar)
+  const { isCar, scale } = getTargetActorInfo(kf)
+  kf.distance = getDefaultCameraDistance(kf.mode, isCar, scale)
   syncKeyframes()
   if (threeDirecting) {
     threeDirecting.seekToTime(kf.t)

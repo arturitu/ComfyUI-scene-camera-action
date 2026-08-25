@@ -42,6 +42,7 @@ function sanitizeMotionDataPayload(raw: unknown): string {
         actor_type: parsed.actor_type || 'human',
         actor_color: parsed.actor_color || '#F1DFBF',
         actor_speed: parsed.actor_speed ?? 10.0,
+        actor_scale: parsed.actor_scale ?? (parsed.actor_type === 'quadruped' ? 0.5 : 1.0),
         duration: parsed.duration ?? 7.0,
         spawn_point: parsed.spawn_point,
         trajectory: traj
@@ -404,6 +405,9 @@ function writeStoredActingProps(node: ComfyNode, patch: Partial<ActingState>): v
   if (patch.spawn_point) {
     existing.spawn_point = patch.spawn_point
   }
+  if (typeof patch.actor_scale === 'number') {
+    existing.actor_scale = patch.actor_scale
+  }
   node.properties[ACTING_PROP_KEY] = existing
 }
 
@@ -555,6 +559,7 @@ function getChainActorsForNode(actingNode: ComfyNode): any[] {
           actor_type: dsThreeActing?.getActorType ? dsThreeActing.getActorType() : (dsState.actor_type ?? 'human'),
           actor_color: dsState.actor_color || (dsState.actor_type === 'car' ? '#0284C7' : '#F1DFBF'),
           actor_speed: dsState.actor_speed ?? 10.0,
+          actor_scale: dsState.actor_scale ?? (dsState.actor_type === 'quadruped' ? 0.5 : 1.0),
           spawn_point: dsState.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 },
           trajectory: dsTraj
         })
@@ -691,6 +696,7 @@ function updateActingNodeState(actingNode: ComfyNode): void {
         stage_data: stageState,
         actor_type: charType,
         actor_color: currentActingState.actor_color,
+        actor_scale: currentActingState.actor_scale,
         duration: effectiveDuration,
         actors: allPeerActors
       })
@@ -705,6 +711,7 @@ function updateActingNodeState(actingNode: ComfyNode): void {
     stage_data: undefined,
     actor_type: charType,
     actor_color: currentActingState.actor_color,
+    actor_scale: currentActingState.actor_scale,
     actors: []
   })
   writeStoredActingProps(actingNode, {})
@@ -928,14 +935,19 @@ function getWidgetValueByNameOrIndex(node: ComfyNode, name: string, defaultIdx: 
 
 function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
   const typeVal = getWidgetValueByNameOrIndex(node, 'actor_type', 0, 'human')
-  const defaultColor = (typeVal as string) === 'car' ? '#0284C7' : '#F1DFBF'
+  const rawType = String(typeVal)
+  const normalizedType: 'human' | 'car' | 'quadruped' = (rawType === 'car' || rawType === 'quadruped') ? rawType : 'human'
+  const defaultColor = normalizedType === 'car' ? '#0284C7' : '#F1DFBF'
+  const defaultScale = normalizedType === 'quadruped' ? 0.5 : 1.0
   const storedProps = readStoredActingProps(node)
 
-  const rawColor = storedProps?.actor_color ?? getWidgetValueByNameOrIndex(node, 'actor_color', 2, defaultColor)
+  const rawColor = storedProps?.actor_color ?? getWidgetValueByNameOrIndex(node, 'actor_color', 3, defaultColor)
   const cleanColor = parseCleanHexColor(rawColor, defaultColor)
   const speedVal = getWidgetValueByNameOrIndex(node, 'actor_speed', 1, 10.0)
-  const durationVal = getWidgetValueByNameOrIndex(node, 'duration', 3, 7.0)
-  const rawMotionData = getWidgetValueByNameOrIndex(node, 'motion_data', 4, '')
+  const rawScale = storedProps?.actor_scale ?? getWidgetValueByNameOrIndex(node, 'actor_scale', 2, defaultScale)
+  const scaleVal = typeof rawScale === 'number' ? rawScale : parseFloat(String(rawScale))
+  const durationVal = getWidgetValueByNameOrIndex(node, 'duration', 4, 7.0)
+  const rawMotionData = getWidgetValueByNameOrIndex(node, 'motion_data', 5, '')
   const motionDataVal = typeof rawMotionData === 'string' ? sanitizeMotionDataPayload(rawMotionData) : ''
   if (typeof rawMotionData === 'string' && rawMotionData !== motionDataVal) {
     const motionWidget = node.widgets?.find(w => w.name === 'motion_data')
@@ -954,13 +966,11 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
     } catch (e) { }
   }
 
-  const rawType = String(typeVal)
-  const normalizedType: 'human' | 'car' | 'quadruped' = (rawType === 'car' || rawType === 'quadruped') ? rawType : 'human'
-
   return {
     actor_type: normalizedType,
     actor_color: cleanColor,
     actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : (normalizedType === 'car' ? 20.0 : 10.0),
+    actor_scale: typeof scaleVal === 'number' && !isNaN(scaleVal) ? Math.max(0.3, Math.min(2.0, scaleVal)) : defaultScale,
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: motionDataVal,
     spawn_point: storedProps?.spawn_point,
@@ -995,6 +1005,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       actor_type: stored.actor_type ?? 'human',
       actor_color: stored.actor_color,
       actor_speed: stored.actor_speed ?? 10.0,
+      actor_scale: stored.actor_scale ?? (stored.actor_type === 'quadruped' ? 0.5 : 1.0),
       duration: stored.duration ?? 7.0,
       spawn_point: stored.spawn_point,
       motion_data: stored.motion_data ?? '',
@@ -1009,6 +1020,9 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       // Update the widget values in ComfyUI node if they differ from state
       setWidgetValue(live, 'duration', state.duration)
       setWidgetValue(live, 'actor_speed', state.actor_speed)
+      if (typeof state.actor_scale === 'number') {
+        setWidgetValue(live, 'actor_scale', state.actor_scale)
+      }
       if (state.actor_color) {
         setWidgetValue(live, 'actor_color', state.actor_color)
       }
@@ -1057,8 +1071,22 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
       colorWidget.value = targetColor
       setWidgetValue(node, 'actor_color', targetColor)
     }
-    exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
-    writeStoredActingProps(node, { actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed })
+    const scaleWidget = node.widgets?.find(w => w.name === 'actor_scale')
+    const targetScale = charType === 'quadruped' ? 0.5 : 1.0
+    if (scaleWidget) {
+      scaleWidget.value = targetScale
+      setWidgetValue(node, 'actor_scale', targetScale)
+    }
+    exposed.setState({ actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed, actor_scale: targetScale })
+    writeStoredActingProps(node, { actor_type: charType, actor_color: targetColor, actor_speed: targetSpeed, actor_scale: targetScale })
+    syncGraph()
+  })
+
+  wire('actor_scale', v => {
+    const num = Number(v)
+    const clamped = isNaN(num) ? 1.0 : Math.max(0.3, Math.min(2.0, num))
+    exposed.setState({ actor_scale: clamped })
+    writeStoredActingProps(node, { actor_scale: clamped })
     syncGraph()
   })
 
@@ -1077,6 +1105,9 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
     const st = readActingStateFromNode(node)
     if (st.actor_color) {
       exposed.setState({ actor_color: st.actor_color })
+    }
+    if (typeof st.actor_scale === 'number') {
+      exposed.setState({ actor_scale: st.actor_scale })
     }
   }
   syncStateNow()

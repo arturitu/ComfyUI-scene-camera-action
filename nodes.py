@@ -188,6 +188,12 @@ class ActingNode(io.ComfyNode):
                     display_name="Actor Speed",
                     tooltip="Movement speed of the 3D actor",
                 ),
+                io.Float.Input(
+                    "actor_scale",
+                    default=1.0, min=0.3, max=2.0, step=0.05,
+                    display_name="Actor Scale",
+                    tooltip="Scale factor for the 3D actor (0.3 to 2.0)",
+                ),
                 io.Color.Input(
                     "actor_color",
                     default="#F1DFBF",
@@ -221,10 +227,17 @@ class ActingNode(io.ComfyNode):
         stage: str | dict | None = None,
         actor_type: str = "human",
         actor_speed: float = 10.0,
+        actor_scale: float = 1.0,
         actor_color: str | dict | None = "#F1DFBF",
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
+        try:
+            actor_scale = float(actor_scale)
+            actor_scale = max(0.3, min(2.0, actor_scale))
+        except (ValueError, TypeError):
+            actor_scale = 0.5 if actor_type == "quadruped" else 1.0
+
         default_c = "#0284C7" if actor_type == "car" else "#F1DFBF"
         def sanitize_color(val: str | dict | None) -> str:
             if isinstance(val, str) and val.strip():
@@ -267,7 +280,13 @@ class ActingNode(io.ComfyNode):
                     pass
 
             if isinstance(stage_input_data.get("actors"), list):
-                previous_actors = stage_input_data["actors"]
+                previous_actors = []
+                for act in stage_input_data["actors"]:
+                    if isinstance(act, dict):
+                        act_copy = dict(act)
+                        if "actor_scale" not in act_copy:
+                            act_copy["actor_scale"] = 0.5 if act_copy.get("actor_type") == "quadruped" else 1.0
+                        previous_actors.append(act_copy)
             elif stage_input_data.get("motion_data") or stage_input_data.get("trajectory"):
                 traj = stage_input_data.get("trajectory")
                 if not traj and isinstance(stage_input_data.get("motion_data"), str) and stage_input_data["motion_data"].strip():
@@ -284,6 +303,7 @@ class ActingNode(io.ComfyNode):
                     "actor_type": stage_input_data.get("actor_type", "human"),
                     "actor_color": sanitize_color(stage_input_data.get("actor_color")),
                     "actor_speed": stage_input_data.get("actor_speed", 10.0),
+                    "actor_scale": stage_input_data.get("actor_scale", 0.5 if stage_input_data.get("actor_type") == "quadruped" else 1.0),
                     "spawn_point": stage_input_data.get("spawn_point"),
                     "trajectory": traj or []
                 }]
@@ -309,6 +329,7 @@ class ActingNode(io.ComfyNode):
                 "actor_type": actor_type,
                 "actor_color": clean_color,
                 "actor_speed": actor_speed,
+                "actor_scale": actor_scale,
                 "spawn_point": current_spawn,
                 "trajectory": current_traj,
             }
@@ -319,6 +340,7 @@ class ActingNode(io.ComfyNode):
             "actor_type": actor_type,
             "actor_color": clean_color,
             "actor_speed": actor_speed,
+            "actor_scale": actor_scale,
             "duration": duration,
             "motion_data": motion_data,
             "actors": all_actors,

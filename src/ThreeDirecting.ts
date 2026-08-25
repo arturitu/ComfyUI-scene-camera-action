@@ -82,16 +82,18 @@ export class ThreeDirecting {
     record: any
   }> = []
 
-  public getAvailableActors(): Array<{ id: string; label: string }> {
-    const list: Array<{ id: string; label: string }> = []
+  public getAvailableActors(): Array<{ id: string; label: string; actor_type?: string; scale?: number }> {
+    const list: Array<{ id: string; label: string; actor_type?: string; scale?: number }> = []
     if (this.actorList.length === 0) {
-      list.push({ id: 'actor_1', label: 'Actor 1 (human)' })
+      list.push({ id: 'actor_1', label: 'Actor 1 (human)', actor_type: 'human', scale: 1.0 })
       return list
     }
     this.actorList.forEach((a, idx) => {
       list.push({
         id: a.id,
-        label: `Actor ${idx + 1} (${a.record.actor_type || 'human'})`
+        label: `Actor ${idx + 1} (${a.record.actor_type || 'human'})`,
+        actor_type: a.record.actor_type || 'human',
+        scale: a.controller?.scale ?? (a.record.actor_type === 'quadruped' ? 0.5 : 1.0)
       })
     })
     return list
@@ -180,6 +182,8 @@ export class ThreeDirecting {
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
       const color = rec.actor_color || (rec.actor_type === 'car' ? '#0284C7' : '#F1DFBF')
       actorCtrl.setActorColor(color)
+      const scale = rec.actor_scale || (rec.actor_type === 'quadruped' ? 0.5 : 1.0)
+      actorCtrl.setActorScale(scale)
       const pbCtrl = new PlaybackController()
       let traj = rec.trajectory || rec.motion_data
       if (typeof traj === 'string' && traj.trim()) {
@@ -533,6 +537,7 @@ export class ThreeDirecting {
     this.lastTargetActorId = targetActorId
 
     const targetActorType = (targetActorCtrl as any)?.getType?.() || 'human'
+    const targetActorScale = (targetActorCtrl as any)?.scale ?? 1.0
     const isCarTarget = targetActorType === 'car'
     const isQuadrupedTarget = targetActorType === 'quadruped'
 
@@ -584,21 +589,24 @@ export class ThreeDirecting {
       }
 
     } else if (activeMode === 'Third Person') {
+      const scale = targetActorScale
       const isCar = isCarTarget
       const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
-      const defaultDist = isCar ? 6.5 : (isQuadruped ? 3.5 : (isCrouch ? 2.8 : 3.5))
+      const minDistance = (isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)) * scale
+      const defaultDist = (isCar ? 6.5 : (isQuadruped ? 3.5 : (isCrouch ? 2.8 : 3.5))) * scale
       const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
       
-      // Eye-level camera height
-      const camHeight = isCar
-        ? 1.30 + 0.35 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
+      // Eye-level camera height scaled
+      const baseCamHeight = isCar
+        ? 1.30 + 0.35 * Math.min(2.0, Math.max(0, (userDist / scale - 3.5) / 3.0))
         : (isQuadruped
-          ? (isCrouch ? 0.70 : 1.10) + 0.15 * Math.min(2.0, Math.max(0, (userDist - 2.0) / 2.0))
-          : (isCrouch ? 1.10 : (1.52 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 2.0)))))
+          ? (isCrouch ? 0.70 : 1.10) + 0.15 * Math.min(2.0, Math.max(0, (userDist / scale - 2.0) / 2.0))
+          : (isCrouch ? 1.10 : (1.52 + 0.15 * Math.min(2.0, Math.max(0, (userDist / scale - 1.5) / 2.0)))))
+      const camHeight = baseCamHeight * scale
       const camDist = -userDist
-      const targetYOffset = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
+      const baseTargetYOffset = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
+      const targetYOffset = baseTargetYOffset * scale
 
       const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(backOffset)
@@ -629,13 +637,15 @@ export class ThreeDirecting {
       }
 
     } else if (activeMode === 'Wide') {
+      const scale = targetActorScale
       const isCar = isCarTarget
       const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
-      const defaultDist = isCar ? 18.0 : 16.0
+      const minDistance = (isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)) * scale
+      const defaultDist = (isCar ? 18.0 : 16.0) * scale
       const dist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
-      const targetOffsetY = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
+      const baseTargetYOffset = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
+      const targetOffsetY = baseTargetYOffset * scale
       const actorCenter = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
 
       // Physical distance-based elevation and offset looking at upper target / head
@@ -657,23 +667,25 @@ export class ThreeDirecting {
       }
 
     } else if (activeMode === 'Side') {
+      const scale = targetActorScale
       const isCar = isCarTarget
       const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
-      const defaultDist = isCar ? 6.5 : 4.5
+      const minDistance = (isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)) * scale
+      const defaultDist = (isCar ? 6.5 : 4.5) * scale
       const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
       
-      // Eye-level side profile height
-      const camHeight = isCar
-        ? 0.90 + 0.30 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
+      // Eye-level side profile height scaled
+      const baseCamHeight = isCar
+        ? 0.90 + 0.30 * Math.min(2.0, Math.max(0, (userDist / scale - 3.5) / 3.0))
         : (isQuadruped
-          ? (isCrouch ? 0.70 : 1.00) + 0.15 * Math.min(2.0, Math.max(0, (userDist - 2.0) / 3.0))
-          : (isCrouch ? 1.05 : (1.50 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 3.0)))))
-      const sideVec = isCar
-        ? new THREE.Vector3(-userDist, camHeight, 0.0)
-        : (isQuadruped ? new THREE.Vector3(-userDist, camHeight, 0.2) : new THREE.Vector3(-userDist, camHeight, 0.3))
-      const targetOffsetY = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.75) : (isCrouch ? 1.10 : 1.52))
+          ? (isCrouch ? 0.70 : 1.00) + 0.15 * Math.min(2.0, Math.max(0, (userDist / scale - 2.0) / 3.0))
+          : (isCrouch ? 1.05 : (1.50 + 0.15 * Math.min(2.0, Math.max(0, (userDist / scale - 1.5) / 3.0)))))
+      const camHeight = baseCamHeight * scale
+      const sideZOffset = (isCar ? 0.0 : (isQuadruped ? 0.2 : 0.3)) * scale
+      const sideVec = new THREE.Vector3(-userDist, camHeight, sideZOffset)
+      const baseTargetYOffset = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.75) : (isCrouch ? 1.10 : 1.52))
+      const targetOffsetY = baseTargetYOffset * scale
 
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(sideOffset)

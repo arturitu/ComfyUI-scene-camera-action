@@ -15,7 +15,9 @@ export class HumanActor extends SkinnedActor {
   }
 
   public override getFPVOffset(): THREE.Vector3 {
-    return this.isCrouching() ? new THREE.Vector3(0, 0.85, 0.1) : new THREE.Vector3(0, 1.65, 0.1)
+    return this.isCrouching()
+      ? new THREE.Vector3(0, 0.85 * this.scale, 0.1 * this.scale)
+      : new THREE.Vector3(0, 1.65 * this.scale, 0.1 * this.scale)
   }
 
   public getModelUrl(): string {
@@ -67,6 +69,6 @@ export class HumanActor extends SkinnedActor {
   }
 
   public getModelYOffset(): number {
-    return 0.25
+    return 0.0
   }
 }

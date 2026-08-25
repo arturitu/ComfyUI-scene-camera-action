@@ -13,6 +13,9 @@ const _tempSlopeRight = new THREE.Vector3()
 const _tempSlopeFwd = new THREE.Vector3()
 const _tempBasisMat = new THREE.Matrix4()
 const _tempTargetQuat = new THREE.Quaternion()
+const _tempVecA = new THREE.Vector3()
+const _tempVecB = new THREE.Vector3()
+const _tempVecC = new THREE.Vector3()
 
 export interface RampSlopeConfig {
   aheadOffset?: number
@@ -39,10 +42,28 @@ export abstract class BaseActor {
 
   public lastSpawnPoint?: SpawnPoint
   public actorColor: string = '#F1DFBF'
+  public scale: number = 1.0
 
   public setActorColor(hexColor: string): void {
     if (!hexColor) return
     this.actorColor = hexColor
+  }
+
+  public setActorScale(scale: number): void {
+    if (typeof scale !== 'number' || isNaN(scale)) return
+    this.scale = Math.max(0.3, Math.min(2.0, scale))
+    this.group.scale.set(this.scale, this.scale, this.scale)
+  }
+
+  public getDisplayCollider(): boolean {
+    return this.showCollider
+  }
+
+  public setDisplayCollider(val: boolean): void {
+    this.showCollider = val
+    if (this.colliderWireframe) {
+      this.colliderWireframe.visible = val
+    }
   }
 
   constructor() {
@@ -70,6 +91,18 @@ export abstract class BaseActor {
     this.isOnGround = true
     this.group.position.copy(this.position)
     this.group.rotation.set(0, this.rotationY, 0)
+    this.group.scale.set(this.scale, this.scale, this.scale)
+  }
+
+  /**
+   * Returns probe points in local space [x, z] relative to actor center for ramp slope calculations.
+   */
+  protected getSlopeProbes(): { frontZ: number; rearZ: number; halfWidth: number } {
+    return {
+      frontZ: 0.8 * this.scale,
+      rearZ: 0.8 * this.scale,
+      halfWidth: 0.3 * this.scale
+    }
   }
 
   public calculateRampIncline(
@@ -81,9 +114,9 @@ export abstract class BaseActor {
     rightZ: number,
     options: RampSlopeConfig = {}
   ): { pitch: number; roll: number } {
-    const aheadOffset = options.aheadOffset ?? 0.0
-    const rayOriginHeight = options.rayOriginHeight ?? 1.5
-    const maxRayDistance = options.maxRayDistance ?? 4.0
+    const aheadOffset = (options.aheadOffset ?? 0.0) * this.scale
+    const rayOriginHeight = Math.max(1.8, (options.rayOriginHeight ?? 1.8) * this.scale)
+    const maxRayDistance = Math.max(5.0, (options.maxRayDistance ?? 5.0) * this.scale)
     const minNormalY = options.minNormalY ?? 0.3
     const clampThreshold = options.clampThreshold ?? 0.99
     const lerpSpeed = options.lerpSpeed ?? 12.0
@@ -122,9 +155,32 @@ export abstract class BaseActor {
     return { pitch: this.rampPitchAngle, roll: this.rampRollAngle }
   }
 
+  public sampleGround(
+    x: number,
+    z: number,
+    colliderBVH: any,
+    currentY: number
+  ): { y: number; normal: THREE.Vector3; hit: boolean } {
+    if (!colliderBVH) {
+      return { y: config.GROUND_Y, normal: new THREE.Vector3(0, 1, 0), hit: true }
+    }
+    const rayOriginHeight = Math.max(1.5, 1.5 * this.scale)
+    const maxDropDistance = Math.max(2.5, 2.5 * this.scale)
+    const totalRayDistance = rayOriginHeight + maxDropDistance
+
+    _tempRay.origin.set(x, currentY + rayOriginHeight, z)
+    _tempRay.direction.set(0, -1, 0)
+    const hit = colliderBVH.raycastFirst(_tempRay)
+
+    if (hit && hit.face && hit.face.normal && hit.face.normal.y >= 0.55 && hit.distance <= totalRayDistance) {
+      return { y: (currentY + rayOriginHeight) - hit.distance, normal: hit.face.normal, hit: true }
+    }
+    return { y: -100.0, normal: new THREE.Vector3(0, 1, 0), hit: false }
+  }
+
   /**
-   * Universal slope alignment using orthonormal basis matrix.
-   * Eliminates gimbal lock, lag, and 180-degree flip bugs on ramps.
+   * Universal slope alignment using surface normal & orthonormal basis matrix.
+   * Accurately orients actors to ramps at any scale while completely ignoring vertical walls.
    */
   public updateSlopeOrientation(
     dt: number,
@@ -138,22 +194,35 @@ export abstract class BaseActor {
       return
     }
 
-    _tempRay.origin.set(this.position.x, this.position.y + 1.5, this.position.z)
+    const rayOriginHeight = Math.max(1.8, 1.8 * this.scale)
+    const maxRayDistance = Math.max(5.0, 5.0 * this.scale)
+
+    _tempRay.origin.set(this.position.x, this.position.y + rayOriginHeight, this.position.z)
     _tempRay.direction.set(0, -1, 0)
     const hit = colliderBVH.raycastFirst(_tempRay)
 
-    if (hit && hit.distance < 4.0 && hit.face && hit.face.normal) {
-      const normal = hit.face.normal
-      if (normal.y > 0.3) {
+    if (hit && hit.distance < maxRayDistance && hit.face && hit.face.normal) {
+      const groundNormal = hit.face.normal
+      // A walkable slope/ramp must have normal.y >= 0.55 (up to ~56 deg incline)
+      // Vertical walls (normal.y < 0.55) are strictly ignored to prevent unwanted tilting/spinning
+      if (groundNormal.y >= 0.55) {
+        if (groundNormal.y > 0.995) {
+          // Flat ground - stay level
+          _tempEuler.set(0, this.rotationY, 0, 'YXZ')
+          _tempTargetQuat.setFromEuler(_tempEuler)
+          this.group.quaternion.slerp(_tempTargetQuat, Math.min(1.0, lerpSpeed * dt))
+          return
+        }
+
         const fwdX = Math.sin(this.rotationY)
         const fwdZ = Math.cos(this.rotationY)
         _tempFlatFwd.set(fwdX, 0, fwdZ)
 
-        _tempUp.copy(normal).normalize()
+        _tempUp.copy(groundNormal).normalize()
 
         // Right vector on slope = Up Normal x Flat Forward
         _tempSlopeRight.crossVectors(_tempUp, _tempFlatFwd)
-        if (_tempSlopeRight.lengthSq() < 1e-5) {
+        if (_tempSlopeRight.lengthSq() < 1e-4) {
           _tempSlopeRight.set(Math.cos(this.rotationY), 0, -Math.sin(this.rotationY))
         } else {
           _tempSlopeRight.normalize()
@@ -177,15 +246,8 @@ export abstract class BaseActor {
 
   public jump(): void {
     if (this.isOnGround) {
-      this.velocity.y = 11.0
+      this.velocity.y = 11.0 * Math.sqrt(this.scale)
       this.isOnGround = false
-    }
-  }
-
-  public setDisplayCollider(visible: boolean): void {
-    this.showCollider = visible
-    if (this.colliderWireframe) {
-      this.colliderWireframe.visible = visible
     }
   }
 
@@ -200,7 +262,7 @@ export abstract class BaseActor {
   abstract getType(): 'human' | 'car' | 'quadruped'
 
   public getFPVOffset(): THREE.Vector3 {
-    return new THREE.Vector3(0, 1.5, 0.1)
+    return new THREE.Vector3(0, 1.5 * this.scale, 0.1 * this.scale)
   }
 
   public isCrouching(): boolean {
@@ -230,7 +292,7 @@ export abstract class BaseActor {
       py: Math.round(this.group.position.y * 1000) / 1000,
       pz: Math.round(this.group.position.z * 1000) / 1000,
       rx: Math.round(_tempEuler.x * 1000) / 1000,
-      ry: Math.round(this.rotationY * 1000) / 1000,
+      ry: Math.round(_tempEuler.y * 1000) / 1000,
       rz: Math.round(_tempEuler.z * 1000) / 1000,
     }
   }
@@ -244,9 +306,10 @@ export abstract class BaseActor {
     this.position.set(frame.px ?? 0, frame.py ?? config.GROUND_Y, frame.pz ?? 0)
     this.rotationY = frame.ry ?? 0
     const rx = frame.rx ?? 0
+    const ry = frame.ry ?? 0
     const rz = frame.rz ?? 0
 
-    _tempEuler.set(rx, this.rotationY, rz, 'YXZ')
+    _tempEuler.set(rx, ry, rz, 'YXZ')
     this.group.quaternion.setFromEuler(_tempEuler)
     this.group.position.copy(this.position)
 
@@ -281,7 +344,7 @@ export abstract class BaseActor {
           tri.getNormal(_tempNormal)
           if (_tempNormal.y > 0.3) {
             if (_tempRay.intersectTriangle(tri.a, tri.b, tri.c, false, _tempHitPoint)) {
-              if (_tempHitPoint.y <= this.position.y + 1.2) {
+              if (_tempHitPoint.y <= this.position.y + 1.2 * this.scale) {
                 if (highestBelow === null || _tempHitPoint.y > highestBelow) {
                   highestBelow = _tempHitPoint.y
                 }
