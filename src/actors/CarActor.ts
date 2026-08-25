@@ -57,8 +57,6 @@ export class CarActor extends BaseActor {
   private bodySuspensionGroup: THREE.Group | null = null
   private pitchAngle: number = 0
   private rollAngle: number = 0
-  private rampPitchAngle: number = 0
-  private rampRollAngle: number = 0
   private prevSpeed: number = 0
   private prevPlaybackSpeed: number = 0
 
@@ -395,38 +393,31 @@ export class CarActor extends BaseActor {
         const radius = 0.38
         const height = 0.20
 
-        for (let idx = 0; idx < LOCAL_PROBES.length; idx++) {
-          const probe = LOCAL_PROBES[idx]
-          const px = this.position.x + probe.x * rightX + probe.z * forwardX
-          const py = this.position.y
-          const pz = this.position.z + probe.x * rightZ + probe.z * forwardZ
+        _tempSegment.start.set(this.position.x, this.position.y + radius, this.position.z)
+        _tempSegment.end.set(this.position.x, this.position.y + radius + height, this.position.z)
 
-          _tempSegment.start.set(px, py + radius, pz)
-          _tempSegment.end.set(px, py + radius + height, pz)
+        _tempCapsuleBounds.min.set(this.position.x - 2.0, this.position.y - 0.5, this.position.z - 2.0)
+        _tempCapsuleBounds.max.set(this.position.x + 2.0, this.position.y + radius + height + 1.5, this.position.z + 2.0)
 
-          _tempCapsuleBounds.min.set(px - 1.5, py - 1.5, pz - 1.5)
-          _tempCapsuleBounds.max.set(px + 1.5, py + radius + height + radius + 1.5, pz + 1.5)
+        colliderBVH.shapecast({
+          intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
+          intersectsTriangle: (tri: any) => {
+            const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
+            const dist = Math.sqrt(distSq)
 
-          colliderBVH.shapecast({
-            intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
-            intersectsTriangle: (tri: any) => {
-              const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
-              const dist = Math.sqrt(distSq)
-
-              if (dist < radius) {
-                const depth = radius - dist
-                _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
-                if (_tempDir.y > 0.3) {
-                  touchGround = true
-                }
-                this.position.addScaledVector(_tempDir, depth)
-                if (Math.abs(_tempDir.y) < 0.5) {
-                  this.currentSpeed *= 0.8
-                }
+            if (dist < radius) {
+              const depth = radius - dist
+              _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
+              if (_tempDir.y > 0.3) {
+                touchGround = true
+              }
+              this.position.addScaledVector(_tempDir, depth)
+              if (Math.abs(_tempDir.y) < 0.5) {
+                this.currentSpeed *= 0.8
               }
             }
-          })
-        }
+          }
+        })
 
         if (touchGround && this.velocity.y <= 0) {
           this.velocity.y = 0
@@ -446,40 +437,10 @@ export class CarActor extends BaseActor {
       this.isOnGround = false
     }
 
-    // 5. Ramp Slope Detection via Vertical Ground Raycast (Cast 0.55m ahead to pitch up early on ramps)
-    let targetRampPitch = this.rampPitchAngle
-    let targetRampRoll = this.rampRollAngle
-
-    if (this.isOnGround && colliderBVH) {
-      const aheadOffset = 1.55
-      const rayX = this.position.x + forwardX * aheadOffset
-      const rayZ = this.position.z + forwardZ * aheadOffset
-      _tempRay.origin.set(rayX, this.position.y + SLOPE_CONFIG.rayOriginHeight, rayZ)
-      _tempRay.direction.set(0, -1, 0)
-      const hit = colliderBVH.raycastFirst(_tempRay)
-
-      if (hit && hit.distance < SLOPE_CONFIG.maxRayDistance && hit.face && hit.face.normal) {
-        const groundNormal = hit.face.normal
-        if (groundNormal.y > SLOPE_CONFIG.minNormalY) {
-          _tempFwd.set(forwardX, 0, forwardZ)
-          _tempRight.set(rightX, 0, rightZ)
-
-          const clampVal = SLOPE_CONFIG.clampThreshold
-          targetRampPitch = Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempFwd.dot(groundNormal)))) * SLOPE_CONFIG.pitchMultiplier
-          targetRampRoll = -Math.asin(Math.max(-clampVal, Math.min(clampVal, _tempRight.dot(groundNormal)))) * SLOPE_CONFIG.rollMultiplier
-        }
-      }
-    } else if (!this.isOnGround) {
-      targetRampPitch *= Math.max(0, 1.0 - SLOPE_CONFIG.airborneDecay * dt)
-      targetRampRoll *= Math.max(0, 1.0 - SLOPE_CONFIG.airborneDecay * dt)
-    }
-
-    this.rampPitchAngle += (targetRampPitch - this.rampPitchAngle) * Math.min(1.0, SLOPE_CONFIG.lerpSpeed * dt)
-    this.rampRollAngle += (targetRampRoll - this.rampRollAngle) * Math.min(1.0, SLOPE_CONFIG.lerpSpeed * dt)
-
     this.group.position.copy(this.position)
-    _tempEuler.set(this.rampPitchAngle, this.rotationY, this.rampRollAngle, 'YXZ')
-    this.group.quaternion.setFromEuler(_tempEuler)
+
+    // 5. Universal Ramp Slope Orientation via Orthonormal Basis
+    this.updateSlopeOrientation(dt, colliderBVH, 15.0)
 
     if (this.position.y < -10.0) {
       this.resetToOrigin()

@@ -52,7 +52,7 @@ export interface SpawnPoint {
 
 export interface ActorRecord {
   id: string
-  actor_type: 'human' | 'car'
+  actor_type: 'human' | 'car' | 'quadruped'
   actor_color?: string
   actor_speed: number
   spawn_point?: SpawnPoint
@@ -68,7 +68,7 @@ export interface StageState {
 export type SceneState = StageState
 
 export interface ActingState {
-  actor_type?: 'human' | 'car'
+  actor_type?: 'human' | 'car' | 'quadruped'
   actor_color?: string
   actor_speed: number
   camera_distance?: number

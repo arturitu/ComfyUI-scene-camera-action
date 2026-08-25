@@ -282,7 +282,7 @@ export class ThreeActing {
       if (!traj || (Array.isArray(traj) && traj.length === 0)) return
 
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
-      const color = rec.actor_color || (rec.actor_type === 'human' ? '#F1DFBF' : '#0284C7')
+      const color = rec.actor_color || (rec.actor_type === 'car' ? '#0284C7' : '#F1DFBF')
       actorCtrl.setActorColor(color)
       const pbCtrl = new PlaybackController()
       pbCtrl.setTrajectory(traj)
@@ -527,14 +527,14 @@ export class ThreeActing {
     this.debugPanel.attachThreeActing(this)
   }
 
-  private buildActor(type?: 'human' | 'car'): void {
+  private buildActor(type?: 'human' | 'car' | 'quadruped'): void {
     const charType = type ?? this.state.actor_type ?? 'human'
     if (this.actorController) {
       this.scene.remove(this.actorController.group)
       this.actorController.dispose()
     }
     this.actorController = ActorFactory.create(charType)
-    const color = this.state.actor_color || (charType === 'human' ? '#F1DFBF' : '#0284C7')
+    const color = this.state.actor_color || (charType === 'car' ? '#0284C7' : '#F1DFBF')
     this.actorController.setActorColor(color)
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
@@ -1190,7 +1190,7 @@ export class ThreeActing {
     return this.state.duration ?? 7.0
   }
 
-  public getActorType(): 'human' | 'car' {
+  public getActorType(): 'human' | 'car' | 'quadruped' {
     return this.state.actor_type ?? 'car'
   }
 

@@ -954,10 +954,13 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
     } catch (e) { }
   }
 
+  const rawType = String(typeVal)
+  const normalizedType: 'human' | 'car' | 'quadruped' = (rawType === 'car' || rawType === 'quadruped') ? rawType : 'human'
+
   return {
-    actor_type: (typeVal as string) === 'car' ? 'car' : 'human',
+    actor_type: normalizedType,
     actor_color: cleanColor,
-    actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : ((typeVal as string) === 'car' ? 20.0 : 10.0),
+    actor_speed: typeof speedVal === 'number' ? Math.max(1.0, Math.min(30.0, speedVal)) : (normalizedType === 'car' ? 20.0 : 10.0),
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: motionDataVal,
     spawn_point: storedProps?.spawn_point,
@@ -1040,7 +1043,8 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
   }
 
   wire('actor_type', v => {
-    const charType = String(v) === 'car' ? 'car' : 'human'
+    const rawVal = String(v)
+    const charType: 'human' | 'car' | 'quadruped' = (rawVal === 'car' || rawVal === 'quadruped') ? rawVal : 'human'
     const speedWidget = node.widgets?.find(w => w.name === 'actor_speed')
     const targetSpeed = charType === 'car' ? 20.0 : 10.0
     if (speedWidget) {
@@ -1060,7 +1064,7 @@ function bindActingWidgetCallbacks(node: ComfyNode, exposed: ActingAppExposed): 
 
   wire('actor_color', v => {
     const rawType = getWidgetValue(node, 'actor_type', 'human')
-    const charType = String(rawType) === 'car' ? 'car' : 'human'
+    const charType = (String(rawType) === 'car' || String(rawType) === 'quadruped') ? String(rawType) : 'human'
     const defaultColor = charType === 'car' ? '#0284C7' : '#F1DFBF'
     const cleanColor = parseCleanHexColor(v, defaultColor)
     exposed.setState({ actor_color: cleanColor })

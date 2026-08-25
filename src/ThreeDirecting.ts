@@ -178,7 +178,7 @@ export class ThreeDirecting {
     actorsArr.forEach((rec, idx) => {
       const actorId = rec.id || `actor_${idx + 1}`
       const actorCtrl = ActorFactory.create(rec.actor_type || 'human')
-      const color = rec.actor_color || (rec.actor_type === 'human' ? '#F1DFBF' : '#0284C7')
+      const color = rec.actor_color || (rec.actor_type === 'car' ? '#0284C7' : '#F1DFBF')
       actorCtrl.setActorColor(color)
       const pbCtrl = new PlaybackController()
       let traj = rec.trajectory || rec.motion_data
@@ -390,8 +390,8 @@ export class ThreeDirecting {
       this.scene.remove(this.actorController.group)
       this.actorController.dispose()
     }
-    this.actorController = ActorFactory.create(charType as 'human' | 'car')
-    const color = (charType === 'human' ? '#F1DFBF' : '#0284C7')
+    this.actorController = ActorFactory.create(charType as 'human' | 'car' | 'quadruped')
+    const color = (charType === 'car' ? '#0284C7' : '#F1DFBF')
     this.actorController.setActorColor(color)
     this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
     this.scene.add(this.actorController.group)
@@ -532,7 +532,9 @@ export class ThreeDirecting {
     this.lastActiveKeyframeId = activeKeyframe.id
     this.lastTargetActorId = targetActorId
 
-    const isCarTarget = (targetActorCtrl as any)?.getType?.() === 'car'
+    const targetActorType = (targetActorCtrl as any)?.getType?.() || 'human'
+    const isCarTarget = targetActorType === 'car'
+    const isQuadrupedTarget = targetActorType === 'quadruped'
 
     if (this.lastCameraMode !== activeMode || isHardCut) {
       this.smoothedCameraYaw = rotY
@@ -541,7 +543,7 @@ export class ThreeDirecting {
       let diffYaw = rotY - this.smoothedCameraYaw
       while (diffYaw < -Math.PI) diffYaw += Math.PI * 2
       while (diffYaw > Math.PI) diffYaw -= Math.PI * 2
-      const yawSpeed = isCarTarget ? 10.0 : 4.5
+      const yawSpeed = isCarTarget ? 10.0 : (isQuadrupedTarget ? 6.0 : 4.5)
       const yawLerpFactor = 1.0 - Math.exp(-yawSpeed * Math.max(0.001, dt))
       this.smoothedCameraYaw += diffYaw * yawLerpFactor
     }
@@ -583,17 +585,20 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Third Person') {
       const isCar = isCarTarget
+      const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : 1.5
-      const defaultDist = isCar ? 6.5 : (isCrouch ? 2.8 : 3.5)
+      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
+      const defaultDist = isCar ? 6.5 : (isQuadruped ? 3.5 : (isCrouch ? 2.8 : 3.5))
       const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
       
-      // Eye-level camera height: stays near eye/chest level at close distance, elevating naturally at further distance
+      // Eye-level camera height
       const camHeight = isCar
         ? 1.30 + 0.35 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
-        : (isCrouch ? 1.10 : (1.52 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 2.0))))
+        : (isQuadruped
+          ? (isCrouch ? 0.70 : 1.10) + 0.15 * Math.min(2.0, Math.max(0, (userDist - 2.0) / 2.0))
+          : (isCrouch ? 1.10 : (1.52 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 2.0)))))
       const camDist = -userDist
-      const targetYOffset = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
+      const targetYOffset = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
 
       const backOffset = new THREE.Vector3(0, camHeight, camDist).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(backOffset)
@@ -625,11 +630,12 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Wide') {
       const isCar = isCarTarget
+      const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : 1.5
+      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
       const defaultDist = isCar ? 18.0 : 16.0
       const dist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
-      const targetOffsetY = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
+      const targetOffsetY = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.70) : (isCrouch ? 1.10 : 1.52))
       const actorCenter = new THREE.Vector3(charPos.x, charPos.y + targetOffsetY, charPos.z)
 
       // Physical distance-based elevation and offset looking at upper target / head
@@ -652,19 +658,22 @@ export class ThreeDirecting {
 
     } else if (activeMode === 'Side') {
       const isCar = isCarTarget
+      const isQuadruped = isQuadrupedTarget
       const isCrouch = targetActorCtrl?.isCrouching() ?? false
-      const minDistance = isCar ? 3.5 : 1.5
+      const minDistance = isCar ? 3.5 : (isQuadruped ? 2.0 : 1.5)
       const defaultDist = isCar ? 6.5 : 4.5
       const userDist = Math.max(minDistance, activeKeyframe.distance !== undefined ? activeKeyframe.distance : defaultDist)
       
       // Eye-level side profile height
       const camHeight = isCar
         ? 0.90 + 0.30 * Math.min(2.0, Math.max(0, (userDist - 3.5) / 3.0))
-        : (isCrouch ? 1.05 : (1.50 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 3.0))))
+        : (isQuadruped
+          ? (isCrouch ? 0.70 : 1.00) + 0.15 * Math.min(2.0, Math.max(0, (userDist - 2.0) / 3.0))
+          : (isCrouch ? 1.05 : (1.50 + 0.15 * Math.min(2.0, Math.max(0, (userDist - 1.5) / 3.0)))))
       const sideVec = isCar
         ? new THREE.Vector3(-userDist, camHeight, 0.0)
-        : new THREE.Vector3(-userDist, camHeight, 0.3)
-      const targetOffsetY = isCar ? 0.75 : (isCrouch ? 1.10 : 1.52)
+        : (isQuadruped ? new THREE.Vector3(-userDist, camHeight, 0.2) : new THREE.Vector3(-userDist, camHeight, 0.3))
+      const targetOffsetY = isCar ? 0.75 : (isQuadruped ? (isCrouch ? 0.50 : 0.75) : (isCrouch ? 1.10 : 1.52))
 
       const sideOffset = sideVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.smoothedCameraYaw)
       const idealCamPos = charPos.clone().add(sideOffset)

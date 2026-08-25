@@ -175,7 +175,7 @@
           <div class="modal-title-group">
             <h3 class="modal-title">Keyboard Controls</h3>
             <span class="actor-type-badge" :class="state.actor_type">
-              {{ state.actor_type === 'car' ? 'CAR ACTOR' : 'HUMAN ACTOR' }}
+              {{ state.actor_type === 'car' ? 'CAR ACTOR' : (state.actor_type === 'quadruped' ? 'QUADRUPED ACTOR' : 'HUMAN ACTOR') }}
             </span>
           </div>
           <button class="modal-close-btn" @click="showHelpModal = false" title="Close">
@@ -200,6 +200,29 @@
             <div class="control-row">
               <div class="key-group"><kbd>Space</kbd></div>
               <span class="action-desc">Handbrake</span>
+            </div>
+          </div>
+
+          <div v-else-if="state.actor_type === 'quadruped'" class="controls-list">
+            <div class="control-row">
+              <div class="key-group"><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <span class="or">or</span> <kbd>Arrows</kbd></div>
+              <span class="action-desc">Move</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>Shift</kbd> + Move</div>
+              <span class="action-desc">Run</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>C</kbd></div>
+              <span class="action-desc">Sit</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>B</kbd></div>
+              <span class="action-desc">Bark</span>
+            </div>
+            <div class="control-row">
+              <div class="key-group"><kbd>Space</kbd> <span class="or">or</span> <kbd>J</kbd></div>
+              <span class="action-desc">Jump</span>
             </div>
           </div>
 

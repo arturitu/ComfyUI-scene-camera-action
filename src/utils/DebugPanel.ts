@@ -1,9 +1,7 @@
 import GUI from 'lil-gui'
 import type { ThreeActing } from '../ThreeActing'
-import * as config from '../threeConfig'
 
 const STORAGE_KEY = 'acting_debug_options'
-const STAGE_FADE_STORAGE_KEY = 'stage_fade_options'
 
 export class DebugPanel {
   private gui: GUI
@@ -28,86 +26,6 @@ export class DebugPanel {
 
     // Closed by default so it doesn't clutter canvas
     this.gui.close()
-
-    this.setupStageFadeControls()
-  }
-
-  private loadSavedFadeConfig() {
-    try {
-      const saved = localStorage.getItem(STAGE_FADE_STORAGE_KEY)
-      if (saved) return JSON.parse(saved)
-    } catch (e) {
-      // Ignore storage errors
-    }
-    return null
-  }
-
-  private saveFadeConfig(params: { enabled: boolean; innerRadius: number; outerRadius: number; cornerRadius: number }) {
-    try {
-      localStorage.setItem(STAGE_FADE_STORAGE_KEY, JSON.stringify(params))
-    } catch (e) {
-      // Ignore storage errors
-    }
-  }
-
-  private setupStageFadeControls(): void {
-    const saved = this.loadSavedFadeConfig()
-    if (saved) {
-      if (typeof saved.enabled === 'boolean') {
-        config.stageFadeUniforms.uStageFadeEnabled.value = saved.enabled ? 1.0 : 0.0
-      }
-      if (typeof saved.innerRadius === 'number') {
-        config.stageFadeUniforms.uStageFadeInnerRadius.value = saved.innerRadius
-      }
-      if (typeof saved.outerRadius === 'number') {
-        config.stageFadeUniforms.uStageFadeOuterRadius.value = saved.outerRadius
-      }
-      if (typeof saved.cornerRadius === 'number') {
-        config.stageFadeUniforms.uStageFadeCornerRadius.value = saved.cornerRadius
-      }
-    }
-
-    const fadeFolder = this.gui.addFolder('Stage Edge Fade')
-    const fadeParams = {
-      enabled: config.stageFadeUniforms.uStageFadeEnabled.value > 0.5,
-      innerRadius: config.stageFadeUniforms.uStageFadeInnerRadius.value,
-      outerRadius: config.stageFadeUniforms.uStageFadeOuterRadius.value,
-      cornerRadius: config.stageFadeUniforms.uStageFadeCornerRadius.value,
-    }
-
-    fadeFolder
-      .add(fadeParams, 'enabled')
-      .name('Fade Enabled')
-      .onChange((val: boolean) => {
-        config.stageFadeUniforms.uStageFadeEnabled.value = val ? 1.0 : 0.0
-        this.saveFadeConfig(fadeParams)
-      })
-
-    fadeFolder
-      .add(fadeParams, 'innerRadius', 0, 100, 1)
-      .name('Inner Extent (m)')
-      .onChange((val: number) => {
-        config.stageFadeUniforms.uStageFadeInnerRadius.value = val
-        this.saveFadeConfig(fadeParams)
-      })
-
-    fadeFolder
-      .add(fadeParams, 'outerRadius', 5, 120, 1)
-      .name('Outer Extent (m)')
-      .onChange((val: number) => {
-        config.stageFadeUniforms.uStageFadeOuterRadius.value = val
-        this.saveFadeConfig(fadeParams)
-      })
-
-    fadeFolder
-      .add(fadeParams, 'cornerRadius', 0, 50, 1)
-      .name('Corner Radius (m)')
-      .onChange((val: number) => {
-        config.stageFadeUniforms.uStageFadeCornerRadius.value = val
-        this.saveFadeConfig(fadeParams)
-      })
-
-    fadeFolder.close()
   }
 
   private loadSavedConfig() {

@@ -177,10 +177,10 @@ class ActingNode(io.ComfyNode):
                 ),
                 io.Combo.Input(
                     "actor_type",
-                    options=["human", "car"],
+                    options=["human", "car", "quadruped"],
                     default="human",
                     display_name="Actor Type",
-                    tooltip="Select between Human (capsule physics) and Car (vehicle physics with inertia)",
+                    tooltip="Select between Human, Car, and Quadruped",
                 ),
                 io.Float.Input(
                     "actor_speed",
@@ -225,7 +225,7 @@ class ActingNode(io.ComfyNode):
         duration: float = 7.0,
         motion_data: str = "",
     ) -> io.NodeOutput:
-        default_c = "#F1DFBF" if actor_type == "human" else "#0284C7"
+        default_c = "#0284C7" if actor_type == "car" else "#F1DFBF"
         def sanitize_color(val: str | dict | None) -> str:
             if isinstance(val, str) and val.strip():
                 s = val.strip()
