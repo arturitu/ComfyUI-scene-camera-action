@@ -20,6 +20,8 @@ Build your 3D environment, control and record actor movements in real time using
 - **Demand-Based GPU Rendering**: Pauses WebGL rendering during graph navigation for lightweight performance.
 - **Stage Distance Fading & UI Upgrades**: Smooth edge fading, modern Lucide icons, and optimized node payloads.
 
+https://github.com/user-attachments/assets/d8abce40-8af8-486d-b8ac-fbcf2a661968
+
 
 ### 📦 Shipped - v0.4.0: Multiple Actors
 - **Multi-Actor Chaining**: Sequence and record multiple independent actors (humanoids and vehicles) on the same stage with synchronized playback.
