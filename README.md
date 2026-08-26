@@ -7,7 +7,7 @@ An interactive 3D scene staging, actor acting, and camera directing suite of cus
 
 Build your 3D environment, control and record actor movements in real time using your keyboard, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage imagery for reference-to-video (such as Seedance or MiniMax) workflows.
 
-![Preview](img.png)
+![Preview](scene-camera-action.png)
 
 ---
 
