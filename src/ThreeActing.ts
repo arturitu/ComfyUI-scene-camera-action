@@ -484,6 +484,8 @@ export class ThreeActing {
 
     // Setup Spawn Point Helper & Transform Controls
     this.spawnPointHelper = new SpawnPointHelper()
+    const currentScale = this.state.actor_scale ?? (this.state.actor_type === 'quadruped' ? 0.5 : 1.0)
+    this.spawnPointHelper.setScale(currentScale)
     const initialSp = this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 }
     this.state.spawn_point = initialSp
     this.spawnPointHelper.setSpawnPoint(initialSp)
@@ -546,6 +548,9 @@ export class ThreeActing {
     this.actorController.setActorColor(color)
     const currentScale = this.state.actor_scale ?? (charType === 'quadruped' ? 0.5 : 1.0)
     this.actorController.setActorScale(currentScale)
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.setScale(currentScale)
+    }
     this.actorController.setDisplayCollider(this.displayActorCollider)
     this.scene.add(this.actorController.group)
     this.resetActorPosition()
@@ -570,6 +575,9 @@ export class ThreeActing {
     if (this.actorController) {
       this.actorController.setActorScale(normalizedScale)
       this.resetActorPosition()
+    }
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.setScale(normalizedScale)
     }
     if (isDifferent && triggerChange && this.onStateChange) {
       this.onStateChange({ ...this.state, actor_scale: normalizedScale, actors: this.getAccumulatedActors() })

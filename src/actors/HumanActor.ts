@@ -14,6 +14,10 @@ export class HumanActor extends SkinnedActor {
     return 'human'
   }
 
+  protected override isHoldToCrouch(): boolean {
+    return true
+  }
+
   public override getFPVOffset(): THREE.Vector3 {
     return this.isCrouching()
       ? new THREE.Vector3(0, 0.85 * this.scale, 0.1 * this.scale)

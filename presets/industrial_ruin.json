@@ -1,6 +1,6 @@
 {
   "type": "cube_stage",
-  "num_assets": 42,
+  "num_assets": 56,
   "nodes": [
     {
       "id": "group_5001",
@@ -496,9 +496,9 @@
           "name": "Fallen Steel Girder SE",
           "transform": {
             "px": -1.5,
-            "py": 3.1,
+            "py": 2.9,
             "pz": 6.5,
-            "rx": 0.4,
+            "rx": 0.82,
             "ry": 0.3,
             "rz": 0.52,
             "sx": 0.5,
@@ -641,14 +641,14 @@
           "type": "block",
           "name": "Hanging Frame Segment",
           "transform": {
-            "px": 2.5,
-            "py": 5.8,
+            "px": 5.06,
+            "py": 1.88,
             "pz": 5.2,
             "rx": 0.35,
             "ry": 0.15,
             "rz": 0.45,
             "sx": 0.4,
-            "sy": 2.8,
+            "sy": 5.57,
             "sz": 0.4
           }
         }
@@ -817,13 +817,285 @@
           }
         }
       ]
+    },
+    {
+      "id": "9a2e05f8-835b-4da5-aaeb-13e3d442447c",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 5.1,
+        "py": -4.92,
+        "pz": 40.58,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.16,
+        "sx": 7.19,
+        "sy": 32.19,
+        "sz": 7.55
+      }
+    },
+    {
+      "id": "node_pgndo9c",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -9.48,
+        "py": -3.68,
+        "pz": 39.57,
+        "rx": 0.16,
+        "ry": 0,
+        "rz": 0,
+        "sx": 7.19,
+        "sy": 39.72,
+        "sz": 6.65
+      }
+    },
+    {
+      "id": "node_g42lw20",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -27.36,
+        "py": -4.44,
+        "pz": 39.51,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 7.19,
+        "sy": 27.51,
+        "sz": 6.65
+      }
+    },
+    {
+      "id": "node_7lg7gk4",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": -20.41,
+        "py": -1.62,
+        "pz": 47.63,
+        "rx": -0.18,
+        "ry": 0,
+        "rz": 0,
+        "sx": 4.49,
+        "sy": 17.19,
+        "sz": 4.16
+      }
+    },
+    {
+      "id": "node_yajz4bp",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 1.75,
+        "py": -4.96,
+        "pz": 45.29,
+        "rx": 0,
+        "ry": 0,
+        "rz": -0.15,
+        "sx": 4.49,
+        "sy": 17.19,
+        "sz": 4.16
+      }
+    },
+    {
+      "id": "node_urfjsoq",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 14.34,
+        "py": -1.62,
+        "pz": 44.23,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0.24,
+        "sx": 4.49,
+        "sy": 17.19,
+        "sz": 4.16
+      }
+    },
+    {
+      "id": "node_l6s4ofe",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 16.55,
+        "py": -4.44,
+        "pz": 48.2,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 7.19,
+        "sy": 27.51,
+        "sz": 6.65
+      }
+    },
+    {
+      "id": "1869436c-f915-4ede-bc0f-92dddf73b1fb",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 17,
+        "py": 0.95,
+        "pz": -1.6,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 10.08,
+        "sy": 22.77,
+        "sz": 10
+      }
+    },
+    {
+      "id": "node_pyt6r9i",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 17.8,
+        "py": 0.95,
+        "pz": -16.34,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 10.08,
+        "sy": 39.92,
+        "sz": 12.99
+      }
+    },
+    {
+      "id": "node_ssctxfd",
+      "type": "block",
+      "name": "Block",
+      "transform": {
+        "px": 16.19,
+        "py": 0.95,
+        "pz": 16.49,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 10.08,
+        "sy": 34.34,
+        "sz": 12.99
+      }
+    },
+    {
+      "id": "0829464e-41db-48cc-96f0-f801e37dab94",
+      "type": "group",
+      "name": "Group_6efiv",
+      "transform": {
+        "px": -1.08,
+        "py": 2.24,
+        "pz": 50.3,
+        "rx": 0,
+        "ry": 0,
+        "rz": 0,
+        "sx": 1.95,
+        "sy": 1.95,
+        "sz": 1.95
+      },
+      "children": [
+        {
+          "id": "node_su0os4m",
+          "type": "group",
+          "name": "Group_9zpu4",
+          "transform": {
+            "px": 0,
+            "py": 0,
+            "pz": -0.01,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.57,
+            "sx": 0.82,
+            "sy": 0.82,
+            "sz": 0.82
+          },
+          "children": [
+            {
+              "id": "node_30ctxax",
+              "type": "block",
+              "name": "Block",
+              "transform": {
+                "px": 0,
+                "py": 0,
+                "pz": -0.05,
+                "rx": 0,
+                "ry": 0,
+                "rz": -0.76,
+                "sx": 5.24,
+                "sy": 5.62,
+                "sz": 4.85
+              }
+            },
+            {
+              "id": "node_svvetw1",
+              "type": "block",
+              "name": "Block",
+              "transform": {
+                "px": -0.28,
+                "py": 0,
+                "pz": 0.06,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0.04,
+                "sx": 5.24,
+                "sy": 5.62,
+                "sz": 4.85
+              }
+            }
+          ]
+        },
+        {
+          "id": "node_0o8j94y",
+          "type": "group",
+          "name": "Group_9zpu4",
+          "transform": {
+            "px": 0.02,
+            "py": 0,
+            "pz": 0,
+            "rx": 0,
+            "ry": 0,
+            "rz": 1.18,
+            "sx": 0.82,
+            "sy": 0.82,
+            "sz": 0.82
+          },
+          "children": [
+            {
+              "id": "node_30ctxax",
+              "type": "block",
+              "name": "Block",
+              "transform": {
+                "px": 0,
+                "py": 0,
+                "pz": -0.05,
+                "rx": 0,
+                "ry": 0,
+                "rz": -0.76,
+                "sx": 5.24,
+                "sy": 5.62,
+                "sz": 4.85
+              }
+            },
+            {
+              "id": "node_svvetw1",
+              "type": "block",
+              "name": "Block",
+              "transform": {
+                "px": -0.28,
+                "py": 0,
+                "pz": 0.06,
+                "rx": 0,
+                "ry": 0,
+                "rz": 0.04,
+                "sx": 5.24,
+                "sy": 5.62,
+                "sz": 4.85
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
-  "selectedPreset": "industrial_ruin.json",
-  "spawn_point": {
-    "px": 0,
-    "py": 0,
-    "pz": -13.883,
-    "ry": 0
-  }
+  "selectedPreset": "industrial_ruin.json"
 }

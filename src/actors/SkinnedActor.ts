@@ -137,6 +137,10 @@ export abstract class SkinnedActor extends BaseActor {
     return false
   }
 
+  protected isHoldToCrouch(): boolean {
+    return false
+  }
+
   protected getRampSlopeConfig(): RampSlopeConfig {
     return {
       aheadOffset: 0.8,
@@ -446,19 +450,23 @@ export abstract class SkinnedActor extends BaseActor {
     const isShift = Boolean(keysPressed['ShiftLeft'] || keysPressed['ShiftRight'] || keysPressed['Shift'])
     const isMoving = Boolean(isW || isS || isA || isD)
 
-    // Toggle crouch / sit on C key press
     const isKeyCDown = Boolean(keysPressed['KeyC'] || keysPressed['Keyc'] || keysPressed['c'] || keysPressed['C'])
-    if (isKeyCDown && !this.prevKeyCDown) {
-      this.isToggleCrouched = !this.isToggleCrouched
+
+    let isCrouch = false
+    if (this.isHoldToCrouch()) {
+      isCrouch = isKeyCDown
+    } else {
+      // Toggle crouch / sit on C key press
+      if (isKeyCDown && !this.prevKeyCDown) {
+        this.isToggleCrouched = !this.isToggleCrouched
+      }
+      // Auto-exit crouch/sit if user attempts to walk, run, or jump
+      if (this.isToggleCrouched && (isMoving || isSpace)) {
+        this.isToggleCrouched = false
+      }
+      isCrouch = this.isToggleCrouched
     }
     this.prevKeyCDown = isKeyCDown
-
-    // Auto-exit crouch/sit if user attempts to walk, run, or jump
-    if (this.isToggleCrouched && (isMoving || isSpace)) {
-      this.isToggleCrouched = false
-    }
-
-    const isCrouch = this.isToggleCrouched
     this.isCrouchedState = isCrouch
 
     // Jump takeoff trigger

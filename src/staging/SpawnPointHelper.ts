@@ -89,6 +89,11 @@ export class SpawnPointHelper {
     this.group.add(headMesh)
   }
 
+  public setScale(scale: number): void {
+    const s = Math.max(0.1, scale)
+    this.group.scale.set(s, s, s)
+  }
+
   public setSpawnPoint(sp?: SpawnPoint): void {
     const px = sp?.px ?? 0.0
     const py = sp?.py ?? 0.0

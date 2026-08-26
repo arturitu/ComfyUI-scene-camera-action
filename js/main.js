@@ -44012,6 +44012,9 @@ class SkinnedActor extends BaseActor {
   shouldInclineOnRamps() {
     return false;
   }
+  isHoldToCrouch() {
+    return false;
+  }
   getRampSlopeConfig() {
     return {
       aheadOffset: 0.8,
@@ -44258,14 +44261,19 @@ class SkinnedActor extends BaseActor {
     const isShift = Boolean(keysPressed["ShiftLeft"] || keysPressed["ShiftRight"] || keysPressed["Shift"]);
     const isMoving = Boolean(isW || isS || isA || isD);
     const isKeyCDown = Boolean(keysPressed["KeyC"] || keysPressed["Keyc"] || keysPressed["c"] || keysPressed["C"]);
-    if (isKeyCDown && !this.prevKeyCDown) {
-      this.isToggleCrouched = !this.isToggleCrouched;
+    let isCrouch = false;
+    if (this.isHoldToCrouch()) {
+      isCrouch = isKeyCDown;
+    } else {
+      if (isKeyCDown && !this.prevKeyCDown) {
+        this.isToggleCrouched = !this.isToggleCrouched;
+      }
+      if (this.isToggleCrouched && (isMoving || isSpace)) {
+        this.isToggleCrouched = false;
+      }
+      isCrouch = this.isToggleCrouched;
     }
     this.prevKeyCDown = isKeyCDown;
-    if (this.isToggleCrouched && (isMoving || isSpace)) {
-      this.isToggleCrouched = false;
-    }
-    const isCrouch = this.isToggleCrouched;
     this.isCrouchedState = isCrouch;
     if (isSpace && this.isOnGround) {
       this.jump();
@@ -44516,6 +44524,9 @@ class HumanActor extends SkinnedActor {
   }
   getType() {
     return "human";
+  }
+  isHoldToCrouch() {
+    return true;
   }
   getFPVOffset() {
     return this.isCrouching() ? new Vector3(0, 0.85 * this.scale, 0.1 * this.scale) : new Vector3(0, 1.65 * this.scale, 0.1 * this.scale);
@@ -47153,6 +47164,10 @@ class SpawnPointHelper {
     headMesh.name = "__spawn_point_mesh__";
     this.group.add(headMesh);
   }
+  setScale(scale) {
+    const s = Math.max(0.1, scale);
+    this.group.scale.set(s, s, s);
+  }
   setSpawnPoint(sp) {
     const px2 = (sp == null ? void 0 : sp.px) ?? 0;
     const py2 = (sp == null ? void 0 : sp.py) ?? 0;
@@ -47608,6 +47623,8 @@ class ThreeActing {
     this.buildStageEnvironment();
     this.buildActor(this.state.actor_type);
     this.spawnPointHelper = new SpawnPointHelper();
+    const currentScale = this.state.actor_scale ?? (this.state.actor_type === "quadruped" ? 0.5 : 1);
+    this.spawnPointHelper.setScale(currentScale);
     const initialSp = this.state.spawn_point ?? { px: 0, py: 0, pz: 0, ry: 0 };
     this.state.spawn_point = initialSp;
     this.spawnPointHelper.setSpawnPoint(initialSp);
@@ -47661,6 +47678,9 @@ class ThreeActing {
     this.actorController.setActorColor(color);
     const currentScale = this.state.actor_scale ?? (charType === "quadruped" ? 0.5 : 1);
     this.actorController.setActorScale(currentScale);
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.setScale(currentScale);
+    }
     this.actorController.setDisplayCollider(this.displayActorCollider);
     this.scene.add(this.actorController.group);
     this.resetActorPosition();
@@ -47683,6 +47703,9 @@ class ThreeActing {
     if (this.actorController) {
       this.actorController.setActorScale(normalizedScale);
       this.resetActorPosition();
+    }
+    if (this.spawnPointHelper) {
+      this.spawnPointHelper.setScale(normalizedScale);
     }
     if (isDifferent && triggerChange && this.onStateChange) {
       this.onStateChange({ ...this.state, actor_scale: normalizedScale, actors: this.getAccumulatedActors() });
@@ -48915,11 +48938,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             ]),
             createBaseVNode("div", _hoisted_29$1, [
               state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_30$1, [..._cache2[27] || (_cache2[27] = [
-                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>▲</kbd></div><span class="action-desc" data-v-443e5214>Accelerate</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>S</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>▼</kbd></div><span class="action-desc" data-v-443e5214>Brake / Reverse</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>◀</kbd> <kbd data-v-443e5214>▶</kbd></div><span class="action-desc" data-v-443e5214>Steer Left / Right</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd></div><span class="action-desc" data-v-443e5214>Handbrake</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>W</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>▲</kbd></div><span class="action-desc" data-v-d0763462>Accelerate</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>S</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>▼</kbd></div><span class="action-desc" data-v-d0763462>Brake / Reverse</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>A</kbd> <kbd data-v-d0763462>D</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>◀</kbd> <kbd data-v-d0763462>▶</kbd></div><span class="action-desc" data-v-d0763462>Steer Left / Right</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>Space</kbd></div><span class="action-desc" data-v-d0763462>Handbrake</span></div>', 4)
               ])])) : state.actor_type === "quadruped" ? (openBlock(), createElementBlock("div", _hoisted_31$1, [..._cache2[28] || (_cache2[28] = [
-                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>S</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>Arrows</kbd></div><span class="action-desc" data-v-443e5214>Move</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Shift</kbd> + Move</div><span class="action-desc" data-v-443e5214>Run</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>C</kbd></div><span class="action-desc" data-v-443e5214>Sit</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>B</kbd></div><span class="action-desc" data-v-443e5214>Bark</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>J</kbd></div><span class="action-desc" data-v-443e5214>Jump</span></div>', 5)
+                createStaticVNode('<div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>W</kbd> <kbd data-v-d0763462>A</kbd> <kbd data-v-d0763462>S</kbd> <kbd data-v-d0763462>D</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>Arrows</kbd></div><span class="action-desc" data-v-d0763462>Move</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>Shift</kbd> + Move</div><span class="action-desc" data-v-d0763462>Run</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>C</kbd></div><span class="action-desc" data-v-d0763462>Sit (Toggle)</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>B</kbd></div><span class="action-desc" data-v-d0763462>Bark</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>Space</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>J</kbd></div><span class="action-desc" data-v-d0763462>Jump</span></div>', 5)
               ])])) : (openBlock(), createElementBlock("div", _hoisted_32$1, [..._cache2[29] || (_cache2[29] = [
-                createStaticVNode('<div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>W</kbd> <kbd data-v-443e5214>A</kbd> <kbd data-v-443e5214>S</kbd> <kbd data-v-443e5214>D</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>Arrows</kbd></div><span class="action-desc" data-v-443e5214>Move</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Shift</kbd> + Move</div><span class="action-desc" data-v-443e5214>Sprint (Fast Run)</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>C</kbd></div><span class="action-desc" data-v-443e5214>Crouch / Crouch Walk</span></div><div class="control-row" data-v-443e5214><div class="key-group" data-v-443e5214><kbd data-v-443e5214>Space</kbd> <span class="or" data-v-443e5214>or</span> <kbd data-v-443e5214>J</kbd></div><span class="action-desc" data-v-443e5214>Jump</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>W</kbd> <kbd data-v-d0763462>A</kbd> <kbd data-v-d0763462>S</kbd> <kbd data-v-d0763462>D</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>Arrows</kbd></div><span class="action-desc" data-v-d0763462>Move</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>Shift</kbd> + Move</div><span class="action-desc" data-v-d0763462>Sprint (Fast Run)</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>C</kbd> (Hold)</div><span class="action-desc" data-v-d0763462>Crouch / Crouch Walk (+Move)</span></div><div class="control-row" data-v-d0763462><div class="key-group" data-v-d0763462><kbd data-v-d0763462>Space</kbd> <span class="or" data-v-d0763462>or</span> <kbd data-v-d0763462>J</kbd></div><span class="action-desc" data-v-d0763462>Jump</span></div>', 4)
               ])]))
             ]),
             createBaseVNode("div", _hoisted_33$1, [
@@ -48934,7 +48957,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-443e5214"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-d0763462"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);

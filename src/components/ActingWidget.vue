@@ -214,7 +214,7 @@
             </div>
             <div class="control-row">
               <div class="key-group"><kbd>C</kbd></div>
-              <span class="action-desc">Sit</span>
+              <span class="action-desc">Sit (Toggle)</span>
             </div>
             <div class="control-row">
               <div class="key-group"><kbd>B</kbd></div>
@@ -236,8 +236,8 @@
               <span class="action-desc">Sprint (Fast Run)</span>
             </div>
             <div class="control-row">
-              <div class="key-group"><kbd>C</kbd></div>
-              <span class="action-desc">Crouch / Crouch Walk</span>
+              <div class="key-group"><kbd>C</kbd> (Hold)</div>
+              <span class="action-desc">Crouch / Crouch Walk (+Move)</span>
             </div>
             <div class="control-row">
               <div class="key-group"><kbd>Space</kbd> <span class="or">or</span> <kbd>J</kbd></div>
