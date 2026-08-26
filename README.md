@@ -1,7 +1,7 @@
 # ComfyUI-scene-camera-action
 
 > [!NOTE]
-> **ComfyUI-scene-camera-action (v0.4.0)** by [@arturitu](https://github.com/arturitu) / [Unboring.net](https://unboring.net).
+> **ComfyUI-scene-camera-action (v0.5.0)** by [@arturitu](https://github.com/arturitu) / [Unboring.net](https://unboring.net).
 > Configured for publishing on the official Comfy Registry (`comfyui-scene-camera-action`).
 
 An interactive 3D scene staging, actor acting, and camera directing suite of custom nodes for **ComfyUI**.
@@ -14,7 +14,15 @@ Build your 3D environment, control and record actor movements in real time using
 
 ## 🚀 Release History
 
-### 🚀 Shipped - v0.4.0: Multiple Actors (Current Version)
+### 🚀 Shipped - v0.5.0: Quadruped Actor (Current Version)
+- **Rigged Quadruped Actor**: New 4-legged animal archetype (`QuadrupedActor`) with full locomotion animations (idle, walk, run, sit/crouch) built on `SkinnedActor`.
+- **Configurable Actor Scaling**: Adjust actor sizes dynamically with automatic camera framing and speed scaling.
+- **Practice Rehearsal Mode**: Loop actor movement in real time to test trajectories before recording.
+- **Demand-Based GPU Rendering**: Pauses WebGL rendering during graph navigation for lightweight performance.
+- **Stage Distance Fading & UI Upgrades**: Smooth edge fading, modern Lucide icons, and optimized node payloads.
+
+
+### 📦 Shipped - v0.4.0: Multiple Actors
 - **Multi-Actor Chaining**: Sequence and record multiple independent actors (humanoids and vehicles) on the same stage with synchronized playback.
 - **Camera Spring Arm (Anti-Collision)**: Real-time obstacle avoidance prevents camera clipping against walls and geometry during dynamic camera moves.
 - **Actor Color Customization**: Dynamic mesh coloring to visually distinguish different actors across the 3D viewport and node timeline.
@@ -66,19 +74,18 @@ Build your 3D environment by placing, editing, grouping, duplicating, and transf
 - **Output**: Sends `Stage Data` downstream to the Acting node.
 
 ### 2. Acting (`ActingNode`)
-Control your actor in real time and record movement trajectories across the 3D stage:
-- **Archetype Selection**: Switch between **Human** (capsule physics) and **Car** (vehicle physics).
-- **Real-Time Keyboard Control**: Drive or walk the actor using `WASD` or `Arrow` keys.
-- **Speed & Duration Control**: Adjust actor speed ($1.0 - 30.0$) and recording duration ($4.0\text{s} - 15.0\text{s}$).
-- **Motion Recording**: Record actor locomotion trajectories and auto-play recorded loops.
-- **Output**: Combines scene geometry, actor type, and motion trajectory into `Acting Data` for the Directing node.
+Control actors in real time and record movement trajectories across the 3D stage:
+- **Archetype & Scale**: Choose between **Human** (rigged humanoid), **Car** (vehicle physics), and **Quadruped** (4-legged animal), with dynamic actor scaling ($0.2\times - 3.0\times$).
+- **Practice & Recording**: Rehearse movement loops in practice mode and record trajectories in real time using `WASD` / arrow keys.
+- **Speed, Color & Duration**: Configure locomotion speed ($1.0 - 30.0$), actor identification colors, and recording duration ($4.0\text{s} - 15.0\text{s}$).
+- **Output**: Combines scene geometry, actor archetypes, and chained trajectories into `Acting Data`.
 
 ### 3. Directing (`DirectingNode`)
-Compose your sequence with live multi-camera cuts along a visual playback timeline:
-- **Smart Multi-Camera Modes**: TPV (Third-Person), FPV (First-Person), Wide (Auto-Framing Master), and Side (Tracking).
-- **Timeline Keyframing**: Add, move, and adjust camera cuts along the playback timeline.
-- **Outputs**:
-  - **`Captured Video` (`VIDEO`)**: 720p HD recorded video of the directed camera sequence.
+Compose your cinematic sequence with live multi-camera cuts along a visual playback timeline:
+- **Smart Multi-Camera Shots**: TPV, FPV, Tracking Side, and Auto-Framing Master Wide with anti-collision **Spring Arm** obstacle avoidance.
+- **Dynamic Framing & Distance**: Per-shot camera distance controls, auto-framing, and smooth actor tracking.
+- **Timeline Keyframing**: Add, move, and edit camera cuts with real-time multi-actor preview and pause freeze.
+- **Output**: Sends 720p HD `Captured Video` (`VIDEO`) directly downstream to video conditioning models (HunyuanVideo, Wan2.1, AnimateDiff).
 
 ---
 
