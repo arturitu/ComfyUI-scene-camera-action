@@ -2,11 +2,10 @@
 
 > [!NOTE]
 > **ComfyUI-scene-camera-action (v0.5.0)** by [@arturitu](https://github.com/arturitu) / [Unboring.net](https://unboring.net).
-> Configured for publishing on the official Comfy Registry (`comfyui-scene-camera-action`).
 
 An interactive 3D scene staging, actor acting, and camera directing suite of custom nodes for **ComfyUI**.
 
-Build your 3D environment, control and record actor movements in real time using your keyboard, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage imagery for video-to-video (such as HunyuanVideo, Wan2.1, or AnimateDiff) workflows.
+Build your 3D environment, control and record actor movements in real time using your keyboard, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage imagery for reference-to-video (such as Seedance or MiniMax) workflows.
 
 ![Preview](img.png)
 
@@ -85,7 +84,7 @@ Compose your cinematic sequence with live multi-camera cuts along a visual playb
 - **Smart Multi-Camera Shots**: TPV, FPV, Tracking Side, and Auto-Framing Master Wide with anti-collision **Spring Arm** obstacle avoidance.
 - **Dynamic Framing & Distance**: Per-shot camera distance controls, auto-framing, and smooth actor tracking.
 - **Timeline Keyframing**: Add, move, and edit camera cuts with real-time multi-actor preview and pause freeze.
-- **Output**: Sends 720p HD `Captured Video` (`VIDEO`) directly downstream to video conditioning models (HunyuanVideo, Wan2.1, AnimateDiff).
+- **Output**: Sends 720p HD `Captured Video` (`VIDEO`) directly downstream to reference-to-video models (such as Seedance or MiniMax).
 
 ---
 
@@ -101,12 +100,6 @@ The [`skills/stage-builder/SKILL.md`](skills/stage-builder/SKILL.md) instruction
 
 ## 💻 Installation
 
-### Via Comfy Registry (Recommended)
-```bash
-comfy node install comfyui-scene-camera-action
-```
-
-### Manual Installation
 Clone this repository directly into your ComfyUI `custom_nodes` directory:
 
 ```bash
