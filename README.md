@@ -1,11 +1,15 @@
 # ComfyUI-scene-camera-action
-
-> [!NOTE]
-> **ComfyUI-scene-camera-action (v0.5.0)** by [@arturitu](https://github.com/arturitu) / [Unboring.net](https://unboring.net).
+by [@arturitu](http://linkedin.com/in/arturoparacuellos) / [Unboring.net](https://unboring.net).
 
 An interactive 3D scene staging, actor acting, and camera directing suite of custom nodes for **ComfyUI**.
 
-Build your 3D environment, control and record actor movements in real time using your keyboard, and compose live camera cuts between multiple camera angles (TPV, FPV, Wide, Side) to generate high-fidelity reference video and stage imagery for reference-to-video (such as Seedance or MiniMax) workflows.
+Stop prompting movement into a black box. **ComfyUI-scene-camera-action** turns AI video generation into a directable, playable studio:
+
+- **1. Staging:** Build navigable 3D blockout sets with instant colliders — manually or via AI prompts (`SKILL.md`).
+- **2. Acting:** Playable `WASD` controls & multi-track actor chaining with live ghost replays (no keyframing).
+- **3. Directing:** Live camera cuts with anti-collision **Spring Arm**, outputting 720p HD reference video (`VIDEO`) for models like Wan, HunyuanVideo, or MiniMax.
+
+👉 *See full details and controls in the [Workflow Nodes Breakdown](#workflow-nodes-breakdown).*
 
 ![Preview](scene-camera-action.png)
 
@@ -61,6 +65,7 @@ https://github.com/user-attachments/assets/fde67050-c33d-406c-87e5-64b9d0544381
 
 ---
 
+<a id="workflow-nodes-breakdown"></a>
 ## 🛠️ Workflow Nodes Breakdown (`scene-camera-action`)
 
 https://github.com/user-attachments/assets/dd5c0d21-573a-467f-9d4b-1218e2c90cac
@@ -70,23 +75,24 @@ Build your 3D environment by placing, editing, grouping, duplicating, and transf
 - **Interactive 3D Viewport**: Orbit, pan, and zoom using standard MapControls.
 - **Hierarchical Selection & Grouping**: Select multiple items with `Shift + Click`, group (`Group`) or ungroup (`Ungroup`) complex structures.
 - **3D Transform Gizmos**: Move, rotate, and scale assets on all axes with optional `Shift` snapping.
-- **Asset Duplication (`❐`)**: Instantly clone selected assets or groups.
+- **Asset Duplication**: Instantly clone selected assets or groups.
 - **Preset Loader**: Load built-in 3D scenes or custom JSON presets directly from the UI dropdown.
 - **Output**: Sends `Stage Data` downstream to the Acting node.
 
 ### 2. Acting (`ActingNode`)
-Control actors in real time and record movement trajectories across the 3D stage:
-- **Archetype & Scale**: Choose between **Human** (rigged humanoid), **Car** (vehicle physics), and **Quadruped** (4-legged animal), with dynamic actor scaling ($0.2\times - 3.0\times$).
-- **Practice & Recording**: Rehearse movement loops in practice mode and record trajectories in real time using `WASD` / arrow keys.
-- **Speed, Color & Duration**: Configure locomotion speed ($1.0 - 30.0$), actor identification colors, and recording duration ($4.0\text{s} - 15.0\text{s}$).
-- **Output**: Combines scene geometry, actor archetypes, and chained trajectories into `Acting Data`.
+Play and record actor performances in real time across the 3D stage:
+- **Game-Like WASD Controls**: Drive vehicles or move characters in real time with physics and collision detection. Includes a **Practice Rehearsal Mode** to test movement loops before recording.
+- **Multi-Track Actor Chaining**: Connect multiple Acting nodes in series. Sequence and choreograph independent actors while watching live synchronized ghost replays of previous takes.
+- **3 Actor Archetypes**: **Human** & **Quadruped** (rigged with animations based on [Mesh2Motion](https://github.com/Mesh2Motion/mesh2motion-app)), and **Car** (vehicle steering physics).
+- **Customization & Scale**: Adjust actor scales dynamically ($0.3\times - 2.0\times$), color-code actors for easy identification, and customize movement speeds.
+- **Output**: Combines stage geometry, actor rigs, and chained trajectories into `Acting Data`.
 
 ### 3. Directing (`DirectingNode`)
 Compose your cinematic sequence with live multi-camera cuts along a visual playback timeline:
-- **Smart Multi-Camera Shots**: TPV, FPV, Tracking Side, and Auto-Framing Master Wide with anti-collision **Spring Arm** obstacle avoidance.
-- **Dynamic Framing & Distance**: Per-shot camera distance controls, auto-framing, and smooth actor tracking.
-- **Timeline Keyframing**: Add, move, and edit camera cuts with real-time multi-actor preview and pause freeze.
-- **Output**: Sends 720p HD `Captured Video` (`VIDEO`) directly downstream to reference-to-video models (such as Seedance or MiniMax).
+- **Anti-Collision Spring Arm**: Real-time obstacle avoidance prevents camera clipping against walls and geometry during dynamic camera moves.
+- **Smart Multi-Camera Rigs**: Switch between TPV (Third-Person), FPV (First-Person), Tracking Side, and Auto-Framing Master Wide.
+- **Visual Cut Timeline**: Add, move, and edit camera cuts on the fly with live multi-actor playback and pause freeze.
+- **Direct-to-Generative Output**: Sends 720p HD `Captured Video` (`VIDEO`) directly downstream to reference-to-video models (such as Wan, HunyuanVideo, MiniMax, or Seedance).
 
 ---
 
