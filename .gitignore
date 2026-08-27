@@ -1,16 +1,43 @@
-# Node modules & dev build outputs
+# Node modules & build outputs
 node_modules/
 dist/
 *.map
+*.tsbuildinfo
+.vite/
 
-# Python
+# Python cache & artifacts
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
 
-# IDE / OS
-.DS_Store
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & Editor files
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+*.bak
 
-# Antigravity local rules
+# OS metadata
+.DS_Store
+**/.DS_Store
+._*
+Thumbs.db
+
+# Local temporary & workspace dirs
 GEMINI.md
+scratch/
+input/
+output/
+temp/

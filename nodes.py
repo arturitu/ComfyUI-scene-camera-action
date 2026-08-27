@@ -12,9 +12,8 @@ from aiohttp import web
 from server import PromptServer
 import folder_paths
 
-from comfy_api.latest import ComfyExtension, io, InputImpl, Types
+from comfy_api.latest import ComfyExtension, io, InputImpl
 from comfy_api.latest._io import _UIOutput
-from fractions import Fraction
 from typing_extensions import override
 import threading
 import time
@@ -688,6 +687,8 @@ async def capture_done(request):
     try:
         body = await request.json()
         node_id = str(body.get("node_id", ""))
+        if node_id:
+            _capture_results[node_id] = body
         if node_id in _pending_captures:
             _pending_captures[node_id].set()
         return web.json_response({"success": True})

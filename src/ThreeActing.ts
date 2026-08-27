@@ -1,14 +1,12 @@
 import * as THREE from 'three'
-import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js'
 import { MeshBVH, BVHHelper } from 'three-mesh-bvh'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
-import type { ActingState, ThreeActingOptions, CubeTransform, StageState, SpawnPoint } from './types'
+import type { ActingState, ThreeActingOptions, StageState } from './types'
 import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
-import { StagingHierarchyManager } from './staging/StagingHierarchyManager'
 import { StageEnvironment } from './staging/StageEnvironment'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
 import { SpawnPointHelper } from './staging/SpawnPointHelper'
@@ -29,7 +27,6 @@ export class ThreeActing {
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
   private renderer!: THREE.WebGLRenderer
-  private environmentMeshes: THREE.Mesh[] = []
   private actorController!: BaseActor
   private animationId: number | null = null
   private isHovered = false
@@ -74,7 +71,6 @@ export class ThreeActing {
   private instancedStageMesh: InstancedStageMesh | null = null
   private cameraDistance: number = 1.0
   private actingRaycaster = new THREE.Raycaster()
-  private actingDitherOpacity = 1.0
 
   private keydownHandler!: (e: KeyboardEvent) => void
   private keyupHandler!: (e: KeyboardEvent) => void
@@ -1120,7 +1116,6 @@ export class ThreeActing {
       this.scene.remove(this.clonedEnvGroup)
     }
 
-    this.environmentMeshes = []
     this.clonedEnvGroup = new THREE.Group()
     this.clonedEnvGroup.name = 'ClonedStagingEnvironment'
     this.scene.add(this.clonedEnvGroup)
@@ -1132,7 +1127,6 @@ export class ThreeActing {
     const stageEnv = new StageEnvironment()
     const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
     this.instancedStageMesh = instancedStage
-    this.environmentMeshes = [instancedStage.getSurfaceMesh()]
 
     this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
     config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)

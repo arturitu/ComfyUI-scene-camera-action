@@ -34811,6 +34811,7 @@ class StagingSelectionManager {
     this.clearSelectionUI(scene, transformControls);
     const count = this.selectedObjects.length;
     const hasGroup = this.selectedObjects.some((o) => o.type === "Group");
+    const canGroup = count >= 2;
     const canUngroup = hasGroup;
     if (count === 0) {
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(false);
@@ -34866,7 +34867,7 @@ class StagingSelectionManager {
       }
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(true);
       if (callbacks.onSelectionInfoChange) {
-        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup: true, canUngroup, cycleInfo });
+        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup, canUngroup, cycleInfo });
       }
     }
   }
@@ -35743,7 +35744,6 @@ class ThreeStaging {
     __publicField(this, "selectionManager");
     __publicField(this, "instancedStageMesh");
     __publicField(this, "stagingRaycaster", new Raycaster());
-    __publicField(this, "stagingDitherOpacity", 1);
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
@@ -43620,9 +43620,6 @@ const _tempSlopeRight = new Vector3();
 const _tempSlopeFwd = new Vector3();
 const _tempBasisMat = new Matrix4();
 const _tempTargetQuat = new Quaternion();
-new Vector3();
-new Vector3();
-new Vector3();
 class BaseActor {
   constructor() {
     __publicField(this, "group");
@@ -44338,7 +44335,6 @@ class SkinnedActor extends BaseActor {
     const crouchH = this.getCrouchingCapsuleHeight();
     const activeR = (isCrouch ? crouchR : standingR) * this.scale;
     const activeH = (isCrouch ? crouchH : standingH) * this.scale;
-    this.isHorizontalCapsule();
     if (this.colliderWireframe instanceof Mesh) {
       this.colliderWireframe.geometry = isCrouch ? this.crouchingWireframeGeo : this.standingWireframeGeo;
       this.colliderWireframe.position.y = this.getColliderCenterY(isCrouch);
@@ -44574,11 +44570,8 @@ class HumanActor extends SkinnedActor {
 const _tempVecA = new Vector3();
 const _tempVecB = new Vector3();
 const _tempDir = new Vector3();
-new Vector3();
-new Vector3();
 const _tempSegment = new Line3();
 const _tempCapsuleBounds = new Box3();
-new Ray();
 const _tempEuler = new Euler();
 class CarActor extends BaseActor {
   constructor() {
@@ -46787,8 +46780,7 @@ const STORAGE_KEY = "acting_debug_options";
 class DebugPanel {
   constructor(parentContainer, title = "3D Debug Controls") {
     __publicField(this, "gui");
-    __publicField(this, "container");
-    this.container = parentContainer;
+    __publicField(this, "monitorAnimationFrameId", null);
     this.gui = new GUI({
       container: parentContainer,
       title,
@@ -46876,9 +46868,9 @@ class DebugPanel {
       const keys = threeActing.keysPressed || {};
       const activeList = Object.keys(keys).filter((k) => keys[k]);
       monitorState.activeKeys = activeList.length > 0 ? activeList.join(", ") : "None";
-      requestAnimationFrame(updateMonitor);
+      this.monitorAnimationFrameId = requestAnimationFrame(updateMonitor);
     };
-    requestAnimationFrame(updateMonitor);
+    this.monitorAnimationFrameId = requestAnimationFrame(updateMonitor);
   }
   toggle() {
     if (this.gui.domElement.style.display === "none") {
@@ -46891,6 +46883,10 @@ class DebugPanel {
     return this.gui;
   }
   dispose() {
+    if (this.monitorAnimationFrameId !== null) {
+      cancelAnimationFrame(this.monitorAnimationFrameId);
+      this.monitorAnimationFrameId = null;
+    }
     this.gui.destroy();
   }
 }
@@ -47222,7 +47218,6 @@ class ThreeActing {
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
-    __publicField(this, "environmentMeshes", []);
     __publicField(this, "actorController");
     __publicField(this, "animationId", null);
     __publicField(this, "isHovered", false);
@@ -47258,7 +47253,6 @@ class ThreeActing {
     __publicField(this, "instancedStageMesh", null);
     __publicField(this, "cameraDistance", 1);
     __publicField(this, "actingRaycaster", new Raycaster());
-    __publicField(this, "actingDitherOpacity", 1);
     __publicField(this, "keydownHandler");
     __publicField(this, "keyupHandler");
     __publicField(this, "blurHandler");
@@ -48173,7 +48167,6 @@ class ThreeActing {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup);
     }
-    this.environmentMeshes = [];
     this.clonedEnvGroup = new Group();
     this.clonedEnvGroup.name = "ClonedStagingEnvironment";
     this.scene.add(this.clonedEnvGroup);
@@ -48183,7 +48176,6 @@ class ThreeActing {
     const stageEnv = new StageEnvironment();
     const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup);
     this.instancedStageMesh = instancedStage;
-    this.environmentMeshes = [instancedStage.getSurfaceMesh()];
     this.cachedSceneExtent = calculateStageExtent(this.clonedEnvGroup);
     updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget);
     const mergedGeom = instancedStage.getMergedColliderGeometry(true);
@@ -49100,7 +49092,6 @@ class ThreeDirecting {
   constructor(options) {
     __publicField(this, "container");
     __publicField(this, "state");
-    __publicField(this, "onStateChange");
     __publicField(this, "scene");
     __publicField(this, "camera");
     __publicField(this, "renderer");
@@ -49118,8 +49109,6 @@ class ThreeDirecting {
     __publicField(this, "sideTarget", new Vector3(0, 0, 0));
     __publicField(this, "cachedSceneExtent", 15);
     __publicField(this, "cachedEnvBBox", new Box3());
-    __publicField(this, "cachedBBoxCenter", new Vector3());
-    __publicField(this, "cachedBBoxSize", new Vector3());
     __publicField(this, "lastSceneDataJson", null);
     __publicField(this, "lastTime", performance.now());
     __publicField(this, "resizeObserver", null);
@@ -49138,7 +49127,6 @@ class ThreeDirecting {
     __publicField(this, "recordedChunks", []);
     var _a, _b, _c;
     this.container = options.container;
-    this.onStateChange = options.onStateChange;
     this.state = {
       camera_mode: ((_a = options.initialState) == null ? void 0 : _a.camera_mode) ?? "Third Person",
       acting_data: ((_b = options.initialState) == null ? void 0 : _b.acting_data) ?? "",
@@ -49424,42 +49412,6 @@ class ThreeDirecting {
   }
   buildSceneFromData(sceneData) {
     this.buildStageFromData(sceneData);
-  }
-  buildActor(type) {
-    var _a, _b, _c;
-    let charType = type;
-    if (!charType) {
-      let actingPayload = this.state.acting_data;
-      if (typeof actingPayload === "string") {
-        try {
-          actingPayload = JSON.parse(actingPayload);
-        } catch (e) {
-        }
-      }
-      charType = (actingPayload == null ? void 0 : actingPayload.actor_type) || (actingPayload == null ? void 0 : actingPayload.actorType) || (actingPayload == null ? void 0 : actingPayload.char_type);
-    }
-    if (!charType && this.connectedThreeActing) {
-      if (typeof this.connectedThreeActing.getActorType === "function") {
-        charType = this.connectedThreeActing.getActorType();
-      } else if (typeof this.connectedThreeActing.getState === "function") {
-        charType = (_a = this.connectedThreeActing.getState()) == null ? void 0 : _a.actor_type;
-      }
-    }
-    if (!charType) {
-      charType = "car";
-    }
-    if (this.actorController && ((_c = (_b = this.actorController).getType) == null ? void 0 : _c.call(_b)) === charType) {
-      return;
-    }
-    if (this.actorController) {
-      this.scene.remove(this.actorController.group);
-      this.actorController.dispose();
-    }
-    this.actorController = ActorFactory.create(charType);
-    const color = charType === "car" ? "#0284C7" : "#F1DFBF";
-    this.actorController.setActorColor(color);
-    this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0);
-    this.scene.add(this.actorController.group);
   }
   setKeyframes(keyframes) {
     this.keyframes = [...keyframes].sort((a, b) => a.t - b.t);
@@ -50749,7 +50701,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-bdaec712"]]);
+const DirectingWidget = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-205463bf"]]);
 const { app } = window.comfyAPI.app;
 (() => {
   const cssUrl = new URL(
@@ -51954,7 +51906,7 @@ app.registerExtension({
     }, true);
     if (app.canvas && app.canvas.processMouseWheel) {
       const origWheel = app.canvas.processMouseWheel;
-      app.canvas.processMouseWheel = function(e) {
+      app.canvas.processMouseWheel = function(_e) {
         if (document.querySelector(".canvas-container:hover")) {
           return;
         }

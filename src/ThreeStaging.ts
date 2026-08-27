@@ -23,7 +23,6 @@ export class ThreeStaging {
   private selectionManager: StagingSelectionManager
   private instancedStageMesh!: InstancedStageMesh
   private stagingRaycaster = new THREE.Raycaster()
-  private stagingDitherOpacity = 1.0
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -375,7 +374,6 @@ export class ThreeStaging {
     })
 
     this.globalWheelHandler = (e: WheelEvent) => {
-      const activeEl = document.activeElement
       const isTarget = e.target === canvas || (this.container && this.container.contains(e.target as Node))
       if (!isTarget) return
       e.preventDefault()

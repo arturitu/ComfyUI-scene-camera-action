@@ -183,7 +183,6 @@ async function updateStageNodeFromPreset(node: ComfyNode, filename: string): Pro
     console.error('[StageNode] Failed to load preset:', e)
   }
 }
-const updateSceneNodeFromPreset = updateStageNodeFromPreset
 
 function getLinkedInputValue(node: ComfyNode, inputName: string): string | null {
   if (!node.inputs || node.inputs.length === 0) return null
@@ -236,7 +235,6 @@ function readStoredStageProps(node: ComfyNode): Partial<StageState> | null {
   if (!raw || typeof raw !== 'object') return null
   return raw as Partial<StageState>
 }
-const readStoredSceneProps = readStoredStageProps
 
 function writeStoredStageProps(node: ComfyNode, patch: Partial<StageState>): void {
   if (node.properties) {
@@ -451,24 +449,6 @@ function findConnectedStageNode(actingNode: ComfyNode): ComfyNode | null {
   return findRootStagingNode(actingNode)
 }
 const findConnectedSceneNode = findConnectedStageNode
-
-function findConnectedActingNode(directingNode: ComfyNode): ComfyNode | null {
-  if (!directingNode.inputs || directingNode.inputs.length === 0) return null
-  const actingInput = directingNode.inputs.find(i => i.name === 'acting' || i.name === 'Acting')
-  if (!actingInput || actingInput.link == null) return null
-
-  const graph = app.graph
-  if (!graph || !graph.links) return null
-
-  const link = graph.links[actingInput.link]
-  if (!link) return null
-
-  const originNode = graph.getNodeById?.(link.origin_id)
-  if (isActingNode(originNode)) {
-    return originNode || null
-  }
-  return null
-}
 
 function findRootActingNode(actingNode: ComfyNode): ComfyNode {
   let currNode: ComfyNode = actingNode
@@ -1254,10 +1234,6 @@ function readDirectingStateFromNode(node: ComfyNode): Partial<DirectingState> {
   }
 }
 
-function updateDirectingNodeFromLinks(directingNode: ComfyNode): void {
-  updateDirectingNodeState(directingNode)
-}
-
 function createDirectingInstance(node: ComfyNode): DirectingNodeInstance {
   const container = document.createElement('div')
   container.id = `directing-widget-${node.id}`
@@ -1423,7 +1399,7 @@ app.registerExtension({
 
     if (app.canvas && (app.canvas as any).processMouseWheel) {
       const origWheel = (app.canvas as any).processMouseWheel;
-      (app.canvas as any).processMouseWheel = function (this: any, e: WheelEvent) {
+      (app.canvas as any).processMouseWheel = function (this: any, _e: WheelEvent) {
         if (document.querySelector('.canvas-container:hover')) {
           return;
         }

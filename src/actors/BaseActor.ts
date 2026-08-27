@@ -13,9 +13,6 @@ const _tempSlopeRight = new THREE.Vector3()
 const _tempSlopeFwd = new THREE.Vector3()
 const _tempBasisMat = new THREE.Matrix4()
 const _tempTargetQuat = new THREE.Quaternion()
-const _tempVecA = new THREE.Vector3()
-const _tempVecB = new THREE.Vector3()
-const _tempVecC = new THREE.Vector3()
 
 export interface RampSlopeConfig {
   aheadOffset?: number

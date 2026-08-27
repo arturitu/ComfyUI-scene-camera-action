@@ -121,7 +121,7 @@ export class StagingSelectionManager {
 
       if (callbacks.onSelectionChange) callbacks.onSelectionChange(true)
       if (callbacks.onSelectionInfoChange) {
-        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup: true, canUngroup: canUngroup, cycleInfo })
+        callbacks.onSelectionInfoChange({ selectedCount: count, hasGroupSelected: hasGroup, canGroup: canGroup, canUngroup: canUngroup, cycleInfo })
       }
     }
   }

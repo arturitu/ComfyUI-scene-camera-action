@@ -5,11 +5,9 @@ const STORAGE_KEY = 'acting_debug_options'
 
 export class DebugPanel {
   private gui: GUI
-  private container: HTMLElement
+  private monitorAnimationFrameId: number | null = null
 
   constructor(parentContainer: HTMLElement, title = '3D Debug Controls') {
-    this.container = parentContainer
-
     this.gui = new GUI({
       container: parentContainer,
       title: title,
@@ -116,8 +114,6 @@ export class DebugPanel {
     monitorFolder.add(monitorState, 'activeKeys').name('Active Keys').listen().disable()
     monitorFolder.add(monitorState, 'isGrounded').name('Is Grounded').listen().disable()
 
-    let monitorAnimationFrameId: number | null = null
-
     const updateMonitor = () => {
       const actor = threeActing.getActorController()
       if (actor) {
@@ -132,9 +128,9 @@ export class DebugPanel {
       const activeList = Object.keys(keys).filter((k) => keys[k])
       monitorState.activeKeys = activeList.length > 0 ? activeList.join(', ') : 'None'
 
-      monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
+      this.monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
     }
-    monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
+    this.monitorAnimationFrameId = requestAnimationFrame(updateMonitor)
   }
 
   public toggle(): void {
@@ -150,6 +146,10 @@ export class DebugPanel {
   }
 
   public dispose(): void {
+    if (this.monitorAnimationFrameId !== null) {
+      cancelAnimationFrame(this.monitorAnimationFrameId)
+      this.monitorAnimationFrameId = null
+    }
     this.gui.destroy()
   }
 }

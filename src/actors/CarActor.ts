@@ -4,35 +4,13 @@ import * as config from '../threeConfig'
 
 import type { SpawnPoint } from '../types'
 
-const SLOPE_CONFIG = {
-  maxRayDistance: 3.0,
-  minNormalY: 0.3,
-  clampThreshold: 0.99,
-  rayOriginHeight: 1.0,
-  lerpSpeed: 10.0,
-  airborneDecay: 1.0,
-  pitchMultiplier: 1.0,
-  rollMultiplier: 1.0,
-}
-
 // Module-level static scratch objects to eliminate Garbage Collection allocations per frame
 const _tempVecA = new THREE.Vector3()
 const _tempVecB = new THREE.Vector3()
 const _tempDir = new THREE.Vector3()
-const _tempFwd = new THREE.Vector3()
-const _tempRight = new THREE.Vector3()
 const _tempSegment = new THREE.Line3()
 const _tempCapsuleBounds = new THREE.Box3()
-const _tempRay = new THREE.Ray()
 const _tempEuler = new THREE.Euler()
-
-const LOCAL_PROBES = [
-  { x: -0.85, z: 1.35 },  // Front-Left
-  { x: 0.85, z: 1.35 },   // Front-Right
-  { x: -0.85, z: -1.35 }, // Rear-Left
-  { x: 0.85, z: -1.35 },  // Rear-Right
-  { x: 0.0, z: 0.0 },     // Center
-]
 
 export class CarActor extends BaseActor {
   public override actorColor: string = '#0284C7'

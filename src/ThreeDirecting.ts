@@ -13,7 +13,6 @@ import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigati
 export class ThreeDirecting {
   private container: HTMLElement
   private state: DirectingState
-  private onStateChange?: (state: DirectingState) => void
 
   private scene!: THREE.Scene
   private camera!: THREE.PerspectiveCamera
@@ -34,8 +33,6 @@ export class ThreeDirecting {
   private sideTarget = new THREE.Vector3(0, 0, 0)
   private cachedSceneExtent = 15.0
   private cachedEnvBBox = new THREE.Box3()
-  private cachedBBoxCenter = new THREE.Vector3()
-  private cachedBBoxSize = new THREE.Vector3()
   private lastSceneDataJson: string | null = null
   private lastTime = performance.now()
   private resizeObserver: ResizeObserver | null = null
@@ -44,7 +41,6 @@ export class ThreeDirecting {
 
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
-    this.onStateChange = options.onStateChange
     this.state = {
       camera_mode: options.initialState?.camera_mode ?? 'Third Person',
       acting_data: options.initialState?.acting_data ?? '',
@@ -256,7 +252,7 @@ export class ThreeDirecting {
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
-    const stageSetup = stageEnv.initStage(this.scene)
+    stageEnv.initStage(this.scene)
 
     this.buildSceneEnvironment()
 
@@ -366,39 +362,6 @@ export class ThreeDirecting {
   }
   public buildSceneFromData(sceneData: any): void {
     this.buildStageFromData(sceneData)
-  }
-
-  private buildActor(type?: string): void {
-    let charType = type
-    if (!charType) {
-      let actingPayload: any = this.state.acting_data
-      if (typeof actingPayload === 'string') {
-        try { actingPayload = JSON.parse(actingPayload) } catch (e) { }
-      }
-      charType = actingPayload?.actor_type || actingPayload?.actorType || actingPayload?.char_type
-    }
-    if (!charType && this.connectedThreeActing) {
-      if (typeof this.connectedThreeActing.getActorType === 'function') {
-        charType = this.connectedThreeActing.getActorType()
-      } else if (typeof this.connectedThreeActing.getState === 'function') {
-        charType = this.connectedThreeActing.getState()?.actor_type
-      }
-    }
-    if (!charType) {
-      charType = 'car'
-    }
-    if (this.actorController && (this.actorController as any).getType?.() === charType) {
-      return
-    }
-    if (this.actorController) {
-      this.scene.remove(this.actorController.group)
-      this.actorController.dispose()
-    }
-    this.actorController = ActorFactory.create(charType as 'human' | 'car' | 'quadruped')
-    const color = (charType === 'car' ? '#0284C7' : '#F1DFBF')
-    this.actorController.setActorColor(color)
-    this.actorController.setPosition(this.actorPosition.x, this.actorPosition.y, this.actorPosition.z, 0)
-    this.scene.add(this.actorController.group)
   }
 
   private keyframes: DirectingKeyframe[] = []

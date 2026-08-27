@@ -549,7 +549,6 @@ export abstract class SkinnedActor extends BaseActor {
 
     const activeR = (isCrouch ? crouchR : standingR) * this.scale
     const activeH = (isCrouch ? crouchH : standingH) * this.scale
-    const isHorizontal = this.isHorizontalCapsule()
 
     if (this.colliderWireframe instanceof THREE.Mesh) {
       this.colliderWireframe.geometry = isCrouch ? this.crouchingWireframeGeo : this.standingWireframeGeo
@@ -558,8 +557,6 @@ export abstract class SkinnedActor extends BaseActor {
 
     const forwardX = Math.sin(this.rotationY)
     const forwardZ = Math.cos(this.rotationY)
-
-    let touchGround = false
 
     // 1. Movement integration & Wall collision shapecast
     for (let step = 0; step < physicsSteps; step++) {

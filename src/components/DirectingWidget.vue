@@ -224,10 +224,8 @@ import {
 import StagingCanvas from './StagingCanvas.vue'
 import { ThreeDirecting } from '../ThreeDirecting'
 import {
-  CAMERA_FOV_CONFIG,
   getCameraFovConfig,
   getDefaultCameraFov,
-  CAMERA_DISTANCE_CONFIG,
   getCameraDistanceConfig,
   getDefaultCameraDistance
 } from '../threeConfig'
