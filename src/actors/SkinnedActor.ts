@@ -340,6 +340,11 @@ export abstract class SkinnedActor extends BaseActor {
     // Apply actor color
     this.applyColorToMesh(this.actorColor)
 
+    // If actor is already in ghost mode, apply ghost properties to cloned model
+    if (this.isGhost) {
+      this.applyGhostProperties()
+    }
+
     // Setup Animation Mixer & Map
     this.animationsMap = assets.animations
     this.mixer = new THREE.AnimationMixer(this.modelGroup)

@@ -63,6 +63,35 @@ export abstract class BaseActor {
     }
   }
 
+  public isGhost: boolean = false
+  public ghostOpacity: number = 0.4
+
+  public setGhostMode(isGhost: boolean, opacity: number = 0.4): void {
+    this.isGhost = isGhost
+    this.ghostOpacity = opacity
+    this.applyGhostProperties()
+  }
+
+  public applyGhostProperties(): void {
+    this.group.traverse((child) => {
+      if (child === this.colliderWireframe || child.name?.includes('collider')) {
+        return
+      }
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = !this.isGhost
+        if (child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material]
+          mats.forEach((mat) => {
+            mat.transparent = this.isGhost
+            mat.opacity = this.isGhost ? this.ghostOpacity : 1.0
+            mat.depthWrite = true
+            mat.needsUpdate = true
+          })
+        }
+      }
+    })
+  }
+
   constructor() {
     this.group = new THREE.Group()
     this.group.name = 'actorGroup'

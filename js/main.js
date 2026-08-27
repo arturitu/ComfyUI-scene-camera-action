@@ -43634,6 +43634,8 @@ class BaseActor {
     __publicField(this, "lastSpawnPoint");
     __publicField(this, "actorColor", "#F1DFBF");
     __publicField(this, "scale", 1);
+    __publicField(this, "isGhost", false);
+    __publicField(this, "ghostOpacity", 0.4);
     this.group = new Group();
     this.group.name = "actorGroup";
     this.group.position.copy(this.position);
@@ -43656,6 +43658,31 @@ class BaseActor {
     if (this.colliderWireframe) {
       this.colliderWireframe.visible = val;
     }
+  }
+  setGhostMode(isGhost, opacity = 0.4) {
+    this.isGhost = isGhost;
+    this.ghostOpacity = opacity;
+    this.applyGhostProperties();
+  }
+  applyGhostProperties() {
+    this.group.traverse((child) => {
+      var _a;
+      if (child === this.colliderWireframe || ((_a = child.name) == null ? void 0 : _a.includes("collider"))) {
+        return;
+      }
+      if (child instanceof Mesh) {
+        child.castShadow = !this.isGhost;
+        if (child.material) {
+          const mats = Array.isArray(child.material) ? child.material : [child.material];
+          mats.forEach((mat) => {
+            mat.transparent = this.isGhost;
+            mat.opacity = this.isGhost ? this.ghostOpacity : 1;
+            mat.depthWrite = true;
+            mat.needsUpdate = true;
+          });
+        }
+      }
+    });
   }
   resetToOrigin(sp) {
     if (sp) {
@@ -44170,6 +44197,9 @@ class SkinnedActor extends BaseActor {
     this.modelGroup = clonedModel;
     this.group.add(this.modelGroup);
     this.applyColorToMesh(this.actorColor);
+    if (this.isGhost) {
+      this.applyGhostProperties();
+    }
     this.animationsMap = assets.animations;
     this.mixer = new AnimationMixer(this.modelGroup);
     const initialAnim = this.lastRequestedPlaybackAnim || this.getDefaultIdleAnim();
@@ -47447,6 +47477,8 @@ class ThreeActing {
       actorCtrl.setActorColor(color);
       const scale = rec.actor_scale || (rec.actor_type === "quadruped" ? 0.5 : 1);
       actorCtrl.setActorScale(scale);
+      actorCtrl.setDisplayCollider(false);
+      actorCtrl.setGhostMode(true, 0.4);
       const pbCtrl = new PlaybackController();
       pbCtrl.setTrajectory(traj);
       pbCtrl.start();
@@ -47672,6 +47704,7 @@ class ThreeActing {
     this.actorController.setActorColor(color);
     const currentScale = this.state.actor_scale ?? (charType === "quadruped" ? 0.5 : 1);
     this.actorController.setActorScale(currentScale);
+    this.actorController.setGhostMode(false);
     if (this.spawnPointHelper) {
       this.spawnPointHelper.setScale(currentScale);
     }

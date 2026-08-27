@@ -288,6 +288,8 @@ export class ThreeActing {
       actorCtrl.setActorColor(color)
       const scale = rec.actor_scale || (rec.actor_type === 'quadruped' ? 0.5 : 1.0)
       actorCtrl.setActorScale(scale)
+      actorCtrl.setDisplayCollider(false)
+      actorCtrl.setGhostMode(true, 0.4)
       const pbCtrl = new PlaybackController()
       pbCtrl.setTrajectory(traj)
       pbCtrl.start()
@@ -544,6 +546,7 @@ export class ThreeActing {
     this.actorController.setActorColor(color)
     const currentScale = this.state.actor_scale ?? (charType === 'quadruped' ? 0.5 : 1.0)
     this.actorController.setActorScale(currentScale)
+    this.actorController.setGhostMode(false)
     if (this.spawnPointHelper) {
       this.spawnPointHelper.setScale(currentScale)
     }
