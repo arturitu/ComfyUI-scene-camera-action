@@ -7,7 +7,7 @@ import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { DebugPanel } from './utils/DebugPanel'
 import { PlaybackController } from './utils/PlaybackController'
-import { StageEnvironment } from './staging/StageEnvironment'
+import { StageEnvironment, type StageSetupResult } from './staging/StageEnvironment'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
 import { SpawnPointHelper } from './staging/SpawnPointHelper'
 import { isComfyGraphNavigating, onGraphNavigationChange } from './graphNavigation'
@@ -43,6 +43,8 @@ export class ThreeActing {
   private spawnPointHelper: SpawnPointHelper | null = null
   private transformControls!: TransformControls
 
+  private currentGLBLoadId = 0
+  private stageSetup: StageSetupResult | null = null
   private colliderBVH: MeshBVH | null = null
   private colliderVisualizer: THREE.Object3D | null = null
   private bvhHelper: BVHHelper | null = null
@@ -71,6 +73,31 @@ export class ThreeActing {
   private instancedStageMesh: InstancedStageMesh | null = null
   private cameraDistance: number = 1.0
   private actingRaycaster = new THREE.Raycaster()
+  private lastLoadedStageSignature: string = ''
+
+  private getStageSignature(stageData: any): string {
+    if (!stageData) return ''
+    if (stageData.type === 'glb_stage') {
+      const p = stageData.glb_path || stageData.glb_url || ''
+      const s = stageData.stage_scale ?? 1.0
+      const r = stageData.rotation_y ?? 0
+      const o = Array.isArray(stageData.offset) ? stageData.offset.join(',') : ''
+      return `glb:${p}:${s}:${r}:${o}`
+    }
+    if (stageData.type === 'cube_stage') {
+      const num = stageData.num_assets ?? (Array.isArray(stageData.nodes) ? stageData.nodes.length : 0)
+      try {
+        return `cube:${num}:${JSON.stringify(stageData)}`
+      } catch {
+        return `cube:${num}`
+      }
+    }
+    try {
+      return JSON.stringify(stageData)
+    } catch {
+      return String(stageData)
+    }
+  }
 
   private keydownHandler!: (e: KeyboardEvent) => void
   private keyupHandler!: (e: KeyboardEvent) => void
@@ -131,8 +158,10 @@ export class ThreeActing {
   }
 
   public setConnectedThreeStage(threeStage: any): void {
+    if (this.connectedThreeStage === threeStage) return
     this.connectedThreeStage = threeStage
     this.connectedThreeScene = threeStage
+    this.lastLoadedStageSignature = ''
     this.buildStageEnvironment()
   }
   public setConnectedThreeScene(threeScene: any): void {
@@ -474,7 +503,7 @@ export class ThreeActing {
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
-    stageEnv.initStage(this.scene)
+    this.stageSetup = stageEnv.initStage(this.scene)
 
     // Build environment and actor
     this.buildStageEnvironment()
@@ -573,7 +602,6 @@ export class ThreeActing {
     this.state.actor_scale = normalizedScale
     if (this.actorController) {
       this.actorController.setActorScale(normalizedScale)
-      this.resetActorPosition()
     }
     if (this.spawnPointHelper) {
       this.spawnPointHelper.setScale(normalizedScale)
@@ -666,6 +694,13 @@ export class ThreeActing {
       this.camera.position.set(pos.x + camOffset.x, pos.y + camOffset.y, pos.z + camOffset.z)
       this.actingCameraTarget.set(pos.x + targetOffset.x, pos.y + targetOffset.y, pos.z + targetOffset.z)
       this.camera.lookAt(this.actingCameraTarget)
+
+      config.glbCutoutUniforms.uCameraPos.value.copy(this.camera.position)
+      config.glbCutoutUniforms.uActorTargetPos.value.copy(this.actingCameraTarget)
+      config.glbCutoutUniforms.uActorBasePos.value.copy(pos)
+      config.glbCutoutUniforms.uCutoutRadius.value = this.getActorType() === 'car' ? 2.8 : 1.8
+      config.glbCutoutUniforms.uCutoutEnabled.value = 1.0
+
       if (this.instancedStageMesh) {
         this.instancedStageMesh.resetAllDithering()
       }
@@ -911,7 +946,6 @@ export class ThreeActing {
       if (this.transformControls) {
         this.transformControls.detach()
       }
-      this.resetActorPosition()
       this.previousActorControllers.forEach(p => {
         p.playbackController.setCurrentTime(0)
         p.playbackController.evaluateAt(0, p.controller, 0, true)
@@ -980,6 +1014,13 @@ export class ThreeActing {
       this.camera.position.lerp(idealCamPos, 0.12)
       this.actingCameraTarget.lerp(idealTarget, 0.12)
       this.camera.lookAt(this.actingCameraTarget)
+
+      // Update GLB geometric cutout dither uniforms
+      config.glbCutoutUniforms.uCameraPos.value.copy(this.camera.position)
+      config.glbCutoutUniforms.uActorTargetPos.value.copy(this.actingCameraTarget)
+      config.glbCutoutUniforms.uActorBasePos.value.copy(pos)
+      config.glbCutoutUniforms.uCutoutRadius.value = this.getActorType() === 'car' ? 2.8 : 1.8
+      config.glbCutoutUniforms.uCutoutEnabled.value = 1.0
 
       if (this.instancedStageMesh) {
         const camPos = this.camera.position
@@ -1107,16 +1148,82 @@ export class ThreeActing {
     }
     const newStageData = newState.stage_data ?? newState.scene_data
     if (newStageData !== undefined) {
-      this.state.stage_data = { ...newStageData }
-      this.state.scene_data = { ...newStageData }
-      this.buildStageEnvironment()
+      const newSig = this.getStageSignature(newStageData)
+      if (newSig !== this.lastLoadedStageSignature || !this.clonedEnvGroup) {
+        this.lastLoadedStageSignature = newSig
+        this.state.stage_data = { ...newStageData }
+        this.state.scene_data = { ...newStageData }
+        this.buildStageEnvironment()
+      }
     }
     this.renderOnce()
+  }
+
+  private setupColliderBVH(mergedGeom: THREE.BufferGeometry): void {
+    const newBVH = new MeshBVH(mergedGeom)
+    ;(mergedGeom as any).boundsTree = newBVH
+    this.colliderBVH = newBVH
+
+    if (this.colliderVisualizer) {
+      this.scene.remove(this.colliderVisualizer)
+      ;(this.colliderVisualizer as THREE.Mesh).geometry?.dispose()
+    }
+    const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
+      color: 0x00ff44,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.6,
+      depthTest: false,
+      depthWrite: false
+    }))
+    colliderMesh.renderOrder = 998
+    this.colliderVisualizer = colliderMesh
+    this.colliderVisualizer.visible = this.displayCollider
+    this.scene.add(this.colliderVisualizer)
+
+    if (this.bvhHelper) {
+      this.scene.remove(this.bvhHelper)
+    }
+    this.bvhHelper = new BVHHelper(colliderMesh, 10)
+    if ((this.bvhHelper as any).color?.set) {
+      ;(this.bvhHelper as any).color.set(0xffff00)
+    }
+    this.bvhHelper.visible = this.displayBVH
+    this.bvhHelper.renderOrder = 999
+    this.bvhHelper.traverse((child: THREE.Object3D) => {
+      if (child instanceof THREE.LineSegments && child.material) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material]
+        mats.forEach((m) => {
+          m.depthTest = false
+          m.depthWrite = false
+          m.transparent = true
+        })
+      }
+    })
+    this.bvhHelper.update()
+    this.scene.add(this.bvhHelper)
   }
 
   public buildStageEnvironment(): void {
     if (this.clonedEnvGroup) {
       this.scene.remove(this.clonedEnvGroup)
+      this.clonedEnvGroup.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const m = child as THREE.Mesh
+          m.geometry?.dispose()
+          if (Array.isArray(m.material)) {
+            m.material.forEach((mat) => mat.dispose())
+          } else {
+            m.material?.dispose()
+          }
+        }
+      })
+      this.clonedEnvGroup = null
+    }
+
+    if (this.instancedStageMesh) {
+      this.instancedStageMesh.dispose()
+      this.instancedStageMesh = null
     }
 
     this.clonedEnvGroup = new THREE.Group()
@@ -1126,7 +1233,42 @@ export class ThreeActing {
     let stageData: any = this.getStageData()
     this.state.stage_data = stageData
     this.state.scene_data = stageData
+    this.lastLoadedStageSignature = this.getStageSignature(stageData)
 
+    // 1. Handle GLB stage (Track 2: Blender Clay GLB)
+    const loadId = ++this.currentGLBLoadId
+    if (stageData && stageData.type === 'glb_stage') {
+      if (this.stageSetup?.floorMesh) {
+        this.stageSetup.floorMesh.visible = false
+      }
+      const stageEnv = new StageEnvironment()
+      stageEnv.loadGLBStage(stageData, this.clonedEnvGroup)
+        .then(({ colliderGeometry }) => {
+          if (loadId !== this.currentGLBLoadId) return
+          this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
+          config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent, this.actingCameraTarget)
+
+          if (colliderGeometry) {
+            this.setupColliderBVH(colliderGeometry)
+          } else {
+            this.colliderBVH = null
+          }
+
+          if (this.actorController && !this.isPlaying && !this.isRecording) {
+            this.resetActorPosition()
+          }
+          this.renderOnce()
+        })
+        .catch((err) => {
+          console.error('[ThreeActing] Failed to load GLB stage:', err)
+        })
+      return
+    }
+
+    // 2. Handle Cube stage (Track 1: JSON Box Primitives)
+    if (this.stageSetup?.floorMesh) {
+      this.stageSetup.floorMesh.visible = true
+    }
     const stageEnv = new StageEnvironment()
     const instancedStage = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
     this.instancedStageMesh = instancedStage
@@ -1136,50 +1278,8 @@ export class ThreeActing {
 
     // Build BVH Collision Tree
     const mergedGeom = instancedStage.getMergedColliderGeometry(true)
-
     if (mergedGeom) {
-      const newBVH = new MeshBVH(mergedGeom)
-      ;(mergedGeom as any).boundsTree = newBVH
-      this.colliderBVH = newBVH
-
-      if (this.colliderVisualizer) {
-        this.scene.remove(this.colliderVisualizer)
-        ;(this.colliderVisualizer as THREE.Mesh).geometry?.dispose()
-      }
-      const colliderMesh = new THREE.Mesh(mergedGeom, new THREE.MeshBasicMaterial({
-        color: 0x00ff44,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.6,
-        depthTest: false,
-        depthWrite: false
-      }))
-      colliderMesh.renderOrder = 998
-      this.colliderVisualizer = colliderMesh
-      this.colliderVisualizer.visible = this.displayCollider
-      this.scene.add(this.colliderVisualizer)
-
-      if (this.bvhHelper) {
-        this.scene.remove(this.bvhHelper)
-      }
-      this.bvhHelper = new BVHHelper(colliderMesh, 10)
-      if ((this.bvhHelper as any).color?.set) {
-        ;(this.bvhHelper as any).color.set(0xffff00)
-      }
-      this.bvhHelper.visible = this.displayBVH
-      this.bvhHelper.renderOrder = 999
-      this.bvhHelper.traverse((child: THREE.Object3D) => {
-        if (child instanceof THREE.LineSegments && child.material) {
-          const mats = Array.isArray(child.material) ? child.material : [child.material]
-          mats.forEach((m) => {
-            m.depthTest = false
-            m.depthWrite = false
-            m.transparent = true
-          })
-        }
-      })
-      this.bvhHelper.update()
-      this.scene.add(this.bvhHelper)
+      this.setupColliderBVH(mergedGeom)
     } else {
       this.colliderBVH = null
     }

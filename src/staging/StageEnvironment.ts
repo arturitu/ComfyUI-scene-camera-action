@@ -3,6 +3,8 @@ import * as config from '../threeConfig'
 import { StagingHierarchyManager } from './StagingHierarchyManager'
 import { InstancedStageMesh } from './InstancedStageMesh'
 import type { SceneState } from '../types'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 
 export interface StageSetupResult {
   ambientLight: THREE.AmbientLight
@@ -11,6 +13,33 @@ export interface StageSetupResult {
   fillLight: THREE.DirectionalLight
   gridHelper: THREE.GridHelper
   floorMesh: THREE.Mesh
+}
+
+// In-memory cache for GLB ArrayBuffers to eliminate redundant HTTP network requests
+const glbBufferCache = new Map<string, Promise<ArrayBuffer>>()
+
+export function clearGLBCache(url?: string): void {
+  if (url) glbBufferCache.delete(url)
+  else glbBufferCache.clear()
+}
+
+async function fetchGLBBuffer(url: string): Promise<ArrayBuffer> {
+  if (!glbBufferCache.has(url)) {
+    const p = fetch(url)
+      .then(async (res) => {
+        if (!res.ok) {
+          glbBufferCache.delete(url)
+          throw new Error(`[StageEnvironment] HTTP ${res.status} fetching GLB from ${url}`)
+        }
+        return await res.arrayBuffer()
+      })
+      .catch((err) => {
+        glbBufferCache.delete(url)
+        throw err
+      })
+    glbBufferCache.set(url, p)
+  }
+  return glbBufferCache.get(url)!
 }
 
 export class StageEnvironment {
@@ -80,7 +109,7 @@ export class StageEnvironment {
       roughness: config.FLOOR_ROUGHNESS,
       metalness: config.FLOOR_METALNESS,
     })
-    config.injectStageShader(floorMat)
+    config.injectFloorShader(floorMat)
     const floorMesh = new THREE.Mesh(floorGeo, floorMat)
     floorMesh.name = 'floor'
     floorMesh.rotation.x = -Math.PI / 2
@@ -131,6 +160,84 @@ export class StageEnvironment {
   }
 
   /**
+   * Loads a GLB stage file asynchronously and builds it into parentGroup.
+   */
+  public async loadGLBStage(
+    stageData: any,
+    parentGroup: THREE.Group
+  ): Promise<GLBStageResult> {
+    const glbUrl = stageData.glb_url || (stageData.glb_path ? `/scene_camera_action/get_glb?filename=${encodeURIComponent(stageData.glb_path)}` : '')
+    if (!glbUrl) {
+      throw new Error('[StageEnvironment] No GLB URL or path specified in stageData')
+    }
+
+    const buffer = await fetchGLBBuffer(glbUrl)
+    const loader = new GLTFLoader()
+    const gltf = await loader.parseAsync(buffer.slice(0), '')
+    const model = gltf.scene
+    model.name = 'GLBStageModel'
+
+    const s = typeof stageData.stage_scale === 'number' && !isNaN(stageData.stage_scale) ? stageData.stage_scale : 1.0
+    model.scale.set(s, s, s)
+
+    if (stageData.offset && Array.isArray(stageData.offset)) {
+      model.position.set(stageData.offset[0] || 0, stageData.offset[1] || 0, stageData.offset[2] || 0)
+    }
+    if (typeof stageData.rotation_y === 'number' && !isNaN(stageData.rotation_y)) {
+      model.rotation.y = THREE.MathUtils.degToRad(stageData.rotation_y)
+    }
+
+    model.updateMatrixWorld(true)
+
+    // Traverse meshes to enable standard PBR shadows and extract collider geometries
+    const colliderGeoms: THREE.BufferGeometry[] = []
+
+    model.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) {
+        const mesh = child as THREE.Mesh
+        mesh.castShadow = true
+        mesh.receiveShadow = true
+
+        if (mesh.material) {
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+          mats.forEach((m) => config.injectGLBCutoutShader(m))
+        }
+
+        if (mesh.geometry) {
+          const cloned = mesh.geometry.clone()
+          cloned.applyMatrix4(mesh.matrixWorld)
+          colliderGeoms.push(cloned)
+        }
+      }
+    })
+
+    parentGroup.clear()
+    parentGroup.add(model)
+
+    let mergedCollider: THREE.BufferGeometry | null = null
+    if (colliderGeoms.length > 0) {
+      try {
+        // Normalize all collision geometries to position-only and non-indexed
+        // so mergeGeometries never fails on mismatched attributes (e.g. UVs or normals)
+        const collisionReadyGeoms = colliderGeoms.map((geom) => {
+          const nonIndexed = geom.index ? geom.toNonIndexed() : geom
+          const posOnly = new THREE.BufferGeometry()
+          posOnly.setAttribute('position', nonIndexed.getAttribute('position'))
+          return posOnly
+        })
+        mergedCollider = BufferGeometryUtils.mergeGeometries(collisionReadyGeoms, false)
+      } catch (err) {
+        console.warn('[StageEnvironment] Failed to merge collider geometries:', err)
+      }
+    }
+
+    return {
+      model,
+      colliderGeometry: mergedCollider
+    }
+  }
+
+  /**
    * Helper utility to identify standard stage elements (Lights, Floor, Grid, BoxHelpers, TransformControls).
    */
   public static isStageObject(object: THREE.Object3D, _transformControlsHelper?: THREE.Object3D): boolean {
@@ -139,4 +246,9 @@ export class StageEnvironment {
     }
     return true
   }
+}
+
+export interface GLBStageResult {
+  model: THREE.Group
+  colliderGeometry: THREE.BufferGeometry | null
 }

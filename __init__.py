@@ -1,5 +1,9 @@
 import os
-from .nodes import comfy_entrypoint, NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+
+try:
+    from .nodes import comfy_entrypoint, NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+except (ImportError, ValueError):
+    from nodes import comfy_entrypoint, NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
 
 # Register the js directory for web extensions
 custom_node_dir = os.path.dirname(os.path.realpath(__file__))

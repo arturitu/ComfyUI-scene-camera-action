@@ -20,6 +20,7 @@ export class CameraSpringArm {
   private tempVec = new THREE.Vector3()
   private probeOrigin = new THREE.Vector3()
   private probeTarget = new THREE.Vector3()
+  private tempNormal = new THREE.Vector3()
 
   public reset(): void {
     this.currentDistance = -1
@@ -108,11 +109,19 @@ export class CameraSpringArm {
               if (hit.instanceId !== undefined && hit.instanceId !== null && !hitInstanceIds.includes(hit.instanceId)) {
                 hitInstanceIds.push(hit.instanceId)
               }
-            }
-            const closest = hits[0]
-            if (closest.distance < closestHitDistance) {
-              closestHitDistance = closest.distance
-              hitObstacle = true
+
+              // Filter out upward-facing ground, sidewalk, or ramp surfaces beneath/around the actor
+              if (hit.face) {
+                this.tempNormal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld)
+                if (this.tempNormal.y > 0.45 && hit.point.y <= targetLookAt.y + 0.15) {
+                  continue // Ground / ramp beneath actor is not a camera occluder
+                }
+              }
+
+              if (hit.distance < closestHitDistance) {
+                closestHitDistance = hit.distance
+                hitObstacle = true
+              }
             }
           }
         }

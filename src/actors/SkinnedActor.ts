@@ -152,8 +152,8 @@ export abstract class SkinnedActor extends BaseActor {
 
   public override isCrouching(): boolean {
     if (this.isCrouchedState) return true
-    const anim = (this.currentAnimationName ?? '').toLowerCase()
-    return anim.includes('crouch') || anim.includes('sit')
+    const current = this.currentAnimationName
+    return current === this.getDefaultCrouchIdleAnim() || current === this.getDefaultCrouchWalkAnim()
   }
 
   public getCurrentAnimationName(): string {
@@ -195,7 +195,7 @@ export abstract class SkinnedActor extends BaseActor {
     let fadeDuration = 0.15
     if (isHardCut || frameDt === 0) {
       fadeDuration = 0
-    } else if (targetAnim.includes('Jump') || targetAnim === 'Bark') {
+    } else if (targetAnim === this.getDefaultJumpAirAnim() || targetAnim === 'Bark') {
       fadeDuration = 0.05
     }
     this.playAnimation(targetAnim, fadeDuration, animTimeScale)
@@ -573,8 +573,14 @@ export abstract class SkinnedActor extends BaseActor {
       this.position.y += this.velocity.y * stepDt
 
       if (colliderBVH) {
-        _tempSegment.start.set(this.position.x, this.position.y + activeR, this.position.z)
+        // For grounded characters, raise bottom of wall collision segment by stepUpOffset
+        // so stair risers and low curbs (<= maxStepUp) do not block forward horizontal movement.
+        const stepUpOffset = this.isOnGround ? Math.min(0.35 * this.scale, activeH * 0.8) : 0
+        _tempSegment.start.set(this.position.x, this.position.y + activeR + stepUpOffset, this.position.z)
         _tempSegment.end.set(this.position.x, this.position.y + activeR + activeH, this.position.z)
+
+        const startSegmentX = _tempSegment.start.x
+        const startSegmentZ = _tempSegment.start.z
 
         const boundMargin = Math.max(2.0, 2.0 * this.scale)
         _tempCapsuleBounds.min.set(this.position.x - boundMargin, this.position.y - 0.5, this.position.z - boundMargin)
@@ -583,28 +589,46 @@ export abstract class SkinnedActor extends BaseActor {
         colliderBVH.shapecast({
           intersectsBounds: (box: THREE.Box3) => box.intersectsBox(_tempCapsuleBounds),
           intersectsTriangle: (tri: any) => {
-            const distSq = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
-            if (distSq < activeR * activeR) {
-              const dist = Math.sqrt(distSq)
+            const dist = tri.closestPointToSegment(_tempSegment, _tempVecA, _tempVecB)
+            if (dist < activeR) {
               const depth = activeR - dist
-              _tempDir.subVectors(_tempVecB, _tempVecA).normalize()
+              _tempDir.subVectors(_tempVecB, _tempVecA)
+              if (_tempDir.lengthSq() < 1e-6) {
+                tri.getNormal(_tempDir)
+              }
+              _tempDir.normalize()
 
-              // Only resolve horizontal wall collisions (walls have normal.y < 0.55)
+              // Only resolve horizontal wall / obstacle collisions (walls have normal.y < 0.55)
               if (_tempDir.y < 0.55) {
                 _tempDir.y = 0
-                _tempDir.normalize()
-                this.position.addScaledVector(_tempDir, depth)
-
-                // Wall sliding: project velocity onto wall tangent plane
-                const dot = this.velocity.x * _tempDir.x + this.velocity.z * _tempDir.z
-                if (dot < 0) {
-                  this.velocity.x -= _tempDir.x * dot
-                  this.velocity.z -= _tempDir.z * dot
+                if (_tempDir.lengthSq() > 1e-6) {
+                  _tempDir.normalize()
+                  const pushDist = Math.min(depth, activeR)
+                  _tempSegment.start.addScaledVector(_tempDir, pushDist)
+                  _tempSegment.end.addScaledVector(_tempDir, pushDist)
                 }
               }
             }
           }
         })
+
+        // Apply net horizontal displacement from capsule resolution
+        const deltaX = _tempSegment.start.x - startSegmentX
+        const deltaZ = _tempSegment.start.z - startSegmentZ
+        this.position.x += deltaX
+        this.position.z += deltaZ
+
+        // Wall sliding: project velocity onto wall tangent plane once per sub-step
+        const pushDist = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ)
+        if (pushDist > 1e-5) {
+          const normX = deltaX / pushDist
+          const normZ = deltaZ / pushDist
+          const dot = this.velocity.x * normX + this.velocity.z * normZ
+          if (dot < 0) {
+            this.velocity.x -= normX * dot
+            this.velocity.z -= normZ * dot
+          }
+        }
       }
     }
 
@@ -649,9 +673,10 @@ export abstract class SkinnedActor extends BaseActor {
       }
     }
 
-    // 3. Ground Snap vs Airborne
+    // 3. Ground Snap vs Airborne vs Step-Up / Step-Down
     if (groundFound) {
       if (this.isUserJumping) {
+        // Jumping in air: only land when descending past ground
         if (this.position.y <= targetGroundY && this.velocity.y <= 0) {
           this.position.y = targetGroundY
           this.velocity.y = 0
@@ -660,14 +685,11 @@ export abstract class SkinnedActor extends BaseActor {
           this.airborneTime = 0
         } else {
           this.isOnGround = false
+          this.airborneTime += dt
         }
-      } else {
-        if (this.position.y <= targetGroundY + 0.35 && this.velocity.y <= 0) {
-          this.position.y = targetGroundY
-          this.velocity.y = 0
-          this.isOnGround = true
-          this.airborneTime = 0
-        } else if (this.position.y <= targetGroundY) {
+      } else if (!this.isOnGround) {
+        // Airborne (e.g. walked off high ledge or falling): only land when feet touch ground
+        if (this.position.y <= targetGroundY && this.velocity.y <= 0) {
           this.position.y = targetGroundY
           this.velocity.y = 0
           this.isOnGround = true
@@ -675,6 +697,44 @@ export abstract class SkinnedActor extends BaseActor {
         } else {
           this.isOnGround = false
           this.airborneTime += dt
+        }
+      } else {
+        // Grounded actor: handle stairs, curbs, slopes smoothly
+        const diffY = targetGroundY - this.position.y
+        const maxStepUp = 0.35 * this.scale
+        const maxStepDown = 0.60 * this.scale
+
+        if (diffY > 0) {
+          // Stepping UP
+          if (diffY <= maxStepUp) {
+            // Smooth continuous exponential interpolation (natural leg suspension)
+            // Eliminates abrupt velocity spikes and hard stops between steps
+            const smoothFactor = 1.0 - Math.exp(-22.0 * dt)
+            this.position.y += diffY * smoothFactor
+            this.velocity.y = 0
+            this.isOnGround = true
+            this.airborneTime = 0
+          } else {
+            // Obstacle is too high to step over (wall/table); horizontal wall collision blocks it
+            this.velocity.y = 0
+            this.isOnGround = true
+            this.airborneTime = 0
+          }
+        } else {
+          // Stepping DOWN (diffY <= 0)
+          const drop = -diffY
+          if (drop <= maxStepDown) {
+            // Smooth continuous exponential descent on stairs/curbs
+            const smoothFactor = 1.0 - Math.exp(-22.0 * dt)
+            this.position.y += diffY * smoothFactor
+            this.velocity.y = 0
+            this.isOnGround = true
+            this.airborneTime = 0
+          } else {
+            // Height difference exceeds step down -> natural falling off ledge/roof
+            this.isOnGround = false
+            this.airborneTime += dt
+          }
         }
       }
     } else {
@@ -731,7 +791,7 @@ export abstract class SkinnedActor extends BaseActor {
     }
 
     let fadeDuration = 0.15
-    if (targetAnimation.includes('Jump') || targetAnimation === 'Bark') {
+    if (targetAnimation === this.getDefaultJumpAirAnim() || targetAnimation === 'Bark') {
       fadeDuration = 0.05
     }
     this.playAnimation(targetAnimation, fadeDuration, animTimeScale)

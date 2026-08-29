@@ -491,7 +491,7 @@ const resetKeyframeFov = (kf: Keyframe) => {
 const getTargetActorInfo = (kf: Keyframe): { isCar: boolean; scale: number } => {
   const target = kf.actor_target || 'actor_1'
   const found: any = availableActors.value.find(a => a?.id === target)
-  const isCar = found?.label ? found.label.toLowerCase().includes('car') : (found?.actor_type === 'car')
+  const isCar = found?.actor_type === 'car'
   const scale = typeof found?.scale === 'number' ? found.scale : (found?.actor_type === 'quadruped' ? 0.5 : 1.0)
   return { isCar, scale }
 }

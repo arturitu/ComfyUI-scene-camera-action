@@ -4,7 +4,7 @@ import * as config from './threeConfig'
 import { BaseActor } from './actors/BaseActor'
 import { ActorFactory } from './actors/ActorFactory'
 import { PlaybackController } from './utils/PlaybackController'
-import { StageEnvironment } from './staging/StageEnvironment'
+import { StageEnvironment, type StageSetupResult } from './staging/StageEnvironment'
 import { CameraSpringArm } from './utils/CameraSpringArm'
 import { InstancedStageMesh } from './staging/InstancedStageMesh'
 import { DebugPanel } from './utils/DebugPanel'
@@ -24,6 +24,8 @@ export class ThreeDirecting {
   private clonedEnvGroup: THREE.Group | null = null
   private instancedStageMesh: InstancedStageMesh | null = null
   private connectedThreeActing: any = null
+  private currentGLBLoadId = 0
+  private stageSetup: StageSetupResult | null = null
   private springArm = new CameraSpringArm()
 
   private playbackController = new PlaybackController()
@@ -39,6 +41,13 @@ export class ThreeDirecting {
   private resizeAnimationFrameId: number | null = null
   private unsubGraphNav?: () => void
 
+  public isRecording = false
+  public isDirectingRecording = false
+  public recordingTime = 0
+  public isInteracting = false
+
+  public onStateChange?: (state: DirectingState) => void
+
   constructor(options: ThreeDirectingOptions) {
     this.container = options.container
     this.state = {
@@ -46,6 +55,7 @@ export class ThreeDirecting {
       acting_data: options.initialState?.acting_data ?? '',
       directing_data: options.initialState?.directing_data ?? '',
     }
+    this.onStateChange = options.onStateChange
 
     this.initThreeJS()
 
@@ -58,16 +68,19 @@ export class ThreeDirecting {
 
   public setConnectedThreeActing(threeActing: any): void {
     this.connectedThreeActing = threeActing
-    const stageData = this.getStageData()
-    if (stageData) {
-      this.buildStageFromData(stageData)
-    }
     if (this.state.acting_data) {
       this.loadActingData(this.state.acting_data)
-    } else if (threeActing && typeof threeActing.getAccumulatedActors === 'function') {
-      this.buildActorsFromData({ actors: threeActing.getAccumulatedActors() })
+    } else {
+      const stageData = this.getStageData()
+      if (stageData) {
+        this.buildStageFromData(stageData)
+      } else {
+        this.buildStageEnvironment()
+      }
+      if (threeActing && typeof threeActing.getAccumulatedActors === 'function') {
+        this.buildActorsFromData({ actors: threeActing.getAccumulatedActors() })
+      }
     }
-    this.buildStageEnvironment()
     this.updateCamera()
   }
 
@@ -252,7 +265,7 @@ export class ThreeDirecting {
 
     // Setup Stage Environment (Lights, Floor, Grid)
     const stageEnv = new StageEnvironment()
-    stageEnv.initStage(this.scene)
+    this.stageSetup = stageEnv.initStage(this.scene)
 
     this.buildSceneEnvironment()
 
@@ -330,6 +343,35 @@ export class ThreeDirecting {
 
     const stageData = this.getStageData()
 
+    // 1. Handle GLB stage (Track 2: Blender Clay GLB)
+    const loadId = ++this.currentGLBLoadId
+    if (stageData && stageData.type === 'glb_stage') {
+      if (this.stageSetup?.floorMesh) {
+        this.stageSetup.floorMesh.visible = false
+      }
+      const stageEnv = new StageEnvironment()
+      stageEnv.loadGLBStage(stageData, this.clonedEnvGroup)
+        .then(() => {
+          if (loadId !== this.currentGLBLoadId) return
+          if (this.clonedEnvGroup && this.clonedEnvGroup.children.length > 0) {
+            this.cachedEnvBBox.setFromObject(this.clonedEnvGroup)
+          } else {
+            this.cachedEnvBBox.makeEmpty()
+          }
+          this.cachedSceneExtent = config.calculateStageExtent(this.clonedEnvGroup)
+          config.updateStageFog(this.scene, this.camera, this.cachedSceneExtent)
+          this.renderOnce()
+        })
+        .catch((err) => {
+          console.error('[ThreeDirecting] Failed to load GLB stage:', err)
+        })
+      return
+    }
+
+    // 2. Handle Cube stage (Track 1: JSON Box Primitives)
+    if (this.stageSetup?.floorMesh) {
+      this.stageSetup.floorMesh.visible = true
+    }
     const stageEnv = new StageEnvironment()
     this.instancedStageMesh = stageEnv.buildInstancedStage(stageData, this.clonedEnvGroup)
 
@@ -681,6 +723,13 @@ export class ThreeDirecting {
 
     const activeTarget = activeMode === 'Wide' ? this.wideTarget : (activeMode === 'Side' ? this.sideTarget : this.tpvTarget)
     config.updateSceneFog(this.scene, this.camera, this.cachedSceneExtent, activeTarget)
+
+    // Update GLB geometric cutout dither uniforms
+    config.glbCutoutUniforms.uCameraPos.value.copy(this.camera.position)
+    config.glbCutoutUniforms.uActorTargetPos.value.copy(activeTarget)
+    config.glbCutoutUniforms.uActorBasePos.value.copy(charPos)
+    config.glbCutoutUniforms.uCutoutRadius.value = isCarTarget ? 2.8 : 1.8
+    config.glbCutoutUniforms.uCutoutEnabled.value = isFPV ? 0.0 : 1.0
 
     this.lastCameraMode = activeMode
   }

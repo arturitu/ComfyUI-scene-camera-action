@@ -70,7 +70,7 @@ def get_staging_stage_files() -> list[str]:
     # 1. Scan presets/ inside custom node directory
     if os.path.exists(PRESETS_DIR):
         for f in os.listdir(PRESETS_DIR):
-            if f.endswith(".json"):
+            if f.lower().endswith((".json", ".glb", ".gltf")):
                 files.add(f)
 
     # 2. Scan input/staging_stages/ in ComfyUI input directory
@@ -80,7 +80,30 @@ def get_staging_stage_files() -> list[str]:
             stages_dir = os.path.join(input_dir, "staging_stages")
             if os.path.exists(stages_dir):
                 for f in os.listdir(stages_dir):
-                    if f.endswith(".json"):
+                    if f.lower().endswith((".json", ".glb", ".gltf")):
+                        files.add(f)
+    except Exception:
+        pass
+
+    return sorted(list(files)) if files else ["None"]
+
+
+def get_staging_glb_files() -> list[str]:
+    files = set()
+    # 1. Scan presets/ inside custom node directory
+    if os.path.exists(PRESETS_DIR):
+        for f in os.listdir(PRESETS_DIR):
+            if f.lower().endswith((".glb", ".gltf")):
+                files.add(f)
+
+    # 2. Scan input/staging_stages/ in ComfyUI input directory
+    try:
+        input_dir = folder_paths.get_input_directory()
+        if input_dir:
+            stages_dir = os.path.join(input_dir, "staging_stages")
+            if os.path.exists(stages_dir):
+                for f in os.listdir(stages_dir):
+                    if f.lower().endswith((".glb", ".gltf")):
                         files.add(f)
     except Exception:
         pass
@@ -148,6 +171,91 @@ class StagingNode(io.ComfyNode):
         stage_data: str = "",
     ):
         return f"{stage_data}"
+
+
+class StagingGLBNode(io.ComfyNode):
+    CATEGORY = "scene-camera-action"
+
+    """
+    Staging (GLB) Node
+    Loads an arbitrary 3D clay environment from a .glb/.gltf file for acting and directing.
+    Outputs standard StageIO data compatible with ActingNode and DirectingNode.
+    """
+
+    @classmethod
+    def define_schema(cls):
+        glb_options = get_staging_glb_files()
+        default_file = glb_options[0] if glb_options else "None"
+        return io.Schema(
+            node_id="StagingGLBNode",
+            display_name="Staging (GLB)",
+            category="scene-camera-action",
+            is_output_node=False,
+            description="Loads an arbitrary 3D clay environment from a .glb/.gltf file for acting and directing.",
+            inputs=[
+                io.Combo.Input(
+                    "glb_file",
+                    options=glb_options,
+                    default=default_file,
+                    display_name="GLB Stage File",
+                    tooltip="Select a .glb clay stage from presets/ or input/staging_stages/",
+                ),
+                io.Float.Input(
+                    "stage_scale",
+                    default=1.0, min=0.01, max=10.0, step=0.05,
+                    display_name="Stage Scale",
+                    tooltip="Metric scale multiplier for the imported stage",
+                ),
+                io.Float.Input(
+                    "offset_y",
+                    default=0.0, min=-50.0, max=50.0, step=0.1,
+                    display_name="Vertical Offset (Y)",
+                    tooltip="Adjust vertical ground elevation in meters",
+                ),
+                io.Float.Input(
+                    "rotation_y",
+                    default=0.0, min=-180.0, max=180.0, step=1.0,
+                    display_name="Rotation Y (deg)",
+                    tooltip="Yaw rotation of the stage in degrees",
+                ),
+            ],
+            outputs=[
+                StageIO.Output("stage_data", display_name="Stage Data"),
+            ],
+            hidden=[io.Hidden.unique_id],
+        )
+
+    @classmethod
+    def execute(
+        cls,
+        glb_file: str = "None",
+        stage_scale: float = 1.0,
+        offset_y: float = 0.0,
+        rotation_y: float = 0.0,
+    ) -> io.NodeOutput:
+        glb_name = str(glb_file).strip() if glb_file else "None"
+        glb_url = f"/scene_camera_action/get_glb?filename={glb_name}" if glb_name and glb_name != "None" else ""
+        stage_dict = {
+            "type": "glb_stage",
+            "glb_path": glb_name,
+            "glb_url": glb_url,
+            "stage_scale": float(stage_scale),
+            "offset": [0.0, float(offset_y), 0.0],
+            "rotation_y": float(rotation_y),
+            "selectedPreset": glb_name,
+        }
+        stage_json = json.dumps(stage_dict)
+        return io.NodeOutput(stage_json, ui=_StageUIOutput(stage_dict))
+
+    @classmethod
+    def fingerprint_inputs(
+        cls,
+        glb_file: str = "None",
+        stage_scale: float = 1.0,
+        offset_y: float = 0.0,
+        rotation_y: float = 0.0,
+    ):
+        return f"{glb_file}_{stage_scale}_{offset_y}_{rotation_y}"
 
 
 class ActingNode(io.ComfyNode):
@@ -487,7 +595,7 @@ class DirectingNode(io.ComfyNode):
 class SceneCameraActionExtension(ComfyExtension):
     @override
     async def get_node_list(self):
-        return [StagingNode, ActingNode, DirectingNode]
+        return [StagingNode, StagingGLBNode, ActingNode, DirectingNode]
 
 
 def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
@@ -533,8 +641,25 @@ def convert_webm_to_mp4(webm_path: str, mp4_path: str) -> bool:
 
 
 # --- API Routes to receive video, image uploads, and scene presets ---
-@PromptServer.instance.routes.post("/scene_camera_action/upload_video")
-@PromptServer.instance.routes.post("/ub_3d_studio/upload_video")
+try:
+    routes = PromptServer.instance.routes
+except Exception:
+    class _DummyRoutes:
+        def post(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+
+        def get(self, *args, **kwargs):
+            def decorator(f):
+                return f
+            return decorator
+
+    routes = _DummyRoutes()
+
+
+@routes.post("/scene_camera_action/upload_video")
+@routes.post("/ub_3d_studio/upload_video")
 async def upload_video(request):
     try:
         post = await request.post()
@@ -586,8 +711,8 @@ async def upload_video(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.post("/scene_camera_action/upload_image")
-@PromptServer.instance.routes.post("/ub_3d_studio/upload_image")
+@routes.post("/scene_camera_action/upload_image")
+@routes.post("/ub_3d_studio/upload_image")
 async def upload_image(request):
     try:
         post = await request.post()
@@ -624,25 +749,38 @@ async def upload_image(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.get("/scene_camera_action/list_presets")
-@PromptServer.instance.routes.get("/ub_3d_studio/list_presets")
+@routes.get("/scene_camera_action/list_presets")
+@routes.get("/ub_3d_studio/list_presets")
 async def list_presets(request):
     files = get_staging_stage_files()
     return web.json_response({"files": files})
 
 
-@PromptServer.instance.routes.get("/scene_camera_action/get_preset")
-@PromptServer.instance.routes.get("/ub_3d_studio/get_preset")
+@routes.get("/scene_camera_action/get_preset")
+@routes.get("/ub_3d_studio/get_preset")
 async def get_preset(request):
     filename = request.query.get("filename", "")
     if not filename or filename == "None":
         return web.json_response({"type": "cube_stage", "nodes": []})
 
+    filename = os.path.basename(filename)
+    if filename.lower().endswith((".glb", ".gltf")):
+        return web.json_response({
+            "type": "glb_stage",
+            "glb_path": filename,
+            "glb_url": f"/scene_camera_action/get_glb?filename={filename}",
+            "stage_scale": 1.0,
+            "offset": [0.0, 0.0, 0.0],
+            "rotation_y": 0.0,
+            "selectedPreset": filename,
+        })
+
     filepath = os.path.join(PRESETS_DIR, filename)
     if not os.path.exists(filepath):
         try:
             input_dir = folder_paths.get_input_directory()
-            filepath = os.path.join(input_dir, "staging_stages", filename)
+            if input_dir:
+                filepath = os.path.join(input_dir, "staging_stages", filename)
         except Exception:
             pass
 
@@ -657,8 +795,31 @@ async def get_preset(request):
     return web.json_response({"error": "File not found"}, status=404)
 
 
-@PromptServer.instance.routes.post("/scene_camera_action/save_preset")
-@PromptServer.instance.routes.post("/ub_3d_studio/save_preset")
+@routes.get("/scene_camera_action/get_glb")
+@routes.get("/ub_3d_studio/get_glb")
+async def get_glb(request):
+    filename = request.query.get("filename", "")
+    if not filename or filename == "None":
+        return web.json_response({"error": "No file specified"}, status=400)
+
+    filename = os.path.basename(filename)
+    filepath = os.path.join(PRESETS_DIR, filename)
+    if not os.path.exists(filepath):
+        try:
+            input_dir = folder_paths.get_input_directory()
+            if input_dir:
+                filepath = os.path.join(input_dir, "staging_stages", filename)
+        except Exception:
+            pass
+
+    if os.path.exists(filepath) and filename.lower().endswith((".glb", ".gltf")):
+        return web.FileResponse(filepath)
+
+    return web.json_response({"error": f"GLB file '{filename}' not found"}, status=404)
+
+
+@routes.post("/scene_camera_action/save_preset")
+@routes.post("/ub_3d_studio/save_preset")
 async def save_preset(request):
     try:
         body = await request.json()
@@ -681,8 +842,8 @@ async def save_preset(request):
         return web.json_response({"success": False, "error": str(e)}, status=500)
 
 
-@PromptServer.instance.routes.post("/scene_camera_action/capture_done")
-@PromptServer.instance.routes.post("/ub_3d_studio/capture_done")
+@routes.post("/scene_camera_action/capture_done")
+@routes.post("/ub_3d_studio/capture_done")
 async def capture_done(request):
     try:
         body = await request.json()
@@ -703,9 +864,11 @@ async def comfy_entrypoint():
 
 NODE_CLASS_MAPPINGS = {
     "StagingNode": StagingNode,
+    "StagingGLBNode": StagingGLBNode,
     "ActingNode": ActingNode,
     "DirectingNode": DirectingNode,
     "UBStagingNode": StagingNode,
+    "UBStagingGLBNode": StagingGLBNode,
     "UBActingNode": ActingNode,
     "UBDirectingNode": DirectingNode,
     "StageNode": StagingNode,
@@ -714,9 +877,11 @@ NODE_CLASS_MAPPINGS = {
 
 NODE_DISPLAY_NAME_MAPPINGS = {
     "StagingNode": "Staging",
+    "StagingGLBNode": "Staging (GLB)",
     "ActingNode": "Acting",
     "DirectingNode": "Directing",
     "UBStagingNode": "Staging",
+    "UBStagingGLBNode": "Staging (GLB)",
     "UBActingNode": "Acting",
     "UBDirectingNode": "Directing",
     "StageNode": "Staging",

@@ -1,0 +1,6154 @@
+{
+  "type": "cube_stage",
+  "nodes": [
+    {
+      "id": "group_8464",
+      "type": "group",
+      "name": "Sidewalk Plazas & Tactile Routes",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_86950",
+          "type": "block",
+          "name": "Bloque B Plaza Main Slab",
+          "transform": {
+            "px": -16.5,
+            "py": 0.1,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 15.0,
+            "sy": 0.2,
+            "sz": 18.0
+          }
+        },
+        {
+          "id": "block_28669",
+          "type": "block",
+          "name": "Bloque B South-East Curb Chamfer",
+          "transform": {
+            "px": -8.5,
+            "py": 0.1,
+            "pz": -4.5,
+            "rx": 0.0,
+            "ry": -0.58,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 8.5
+          }
+        },
+        {
+          "id": "block_33453",
+          "type": "block",
+          "name": "Bloque C Apron Main Slab",
+          "transform": {
+            "px": 0.0,
+            "py": 0.1,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 14.0,
+            "sy": 0.2,
+            "sz": 7.0
+          }
+        },
+        {
+          "id": "block_59349",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 1",
+          "transform": {
+            "px": -3.1045,
+            "py": 0.1,
+            "pz": -14.3839,
+            "rx": 0.0,
+            "ry": -1.0908,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_25094",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 2",
+          "transform": {
+            "px": -2.1307,
+            "py": 0.1,
+            "pz": -13.2233,
+            "rx": 0.0,
+            "ry": -0.6545,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_58682",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 3",
+          "transform": {
+            "px": -0.7575,
+            "py": 0.1,
+            "pz": -12.583,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_36375",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 4",
+          "transform": {
+            "px": 0.7575,
+            "py": 0.1,
+            "pz": -12.583,
+            "rx": 0.0,
+            "ry": 0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_13555",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 5",
+          "transform": {
+            "px": 2.1307,
+            "py": 0.1,
+            "pz": -13.2233,
+            "rx": 0.0,
+            "ry": 0.6545,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_54933",
+          "type": "block",
+          "name": "Bloque C Entrance Curved Step Segment 6",
+          "transform": {
+            "px": 3.1045,
+            "py": 0.1,
+            "pz": -14.3839,
+            "rx": 0.0,
+            "ry": 1.0908,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.2,
+            "sz": 1.5772
+          }
+        },
+        {
+          "id": "block_34048",
+          "type": "block",
+          "name": "Bloque D Sidewalk Slab",
+          "transform": {
+            "px": 17.0,
+            "py": 0.1,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": -0.42,
+            "rz": 0.0,
+            "sx": 14.0,
+            "sy": 0.2,
+            "sz": 16.0
+          }
+        },
+        {
+          "id": "block_34380",
+          "type": "block",
+          "name": "Bloque D Corner Curb Chamfer",
+          "transform": {
+            "px": 10.0,
+            "py": 0.1,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.42,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 7.0
+          }
+        },
+        {
+          "id": "block_68690",
+          "type": "block",
+          "name": "Bloque E East Sidewalk Slab",
+          "transform": {
+            "px": 18.0,
+            "py": 0.1,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 14.0,
+            "sy": 0.2,
+            "sz": 12.0
+          }
+        },
+        {
+          "id": "block_71774",
+          "type": "block",
+          "name": "Bloque E South-East Sidewalk Slab",
+          "transform": {
+            "px": 17.5,
+            "py": 0.1,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 13.0,
+            "sy": 0.2,
+            "sz": 14.0
+          }
+        },
+        {
+          "id": "block_81393",
+          "type": "block",
+          "name": "Bloque E South-East Curb Chamfer",
+          "transform": {
+            "px": 9.5,
+            "py": 0.1,
+            "pz": 6.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 9.0
+          }
+        },
+        {
+          "id": "block_89632",
+          "type": "block",
+          "name": "Station South Sidewalk Main Slab",
+          "transform": {
+            "px": 1.0,
+            "py": 0.1,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 16.0,
+            "sy": 0.2,
+            "sz": 11.0
+          }
+        },
+        {
+          "id": "block_68674",
+          "type": "block",
+          "name": "Station South Curb Chamfer West",
+          "transform": {
+            "px": -6.5,
+            "py": 0.1,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_27139",
+          "type": "block",
+          "name": "Station South Curb Chamfer East",
+          "transform": {
+            "px": 8.5,
+            "py": 0.1,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_86415",
+          "type": "block",
+          "name": "Train Platform Sidewalk Slab",
+          "transform": {
+            "px": -16.5,
+            "py": 0.1,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 15.0,
+            "sy": 0.2,
+            "sz": 12.0
+          }
+        },
+        {
+          "id": "block_86580",
+          "type": "block",
+          "name": "Train Platform Curb Chamfer",
+          "transform": {
+            "px": -8.5,
+            "py": 0.1,
+            "pz": 11.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.2,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_24862",
+          "type": "block",
+          "name": "Bloque B Tactile Route Main",
+          "transform": {
+            "px": -13.5,
+            "py": 0.21,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": -0.65,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "block_98918",
+          "type": "block",
+          "name": "Bloque B Tactile Branch Statue",
+          "transform": {
+            "px": -15.0,
+            "py": 0.21,
+            "pz": -7.0,
+            "rx": 0.0,
+            "ry": -0.65,
+            "rz": 0.0,
+            "sx": 3.0,
+            "sy": 0.02,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_38858",
+          "type": "block",
+          "name": "Bloque C Tactile Entrance West Spur",
+          "transform": {
+            "px": -1.8,
+            "py": 0.21,
+            "pz": -14.0,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "block_57038",
+          "type": "block",
+          "name": "Bloque C Tactile Entrance East Spur",
+          "transform": {
+            "px": 1.8,
+            "py": 0.21,
+            "pz": -14.0,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "block_16062",
+          "type": "block",
+          "name": "Bloque E Tactile North-South Main",
+          "transform": {
+            "px": 11.5,
+            "py": 0.21,
+            "pz": 9.0,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 12.0
+          }
+        },
+        {
+          "id": "block_10628",
+          "type": "block",
+          "name": "Bloque E Tactile Vending Access Spur",
+          "transform": {
+            "px": 11.0,
+            "py": 0.21,
+            "pz": 14.5,
+            "rx": 0.0,
+            "ry": -0.25,
+            "rz": 0.0,
+            "sx": 2.5,
+            "sy": 0.02,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_65828",
+          "type": "block",
+          "name": "South Sidewalk Tactile North-South Main",
+          "transform": {
+            "px": 0.0,
+            "py": 0.21,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 9.0
+          }
+        },
+        {
+          "id": "block_58279",
+          "type": "block",
+          "name": "South Sidewalk Tactile East-West Cross",
+          "transform": {
+            "px": 0.0,
+            "py": 0.21,
+            "pz": 14.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 6.5,
+            "sy": 0.02,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_77852",
+          "type": "block",
+          "name": "South Sidewalk Tactile West Branch",
+          "transform": {
+            "px": -4.5,
+            "py": 0.21,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.65,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 4.0
+          }
+        },
+        {
+          "id": "block_53513",
+          "type": "block",
+          "name": "South Sidewalk Tactile East Branch",
+          "transform": {
+            "px": 5.5,
+            "py": 0.21,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": -0.65,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.02,
+            "sz": 4.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_7963",
+      "type": "group",
+      "name": "Shibuya Scramble Pedestrian Crossings",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_85285",
+          "type": "block",
+          "name": "Central Scramble Junction Core",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_14509",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 1",
+          "transform": {
+            "px": -9.5,
+            "py": 0.015,
+            "pz": -3.4,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_17906",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 2",
+          "transform": {
+            "px": -8.75,
+            "py": 0.015,
+            "pz": -3.13,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_98984",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 3",
+          "transform": {
+            "px": -8.0,
+            "py": 0.015,
+            "pz": -2.86,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_95423",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 4",
+          "transform": {
+            "px": -7.25,
+            "py": 0.015,
+            "pz": -2.59,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_22066",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 5",
+          "transform": {
+            "px": -6.5,
+            "py": 0.015,
+            "pz": -2.32,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_93191",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 6",
+          "transform": {
+            "px": -5.75,
+            "py": 0.015,
+            "pz": -2.05,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_91434",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 7",
+          "transform": {
+            "px": -5.0,
+            "py": 0.015,
+            "pz": -1.78,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_46168",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 8",
+          "transform": {
+            "px": -4.25,
+            "py": 0.015,
+            "pz": -1.51,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_25217",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 9",
+          "transform": {
+            "px": -3.5,
+            "py": 0.015,
+            "pz": -1.24,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_49765",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 10",
+          "transform": {
+            "px": -2.75,
+            "py": 0.015,
+            "pz": -0.97,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_52857",
+          "type": "block",
+          "name": "Crosswalk Diagonal NW Stripe 11",
+          "transform": {
+            "px": -2.0,
+            "py": 0.015,
+            "pz": -0.7,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_20765",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 1",
+          "transform": {
+            "px": 2.0,
+            "py": 0.015,
+            "pz": 0.7,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_46364",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 2",
+          "transform": {
+            "px": 2.75,
+            "py": 0.015,
+            "pz": 0.97,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_58204",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 3",
+          "transform": {
+            "px": 3.5,
+            "py": 0.015,
+            "pz": 1.24,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_34729",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 4",
+          "transform": {
+            "px": 4.25,
+            "py": 0.015,
+            "pz": 1.51,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_39946",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 5",
+          "transform": {
+            "px": 5.0,
+            "py": 0.015,
+            "pz": 1.78,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_76263",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 6",
+          "transform": {
+            "px": 5.75,
+            "py": 0.015,
+            "pz": 2.05,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_50072",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 7",
+          "transform": {
+            "px": 6.5,
+            "py": 0.015,
+            "pz": 2.32,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_31361",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 8",
+          "transform": {
+            "px": 7.25,
+            "py": 0.015,
+            "pz": 2.59,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_91648",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 9",
+          "transform": {
+            "px": 8.0,
+            "py": 0.015,
+            "pz": 2.86,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_37656",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 10",
+          "transform": {
+            "px": 8.75,
+            "py": 0.015,
+            "pz": 3.13,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_19982",
+          "type": "block",
+          "name": "Crosswalk Diagonal SE Stripe 11",
+          "transform": {
+            "px": 9.5,
+            "py": 0.015,
+            "pz": 3.4,
+            "rx": 0.0,
+            "ry": -0.46,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 5.5
+          }
+        },
+        {
+          "id": "block_85114",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 1",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 2.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_93169",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 2",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 3.22,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_25342",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 3",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 4.04,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_18238",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 4",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 4.86,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_97064",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 5",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 5.68,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_25145",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 6",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_74614",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 7",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 7.32,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_15131",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 8",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 8.14,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_14310",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 9",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 8.96,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_60777",
+          "type": "block",
+          "name": "Crosswalk Center-South Stripe 10",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 9.78,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_20432",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 1",
+          "transform": {
+            "px": 1.0,
+            "py": 0.015,
+            "pz": -2.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_36562",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 2",
+          "transform": {
+            "px": 1.4222,
+            "py": 0.015,
+            "pz": -3.0333,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_77052",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 3",
+          "transform": {
+            "px": 1.8444,
+            "py": 0.015,
+            "pz": -3.8667,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_32718",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 4",
+          "transform": {
+            "px": 2.2667,
+            "py": 0.015,
+            "pz": -4.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_36118",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 5",
+          "transform": {
+            "px": 2.6889,
+            "py": 0.015,
+            "pz": -5.5333,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_51903",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 6",
+          "transform": {
+            "px": 3.1111,
+            "py": 0.015,
+            "pz": -6.3667,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_89085",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 7",
+          "transform": {
+            "px": 3.5333,
+            "py": 0.015,
+            "pz": -7.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_55413",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 8",
+          "transform": {
+            "px": 3.9556,
+            "py": 0.015,
+            "pz": -8.0333,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_99052",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 9",
+          "transform": {
+            "px": 4.3778,
+            "py": 0.015,
+            "pz": -8.8667,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_32201",
+          "type": "block",
+          "name": "Crosswalk Center-NE Stripe 10",
+          "transform": {
+            "px": 4.8,
+            "py": 0.015,
+            "pz": -9.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.2,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_80036",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 1",
+          "transform": {
+            "px": -8.5,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_13024",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 2",
+          "transform": {
+            "px": -7.8,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_15182",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 3",
+          "transform": {
+            "px": -7.1,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_88621",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 4",
+          "transform": {
+            "px": -6.4,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_40731",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 5",
+          "transform": {
+            "px": -5.7,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_64082",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 6",
+          "transform": {
+            "px": -5.0,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_69611",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 7",
+          "transform": {
+            "px": -4.3,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_33627",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 8",
+          "transform": {
+            "px": -3.6,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_26281",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 9",
+          "transform": {
+            "px": -2.9,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_16754",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 10",
+          "transform": {
+            "px": -2.2,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_92628",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 11",
+          "transform": {
+            "px": -1.5,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_33046",
+          "type": "block",
+          "name": "Crosswalk North-Avenue Stripe 12",
+          "transform": {
+            "px": -0.8,
+            "py": 0.015,
+            "pz": -12.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_53411",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 1",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 0.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_36575",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 2",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 1.55,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_37279",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 3",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 2.3,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_51056",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 4",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 3.05,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_84802",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 5",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 3.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_18493",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 6",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 4.55,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_25345",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 7",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 5.3,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_31585",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 8",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 6.05,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_61853",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 9",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 6.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_22727",
+          "type": "block",
+          "name": "Crosswalk West-Avenue Stripe 10",
+          "transform": {
+            "px": -13.1,
+            "py": 0.015,
+            "pz": 7.55,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_55640",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 1",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": -2.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_84646",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 2",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": -1.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_69188",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 3",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": -0.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_96672",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 4",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": 0.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_55425",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 5",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": 1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_37781",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 6",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_99634",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 7",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": 2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_52803",
+          "type": "block",
+          "name": "Crosswalk East-Avenue Stripe 8",
+          "transform": {
+            "px": 12.75,
+            "py": 0.015,
+            "pz": 3.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_99576",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 1",
+          "transform": {
+            "px": 1.2,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_80223",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 2",
+          "transform": {
+            "px": 1.9,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_66571",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 3",
+          "transform": {
+            "px": 2.6,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_16523",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 4",
+          "transform": {
+            "px": 3.3,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_78912",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 5",
+          "transform": {
+            "px": 4.0,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_33699",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 6",
+          "transform": {
+            "px": 4.7,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_79943",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 7",
+          "transform": {
+            "px": 5.4,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_70267",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 8",
+          "transform": {
+            "px": 6.1,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_93096",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 9",
+          "transform": {
+            "px": 6.8,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_98134",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 10",
+          "transform": {
+            "px": 7.5,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_22140",
+          "type": "block",
+          "name": "Crosswalk South-Avenue Stripe 11",
+          "transform": {
+            "px": 8.2,
+            "py": 0.015,
+            "pz": 14.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_18360",
+          "type": "block",
+          "name": "South Approach Traffic Stop Line",
+          "transform": {
+            "px": 0.0,
+            "py": 0.015,
+            "pz": 11.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.0,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_25390",
+          "type": "block",
+          "name": "North Avenue Traffic Stop Line",
+          "transform": {
+            "px": -4.0,
+            "py": 0.015,
+            "pz": -14.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 6.5,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_88952",
+          "type": "block",
+          "name": "East Avenue Traffic Stop Line",
+          "transform": {
+            "px": 12.5,
+            "py": 0.015,
+            "pz": -4.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.0,
+            "sy": 0.02,
+            "sz": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_6713",
+      "type": "group",
+      "name": "Bloque B Plaza y Estatua de Hachiko",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_51518",
+          "type": "block",
+          "name": "Hachiko Base Tier 1",
+          "transform": {
+            "px": -15.5,
+            "py": 0.3,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.2,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_21404",
+          "type": "block",
+          "name": "Hachiko Base Tier 2",
+          "transform": {
+            "px": -15.5,
+            "py": 0.5,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 3.5,
+            "sy": 0.2,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "block_27405",
+          "type": "block",
+          "name": "Hachiko Base Tier 3",
+          "transform": {
+            "px": -15.5,
+            "py": 0.7,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.5,
+            "sy": 0.2,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "block_55825",
+          "type": "block",
+          "name": "Hachiko Monument Pedestal",
+          "transform": {
+            "px": -15.5,
+            "py": 1.35,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 1.1,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_44064",
+          "type": "block",
+          "name": "Hachiko Inscription Plaque",
+          "transform": {
+            "px": -14.75,
+            "py": 1.35,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.6,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "block_78800",
+          "type": "block",
+          "name": "Bronze Dog Base Plate",
+          "transform": {
+            "px": -15.5,
+            "py": 1.95,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.1,
+            "sy": 0.1,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_40328",
+          "type": "block",
+          "name": "Bronze Dog Torso",
+          "transform": {
+            "px": -15.5,
+            "py": 2.35,
+            "pz": -8.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.55,
+            "sz": 0.85
+          }
+        },
+        {
+          "id": "block_50459",
+          "type": "block",
+          "name": "Bronze Dog Chest",
+          "transform": {
+            "px": -15.5,
+            "py": 2.5,
+            "pz": -8.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.55,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_30531",
+          "type": "block",
+          "name": "Bronze Dog Forelegs",
+          "transform": {
+            "px": -15.5,
+            "py": 2.15,
+            "pz": -8.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.5,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_11890",
+          "type": "block",
+          "name": "Bronze Dog Haunches",
+          "transform": {
+            "px": -15.5,
+            "py": 2.15,
+            "pz": -8.05,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.45,
+            "sz": 0.45
+          }
+        },
+        {
+          "id": "block_33263",
+          "type": "block",
+          "name": "Bronze Dog Head",
+          "transform": {
+            "px": -15.5,
+            "py": 2.85,
+            "pz": -8.9,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.35,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_16386",
+          "type": "block",
+          "name": "Bronze Dog Muzzle",
+          "transform": {
+            "px": -15.5,
+            "py": 2.78,
+            "pz": -9.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 0.18,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_78591",
+          "type": "block",
+          "name": "Bronze Dog Ears",
+          "transform": {
+            "px": -15.5,
+            "py": 3.1,
+            "pz": -8.88,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_64650",
+          "type": "block",
+          "name": "Bronze Dog Curled Tail",
+          "transform": {
+            "px": -15.5,
+            "py": 2.65,
+            "pz": -7.85,
+            "rx": 0.35,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.35,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_15947",
+          "type": "block",
+          "name": "Bench NW Seat",
+          "transform": {
+            "px": -17.5,
+            "py": 0.45,
+            "pz": -13.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_90983",
+          "type": "block",
+          "name": "Bench NW Backrest",
+          "transform": {
+            "px": -17.7251,
+            "py": 0.75,
+            "pz": -13.6087,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_34330",
+          "type": "block",
+          "name": "Bench North Seat",
+          "transform": {
+            "px": -14.0,
+            "py": 0.45,
+            "pz": -14.0,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_41150",
+          "type": "block",
+          "name": "Bench North Backrest",
+          "transform": {
+            "px": -14.2251,
+            "py": 0.75,
+            "pz": -13.8913,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_36080",
+          "type": "block",
+          "name": "Bench West Seat",
+          "transform": {
+            "px": -20.5,
+            "py": 0.45,
+            "pz": -10.5,
+            "rx": 0.0,
+            "ry": 1.57,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_61937",
+          "type": "block",
+          "name": "Bench West Backrest",
+          "transform": {
+            "px": -20.5002,
+            "py": 0.75,
+            "pz": -10.75,
+            "rx": 0.0,
+            "ry": 1.57,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_40595",
+          "type": "block",
+          "name": "Bench East A Seat",
+          "transform": {
+            "px": -11.0,
+            "py": 0.45,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.78,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_99094",
+          "type": "block",
+          "name": "Bench East A Backrest",
+          "transform": {
+            "px": -11.1777,
+            "py": 0.75,
+            "pz": -11.1758,
+            "rx": 0.0,
+            "ry": 0.78,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_33315",
+          "type": "block",
+          "name": "Bench East B Seat",
+          "transform": {
+            "px": -10.5,
+            "py": 0.45,
+            "pz": -6.0,
+            "rx": 0.0,
+            "ry": -0.78,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_88164",
+          "type": "block",
+          "name": "Bench East B Backrest",
+          "transform": {
+            "px": -10.6777,
+            "py": 0.75,
+            "pz": -5.8242,
+            "rx": 0.0,
+            "ry": -0.78,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_25576",
+          "type": "block",
+          "name": "Bench South Seat",
+          "transform": {
+            "px": -17.5,
+            "py": 0.45,
+            "pz": -4.0,
+            "rx": 0.0,
+            "ry": 0.55,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.08,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_80275",
+          "type": "block",
+          "name": "Bench South Backrest",
+          "transform": {
+            "px": -17.7131,
+            "py": 0.75,
+            "pz": -4.1307,
+            "rx": 0.0,
+            "ry": 0.55,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 0.5,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_91699",
+          "type": "block",
+          "name": "Tree North 1 Stone Curb",
+          "transform": {
+            "px": -15.0,
+            "py": 0.35,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_67078",
+          "type": "block",
+          "name": "Tree North 1 Soil Bed",
+          "transform": {
+            "px": -15.0,
+            "py": 0.45,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_70262",
+          "type": "block",
+          "name": "Tree North 1 Bush Shrub",
+          "transform": {
+            "px": -15.0,
+            "py": 0.7,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_78118",
+          "type": "block",
+          "name": "Tree North 1 Trunk",
+          "transform": {
+            "px": -15.0,
+            "py": 2.8,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_34587",
+          "type": "block",
+          "name": "Tree North 1 Canopy Lower",
+          "transform": {
+            "px": -15.0,
+            "py": 4.8,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_23810",
+          "type": "block",
+          "name": "Tree North 1 Canopy Mid",
+          "transform": {
+            "px": -15.0,
+            "py": 6.2,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_98329",
+          "type": "block",
+          "name": "Tree North 1 Canopy Crown",
+          "transform": {
+            "px": -15.0,
+            "py": 7.2,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_52527",
+          "type": "block",
+          "name": "Tree North 2 Stone Curb",
+          "transform": {
+            "px": -12.5,
+            "py": 0.35,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_43760",
+          "type": "block",
+          "name": "Tree North 2 Soil Bed",
+          "transform": {
+            "px": -12.5,
+            "py": 0.45,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_62986",
+          "type": "block",
+          "name": "Tree North 2 Bush Shrub",
+          "transform": {
+            "px": -12.5,
+            "py": 0.7,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_88244",
+          "type": "block",
+          "name": "Tree North 2 Trunk",
+          "transform": {
+            "px": -12.5,
+            "py": 2.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_57170",
+          "type": "block",
+          "name": "Tree North 2 Canopy Lower",
+          "transform": {
+            "px": -12.5,
+            "py": 4.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_64590",
+          "type": "block",
+          "name": "Tree North 2 Canopy Mid",
+          "transform": {
+            "px": -12.5,
+            "py": 6.2,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_99754",
+          "type": "block",
+          "name": "Tree North 2 Canopy Crown",
+          "transform": {
+            "px": -12.5,
+            "py": 7.2,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_68211",
+          "type": "block",
+          "name": "Tree North 3 Stone Curb",
+          "transform": {
+            "px": -10.5,
+            "py": 0.35,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_74819",
+          "type": "block",
+          "name": "Tree North 3 Soil Bed",
+          "transform": {
+            "px": -10.5,
+            "py": 0.45,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_98802",
+          "type": "block",
+          "name": "Tree North 3 Bush Shrub",
+          "transform": {
+            "px": -10.5,
+            "py": 0.7,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_94566",
+          "type": "block",
+          "name": "Tree North 3 Trunk",
+          "transform": {
+            "px": -10.5,
+            "py": 2.8,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_92658",
+          "type": "block",
+          "name": "Tree North 3 Canopy Lower",
+          "transform": {
+            "px": -10.5,
+            "py": 4.8,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_48704",
+          "type": "block",
+          "name": "Tree North 3 Canopy Mid",
+          "transform": {
+            "px": -10.5,
+            "py": 6.2,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_86894",
+          "type": "block",
+          "name": "Tree North 3 Canopy Crown",
+          "transform": {
+            "px": -10.5,
+            "py": 7.2,
+            "pz": -16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_98314",
+          "type": "block",
+          "name": "Tree West 1 Stone Curb",
+          "transform": {
+            "px": -21.5,
+            "py": 0.35,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_73384",
+          "type": "block",
+          "name": "Tree West 1 Soil Bed",
+          "transform": {
+            "px": -21.5,
+            "py": 0.45,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_17639",
+          "type": "block",
+          "name": "Tree West 1 Bush Shrub",
+          "transform": {
+            "px": -21.5,
+            "py": 0.7,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_74397",
+          "type": "block",
+          "name": "Tree West 1 Trunk",
+          "transform": {
+            "px": -21.5,
+            "py": 2.8,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_38608",
+          "type": "block",
+          "name": "Tree West 1 Canopy Lower",
+          "transform": {
+            "px": -21.5,
+            "py": 4.8,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_48945",
+          "type": "block",
+          "name": "Tree West 1 Canopy Mid",
+          "transform": {
+            "px": -21.5,
+            "py": 6.2,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_12990",
+          "type": "block",
+          "name": "Tree West 1 Canopy Crown",
+          "transform": {
+            "px": -21.5,
+            "py": 7.2,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_87917",
+          "type": "block",
+          "name": "Tree West 2 Stone Curb",
+          "transform": {
+            "px": -21.5,
+            "py": 0.35,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_46509",
+          "type": "block",
+          "name": "Tree West 2 Soil Bed",
+          "transform": {
+            "px": -21.5,
+            "py": 0.45,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_65301",
+          "type": "block",
+          "name": "Tree West 2 Bush Shrub",
+          "transform": {
+            "px": -21.5,
+            "py": 0.7,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_20459",
+          "type": "block",
+          "name": "Tree West 2 Trunk",
+          "transform": {
+            "px": -21.5,
+            "py": 2.8,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_54163",
+          "type": "block",
+          "name": "Tree West 2 Canopy Lower",
+          "transform": {
+            "px": -21.5,
+            "py": 4.8,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_57009",
+          "type": "block",
+          "name": "Tree West 2 Canopy Mid",
+          "transform": {
+            "px": -21.5,
+            "py": 6.2,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_61677",
+          "type": "block",
+          "name": "Tree West 2 Canopy Crown",
+          "transform": {
+            "px": -21.5,
+            "py": 7.2,
+            "pz": -12.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_55566",
+          "type": "block",
+          "name": "Tree West 3 Stone Curb",
+          "transform": {
+            "px": -21.5,
+            "py": 0.35,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_63894",
+          "type": "block",
+          "name": "Tree West 3 Soil Bed",
+          "transform": {
+            "px": -21.5,
+            "py": 0.45,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_18573",
+          "type": "block",
+          "name": "Tree West 3 Bush Shrub",
+          "transform": {
+            "px": -21.5,
+            "py": 0.7,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_18911",
+          "type": "block",
+          "name": "Tree West 3 Trunk",
+          "transform": {
+            "px": -21.5,
+            "py": 2.8,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_90251",
+          "type": "block",
+          "name": "Tree West 3 Canopy Lower",
+          "transform": {
+            "px": -21.5,
+            "py": 4.8,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_22472",
+          "type": "block",
+          "name": "Tree West 3 Canopy Mid",
+          "transform": {
+            "px": -21.5,
+            "py": 6.2,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_15548",
+          "type": "block",
+          "name": "Tree West 3 Canopy Crown",
+          "transform": {
+            "px": -21.5,
+            "py": 7.2,
+            "pz": -6.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_89094",
+          "type": "block",
+          "name": "Tree West 4 Stone Curb",
+          "transform": {
+            "px": -21.5,
+            "py": 0.35,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_96529",
+          "type": "block",
+          "name": "Tree West 4 Soil Bed",
+          "transform": {
+            "px": -21.5,
+            "py": 0.45,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_87949",
+          "type": "block",
+          "name": "Tree West 4 Bush Shrub",
+          "transform": {
+            "px": -21.5,
+            "py": 0.7,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_27496",
+          "type": "block",
+          "name": "Tree West 4 Trunk",
+          "transform": {
+            "px": -21.5,
+            "py": 2.8,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_78170",
+          "type": "block",
+          "name": "Tree West 4 Canopy Lower",
+          "transform": {
+            "px": -21.5,
+            "py": 4.8,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_29881",
+          "type": "block",
+          "name": "Tree West 4 Canopy Mid",
+          "transform": {
+            "px": -21.5,
+            "py": 6.2,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_59245",
+          "type": "block",
+          "name": "Tree West 4 Canopy Crown",
+          "transform": {
+            "px": -21.5,
+            "py": 7.2,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        },
+        {
+          "id": "block_47613",
+          "type": "block",
+          "name": "Tree West 5 Stone Curb",
+          "transform": {
+            "px": -18.5,
+            "py": 0.35,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_98028",
+          "type": "block",
+          "name": "Tree West 5 Soil Bed",
+          "transform": {
+            "px": -18.5,
+            "py": 0.45,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.15,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_75131",
+          "type": "block",
+          "name": "Tree West 5 Bush Shrub",
+          "transform": {
+            "px": -18.5,
+            "py": 0.7,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.4,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_28586",
+          "type": "block",
+          "name": "Tree West 5 Trunk",
+          "transform": {
+            "px": -18.5,
+            "py": 2.8,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 4.4,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_54767",
+          "type": "block",
+          "name": "Tree West 5 Canopy Lower",
+          "transform": {
+            "px": -18.5,
+            "py": 4.8,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 1.8,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_65570",
+          "type": "block",
+          "name": "Tree West 5 Canopy Mid",
+          "transform": {
+            "px": -18.5,
+            "py": 6.2,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.4,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_96293",
+          "type": "block",
+          "name": "Tree West 5 Canopy Crown",
+          "transform": {
+            "px": -18.5,
+            "py": 7.2,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 1.0,
+            "sz": 1.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_1571",
+      "type": "group",
+      "name": "Vag\u00f3n de Tren Estacionado (Tokyu 5000)",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_80843",
+          "type": "block",
+          "name": "Train Ballast Bed",
+          "transform": {
+            "px": -15.75,
+            "py": 0.15,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 3.2,
+            "sy": 0.3,
+            "sz": 11.5
+          }
+        },
+        {
+          "id": "block_30710",
+          "type": "block",
+          "name": "Railway Tie 1",
+          "transform": {
+            "px": -19.9552,
+            "py": 0.32,
+            "pz": 19.1021,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_32794",
+          "type": "block",
+          "name": "Railway Tie 2",
+          "transform": {
+            "px": -19.1141,
+            "py": 0.32,
+            "pz": 18.7817,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_30343",
+          "type": "block",
+          "name": "Railway Tie 3",
+          "transform": {
+            "px": -18.2731,
+            "py": 0.32,
+            "pz": 18.4612,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_12136",
+          "type": "block",
+          "name": "Railway Tie 4",
+          "transform": {
+            "px": -17.4321,
+            "py": 0.32,
+            "pz": 18.1408,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_52513",
+          "type": "block",
+          "name": "Railway Tie 5",
+          "transform": {
+            "px": -16.591,
+            "py": 0.32,
+            "pz": 17.8204,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_33070",
+          "type": "block",
+          "name": "Railway Tie 6",
+          "transform": {
+            "px": -15.75,
+            "py": 0.32,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_40619",
+          "type": "block",
+          "name": "Railway Tie 7",
+          "transform": {
+            "px": -14.909,
+            "py": 0.32,
+            "pz": 17.1796,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_45790",
+          "type": "block",
+          "name": "Railway Tie 8",
+          "transform": {
+            "px": -14.0679,
+            "py": 0.32,
+            "pz": 16.8592,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_25568",
+          "type": "block",
+          "name": "Railway Tie 9",
+          "transform": {
+            "px": -13.2269,
+            "py": 0.32,
+            "pz": 16.5388,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_91712",
+          "type": "block",
+          "name": "Railway Tie 10",
+          "transform": {
+            "px": -12.3859,
+            "py": 0.32,
+            "pz": 16.2183,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_45838",
+          "type": "block",
+          "name": "Railway Tie 11",
+          "transform": {
+            "px": -11.5448,
+            "py": 0.32,
+            "pz": 15.8979,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.12,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_71952",
+          "type": "block",
+          "name": "Steel Rail Left",
+          "transform": {
+            "px": -15.5186,
+            "py": 0.42,
+            "pz": 18.1074,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.12,
+            "sz": 11.0
+          }
+        },
+        {
+          "id": "block_54460",
+          "type": "block",
+          "name": "Steel Rail Right",
+          "transform": {
+            "px": -15.9814,
+            "py": 0.42,
+            "pz": 16.8926,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.12,
+            "sz": 11.0
+          }
+        },
+        {
+          "id": "block_48300",
+          "type": "block",
+          "name": "Bogie Frame -1",
+          "transform": {
+            "px": -18.7403,
+            "py": 0.65,
+            "pz": 18.6393,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.35,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "block_70783",
+          "type": "block",
+          "name": "Wheel -1_-0.85_-0.65",
+          "transform": {
+            "px": -19.0451,
+            "py": 0.58,
+            "pz": 19.665,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_22939",
+          "type": "block",
+          "name": "Wheel -1_-0.85_0.65",
+          "transform": {
+            "px": -17.8303,
+            "py": 0.58,
+            "pz": 19.2022,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_21453",
+          "type": "block",
+          "name": "Wheel -1_0.85_-0.65",
+          "transform": {
+            "px": -19.6504,
+            "py": 0.58,
+            "pz": 18.0764,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_14533",
+          "type": "block",
+          "name": "Wheel -1_0.85_0.65",
+          "transform": {
+            "px": -18.4355,
+            "py": 0.58,
+            "pz": 17.6135,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_75871",
+          "type": "block",
+          "name": "Bogie Frame 1",
+          "transform": {
+            "px": -12.7597,
+            "py": 0.65,
+            "pz": 16.3607,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.35,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "block_26815",
+          "type": "block",
+          "name": "Wheel 1_-0.85_-0.65",
+          "transform": {
+            "px": -13.0645,
+            "py": 0.58,
+            "pz": 17.3865,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_59160",
+          "type": "block",
+          "name": "Wheel 1_-0.85_0.65",
+          "transform": {
+            "px": -11.8496,
+            "py": 0.58,
+            "pz": 16.9236,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_53963",
+          "type": "block",
+          "name": "Wheel 1_0.85_-0.65",
+          "transform": {
+            "px": -13.6697,
+            "py": 0.58,
+            "pz": 15.7978,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_81193",
+          "type": "block",
+          "name": "Wheel 1_0.85_0.65",
+          "transform": {
+            "px": -12.4549,
+            "py": 0.58,
+            "pz": 15.335,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.5,
+            "sz": 0.5
+          }
+        },
+        {
+          "id": "block_78453",
+          "type": "block",
+          "name": "Train Chassis Frame",
+          "transform": {
+            "px": -15.75,
+            "py": 0.9,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.6,
+            "sy": 0.3,
+            "sz": 10.8
+          }
+        },
+        {
+          "id": "block_99710",
+          "type": "block",
+          "name": "Train Lower Body Green",
+          "transform": {
+            "px": -15.75,
+            "py": 1.55,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.65,
+            "sy": 1.0,
+            "sz": 10.6
+          }
+        },
+        {
+          "id": "block_31960",
+          "type": "block",
+          "name": "Train Window Band Glass",
+          "transform": {
+            "px": -15.75,
+            "py": 2.35,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.6,
+            "sy": 0.6,
+            "sz": 10.4
+          }
+        },
+        {
+          "id": "block_87382",
+          "type": "block",
+          "name": "Passenger Door 1",
+          "transform": {
+            "px": -18.8436,
+            "py": 1.95,
+            "pz": 17.2446,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 1.7,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "block_66544",
+          "type": "block",
+          "name": "Passenger Door 2",
+          "transform": {
+            "px": -16.2271,
+            "py": 1.95,
+            "pz": 16.2478,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 1.7,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "block_81337",
+          "type": "block",
+          "name": "Passenger Door 3",
+          "transform": {
+            "px": -13.6105,
+            "py": 1.95,
+            "pz": 15.2509,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 1.7,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "block_75694",
+          "type": "block",
+          "name": "Window Frame 1",
+          "transform": {
+            "px": -19.965,
+            "py": 2.35,
+            "pz": 17.6719,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.65,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_46423",
+          "type": "block",
+          "name": "Window Frame 3",
+          "transform": {
+            "px": -16.9746,
+            "py": 2.35,
+            "pz": 16.5326,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.65,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_44457",
+          "type": "block",
+          "name": "Window Frame 4",
+          "transform": {
+            "px": -15.4795,
+            "py": 2.35,
+            "pz": 15.963,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.65,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_21650",
+          "type": "block",
+          "name": "Train Upper Body Green",
+          "transform": {
+            "px": -15.75,
+            "py": 2.8,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.65,
+            "sy": 0.3,
+            "sz": 10.6
+          }
+        },
+        {
+          "id": "block_95865",
+          "type": "block",
+          "name": "Train Curved Roof Tier 1",
+          "transform": {
+            "px": -15.75,
+            "py": 3.05,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.25,
+            "sz": 10.5
+          }
+        },
+        {
+          "id": "block_88192",
+          "type": "block",
+          "name": "Train Curved Roof Tier 2",
+          "transform": {
+            "px": -15.75,
+            "py": 3.22,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.0,
+            "sy": 0.15,
+            "sz": 10.3
+          }
+        },
+        {
+          "id": "block_72462",
+          "type": "block",
+          "name": "Train Curved Roof Crown",
+          "transform": {
+            "px": -15.75,
+            "py": 3.32,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 0.1,
+            "sz": 10.1
+          }
+        },
+        {
+          "id": "block_33462",
+          "type": "block",
+          "name": "Train Front Nose Bumper",
+          "transform": {
+            "px": -10.7038,
+            "py": 1.9,
+            "pz": 15.5775,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.55,
+            "sy": 1.7,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_36329",
+          "type": "block",
+          "name": "Train Front Windshield",
+          "transform": {
+            "px": -10.6571,
+            "py": 2.35,
+            "pz": 15.5597,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 2.1,
+            "sy": 0.65,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_30424",
+          "type": "block",
+          "name": "Train Destination Header",
+          "transform": {
+            "px": -10.6571,
+            "py": 2.85,
+            "pz": 15.5597,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 0.3,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_97969",
+          "type": "block",
+          "name": "Train Center Headlight Unit",
+          "transform": {
+            "px": -10.6291,
+            "py": 3.1,
+            "pz": 15.549,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.22,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_77359",
+          "type": "block",
+          "name": "Pantograph Base Plinth",
+          "transform": {
+            "px": -13.1335,
+            "py": 3.42,
+            "pz": 16.5031,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.1,
+            "sz": 1.3
+          }
+        },
+        {
+          "id": "block_71015",
+          "type": "block",
+          "name": "Pantograph Collector Head",
+          "transform": {
+            "px": -13.1335,
+            "py": 4.0,
+            "pz": 16.5031,
+            "rx": 0.0,
+            "ry": 1.9348,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 0.08,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_26423",
+          "type": "block",
+          "name": "Train Rear Diamond Planter Base",
+          "transform": {
+            "px": -19.9552,
+            "py": 0.35,
+            "pz": 19.1021,
+            "rx": 0.0,
+            "ry": 2.7198,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 0.3,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_55072",
+          "type": "block",
+          "name": "Train Rear Diamond Soil Bed",
+          "transform": {
+            "px": -19.9552,
+            "py": 0.45,
+            "pz": 19.1021,
+            "rx": 0.0,
+            "ry": 2.7198,
+            "rz": 0.0,
+            "sx": 2.3,
+            "sy": 0.15,
+            "sz": 2.3
+          }
+        },
+        {
+          "id": "block_73275",
+          "type": "block",
+          "name": "Train Rear Diamond Shrub",
+          "transform": {
+            "px": -19.9552,
+            "py": 0.75,
+            "pz": 19.1021,
+            "rx": 0.0,
+            "ry": 2.7198,
+            "rz": 0.0,
+            "sx": 1.9,
+            "sy": 0.45,
+            "sz": 1.9
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_8101",
+      "type": "group",
+      "name": "L\u00ednea de Tren (L\u00ednea Yamanote)",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_44410",
+          "type": "block",
+          "name": "Yamanote Line Embankment Bed",
+          "transform": {
+            "px": -26.5,
+            "py": 0.4,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.8,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_86659",
+          "type": "block",
+          "name": "Yamanote Concrete Retaining Wall East",
+          "transform": {
+            "px": -24.3,
+            "py": 0.6,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 1.2,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_47749",
+          "type": "block",
+          "name": "Yamanote Track 1 Rail Left",
+          "transform": {
+            "px": -28.0,
+            "py": 0.9,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.15,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_28442",
+          "type": "block",
+          "name": "Yamanote Track 1 Rail Right",
+          "transform": {
+            "px": -27.0,
+            "py": 0.9,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.15,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_26891",
+          "type": "block",
+          "name": "Yamanote Track 2 Rail Left",
+          "transform": {
+            "px": -26.0,
+            "py": 0.9,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.15,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_11036",
+          "type": "block",
+          "name": "Yamanote Track 2 Rail Right",
+          "transform": {
+            "px": -25.0,
+            "py": 0.9,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.15,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_76923",
+          "type": "block",
+          "name": "Yamanote Safety Fence Top Rail",
+          "transform": {
+            "px": -24.15,
+            "py": 1.5,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.05,
+            "sz": 54.0
+          }
+        },
+        {
+          "id": "block_23517",
+          "type": "block",
+          "name": "Yamanote Safety Fence Mid Rail",
+          "transform": {
+            "px": -24.15,
+            "py": 1.1,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.05,
+            "sz": 54.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_6106",
+      "type": "group",
+      "name": "Bloque C Estaci\u00f3n Shibuya (Nueva Salida)",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_40962",
+          "type": "block",
+          "name": "Bloque C Station Main Hull",
+          "transform": {
+            "px": 0.0,
+            "py": 12.0,
+            "pz": -25.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 16.0,
+            "sy": 24.0,
+            "sz": 12.0
+          }
+        },
+        {
+          "id": "block_40011",
+          "type": "block",
+          "name": "Bloque C Station West Chamfer Wing",
+          "transform": {
+            "px": -6.5,
+            "py": 12.0,
+            "pz": -20.5,
+            "rx": 0.0,
+            "ry": 0.785,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 24.0,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_90758",
+          "type": "block",
+          "name": "Bloque C Station East Chamfer Wing",
+          "transform": {
+            "px": 6.5,
+            "py": 12.0,
+            "pz": -20.5,
+            "rx": 0.0,
+            "ry": -0.785,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 24.0,
+            "sz": 4.5
+          }
+        },
+        {
+          "id": "block_76586",
+          "type": "block",
+          "name": "Bloque C Central Glass Curtain Wall",
+          "transform": {
+            "px": 0.0,
+            "py": 14.0,
+            "pz": -18.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 16.0,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_43555",
+          "type": "block",
+          "name": "Bloque C Glass Vertical Mullion 1",
+          "transform": {
+            "px": -3.2,
+            "py": 14.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 16.0,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_83656",
+          "type": "block",
+          "name": "Bloque C Glass Vertical Mullion 2",
+          "transform": {
+            "px": -1.6,
+            "py": 14.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 16.0,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_46094",
+          "type": "block",
+          "name": "Bloque C Glass Vertical Mullion 3",
+          "transform": {
+            "px": 0.0,
+            "py": 14.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 16.0,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_57214",
+          "type": "block",
+          "name": "Bloque C Glass Vertical Mullion 4",
+          "transform": {
+            "px": 1.6,
+            "py": 14.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 16.0,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_69942",
+          "type": "block",
+          "name": "Bloque C Glass Vertical Mullion 5",
+          "transform": {
+            "px": 3.2,
+            "py": 14.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 16.0,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_68386",
+          "type": "block",
+          "name": "Bloque C Glass Horizontal Mullion 1",
+          "transform": {
+            "px": 0.0,
+            "py": 8.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.1,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_37343",
+          "type": "block",
+          "name": "Bloque C Glass Horizontal Mullion 2",
+          "transform": {
+            "px": 0.0,
+            "py": 12.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.1,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_49663",
+          "type": "block",
+          "name": "Bloque C Glass Horizontal Mullion 3",
+          "transform": {
+            "px": 0.0,
+            "py": 16.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.1,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_39049",
+          "type": "block",
+          "name": "Bloque C Glass Horizontal Mullion 4",
+          "transform": {
+            "px": 0.0,
+            "py": 20.0,
+            "pz": -18.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.1,
+            "sz": 0.35
+          }
+        },
+        {
+          "id": "block_74495",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 1",
+          "transform": {
+            "px": -3.3706,
+            "py": 1.9,
+            "pz": -16.7454,
+            "rx": 0.0,
+            "ry": -1.0908,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_24624",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 2",
+          "transform": {
+            "px": -2.3133,
+            "py": 1.9,
+            "pz": -15.4853,
+            "rx": 0.0,
+            "ry": -0.6545,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_37407",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 3",
+          "transform": {
+            "px": -0.8225,
+            "py": 1.9,
+            "pz": -14.7901,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_69915",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 4",
+          "transform": {
+            "px": 0.8225,
+            "py": 1.9,
+            "pz": -14.7901,
+            "rx": 0.0,
+            "ry": 0.2182,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_74793",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 5",
+          "transform": {
+            "px": 2.3133,
+            "py": 1.9,
+            "pz": -15.4853,
+            "rx": 0.0,
+            "ry": 0.6545,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_49879",
+          "type": "block",
+          "name": "Bloque C Ground Entrance Portal Segment 6",
+          "transform": {
+            "px": 3.3706,
+            "py": 1.9,
+            "pz": -16.7454,
+            "rx": 0.0,
+            "ry": 1.0908,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.8,
+            "sz": 1.7081
+          }
+        },
+        {
+          "id": "block_34014",
+          "type": "block",
+          "name": "Bloque C Entrance Canopy Roof",
+          "transform": {
+            "px": 0.0,
+            "py": 4.0,
+            "pz": -15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.0,
+            "sy": 0.4,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "block_63768",
+          "type": "block",
+          "name": "Bloque C Rooftop Parapet",
+          "transform": {
+            "px": 0.0,
+            "py": 24.4,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 16.4,
+            "sy": 0.8,
+            "sz": 12.4
+          }
+        },
+        {
+          "id": "block_87185",
+          "type": "block",
+          "name": "Bloque C Station Billboard Header",
+          "transform": {
+            "px": 0.0,
+            "py": 26.5,
+            "pz": -19.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.0,
+            "sy": 3.2,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_2147",
+      "type": "group",
+      "name": "Pasarela Peatonal Elevada",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_45647",
+          "type": "block",
+          "name": "Skybridge West Landing Tower",
+          "transform": {
+            "px": -14.5,
+            "py": 4.25,
+            "pz": -17.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 8.5,
+            "sz": 2.4
+          }
+        },
+        {
+          "id": "block_66354",
+          "type": "block",
+          "name": "Skybridge East Landing Tower",
+          "transform": {
+            "px": -6.5,
+            "py": 4.25,
+            "pz": -18.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 8.5,
+            "sz": 2.4
+          }
+        },
+        {
+          "id": "block_42590",
+          "type": "block",
+          "name": "Skybridge Main Floor Deck Truss",
+          "transform": {
+            "px": -10.5,
+            "py": 5.5,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 1.7561,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 0.5,
+            "sz": 8.1394
+          }
+        },
+        {
+          "id": "block_82172",
+          "type": "block",
+          "name": "Skybridge South Glass Wall",
+          "transform": {
+            "px": -10.7488,
+            "py": 6.9,
+            "pz": -19.0769,
+            "rx": 0.0,
+            "ry": 1.7561,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 2.3,
+            "sz": 8.1394
+          }
+        },
+        {
+          "id": "block_26322",
+          "type": "block",
+          "name": "Skybridge North Glass Wall",
+          "transform": {
+            "px": -10.2512,
+            "py": 6.9,
+            "pz": -16.4231,
+            "rx": 0.0,
+            "ry": 1.7561,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 2.3,
+            "sz": 8.1394
+          }
+        },
+        {
+          "id": "block_59431",
+          "type": "block",
+          "name": "Skybridge Roof Slab",
+          "transform": {
+            "px": -10.5,
+            "py": 8.2,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 1.7561,
+            "rz": 0.0,
+            "sx": 3.1,
+            "sy": 0.35,
+            "sz": 8.5394
+          }
+        },
+        {
+          "id": "block_95041",
+          "type": "block",
+          "name": "Skybridge Avenue Underpass Roadbed",
+          "transform": {
+            "px": -10.5,
+            "py": 0.01,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 1.7561,
+            "rz": 0.0,
+            "sx": 6.0,
+            "sy": 0.01,
+            "sz": 8.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_1867",
+      "type": "group",
+      "name": "Bloque D Edificio Shibuya 109",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_11865",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 1",
+          "transform": {
+            "px": 14.0904,
+            "py": 13.0,
+            "pz": -25.4286,
+            "rx": 0.0,
+            "ry": -2.2907,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_96204",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 2",
+          "transform": {
+            "px": 12.8111,
+            "py": 13.0,
+            "pz": -22.3401,
+            "rx": 0.0,
+            "ry": -1.6362,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_96604",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 3",
+          "transform": {
+            "px": 13.6764,
+            "py": 13.0,
+            "pz": -19.111,
+            "rx": 0.0,
+            "ry": -0.9817,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_71055",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 4",
+          "transform": {
+            "px": 16.3285,
+            "py": 13.0,
+            "pz": -17.076,
+            "rx": 0.0,
+            "ry": -0.3272,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_76073",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 5",
+          "transform": {
+            "px": 19.6715,
+            "py": 13.0,
+            "pz": -17.076,
+            "rx": 0.0,
+            "ry": 0.3272,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_50709",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 6",
+          "transform": {
+            "px": 22.3236,
+            "py": 13.0,
+            "pz": -19.111,
+            "rx": 0.0,
+            "ry": 0.9817,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_58456",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 7",
+          "transform": {
+            "px": 23.1889,
+            "py": 13.0,
+            "pz": -22.3401,
+            "rx": 0.0,
+            "ry": 1.6362,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_74457",
+          "type": "block",
+          "name": "109 Tower Cylindrical Shaft Segment 8",
+          "transform": {
+            "px": 21.9096,
+            "py": 13.0,
+            "pz": -25.4286,
+            "rx": 0.0,
+            "ry": 2.2907,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 26.0,
+            "sz": 3.4534
+          }
+        },
+        {
+          "id": "block_43243",
+          "type": "block",
+          "name": "109 Tower Core Mass",
+          "transform": {
+            "px": 18.0,
+            "py": 13.0,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.2,
+            "sy": 26.0,
+            "sz": 8.2
+          }
+        },
+        {
+          "id": "block_84506",
+          "type": "block",
+          "name": "109 Wedge Wing East",
+          "transform": {
+            "px": 22.5,
+            "py": 11.5,
+            "pz": -24.5,
+            "rx": 0.0,
+            "ry": -0.38,
+            "rz": 0.0,
+            "sx": 7.5,
+            "sy": 23.0,
+            "sz": 11.0
+          }
+        },
+        {
+          "id": "block_95743",
+          "type": "block",
+          "name": "109 Logo Header Sign Panel",
+          "transform": {
+            "px": 14.6,
+            "py": 21.0,
+            "pz": -18.6,
+            "rx": 0.0,
+            "ry": -0.785,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 4.0,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_74702",
+          "type": "block",
+          "name": "109 Bold Lettering Relief",
+          "transform": {
+            "px": 14.45,
+            "py": 21.0,
+            "pz": -18.45,
+            "rx": 0.0,
+            "ry": -0.785,
+            "rz": 0.0,
+            "sx": 3.5,
+            "sy": 2.6,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_20740",
+          "type": "block",
+          "name": "109 Crown Tier Segment 1",
+          "transform": {
+            "px": 13.8649,
+            "py": 26.9,
+            "pz": -25.6264,
+            "rx": 0.0,
+            "ry": -2.2907,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_44978",
+          "type": "block",
+          "name": "109 Crown Tier Segment 2",
+          "transform": {
+            "px": 12.5118,
+            "py": 26.9,
+            "pz": -22.3597,
+            "rx": 0.0,
+            "ry": -1.6362,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_23126",
+          "type": "block",
+          "name": "109 Crown Tier Segment 3",
+          "transform": {
+            "px": 13.4269,
+            "py": 26.9,
+            "pz": -18.9444,
+            "rx": 0.0,
+            "ry": -0.9817,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_79735",
+          "type": "block",
+          "name": "109 Crown Tier Segment 4",
+          "transform": {
+            "px": 16.2321,
+            "py": 26.9,
+            "pz": -16.7919,
+            "rx": 0.0,
+            "ry": -0.3272,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_38431",
+          "type": "block",
+          "name": "109 Crown Tier Segment 5",
+          "transform": {
+            "px": 19.7679,
+            "py": 26.9,
+            "pz": -16.7919,
+            "rx": 0.0,
+            "ry": 0.3272,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_36358",
+          "type": "block",
+          "name": "109 Crown Tier Segment 6",
+          "transform": {
+            "px": 22.5731,
+            "py": 26.9,
+            "pz": -18.9444,
+            "rx": 0.0,
+            "ry": 0.9817,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_45547",
+          "type": "block",
+          "name": "109 Crown Tier Segment 7",
+          "transform": {
+            "px": 23.4882,
+            "py": 26.9,
+            "pz": -22.3597,
+            "rx": 0.0,
+            "ry": 1.6362,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_26395",
+          "type": "block",
+          "name": "109 Crown Tier Segment 8",
+          "transform": {
+            "px": 22.1351,
+            "py": 26.9,
+            "pz": -25.6264,
+            "rx": 0.0,
+            "ry": 2.2907,
+            "rz": 0.0,
+            "sx": 4.4,
+            "sy": 1.8,
+            "sz": 3.6497
+          }
+        },
+        {
+          "id": "block_63293",
+          "type": "block",
+          "name": "109 Tower Spire Mast",
+          "transform": {
+            "px": 18.0,
+            "py": 28.5,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 3.5,
+            "sz": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_8618",
+      "type": "group",
+      "name": "Bloque E Comercios y M\u00e1quinas Expendedoras",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_38010",
+          "type": "block",
+          "name": "Bloque E Mid-East Commercial Hull",
+          "transform": {
+            "px": 20.0,
+            "py": 10.0,
+            "pz": 2.5,
+            "rx": 0.0,
+            "ry": -0.15,
+            "rz": 0.0,
+            "sx": 10.5,
+            "sy": 20.0,
+            "sz": 10.0
+          }
+        },
+        {
+          "id": "block_51031",
+          "type": "block",
+          "name": "Bloque E Mid-East Storefront Canopy",
+          "transform": {
+            "px": 14.5,
+            "py": 4.1,
+            "pz": 2.5,
+            "rx": 0.0,
+            "ry": -0.15,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.3,
+            "sz": 9.5
+          }
+        },
+        {
+          "id": "block_12161",
+          "type": "block",
+          "name": "Bloque E Mid-East Vertical Lightbox",
+          "transform": {
+            "px": 14.2,
+            "py": 9.5,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": -0.15,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 7.5,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_38744",
+          "type": "block",
+          "name": "Bloque E South-East Office Hull",
+          "transform": {
+            "px": 20.5,
+            "py": 11.0,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 11.5,
+            "sy": 22.0,
+            "sz": 12.0
+          }
+        },
+        {
+          "id": "block_98932",
+          "type": "block",
+          "name": "Bloque E South-East Storefront Glazing",
+          "transform": {
+            "px": 14.5,
+            "py": 2.0,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 3.8,
+            "sz": 11.0
+          }
+        },
+        {
+          "id": "block_86721",
+          "type": "block",
+          "name": "Bloque E South-East Canopy",
+          "transform": {
+            "px": 13.8,
+            "py": 4.1,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.3,
+            "sz": 11.5
+          }
+        },
+        {
+          "id": "block_96394",
+          "type": "block",
+          "name": "Vending Machine Blue Body",
+          "transform": {
+            "px": 12.0,
+            "py": 1.1,
+            "pz": 13.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.8,
+            "sz": 0.85
+          }
+        },
+        {
+          "id": "block_14526",
+          "type": "block",
+          "name": "Vending Machine Blue Display Glass",
+          "transform": {
+            "px": 11.6,
+            "py": 1.35,
+            "pz": 13.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.8,
+            "sz": 0.75
+          }
+        },
+        {
+          "id": "block_27062",
+          "type": "block",
+          "name": "Vending Machine Blue Dispense Hatch",
+          "transform": {
+            "px": 11.6,
+            "py": 0.5,
+            "pz": 13.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.3,
+            "sz": 0.55
+          }
+        },
+        {
+          "id": "block_77242",
+          "type": "block",
+          "name": "Vending Machine Red Body",
+          "transform": {
+            "px": 12.3,
+            "py": 1.1,
+            "pz": 14.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.8,
+            "sz": 0.85
+          }
+        },
+        {
+          "id": "block_30045",
+          "type": "block",
+          "name": "Vending Machine Red Display Glass",
+          "transform": {
+            "px": 11.9,
+            "py": 1.35,
+            "pz": 14.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.8,
+            "sz": 0.75
+          }
+        },
+        {
+          "id": "block_68810",
+          "type": "block",
+          "name": "Vending Machine Red Dispense Hatch",
+          "transform": {
+            "px": 11.9,
+            "py": 0.5,
+            "pz": 14.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.3,
+            "sz": 0.55
+          }
+        },
+        {
+          "id": "block_44475",
+          "type": "block",
+          "name": "Vending Cans Recycling Bin",
+          "transform": {
+            "px": 12.6,
+            "py": 0.7,
+            "pz": 15.8,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 1.0,
+            "sz": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_4972",
+      "type": "group",
+      "name": "Postes de Iluminaci\u00f3n y Sem\u00e1foros",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_83232",
+          "type": "block",
+          "name": "Signal Mast Bloque B SE Tip Pole",
+          "transform": {
+            "px": -8.5,
+            "py": 3.2,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.4,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_34439",
+          "type": "block",
+          "name": "Signal Mast Bloque B SE Tip Cantilever Arm",
+          "transform": {
+            "px": -9.022,
+            "py": 5.92,
+            "pz": -3.5805,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_96809",
+          "type": "block",
+          "name": "Signal Mast Bloque B SE Tip Vehicle Signal Head",
+          "transform": {
+            "px": -9.1959,
+            "py": 5.504,
+            "pz": -3.9407,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_74528",
+          "type": "block",
+          "name": "Signal Mast Bloque B SE Tip Pedestrian Signal Head",
+          "transform": {
+            "px": -8.5,
+            "py": 2.5,
+            "pz": -2.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_23540",
+          "type": "block",
+          "name": "Signal Mast Bloque B East Pole",
+          "transform": {
+            "px": -6.5,
+            "py": 3.0,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.0,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_13663",
+          "type": "block",
+          "name": "Signal Mast Bloque B East Cantilever Arm",
+          "transform": {
+            "px": -6.5,
+            "py": 5.55,
+            "pz": -9.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_52191",
+          "type": "block",
+          "name": "Signal Mast Bloque B East Vehicle Signal Head",
+          "transform": {
+            "px": -6.5,
+            "py": 5.16,
+            "pz": -10.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_48216",
+          "type": "block",
+          "name": "Signal Mast Bloque B East Pedestrian Signal Head",
+          "transform": {
+            "px": -6.5,
+            "py": 2.5,
+            "pz": -8.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_31042",
+          "type": "block",
+          "name": "Signal Mast Bloque C SW Corner Pole",
+          "transform": {
+            "px": -4.5,
+            "py": 3.0,
+            "pz": -13.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.0,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_94944",
+          "type": "block",
+          "name": "Signal Mast Bloque C SW Corner Cantilever Arm",
+          "transform": {
+            "px": -5.022,
+            "py": 5.55,
+            "pz": -14.5805,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_64761",
+          "type": "block",
+          "name": "Signal Mast Bloque C SW Corner Vehicle Signal Head",
+          "transform": {
+            "px": -5.1959,
+            "py": 5.16,
+            "pz": -14.9407,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_15061",
+          "type": "block",
+          "name": "Signal Mast Bloque C SW Corner Pedestrian Signal Head",
+          "transform": {
+            "px": -4.5,
+            "py": 2.5,
+            "pz": -13.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_79846",
+          "type": "block",
+          "name": "Signal Mast Bloque C SE Corner Pole",
+          "transform": {
+            "px": 4.5,
+            "py": 3.0,
+            "pz": -13.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.0,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_55043",
+          "type": "block",
+          "name": "Signal Mast Bloque C SE Corner Cantilever Arm",
+          "transform": {
+            "px": 5.022,
+            "py": 5.55,
+            "pz": -14.5805,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_84290",
+          "type": "block",
+          "name": "Signal Mast Bloque C SE Corner Vehicle Signal Head",
+          "transform": {
+            "px": 5.1959,
+            "py": 5.16,
+            "pz": -14.9407,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_88170",
+          "type": "block",
+          "name": "Signal Mast Bloque C SE Corner Pedestrian Signal Head",
+          "transform": {
+            "px": 4.5,
+            "py": 2.5,
+            "pz": -13.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_78423",
+          "type": "block",
+          "name": "Signal Mast Bloque D Tip Pole",
+          "transform": {
+            "px": 8.5,
+            "py": 3.2,
+            "pz": -9.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.4,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_54724",
+          "type": "block",
+          "name": "Signal Mast Bloque D Tip Cantilever Arm",
+          "transform": {
+            "px": 9.022,
+            "py": 5.92,
+            "pz": -10.5805,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_64266",
+          "type": "block",
+          "name": "Signal Mast Bloque D Tip Vehicle Signal Head",
+          "transform": {
+            "px": 9.1959,
+            "py": 5.504,
+            "pz": -10.9407,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_55552",
+          "type": "block",
+          "name": "Signal Mast Bloque D Tip Pedestrian Signal Head",
+          "transform": {
+            "px": 8.5,
+            "py": 2.5,
+            "pz": -9.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_94117",
+          "type": "block",
+          "name": "Signal Mast Bloque E NW Corner Pole",
+          "transform": {
+            "px": 11.0,
+            "py": 3.0,
+            "pz": -1.5,
+            "rx": 0.0,
+            "ry": -0.2,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.0,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_55732",
+          "type": "block",
+          "name": "Signal Mast Bloque E NW Corner Cantilever Arm",
+          "transform": {
+            "px": 11.2384,
+            "py": 5.55,
+            "pz": -2.6761,
+            "rx": 0.0,
+            "ry": -0.2,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_22081",
+          "type": "block",
+          "name": "Signal Mast Bloque E NW Corner Vehicle Signal Head",
+          "transform": {
+            "px": 11.3179,
+            "py": 5.16,
+            "pz": -3.0681,
+            "rx": 0.0,
+            "ry": -0.2,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_51627",
+          "type": "block",
+          "name": "Signal Mast Bloque E NW Corner Pedestrian Signal Head",
+          "transform": {
+            "px": 11.0,
+            "py": 2.5,
+            "pz": -1.5,
+            "rx": 0.0,
+            "ry": -0.2,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_43920",
+          "type": "block",
+          "name": "Signal Mast Bloque E SW Corner Pole",
+          "transform": {
+            "px": 9.0,
+            "py": 3.2,
+            "pz": 9.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.4,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_90090",
+          "type": "block",
+          "name": "Signal Mast Bloque E SW Corner Cantilever Arm",
+          "transform": {
+            "px": 9.522,
+            "py": 5.92,
+            "pz": 8.4195,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_85506",
+          "type": "block",
+          "name": "Signal Mast Bloque E SW Corner Vehicle Signal Head",
+          "transform": {
+            "px": 9.6959,
+            "py": 5.504,
+            "pz": 8.0593,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_28184",
+          "type": "block",
+          "name": "Signal Mast Bloque E SW Corner Pedestrian Signal Head",
+          "transform": {
+            "px": 9.0,
+            "py": 2.5,
+            "pz": 9.5,
+            "rx": 0.0,
+            "ry": -0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_97644",
+          "type": "block",
+          "name": "Signal Mast South East Station Pole",
+          "transform": {
+            "px": 5.5,
+            "py": 3.2,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.4,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_32070",
+          "type": "block",
+          "name": "Signal Mast South East Station Cantilever Arm",
+          "transform": {
+            "px": 5.5,
+            "py": 5.92,
+            "pz": 11.3,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_48927",
+          "type": "block",
+          "name": "Signal Mast South East Station Vehicle Signal Head",
+          "transform": {
+            "px": 5.5,
+            "py": 5.504,
+            "pz": 10.9,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_70619",
+          "type": "block",
+          "name": "Signal Mast South East Station Pedestrian Signal Head",
+          "transform": {
+            "px": 5.5,
+            "py": 2.5,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_79103",
+          "type": "block",
+          "name": "Signal Mast South Center Station Pole",
+          "transform": {
+            "px": 0.0,
+            "py": 3.0,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.0,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_24070",
+          "type": "block",
+          "name": "Signal Mast South Center Station Cantilever Arm",
+          "transform": {
+            "px": 0.0,
+            "py": 5.55,
+            "pz": 11.3,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_22476",
+          "type": "block",
+          "name": "Signal Mast South Center Station Vehicle Signal Head",
+          "transform": {
+            "px": 0.0,
+            "py": 5.16,
+            "pz": 10.9,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_69938",
+          "type": "block",
+          "name": "Signal Mast South Center Station Pedestrian Signal Head",
+          "transform": {
+            "px": 0.0,
+            "py": 2.5,
+            "pz": 12.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_38521",
+          "type": "block",
+          "name": "Signal Mast South West Train Pole",
+          "transform": {
+            "px": -8.5,
+            "py": 3.2,
+            "pz": 11.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 6.4,
+            "sz": 0.22
+          }
+        },
+        {
+          "id": "block_58780",
+          "type": "block",
+          "name": "Signal Mast South West Train Cantilever Arm",
+          "transform": {
+            "px": -9.022,
+            "py": 5.92,
+            "pz": 10.4195,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.18,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_89798",
+          "type": "block",
+          "name": "Signal Mast South West Train Vehicle Signal Head",
+          "transform": {
+            "px": -9.1959,
+            "py": 5.504,
+            "pz": 10.0593,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_82057",
+          "type": "block",
+          "name": "Signal Mast South West Train Pedestrian Signal Head",
+          "transform": {
+            "px": -8.5,
+            "py": 2.5,
+            "pz": 11.5,
+            "rx": 0.0,
+            "ry": 0.45,
+            "rz": 0.0,
+            "sx": 0.3,
+            "sy": 0.75,
+            "sz": 0.3
+          }
+        },
+        {
+          "id": "block_96727",
+          "type": "block",
+          "name": "Station Guardrail Top Rail Left",
+          "transform": {
+            "px": -5.8,
+            "py": 0.95,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.06,
+            "sz": 0.06
+          }
+        },
+        {
+          "id": "block_82888",
+          "type": "block",
+          "name": "Station Guardrail Mid Rail Left",
+          "transform": {
+            "px": -5.8,
+            "py": 0.6,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.05,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_28668",
+          "type": "block",
+          "name": "Station Guardrail Post Left 1",
+          "transform": {
+            "px": -7.5,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_89746",
+          "type": "block",
+          "name": "Station Guardrail Post Left 2",
+          "transform": {
+            "px": -6.4,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_12486",
+          "type": "block",
+          "name": "Station Guardrail Post Left 3",
+          "transform": {
+            "px": -5.3,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_43411",
+          "type": "block",
+          "name": "Station Guardrail Post Left 4",
+          "transform": {
+            "px": -4.2,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_14046",
+          "type": "block",
+          "name": "Station Guardrail Top Rail Right",
+          "transform": {
+            "px": 5.8,
+            "py": 0.95,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.06,
+            "sz": 0.06
+          }
+        },
+        {
+          "id": "block_10771",
+          "type": "block",
+          "name": "Station Guardrail Mid Rail Right",
+          "transform": {
+            "px": 5.8,
+            "py": 0.6,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.05,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_72146",
+          "type": "block",
+          "name": "Station Guardrail Post Right 1",
+          "transform": {
+            "px": 4.2,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_82828",
+          "type": "block",
+          "name": "Station Guardrail Post Right 2",
+          "transform": {
+            "px": 5.3,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_86457",
+          "type": "block",
+          "name": "Station Guardrail Post Right 3",
+          "transform": {
+            "px": 6.4,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_86088",
+          "type": "block",
+          "name": "Station Guardrail Post Right 4",
+          "transform": {
+            "px": 7.5,
+            "py": 0.55,
+            "pz": 12.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.08,
+            "sy": 0.9,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_31167",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 1",
+          "transform": {
+            "px": 9.2,
+            "py": 0.55,
+            "pz": 3.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        },
+        {
+          "id": "block_54173",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 2",
+          "transform": {
+            "px": 9.6,
+            "py": 0.55,
+            "pz": 4.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        },
+        {
+          "id": "block_10466",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 3",
+          "transform": {
+            "px": 10.0,
+            "py": 0.55,
+            "pz": 5.9,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        },
+        {
+          "id": "block_53007",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 4",
+          "transform": {
+            "px": 10.4,
+            "py": 0.55,
+            "pz": 7.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        },
+        {
+          "id": "block_38456",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 5",
+          "transform": {
+            "px": 10.8,
+            "py": 0.55,
+            "pz": 8.3,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        },
+        {
+          "id": "block_81182",
+          "type": "block",
+          "name": "Bloque E Curb Road Bollard 6",
+          "transform": {
+            "px": 11.2,
+            "py": 0.55,
+            "pz": 9.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.14,
+            "sy": 0.75,
+            "sz": 0.14
+          }
+        }
+      ]
+    }
+  ],
+  "num_assets": 373
+}

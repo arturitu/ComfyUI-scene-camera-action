@@ -1,0 +1,4130 @@
+{
+  "type": "cube_stage",
+  "nodes": [
+    {
+      "id": "group_2764",
+      "type": "group",
+      "name": "Colossal Cybernetic Head Monument",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_35394",
+          "type": "block",
+          "name": "Monument Plinth Lower",
+          "transform": {
+            "px": 2.0,
+            "py": 2.8,
+            "pz": -6.0,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 7.0,
+            "sy": 0.8,
+            "sz": 7.0
+          }
+        },
+        {
+          "id": "block_45967",
+          "type": "block",
+          "name": "Monument Plinth Upper",
+          "transform": {
+            "px": 2.0,
+            "py": 3.6,
+            "pz": -6.0,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 5.8,
+            "sy": 0.8,
+            "sz": 5.8
+          }
+        },
+        {
+          "id": "block_60462",
+          "type": "block",
+          "name": "Colossus Neck Column",
+          "transform": {
+            "px": 1.9314,
+            "py": 4.7,
+            "pz": -6.1879,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 4.2,
+            "sy": 1.4,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_69338",
+          "type": "block",
+          "name": "Collar Buttress Left",
+          "transform": {
+            "px": 0.5149,
+            "py": 4.4,
+            "pz": -4.8192,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.25,
+            "sx": 1.2,
+            "sy": 1.8,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_55206",
+          "type": "block",
+          "name": "Collar Buttress Right",
+          "transform": {
+            "px": 3.8966,
+            "py": 4.4,
+            "pz": -6.0536,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": -0.25,
+            "sx": 1.2,
+            "sy": 1.8,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_88237",
+          "type": "block",
+          "name": "Chin Keystone Block",
+          "transform": {
+            "px": 2.6172,
+            "py": 5.9,
+            "pz": -4.3091,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 1.0,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_90308",
+          "type": "block",
+          "name": "Mandible Angle Left",
+          "transform": {
+            "px": 0.7713,
+            "py": 6.2,
+            "pz": -4.6999,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.15,
+            "sx": 1.4,
+            "sy": 1.4,
+            "sz": 3.0
+          }
+        },
+        {
+          "id": "block_93115",
+          "type": "block",
+          "name": "Mandible Angle Right",
+          "transform": {
+            "px": 3.7773,
+            "py": 6.2,
+            "pz": -5.7971,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": -0.15,
+            "sx": 1.4,
+            "sy": 1.4,
+            "sz": 3.0
+          }
+        },
+        {
+          "id": "block_50995",
+          "type": "block",
+          "name": "Sculpted Lip Line",
+          "transform": {
+            "px": 2.5829,
+            "py": 6.8,
+            "pz": -4.4031,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_31209",
+          "type": "block",
+          "name": "Nose Bridge Monumental",
+          "transform": {
+            "px": 2.7201,
+            "py": 7.9,
+            "pz": -4.0273,
+            "rx": -0.12,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 1.1,
+            "sy": 1.8,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_74281",
+          "type": "block",
+          "name": "Zygomatic Cheek Left",
+          "transform": {
+            "px": 0.652,
+            "py": 7.7,
+            "pz": -4.4434,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 2.0,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_69639",
+          "type": "block",
+          "name": "Zygomatic Cheek Right",
+          "transform": {
+            "px": 4.0338,
+            "py": 7.7,
+            "pz": -5.6778,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 2.0,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_42585",
+          "type": "block",
+          "name": "Supraorbital Brow Ridge",
+          "transform": {
+            "px": 2.6172,
+            "py": 9.1,
+            "pz": -4.3091,
+            "rx": 0.1,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 4.8,
+            "sy": 0.9,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_72814",
+          "type": "block",
+          "name": "Orbital Socket Left",
+          "transform": {
+            "px": 1.5153,
+            "py": 8.5,
+            "pz": -4.1198,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.6,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_80831",
+          "type": "block",
+          "name": "Orbital Socket Right",
+          "transform": {
+            "px": 3.5819,
+            "py": 8.5,
+            "pz": -4.8742,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.6,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_85079",
+          "type": "block",
+          "name": "Forehead Armor Plate Right",
+          "transform": {
+            "px": 3.4701,
+            "py": 10.4,
+            "pz": -5.4721,
+            "rx": -0.15,
+            "ry": 0.35,
+            "rz": -0.1,
+            "sx": 2.8,
+            "sy": 2.2,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_16527",
+          "type": "block",
+          "name": "Parietal Shell Right",
+          "transform": {
+            "px": 4.092,
+            "py": 10.0,
+            "pz": -6.9765,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": -0.12,
+            "sx": 1.2,
+            "sy": 3.2,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_26140",
+          "type": "block",
+          "name": "Cyber Ear Main Hub",
+          "transform": {
+            "px": -0.6049,
+            "py": 8.2,
+            "pz": -5.2621,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.8,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_15464",
+          "type": "block",
+          "name": "Cyber Ear Audio Gasket",
+          "transform": {
+            "px": -0.7928,
+            "py": 8.4,
+            "pz": -5.1935,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 2.2,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_48914",
+          "type": "block",
+          "name": "Cranial Structural Core",
+          "transform": {
+            "px": 1.6407,
+            "py": 9.9,
+            "pz": -6.4011,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 3.8,
+            "sy": 3.0,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_43560",
+          "type": "block",
+          "name": "Cranial Rebar Rib V1",
+          "transform": {
+            "px": 0.7713,
+            "py": 13.3,
+            "pz": -4.6999,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 2.8,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_42372",
+          "type": "block",
+          "name": "Cranial Rebar Rib V2",
+          "transform": {
+            "px": 1.3692,
+            "py": 13.9,
+            "pz": -4.8117,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.4,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_63887",
+          "type": "block",
+          "name": "Cranial Rebar Rib V3",
+          "transform": {
+            "px": 1.8986,
+            "py": 14.4,
+            "pz": -5.1113,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.8,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_50331",
+          "type": "block",
+          "name": "Cranial Rebar Rib V4",
+          "transform": {
+            "px": 0.3091,
+            "py": 13.6,
+            "pz": -5.3828,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_53302",
+          "type": "block",
+          "name": "Cranial Rebar Rib V5",
+          "transform": {
+            "px": 0.8728,
+            "py": 14.4,
+            "pz": -5.5885,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 4.0,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_69858",
+          "type": "block",
+          "name": "Cranial Rebar Rib V6",
+          "transform": {
+            "px": 1.496,
+            "py": 14.9,
+            "pz": -5.9225,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 4.4,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_55634",
+          "type": "block",
+          "name": "Cranial Rebar Rib V7",
+          "transform": {
+            "px": 2.1536,
+            "py": 14.7,
+            "pz": -6.1625,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 4.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_51809",
+          "type": "block",
+          "name": "Cranial Rebar Rib V8",
+          "transform": {
+            "px": 0.1287,
+            "py": 13.3,
+            "pz": -6.1686,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.0,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_51138",
+          "type": "block",
+          "name": "Cranial Rebar Rib V9",
+          "transform": {
+            "px": 0.752,
+            "py": 14.2,
+            "pz": -6.5025,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.8,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_48182",
+          "type": "block",
+          "name": "Cranial Rebar Rib V10",
+          "transform": {
+            "px": 1.4096,
+            "py": 14.7,
+            "pz": -6.7426,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 4.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_29447",
+          "type": "block",
+          "name": "Cranial Rebar Rib V11",
+          "transform": {
+            "px": 2.1014,
+            "py": 14.3,
+            "pz": -6.8887,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.8,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_67120",
+          "type": "block",
+          "name": "Cranial Rebar Rib V12",
+          "transform": {
+            "px": 0.0423,
+            "py": 12.9,
+            "pz": -6.9886,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 2.6,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_88605",
+          "type": "block",
+          "name": "Cranial Rebar Rib V13",
+          "transform": {
+            "px": 0.6656,
+            "py": 13.7,
+            "pz": -7.3226,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.4,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_81730",
+          "type": "block",
+          "name": "Cranial Rebar Rib V14",
+          "transform": {
+            "px": 1.4171,
+            "py": 14.1,
+            "pz": -7.5969,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.6,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_86134",
+          "type": "block",
+          "name": "Cranial Rebar Rib V15",
+          "transform": {
+            "px": 2.1089,
+            "py": 13.7,
+            "pz": -7.743,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_95871",
+          "type": "block",
+          "name": "Cranial Rebar Rib V16",
+          "transform": {
+            "px": 0.0841,
+            "py": 12.5,
+            "pz": -7.7491,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 2.2,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_72212",
+          "type": "block",
+          "name": "Cranial Rebar Rib V17",
+          "transform": {
+            "px": 0.7416,
+            "py": 13.1,
+            "pz": -7.9891,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 2.8,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_70560",
+          "type": "block",
+          "name": "Cranial Rebar Rib V18",
+          "transform": {
+            "px": 1.3992,
+            "py": 13.4,
+            "pz": -8.2291,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 3.0,
+            "sz": 0.18
+          }
+        },
+        {
+          "id": "block_23189",
+          "type": "block",
+          "name": "Lattice Ring Tie F1",
+          "transform": {
+            "px": 2.0536,
+            "py": 12.2,
+            "pz": -4.1034,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 3.4,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        },
+        {
+          "id": "block_59004",
+          "type": "block",
+          "name": "Lattice Ring Tie S1",
+          "transform": {
+            "px": -0.1606,
+            "py": 12.2,
+            "pz": -5.2113,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.16,
+            "sy": 0.16,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_41746",
+          "type": "block",
+          "name": "Lattice Ring Tie B1",
+          "transform": {
+            "px": 0.8192,
+            "py": 12.2,
+            "pz": -7.4851,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 3.4,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        },
+        {
+          "id": "block_97578",
+          "type": "block",
+          "name": "Lattice Ring Tie F2",
+          "transform": {
+            "px": 1.9164,
+            "py": 13.6,
+            "pz": -4.4791,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 3.0,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        },
+        {
+          "id": "block_34771",
+          "type": "block",
+          "name": "Lattice Ring Tie S2",
+          "transform": {
+            "px": -0.0413,
+            "py": 13.6,
+            "pz": -5.4678,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.16,
+            "sy": 0.16,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_33831",
+          "type": "block",
+          "name": "Lattice Ring Tie B2",
+          "transform": {
+            "px": 0.8192,
+            "py": 13.6,
+            "pz": -7.4851,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 3.0,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        },
+        {
+          "id": "block_31337",
+          "type": "block",
+          "name": "Lattice Ring Tie F3",
+          "transform": {
+            "px": 1.745,
+            "py": 15.0,
+            "pz": -4.9488,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        },
+        {
+          "id": "block_49547",
+          "type": "block",
+          "name": "Lattice Ring Tie S3",
+          "transform": {
+            "px": 0.172,
+            "py": 15.0,
+            "pz": -5.7585,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 0.16,
+            "sy": 0.16,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_79149",
+          "type": "block",
+          "name": "Lattice Ring Tie B3",
+          "transform": {
+            "px": 0.8535,
+            "py": 15.0,
+            "pz": -7.3912,
+            "rx": 0.0,
+            "ry": 0.35,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.16,
+            "sz": 0.16
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_6777",
+      "type": "group",
+      "name": "Semicircular Rotunda & Amphitheater",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_87942",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 1",
+          "transform": {
+            "px": 0.3953,
+            "py": 2.4,
+            "pz": -11.9887,
+            "rx": 0.0,
+            "ry": -2.8798,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_22863",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 2",
+          "transform": {
+            "px": -2.3841,
+            "py": 2.4,
+            "pz": -10.3841,
+            "rx": 0.0,
+            "ry": -2.3562,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_86405",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 3",
+          "transform": {
+            "px": -3.9887,
+            "py": 2.4,
+            "pz": -7.6047,
+            "rx": 0.0,
+            "ry": -1.8326,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_18930",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 4",
+          "transform": {
+            "px": -3.9887,
+            "py": 2.4,
+            "pz": -4.3953,
+            "rx": 0.0,
+            "ry": -1.309,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_17100",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 5",
+          "transform": {
+            "px": -2.3841,
+            "py": 2.4,
+            "pz": -1.6159,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_69522",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 6",
+          "transform": {
+            "px": 0.3953,
+            "py": 2.4,
+            "pz": -0.0113,
+            "rx": 0.0,
+            "ry": -0.2618,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_85919",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 7",
+          "transform": {
+            "px": 3.6047,
+            "py": 2.4,
+            "pz": -0.0113,
+            "rx": 0.0,
+            "ry": 0.2618,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_97969",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 8",
+          "transform": {
+            "px": 6.3841,
+            "py": 2.4,
+            "pz": -1.6159,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_25205",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 9",
+          "transform": {
+            "px": 7.9887,
+            "py": 2.4,
+            "pz": -4.3953,
+            "rx": 0.0,
+            "ry": 1.309,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_73833",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 10",
+          "transform": {
+            "px": 7.9887,
+            "py": 2.4,
+            "pz": -7.6047,
+            "rx": 0.0,
+            "ry": 1.8326,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_67720",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 11",
+          "transform": {
+            "px": 6.3841,
+            "py": 2.4,
+            "pz": -10.3841,
+            "rx": 0.0,
+            "ry": 2.3562,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_31245",
+          "type": "block",
+          "name": "Rotunda Dais Inner Rim Segment 12",
+          "transform": {
+            "px": 3.6047,
+            "py": 2.4,
+            "pz": -11.9887,
+            "rx": 0.0,
+            "ry": 2.8798,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.4,
+            "sz": 3.2963
+          }
+        },
+        {
+          "id": "block_43222",
+          "type": "block",
+          "name": "Rotunda Dais Center Slab",
+          "transform": {
+            "px": 2.0,
+            "py": 2.2,
+            "pz": -6.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 10.5,
+            "sy": 0.4,
+            "sz": 10.5
+          }
+        },
+        {
+          "id": "block_94084",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 1",
+          "transform": {
+            "px": -2.418,
+            "py": 2.65,
+            "pz": -12.4282,
+            "rx": 0.0,
+            "ry": -2.5395,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_71806",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 2",
+          "transform": {
+            "px": -4.2701,
+            "py": 2.65,
+            "pz": -10.6396,
+            "rx": 0.0,
+            "ry": -2.2078,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_23654",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 3",
+          "transform": {
+            "px": -5.439,
+            "py": 2.65,
+            "pz": -8.3455,
+            "rx": 0.0,
+            "ry": -1.8762,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_78732",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 4",
+          "transform": {
+            "px": -5.7973,
+            "py": 2.65,
+            "pz": -5.7958,
+            "rx": 0.0,
+            "ry": -1.5446,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_72099",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 5",
+          "transform": {
+            "px": -5.306,
+            "py": 2.65,
+            "pz": -3.2684,
+            "rx": 0.0,
+            "ry": -1.213,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_67064",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 6",
+          "transform": {
+            "px": -4.0187,
+            "py": 2.65,
+            "pz": -1.0386,
+            "rx": 0.0,
+            "ry": -0.8814,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_87415",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 7",
+          "transform": {
+            "px": -2.0755,
+            "py": 2.65,
+            "pz": 0.6506,
+            "rx": 0.0,
+            "ry": -0.5498,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_22366",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 8",
+          "transform": {
+            "px": 0.3118,
+            "py": 2.65,
+            "pz": 1.6151,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_75390",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 9",
+          "transform": {
+            "px": 2.883,
+            "py": 2.65,
+            "pz": 1.7499,
+            "rx": 0.0,
+            "ry": 0.1134,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_49909",
+          "type": "block",
+          "name": "Amphitheater Tier 1 Segment 10",
+          "transform": {
+            "px": 5.358,
+            "py": 2.65,
+            "pz": 1.0402,
+            "rx": 0.0,
+            "ry": 0.4451,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 2.6366
+          }
+        },
+        {
+          "id": "block_38063",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 1",
+          "transform": {
+            "px": -3.2109,
+            "py": 3.15,
+            "pz": -13.582,
+            "rx": 0.0,
+            "ry": -2.5395,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_37101",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 2",
+          "transform": {
+            "px": -5.3955,
+            "py": 3.15,
+            "pz": -11.4724,
+            "rx": 0.0,
+            "ry": -2.2078,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_31970",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 3",
+          "transform": {
+            "px": -6.7742,
+            "py": 3.15,
+            "pz": -8.7665,
+            "rx": 0.0,
+            "ry": -1.8762,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_12840",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 4",
+          "transform": {
+            "px": -7.1968,
+            "py": 3.15,
+            "pz": -5.7592,
+            "rx": 0.0,
+            "ry": -1.5446,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_18739",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 5",
+          "transform": {
+            "px": -6.6174,
+            "py": 3.15,
+            "pz": -2.7781,
+            "rx": 0.0,
+            "ry": -1.213,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_22161",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 6",
+          "transform": {
+            "px": -5.0989,
+            "py": 3.15,
+            "pz": -0.1481,
+            "rx": 0.0,
+            "ry": -0.8814,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_93022",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 7",
+          "transform": {
+            "px": -2.807,
+            "py": 3.15,
+            "pz": 1.8443,
+            "rx": 0.0,
+            "ry": -0.5498,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_34337",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 8",
+          "transform": {
+            "px": 0.0088,
+            "py": 3.15,
+            "pz": 2.9819,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_10949",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 9",
+          "transform": {
+            "px": 3.0415,
+            "py": 3.15,
+            "pz": 3.1409,
+            "rx": 0.0,
+            "ry": 0.1134,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_39618",
+          "type": "block",
+          "name": "Amphitheater Tier 2 Segment 10",
+          "transform": {
+            "px": 5.9607,
+            "py": 3.15,
+            "pz": 2.3038,
+            "rx": 0.0,
+            "ry": 0.4451,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.1008
+          }
+        },
+        {
+          "id": "block_93465",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 1",
+          "transform": {
+            "px": -4.0039,
+            "py": 3.65,
+            "pz": -14.7357,
+            "rx": 0.0,
+            "ry": -2.5395,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_23670",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 2",
+          "transform": {
+            "px": -6.5209,
+            "py": 3.65,
+            "pz": -12.3051,
+            "rx": 0.0,
+            "ry": -2.2078,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_62955",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 3",
+          "transform": {
+            "px": -8.1094,
+            "py": 3.65,
+            "pz": -9.1875,
+            "rx": 0.0,
+            "ry": -1.8762,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_25363",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 4",
+          "transform": {
+            "px": -8.5964,
+            "py": 3.65,
+            "pz": -5.7225,
+            "rx": 0.0,
+            "ry": -1.5446,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_71313",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 5",
+          "transform": {
+            "px": -7.9287,
+            "py": 3.65,
+            "pz": -2.2878,
+            "rx": 0.0,
+            "ry": -1.213,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_52338",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 6",
+          "transform": {
+            "px": -6.1792,
+            "py": 3.65,
+            "pz": 0.7424,
+            "rx": 0.0,
+            "ry": -0.8814,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_63229",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 7",
+          "transform": {
+            "px": -3.5385,
+            "py": 3.65,
+            "pz": 3.038,
+            "rx": 0.0,
+            "ry": -0.5498,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_98582",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 8",
+          "transform": {
+            "px": -0.2943,
+            "py": 3.65,
+            "pz": 4.3487,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_80706",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 9",
+          "transform": {
+            "px": 3.2,
+            "py": 3.65,
+            "pz": 4.5319,
+            "rx": 0.0,
+            "ry": 0.1134,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_71216",
+          "type": "block",
+          "name": "Amphitheater Tier 3 Segment 10",
+          "transform": {
+            "px": 6.5634,
+            "py": 3.65,
+            "pz": 3.5674,
+            "rx": 0.0,
+            "ry": 0.4451,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 3.5651
+          }
+        },
+        {
+          "id": "block_60691",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 1",
+          "transform": {
+            "px": -4.7969,
+            "py": 4.15,
+            "pz": -15.8895,
+            "rx": 0.0,
+            "ry": -2.5395,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_14700",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 2",
+          "transform": {
+            "px": -7.6463,
+            "py": 4.15,
+            "pz": -13.1379,
+            "rx": 0.0,
+            "ry": -2.2078,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_35466",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 3",
+          "transform": {
+            "px": -9.4446,
+            "py": 4.15,
+            "pz": -9.6085,
+            "rx": 0.0,
+            "ry": -1.8762,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_11916",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 4",
+          "transform": {
+            "px": -9.9959,
+            "py": 4.15,
+            "pz": -5.6859,
+            "rx": 0.0,
+            "ry": -1.5446,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_41781",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 5",
+          "transform": {
+            "px": -9.2401,
+            "py": 4.15,
+            "pz": -1.7975,
+            "rx": 0.0,
+            "ry": -1.213,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_74346",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 6",
+          "transform": {
+            "px": -7.2595,
+            "py": 4.15,
+            "pz": 1.6329,
+            "rx": 0.0,
+            "ry": -0.8814,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_28447",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 7",
+          "transform": {
+            "px": -4.27,
+            "py": 4.15,
+            "pz": 4.2317,
+            "rx": 0.0,
+            "ry": -0.5498,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_83293",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 8",
+          "transform": {
+            "px": -0.5973,
+            "py": 4.15,
+            "pz": 5.7156,
+            "rx": 0.0,
+            "ry": -0.2182,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_14300",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 9",
+          "transform": {
+            "px": 3.3584,
+            "py": 4.15,
+            "pz": 5.9229,
+            "rx": 0.0,
+            "ry": 0.1134,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_98262",
+          "type": "block",
+          "name": "Amphitheater Tier 4 Segment 10",
+          "transform": {
+            "px": 7.1661,
+            "py": 4.15,
+            "pz": 4.831,
+            "rx": 0.0,
+            "ry": 0.4451,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 4.0294
+          }
+        },
+        {
+          "id": "block_59839",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 1",
+          "transform": {
+            "px": -5.1731,
+            "py": 4.8,
+            "pz": -17.0809,
+            "rx": 0.0,
+            "ry": -2.5671,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_98552",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 2",
+          "transform": {
+            "px": -7.9243,
+            "py": 4.8,
+            "pz": -14.7034,
+            "rx": 0.0,
+            "ry": -2.2907,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_80542",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 3",
+          "transform": {
+            "px": -9.9224,
+            "py": 4.8,
+            "pz": -11.6654,
+            "rx": 0.0,
+            "ry": -2.0144,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_13986",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 4",
+          "transform": {
+            "px": -11.0158,
+            "py": 4.8,
+            "pz": -8.1976,
+            "rx": 0.0,
+            "ry": -1.7381,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_52226",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 5",
+          "transform": {
+            "px": -11.1215,
+            "py": 4.8,
+            "pz": -4.563,
+            "rx": 0.0,
+            "ry": -1.4617,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_82091",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 6",
+          "transform": {
+            "px": -10.2316,
+            "py": 4.8,
+            "pz": -1.0374,
+            "rx": 0.0,
+            "ry": -1.1854,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_45387",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 7",
+          "transform": {
+            "px": -8.4136,
+            "py": 4.8,
+            "pz": 2.1116,
+            "rx": 0.0,
+            "ry": -0.909,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_81443",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 8",
+          "transform": {
+            "px": -5.8053,
+            "py": 4.8,
+            "pz": 4.6451,
+            "rx": 0.0,
+            "ry": -0.6327,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_71066",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 9",
+          "transform": {
+            "px": -2.6047,
+            "py": 4.8,
+            "pz": 6.3708,
+            "rx": 0.0,
+            "ry": -0.3563,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_15274",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 10",
+          "transform": {
+            "px": 0.9452,
+            "py": 4.8,
+            "pz": 7.1578,
+            "rx": 0.0,
+            "ry": -0.08,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_42840",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 11",
+          "transform": {
+            "px": 4.5752,
+            "py": 4.8,
+            "pz": 6.9464,
+            "rx": 0.0,
+            "ry": 0.1963,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_43641",
+          "type": "block",
+          "name": "Amphitheater Rear Enclosure Wall Segment 12",
+          "transform": {
+            "px": 8.0098,
+            "py": 4.8,
+            "pz": 5.7526,
+            "rx": 0.0,
+            "ry": 0.4727,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 2.8,
+            "sz": 3.6977
+          }
+        },
+        {
+          "id": "block_85300",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 1",
+          "transform": {
+            "px": 7.4736,
+            "py": 2.0,
+            "pz": 0.1057,
+            "rx": 0.0,
+            "ry": 0.7309,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_72408",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 2",
+          "transform": {
+            "px": 8.768,
+            "py": 2.0,
+            "pz": -1.3702,
+            "rx": 0.0,
+            "ry": 0.9708,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_53727",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 3",
+          "transform": {
+            "px": 9.6744,
+            "py": 2.0,
+            "pz": -3.1115,
+            "rx": 0.0,
+            "ry": 1.2108,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_61171",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 4",
+          "transform": {
+            "px": 10.141,
+            "py": 2.0,
+            "pz": -5.0184,
+            "rx": 0.0,
+            "ry": 1.4508,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_21802",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 5",
+          "transform": {
+            "px": 10.141,
+            "py": 2.0,
+            "pz": -6.9816,
+            "rx": 0.0,
+            "ry": 1.6908,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_77372",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 6",
+          "transform": {
+            "px": 9.6744,
+            "py": 2.0,
+            "pz": -8.8885,
+            "rx": 0.0,
+            "ry": 1.9308,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_15515",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 7",
+          "transform": {
+            "px": 8.768,
+            "py": 2.0,
+            "pz": -10.6298,
+            "rx": 0.0,
+            "ry": 2.1708,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_43750",
+          "type": "block",
+          "name": "Cantilever Gallery Fascia Segment 8",
+          "transform": {
+            "px": 7.4736,
+            "py": 2.0,
+            "pz": -12.1057,
+            "rx": 0.0,
+            "ry": 2.4107,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 1.6,
+            "sz": 2.0179
+          }
+        },
+        {
+          "id": "block_65554",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 1",
+          "transform": {
+            "px": 7.6071,
+            "py": 2.15,
+            "pz": 0.2547,
+            "rx": 0.0,
+            "ry": 0.7309,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_37175",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 2",
+          "transform": {
+            "px": 8.933,
+            "py": 2.15,
+            "pz": -1.2573,
+            "rx": 0.0,
+            "ry": 0.9708,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_51106",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 3",
+          "transform": {
+            "px": 9.8616,
+            "py": 2.15,
+            "pz": -3.0411,
+            "rx": 0.0,
+            "ry": 1.2108,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_38669",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 4",
+          "transform": {
+            "px": 10.3396,
+            "py": 2.15,
+            "pz": -4.9945,
+            "rx": 0.0,
+            "ry": 1.4508,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_21236",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 5",
+          "transform": {
+            "px": 10.3396,
+            "py": 2.15,
+            "pz": -7.0055,
+            "rx": 0.0,
+            "ry": 1.6908,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_95944",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 6",
+          "transform": {
+            "px": 9.8616,
+            "py": 2.15,
+            "pz": -8.9589,
+            "rx": 0.0,
+            "ry": 1.9308,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_73889",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 7",
+          "transform": {
+            "px": 8.933,
+            "py": 2.15,
+            "pz": -10.7427,
+            "rx": 0.0,
+            "ry": 2.1708,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_20902",
+          "type": "block",
+          "name": "Gallery Cyan Accent Trim Segment 8",
+          "transform": {
+            "px": 7.6071,
+            "py": 2.15,
+            "pz": -12.2547,
+            "rx": 0.0,
+            "ry": 2.4107,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.3,
+            "sz": 2.0659
+          }
+        },
+        {
+          "id": "block_91060",
+          "type": "block",
+          "name": "Gallery Substructure Corbel Segment 1",
+          "transform": {
+            "px": 7.9751,
+            "py": 1.2,
+            "pz": -0.9863,
+            "rx": 0.0,
+            "ry": 0.8727,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.2,
+            "sz": 2.7727
+          }
+        },
+        {
+          "id": "block_60225",
+          "type": "block",
+          "name": "Gallery Substructure Corbel Segment 2",
+          "transform": {
+            "px": 9.3296,
+            "py": 1.2,
+            "pz": -3.3322,
+            "rx": 0.0,
+            "ry": 1.2217,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.2,
+            "sz": 2.7727
+          }
+        },
+        {
+          "id": "block_75585",
+          "type": "block",
+          "name": "Gallery Substructure Corbel Segment 3",
+          "transform": {
+            "px": 9.8,
+            "py": 1.2,
+            "pz": -6.0,
+            "rx": 0.0,
+            "ry": 1.5708,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.2,
+            "sz": 2.7727
+          }
+        },
+        {
+          "id": "block_62828",
+          "type": "block",
+          "name": "Gallery Substructure Corbel Segment 4",
+          "transform": {
+            "px": 9.3296,
+            "py": 1.2,
+            "pz": -8.6678,
+            "rx": 0.0,
+            "ry": 1.9199,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.2,
+            "sz": 2.7727
+          }
+        },
+        {
+          "id": "block_64680",
+          "type": "block",
+          "name": "Gallery Substructure Corbel Segment 5",
+          "transform": {
+            "px": 7.9751,
+            "py": 1.2,
+            "pz": -11.0137,
+            "rx": 0.0,
+            "ry": 2.2689,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 1.2,
+            "sz": 2.7727
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_5508",
+      "type": "group",
+      "name": "Monumental Twin Staircases",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_15648",
+          "type": "block",
+          "name": "West Stair Step 1",
+          "transform": {
+            "px": -3.4,
+            "py": 2.3,
+            "pz": -1.6,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_47963",
+          "type": "block",
+          "name": "West Stair Step 2",
+          "transform": {
+            "px": -4.02,
+            "py": 2.1,
+            "pz": -0.98,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_11757",
+          "type": "block",
+          "name": "West Stair Step 3",
+          "transform": {
+            "px": -4.64,
+            "py": 1.9,
+            "pz": -0.36,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_53149",
+          "type": "block",
+          "name": "West Stair Step 4",
+          "transform": {
+            "px": -5.26,
+            "py": 1.7,
+            "pz": 0.26,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_42816",
+          "type": "block",
+          "name": "West Stair Step 5",
+          "transform": {
+            "px": -5.88,
+            "py": 1.5,
+            "pz": 0.88,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_43333",
+          "type": "block",
+          "name": "West Stair Step 6",
+          "transform": {
+            "px": -6.5,
+            "py": 1.3,
+            "pz": 1.5,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_53597",
+          "type": "block",
+          "name": "West Stair Step 7",
+          "transform": {
+            "px": -7.12,
+            "py": 1.1,
+            "pz": 2.12,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_27890",
+          "type": "block",
+          "name": "West Stair Step 8",
+          "transform": {
+            "px": -7.74,
+            "py": 0.9,
+            "pz": 2.74,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_91414",
+          "type": "block",
+          "name": "West Stair Step 9",
+          "transform": {
+            "px": -8.36,
+            "py": 0.7,
+            "pz": 3.36,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_17955",
+          "type": "block",
+          "name": "West Stair Step 10",
+          "transform": {
+            "px": -8.98,
+            "py": 0.5,
+            "pz": 3.98,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_38237",
+          "type": "block",
+          "name": "West Stair Step 11",
+          "transform": {
+            "px": -9.6,
+            "py": 0.3,
+            "pz": 4.6,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_64546",
+          "type": "block",
+          "name": "West Stair Balustrade Outer",
+          "transform": {
+            "px": -5.0504,
+            "py": 1.65,
+            "pz": 2.9496,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 1.1,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_35523",
+          "type": "block",
+          "name": "West Stair Cyan Cap Outer",
+          "transform": {
+            "px": -5.0504,
+            "py": 2.25,
+            "pz": 2.9496,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.18,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_69040",
+          "type": "block",
+          "name": "West Stair Balustrade Inner",
+          "transform": {
+            "px": -7.9496,
+            "py": 1.65,
+            "pz": 0.0504,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 1.1,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_16143",
+          "type": "block",
+          "name": "West Stair Cyan Cap Inner",
+          "transform": {
+            "px": -7.9496,
+            "py": 2.25,
+            "pz": 0.0504,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.18,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_80624",
+          "type": "block",
+          "name": "East Stair Step 1",
+          "transform": {
+            "px": 7.4,
+            "py": 2.3,
+            "pz": -1.6,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_47743",
+          "type": "block",
+          "name": "East Stair Step 2",
+          "transform": {
+            "px": 8.02,
+            "py": 2.1,
+            "pz": -0.98,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_55601",
+          "type": "block",
+          "name": "East Stair Step 3",
+          "transform": {
+            "px": 8.64,
+            "py": 1.9,
+            "pz": -0.36,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_17736",
+          "type": "block",
+          "name": "East Stair Step 4",
+          "transform": {
+            "px": 9.26,
+            "py": 1.7,
+            "pz": 0.26,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_86203",
+          "type": "block",
+          "name": "East Stair Step 5",
+          "transform": {
+            "px": 9.88,
+            "py": 1.5,
+            "pz": 0.88,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_89733",
+          "type": "block",
+          "name": "East Stair Step 6",
+          "transform": {
+            "px": 10.5,
+            "py": 1.3,
+            "pz": 1.5,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_60581",
+          "type": "block",
+          "name": "East Stair Step 7",
+          "transform": {
+            "px": 11.12,
+            "py": 1.1,
+            "pz": 2.12,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_76347",
+          "type": "block",
+          "name": "East Stair Step 8",
+          "transform": {
+            "px": 11.74,
+            "py": 0.9,
+            "pz": 2.74,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_18622",
+          "type": "block",
+          "name": "East Stair Step 9",
+          "transform": {
+            "px": 12.36,
+            "py": 0.7,
+            "pz": 3.36,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_32476",
+          "type": "block",
+          "name": "East Stair Step 10",
+          "transform": {
+            "px": 12.98,
+            "py": 0.5,
+            "pz": 3.98,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_63744",
+          "type": "block",
+          "name": "East Stair Step 11",
+          "transform": {
+            "px": 13.6,
+            "py": 0.3,
+            "pz": 4.6,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 3.6,
+            "sy": 0.2,
+            "sz": 0.7
+          }
+        },
+        {
+          "id": "block_40135",
+          "type": "block",
+          "name": "East Stair Balustrade Inner",
+          "transform": {
+            "px": 11.9496,
+            "py": 1.65,
+            "pz": 0.0504,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 1.1,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_75668",
+          "type": "block",
+          "name": "East Stair Cyan Cap Inner",
+          "transform": {
+            "px": 11.9496,
+            "py": 2.25,
+            "pz": 0.0504,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.18,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_86538",
+          "type": "block",
+          "name": "East Stair Balustrade Outer",
+          "transform": {
+            "px": 9.0504,
+            "py": 1.65,
+            "pz": 2.9496,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 1.1,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_54317",
+          "type": "block",
+          "name": "East Stair Cyan Cap Outer",
+          "transform": {
+            "px": 9.0504,
+            "py": 2.25,
+            "pz": 2.9496,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.55,
+            "sy": 0.18,
+            "sz": 8.7681
+          }
+        },
+        {
+          "id": "block_68485",
+          "type": "block",
+          "name": "West Stair Landing Pad",
+          "transform": {
+            "px": -10.2,
+            "py": 0.1,
+            "pz": 5.2,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.2,
+            "sz": 3.5
+          }
+        },
+        {
+          "id": "block_98501",
+          "type": "block",
+          "name": "East Stair Landing Pad",
+          "transform": {
+            "px": 14.2,
+            "py": 0.1,
+            "pz": 5.2,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 4.5,
+            "sy": 0.2,
+            "sz": 3.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_8584",
+      "type": "group",
+      "name": "Causeway & Highway Infrastructure",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_82603",
+          "type": "block",
+          "name": "Central Plaza Roadbed",
+          "transform": {
+            "px": 2.0,
+            "py": 0.1,
+            "pz": 6.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 16.0,
+            "sy": 0.2,
+            "sz": 10.0
+          }
+        },
+        {
+          "id": "block_89778",
+          "type": "block",
+          "name": "West Causeway Roadbed",
+          "transform": {
+            "px": -24.0,
+            "py": 0.1,
+            "pz": 20.0,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.2,
+            "sz": 39.598
+          }
+        },
+        {
+          "id": "block_24054",
+          "type": "block",
+          "name": "West Causeway Conduit Trench",
+          "transform": {
+            "px": -24.0,
+            "py": 0.12,
+            "pz": 20.0,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.8,
+            "sy": 0.24,
+            "sz": 39.598
+          }
+        },
+        {
+          "id": "block_72646",
+          "type": "block",
+          "name": "West Causeway North Curb",
+          "transform": {
+            "px": -27.2527,
+            "py": 0.225,
+            "pz": 16.7473,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.45,
+            "sz": 39.598
+          }
+        },
+        {
+          "id": "block_42762",
+          "type": "block",
+          "name": "West Causeway South Barrier",
+          "transform": {
+            "px": -20.7473,
+            "py": 0.425,
+            "pz": 23.2527,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.85,
+            "sz": 39.598
+          }
+        },
+        {
+          "id": "block_90225",
+          "type": "block",
+          "name": "East Causeway Roadbed",
+          "transform": {
+            "px": 26.0,
+            "py": 0.1,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 8.5,
+            "sy": 0.2,
+            "sz": 33.9411
+          }
+        },
+        {
+          "id": "block_18767",
+          "type": "block",
+          "name": "East Causeway North Barrier",
+          "transform": {
+            "px": 22.7473,
+            "py": 0.425,
+            "pz": 21.2527,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.85,
+            "sz": 33.9411
+          }
+        },
+        {
+          "id": "block_87115",
+          "type": "block",
+          "name": "East Causeway South Barrier",
+          "transform": {
+            "px": 29.2527,
+            "py": 0.425,
+            "pz": 14.7473,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.85,
+            "sz": 33.9411
+          }
+        },
+        {
+          "id": "block_89191",
+          "type": "block",
+          "name": "North Viaduct Main Deck",
+          "transform": {
+            "px": 0.0,
+            "py": 0.1,
+            "pz": -28.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 76.0,
+            "sy": 0.2,
+            "sz": 9.0
+          }
+        },
+        {
+          "id": "block_55295",
+          "type": "block",
+          "name": "North Viaduct Rear Barrier",
+          "transform": {
+            "px": 0.0,
+            "py": 0.45,
+            "pz": -32.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 76.0,
+            "sy": 0.7,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_53006",
+          "type": "block",
+          "name": "North Viaduct Front Barrier",
+          "transform": {
+            "px": 0.0,
+            "py": 0.45,
+            "pz": -23.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 76.0,
+            "sy": 0.7,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_95465",
+          "type": "block",
+          "name": "West-North Junction Ramp",
+          "transform": {
+            "px": -24.0,
+            "py": 0.1,
+            "pz": -17.0,
+            "rx": 0.0,
+            "ry": -2.6224,
+            "rz": 0.0,
+            "sx": 6.0,
+            "sy": 0.2,
+            "sz": 16.1245
+          }
+        },
+        {
+          "id": "block_78435",
+          "type": "block",
+          "name": "East-North Junction Ramp",
+          "transform": {
+            "px": 25.0,
+            "py": 0.1,
+            "pz": -17.0,
+            "rx": 0.0,
+            "ry": 2.7367,
+            "rz": 0.0,
+            "sx": 6.0,
+            "sy": 0.2,
+            "sz": 15.2315
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_8123",
+      "type": "group",
+      "name": "Industrial Substructure & Pylons",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_81483",
+          "type": "block",
+          "name": "Structural Steel Pylon 1",
+          "transform": {
+            "px": -12.0,
+            "py": 1.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_83605",
+          "type": "block",
+          "name": "Pylon Footing Pad 1",
+          "transform": {
+            "px": -12.0,
+            "py": 0.15,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_58105",
+          "type": "block",
+          "name": "Pylon Cyan Collar 1",
+          "transform": {
+            "px": -12.0,
+            "py": 3.4,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_69832",
+          "type": "block",
+          "name": "Structural Steel Pylon 2",
+          "transform": {
+            "px": -24.0,
+            "py": 1.8,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_75972",
+          "type": "block",
+          "name": "Pylon Footing Pad 2",
+          "transform": {
+            "px": -24.0,
+            "py": 0.15,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_31221",
+          "type": "block",
+          "name": "Pylon Cyan Collar 2",
+          "transform": {
+            "px": -24.0,
+            "py": 3.4,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_95288",
+          "type": "block",
+          "name": "Structural Steel Pylon 3",
+          "transform": {
+            "px": -34.0,
+            "py": 1.8,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_24446",
+          "type": "block",
+          "name": "Pylon Footing Pad 3",
+          "transform": {
+            "px": -34.0,
+            "py": 0.15,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_19731",
+          "type": "block",
+          "name": "Pylon Cyan Collar 3",
+          "transform": {
+            "px": -34.0,
+            "py": 3.4,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_64938",
+          "type": "block",
+          "name": "Structural Steel Pylon 4",
+          "transform": {
+            "px": 14.0,
+            "py": 1.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_69496",
+          "type": "block",
+          "name": "Pylon Footing Pad 4",
+          "transform": {
+            "px": 14.0,
+            "py": 0.15,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_37883",
+          "type": "block",
+          "name": "Pylon Cyan Collar 4",
+          "transform": {
+            "px": 14.0,
+            "py": 3.4,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_76597",
+          "type": "block",
+          "name": "Structural Steel Pylon 5",
+          "transform": {
+            "px": 24.0,
+            "py": 1.8,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_94301",
+          "type": "block",
+          "name": "Pylon Footing Pad 5",
+          "transform": {
+            "px": 24.0,
+            "py": 0.15,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_38812",
+          "type": "block",
+          "name": "Pylon Cyan Collar 5",
+          "transform": {
+            "px": 24.0,
+            "py": 3.4,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_16417",
+          "type": "block",
+          "name": "Structural Steel Pylon 6",
+          "transform": {
+            "px": 34.0,
+            "py": 1.8,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_11562",
+          "type": "block",
+          "name": "Pylon Footing Pad 6",
+          "transform": {
+            "px": 34.0,
+            "py": 0.15,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_68278",
+          "type": "block",
+          "name": "Pylon Cyan Collar 6",
+          "transform": {
+            "px": 34.0,
+            "py": 3.4,
+            "pz": -26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_99310",
+          "type": "block",
+          "name": "Structural Steel Pylon 7",
+          "transform": {
+            "px": -18.0,
+            "py": 1.8,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_61772",
+          "type": "block",
+          "name": "Pylon Footing Pad 7",
+          "transform": {
+            "px": -18.0,
+            "py": 0.15,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_79175",
+          "type": "block",
+          "name": "Pylon Cyan Collar 7",
+          "transform": {
+            "px": -18.0,
+            "py": 3.4,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_89193",
+          "type": "block",
+          "name": "Structural Steel Pylon 8",
+          "transform": {
+            "px": -28.0,
+            "py": 1.8,
+            "pz": 26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_79913",
+          "type": "block",
+          "name": "Pylon Footing Pad 8",
+          "transform": {
+            "px": -28.0,
+            "py": 0.15,
+            "pz": 26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_79050",
+          "type": "block",
+          "name": "Pylon Cyan Collar 8",
+          "transform": {
+            "px": -28.0,
+            "py": 3.4,
+            "pz": 26.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_71878",
+          "type": "block",
+          "name": "Structural Steel Pylon 9",
+          "transform": {
+            "px": 22.0,
+            "py": 1.8,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_55949",
+          "type": "block",
+          "name": "Pylon Footing Pad 9",
+          "transform": {
+            "px": 22.0,
+            "py": 0.15,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_96621",
+          "type": "block",
+          "name": "Pylon Cyan Collar 9",
+          "transform": {
+            "px": 22.0,
+            "py": 3.4,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_67279",
+          "type": "block",
+          "name": "Structural Steel Pylon 10",
+          "transform": {
+            "px": 30.0,
+            "py": 1.8,
+            "pz": 24.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_17835",
+          "type": "block",
+          "name": "Pylon Footing Pad 10",
+          "transform": {
+            "px": 30.0,
+            "py": 0.15,
+            "pz": 24.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_32143",
+          "type": "block",
+          "name": "Pylon Cyan Collar 10",
+          "transform": {
+            "px": 30.0,
+            "py": 3.4,
+            "pz": 24.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_78846",
+          "type": "block",
+          "name": "Structural Steel Pylon 11",
+          "transform": {
+            "px": -2.0,
+            "py": 1.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_35991",
+          "type": "block",
+          "name": "Pylon Footing Pad 11",
+          "transform": {
+            "px": -2.0,
+            "py": 0.15,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_77560",
+          "type": "block",
+          "name": "Pylon Cyan Collar 11",
+          "transform": {
+            "px": -2.0,
+            "py": 3.4,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_22647",
+          "type": "block",
+          "name": "Structural Steel Pylon 12",
+          "transform": {
+            "px": 6.0,
+            "py": 1.8,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 3.6,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_26542",
+          "type": "block",
+          "name": "Pylon Footing Pad 12",
+          "transform": {
+            "px": 6.0,
+            "py": 0.15,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 2.2
+          }
+        },
+        {
+          "id": "block_54426",
+          "type": "block",
+          "name": "Pylon Cyan Collar 12",
+          "transform": {
+            "px": 6.0,
+            "py": 3.4,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.7,
+            "sy": 0.4,
+            "sz": 1.7
+          }
+        },
+        {
+          "id": "block_72258",
+          "type": "block",
+          "name": "Substructure Cross Girder 1",
+          "transform": {
+            "px": 1.0,
+            "py": 3.2,
+            "pz": -18.0,
+            "rx": 0.0,
+            "ry": 1.5708,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.6,
+            "sz": 26.0
+          }
+        },
+        {
+          "id": "block_52162",
+          "type": "block",
+          "name": "Substructure Cross Girder 2",
+          "transform": {
+            "px": -18.0,
+            "py": 3.2,
+            "pz": -20.0,
+            "rx": 0.0,
+            "ry": 1.249,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.6,
+            "sz": 12.6491
+          }
+        },
+        {
+          "id": "block_43246",
+          "type": "block",
+          "name": "Substructure Cross Girder 3",
+          "transform": {
+            "px": 19.0,
+            "py": 3.2,
+            "pz": -20.0,
+            "rx": 0.0,
+            "ry": 1.9513,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 0.6,
+            "sz": 10.7703
+          }
+        },
+        {
+          "id": "block_32007",
+          "type": "block",
+          "name": "Crane Foundation Base",
+          "transform": {
+            "px": -28.0,
+            "py": 0.4,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 3.4,
+            "sy": 0.8,
+            "sz": 3.4
+          }
+        },
+        {
+          "id": "block_79388",
+          "type": "block",
+          "name": "Crane Lattice Mast Lower",
+          "transform": {
+            "px": -28.0,
+            "py": 5.0,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 8.4,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_86326",
+          "type": "block",
+          "name": "Crane Lattice Mast Upper",
+          "transform": {
+            "px": -28.0,
+            "py": 12.5,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.0,
+            "sy": 7.0,
+            "sz": 1.0
+          }
+        },
+        {
+          "id": "block_88751",
+          "type": "block",
+          "name": "Crane Operator Cabin",
+          "transform": {
+            "px": -27.4,
+            "py": 16.3,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 1.4,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_46091",
+          "type": "block",
+          "name": "Crane Horizontal Jib",
+          "transform": {
+            "px": -22.0,
+            "py": 17.2,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 14.0,
+            "sy": 0.6,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_83490",
+          "type": "block",
+          "name": "Crane Counter-Jib",
+          "transform": {
+            "px": -31.0,
+            "py": 17.2,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.0,
+            "sy": 0.6,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_95611",
+          "type": "block",
+          "name": "Crane Concrete Counterweight",
+          "transform": {
+            "px": -32.5,
+            "py": 16.8,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 1.2,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_93490",
+          "type": "block",
+          "name": "Crane Apex Peak",
+          "transform": {
+            "px": -28.0,
+            "py": 18.6,
+            "pz": -32.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 2.2,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_69159",
+          "type": "block",
+          "name": "West Chasm Retaining Wall",
+          "transform": {
+            "px": -39.0,
+            "py": 1.2,
+            "pz": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 2.4,
+            "sz": 40.0
+          }
+        },
+        {
+          "id": "block_91951",
+          "type": "block",
+          "name": "East Chasm Retaining Wall",
+          "transform": {
+            "px": 39.0,
+            "py": 1.2,
+            "pz": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 2.4,
+            "sz": 40.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_9624",
+      "type": "group",
+      "name": "Vehicles & Industrial Props",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_68939",
+          "type": "block",
+          "name": "Hauler Truck Chassis",
+          "transform": {
+            "px": -20.0,
+            "py": 0.45,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.3,
+            "sz": 5.2
+          }
+        },
+        {
+          "id": "block_13950",
+          "type": "block",
+          "name": "Hauler Wheel",
+          "transform": {
+            "px": -21.8385,
+            "py": 0.35,
+            "pz": 18.4243,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.7,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_74196",
+          "type": "block",
+          "name": "Hauler Wheel",
+          "transform": {
+            "px": -20.4243,
+            "py": 0.35,
+            "pz": 19.8385,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.7,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_32560",
+          "type": "block",
+          "name": "Hauler Wheel",
+          "transform": {
+            "px": -19.5757,
+            "py": 0.35,
+            "pz": 16.1615,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.7,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_68918",
+          "type": "block",
+          "name": "Hauler Wheel",
+          "transform": {
+            "px": -18.1615,
+            "py": 0.35,
+            "pz": 17.5757,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.7,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_69952",
+          "type": "block",
+          "name": "Hauler Driver Cabin",
+          "transform": {
+            "px": -20.9899,
+            "py": 1.2,
+            "pz": 18.9899,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 2.0,
+            "sy": 1.3,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_13745",
+          "type": "block",
+          "name": "Hauler Cabin Visor",
+          "transform": {
+            "px": -21.1314,
+            "py": 1.8,
+            "pz": 19.1314,
+            "rx": -0.2,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 1.9,
+            "sy": 0.2,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_85555",
+          "type": "block",
+          "name": "Hauler Cargo Box",
+          "transform": {
+            "px": -19.2222,
+            "py": 1.1,
+            "pz": 17.2222,
+            "rx": 0.0,
+            "ry": -0.7854,
+            "rz": 0.0,
+            "sx": 2.1,
+            "sy": 1.0,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_38580",
+          "type": "block",
+          "name": "Heavy Rover Flatbed",
+          "transform": {
+            "px": 24.0,
+            "py": 0.5,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 2.6,
+            "sy": 0.4,
+            "sz": 6.8
+          }
+        },
+        {
+          "id": "block_74351",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 24.6718,
+            "py": 0.45,
+            "pz": 20.4395,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_37632",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 26.4395,
+            "py": 0.45,
+            "pz": 18.6718,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_99888",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 23.1161,
+            "py": 0.45,
+            "pz": 18.8839,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_16734",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 24.8839,
+            "py": 0.45,
+            "pz": 17.1161,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_68329",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 21.5605,
+            "py": 0.45,
+            "pz": 17.3282,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_61951",
+          "type": "block",
+          "name": "Heavy Rover Bogie Wheel",
+          "transform": {
+            "px": 23.3282,
+            "py": 0.45,
+            "pz": 15.5605,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.85,
+            "sz": 0.95
+          }
+        },
+        {
+          "id": "block_87586",
+          "type": "block",
+          "name": "Heavy Rover Armored Cab",
+          "transform": {
+            "px": 25.6971,
+            "py": 1.15,
+            "pz": 19.6971,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 2.3,
+            "sy": 0.9,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_16559",
+          "type": "block",
+          "name": "Industrial Generator Cargo",
+          "transform": {
+            "px": 23.5757,
+            "py": 1.4,
+            "pz": 17.5757,
+            "rx": 0.0,
+            "ry": 0.7854,
+            "rz": 0.0,
+            "sx": 2.1,
+            "sy": 1.4,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_49328",
+          "type": "block",
+          "name": "Cargo Crate Alpha",
+          "transform": {
+            "px": -7.5,
+            "py": 0.4,
+            "pz": 1.5,
+            "rx": 0.0,
+            "ry": 0.15,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_68582",
+          "type": "block",
+          "name": "Cargo Crate Beta",
+          "transform": {
+            "px": -7.2,
+            "py": 0.95,
+            "pz": 1.6,
+            "rx": 0.0,
+            "ry": -0.1,
+            "rz": 0.0,
+            "sx": 0.9,
+            "sy": 0.5,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_80565",
+          "type": "block",
+          "name": "Cargo Crate Gamma",
+          "transform": {
+            "px": 11.5,
+            "py": 0.45,
+            "pz": 2.2,
+            "rx": 0.0,
+            "ry": 0.3,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 0.9,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_30445",
+          "type": "block",
+          "name": "Concrete Debris Pile West",
+          "transform": {
+            "px": -12.5,
+            "py": 0.35,
+            "pz": 8.5,
+            "rx": 0.0,
+            "ry": -0.2,
+            "rz": 0.0,
+            "sx": 2.2,
+            "sy": 0.7,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_60313",
+          "type": "block",
+          "name": "Concrete Debris Pile East",
+          "transform": {
+            "px": 16.5,
+            "py": 0.35,
+            "pz": 8.5,
+            "rx": 0.0,
+            "ry": 0.25,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.7,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_34883",
+          "type": "block",
+          "name": "Rotunda Plinth Rubble Left",
+          "transform": {
+            "px": -3.2,
+            "py": 2.65,
+            "pz": 0.5,
+            "rx": 0.0,
+            "ry": 0.4,
+            "rz": 0.0,
+            "sx": 1.6,
+            "sy": 0.5,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_59423",
+          "type": "block",
+          "name": "Rotunda Plinth Rubble Right",
+          "transform": {
+            "px": 6.8,
+            "py": 2.65,
+            "pz": 0.5,
+            "rx": 0.0,
+            "ry": -0.35,
+            "rz": 0.0,
+            "sx": 1.5,
+            "sy": 0.5,
+            "sz": 1.3
+          }
+        }
+      ]
+    }
+  ],
+  "num_assets": 251
+}

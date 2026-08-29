@@ -145,10 +145,16 @@ function removeNodeInput(node: ComfyNode, name: string): void {
   }
 }
 
+export function isStagingGLBNode(node: ComfyNode | null | undefined): boolean {
+  if (!node) return false
+  const cls = node.constructor?.comfyClass || node.type
+  return cls === 'StagingGLBNode' || cls === 'UBStagingGLBNode'
+}
+
 export function isStagingNode(node: ComfyNode | null | undefined): boolean {
   if (!node) return false
   const cls = node.constructor?.comfyClass || node.type
-  return cls === 'StagingNode' || cls === 'UBStagingNode' || cls === 'StageNode' || cls === 'SceneNode'
+  return cls === 'StagingNode' || cls === 'UBStagingNode' || cls === 'StageNode' || cls === 'SceneNode' || isStagingGLBNode(node)
 }
 
 export function isActingNode(node: ComfyNode | null | undefined): boolean {
@@ -161,6 +167,26 @@ export function isDirectingNode(node: ComfyNode | null | undefined): boolean {
   if (!node) return false
   const cls = node.constructor?.comfyClass || node.type
   return cls === 'DirectingNode' || cls === 'UBDirectingNode'
+}
+
+export function readGLBStageStateFromNode(node: ComfyNode): any {
+  const glbFile = getWidgetValue<string>(node, 'glb_file', '')
+  const scale = getWidgetValue<number>(node, 'stage_scale', 1.0)
+  const offsetY = getWidgetValue<number>(node, 'offset_y', 0.0)
+  const rotY = getWidgetValue<number>(node, 'rotation_y', 0.0)
+
+  const filename = glbFile && glbFile !== 'None' ? String(glbFile).trim() : ''
+  const glbUrl = filename ? `/scene_camera_action/get_glb?filename=${encodeURIComponent(filename)}` : ''
+
+  return {
+    type: 'glb_stage',
+    glb_path: filename,
+    glb_url: glbUrl,
+    stage_scale: typeof scale === 'number' && !isNaN(scale) ? scale : 1.0,
+    offset: [0.0, typeof offsetY === 'number' && !isNaN(offsetY) ? offsetY : 0.0, 0.0],
+    rotation_y: typeof rotY === 'number' && !isNaN(rotY) ? rotY : 0.0,
+    selectedPreset: filename,
+  }
 }
 
 // --- Helpers for StageNode ---
@@ -197,6 +223,10 @@ function getLinkedInputValue(node: ComfyNode, inputName: string): string | null 
 
   const originNode = graph.getNodeById?.(link.origin_id)
   if (!originNode) return null
+
+  if (isStagingGLBNode(originNode)) {
+    return JSON.stringify(readGLBStageStateFromNode(originNode))
+  }
 
   if (isStagingNode(originNode)) {
     const state = readStageStateFromNode(originNode)
@@ -250,11 +280,15 @@ function writeStoredStageProps(node: ComfyNode, patch: Partial<StageState>): voi
 const writeStoredSceneProps = writeStoredStageProps
 
 function readStageStateFromNode(node: ComfyNode): Partial<StageState> {
+  if (isStagingGLBNode(node)) {
+    return readGLBStageStateFromNode(node)
+  }
+
   const linkedStage = getLinkedInputValue(node, 'stage') || getLinkedInputValue(node, 'stage_data') || getLinkedInputValue(node, 'scene') || getLinkedInputValue(node, 'scene_data')
   if (linkedStage) {
     try {
       const parsed = JSON.parse(linkedStage)
-      if (parsed && typeof parsed === 'object' && parsed.nodes) {
+      if (parsed && typeof parsed === 'object' && (parsed.nodes || parsed.type === 'glb_stage')) {
         return parsed
       }
     } catch (e) { }
@@ -405,6 +439,9 @@ function writeStoredActingProps(node: ComfyNode, patch: Partial<ActingState>): v
   }
   if (typeof patch.actor_scale === 'number') {
     existing.actor_scale = patch.actor_scale
+  }
+  if (typeof (patch as any).camera_distance === 'number') {
+    existing.camera_distance = (patch as any).camera_distance
   }
   node.properties[ACTING_PROP_KEY] = existing
 }
@@ -619,12 +656,19 @@ function updateActingNodeState(actingNode: ComfyNode): void {
     // 1. Resolve root Staging node geometry
     const rootStagingNode = findRootStagingNode(actingNode)
     if (rootStagingNode) {
-      const sceneInst = sceneInstances.get(rootStagingNode)
-      const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
-      if (threeScene && actingInst.exposed.setConnectedThreeStage) {
-        actingInst.exposed.setConnectedThreeStage(threeScene)
+      if (isStagingGLBNode(rootStagingNode)) {
+        if (actingInst.exposed.setConnectedThreeStage) {
+          actingInst.exposed.setConnectedThreeStage(null)
+        }
+        stageState = readGLBStageStateFromNode(rootStagingNode) as any
+      } else {
+        const sceneInst = sceneInstances.get(rootStagingNode)
+        const threeScene = sceneInst && sceneInst.exposed.getThreeScene ? sceneInst.exposed.getThreeScene() : null
+        if (threeScene && actingInst.exposed.setConnectedThreeStage) {
+          actingInst.exposed.setConnectedThreeStage(threeScene)
+        }
+        stageState = readSceneStateFromNode(rootStagingNode) as SceneState
       }
-      stageState = readSceneStateFromNode(rootStagingNode) as SceneState
     }
 
     if (!stageState) {
@@ -953,6 +997,7 @@ function readActingStateFromNode(node: ComfyNode): Partial<ActingState> {
     actor_scale: typeof scaleVal === 'number' && !isNaN(scaleVal) ? Math.max(0.3, Math.min(2.0, scaleVal)) : defaultScale,
     duration: typeof durationVal === 'number' ? Math.max(4.0, Math.min(15.0, durationVal)) : 7.0,
     motion_data: motionDataVal,
+    camera_distance: typeof (storedProps as any)?.camera_distance === 'number' ? (storedProps as any).camera_distance : 1.0,
     spawn_point: storedProps?.spawn_point,
     scene_data: storedProps?.scene_data ?? (undefined as any),
     stage_data: storedProps?.stage_data ?? storedProps?.scene_data ?? (undefined as any),
@@ -987,6 +1032,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       actor_speed: stored.actor_speed ?? 10.0,
       actor_scale: stored.actor_scale ?? (stored.actor_type === 'quadruped' ? 0.5 : 1.0),
       duration: stored.duration ?? 7.0,
+      camera_distance: (stored as any).camera_distance ?? 1.0,
       spawn_point: stored.spawn_point,
       motion_data: stored.motion_data ?? '',
       scene_data: initialSceneState,
@@ -995,6 +1041,7 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
     },
     onStateChange: (state: ActingState) => {
       const live = instance.currentNode
+      const prevProps = readStoredActingProps(live)
       writeStoredActingProps(live, state)
       
       // Update the widget values in ComfyUI node if they differ from state
@@ -1009,7 +1056,20 @@ function createActingInstance(node: ComfyNode): ActingNodeInstance {
       setWidgetValue(live, 'motion_data', state.motion_data ?? '')
 
       app.graph?.setDirtyCanvas(true, true)
-      syncGraph()
+
+      // Only re-sync graph if graph-relevant properties actually changed
+      const graphRelevantChanged =
+        prevProps?.motion_data !== state.motion_data ||
+        prevProps?.duration !== state.duration ||
+        prevProps?.actor_type !== state.actor_type ||
+        prevProps?.actor_scale !== state.actor_scale ||
+        prevProps?.actor_speed !== state.actor_speed ||
+        prevProps?.actor_color !== state.actor_color ||
+        JSON.stringify(prevProps?.spawn_point) !== JSON.stringify(state.spawn_point)
+
+      if (graphRelevantChanged) {
+        syncGraph()
+      }
     }
   })
 
@@ -1411,6 +1471,45 @@ app.registerExtension({
   },
 
   nodeCreated(node: ComfyNode) {
+    if (isStagingGLBNode(node)) {
+      const hookGLBWidgets = (n: ComfyNode) => {
+        const watchWidgets = ['glb_file', 'stage_scale', 'offset_y', 'rotation_y']
+        for (const name of watchWidgets) {
+          const w = n.widgets?.find(w => w.name === name)
+          if (w && !(w as any).__glbHooked) {
+            ;(w as any).__glbHooked = true
+            const origCb = w.callback
+            w.callback = function (value: any) {
+              origCb?.call(this, value)
+              syncGraph()
+            }
+          }
+        }
+      }
+
+      hookGLBWidgets(node)
+
+      const origOnConfigure = node.onConfigure
+      node.onConfigure = function (info) {
+        origOnConfigure?.call(this, info)
+        hookGLBWidgets(this)
+        setTimeout(() => syncGraph(), 50)
+      }
+
+      const origOnConnectionsChange = node.onConnectionsChange
+      node.onConnectionsChange = function (slotType, slotIndex, isConnected, link, ioSlot) {
+        origOnConnectionsChange?.call(this, slotType, slotIndex, isConnected, link, ioSlot)
+        syncGraph()
+      }
+
+      const origOnExecuted = node.onExecuted
+      node.onExecuted = function (message: any) {
+        origOnExecuted?.call(this, message)
+        syncGraph()
+      }
+      return
+    }
+
     if (isStagingNode(node)) {
       hideNodeWidget(node, 'stage_data')
       hideNodeWidget(node, 'scene_data')

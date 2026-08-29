@@ -60,12 +60,26 @@ export interface ActorRecord {
   trajectory: MotionFrame[]
 }
 
-export interface StageState {
-  type: string
+export interface CubeStageState {
+  type: 'cube_stage' | string
   num_assets: number
   nodes?: StageNode[]
   selectedPreset?: string
 }
+
+export interface GLBStageState {
+  type: 'glb_stage'
+  glb_path: string
+  glb_url: string
+  stage_scale?: number
+  offset?: [number, number, number]
+  rotation_y?: number
+  selectedPreset?: string
+  num_assets?: number
+  nodes?: StageNode[]
+}
+
+export type StageState = CubeStageState | GLBStageState
 export type SceneState = StageState
 
 export interface ActingState {

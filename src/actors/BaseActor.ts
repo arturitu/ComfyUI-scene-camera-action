@@ -74,7 +74,7 @@ export abstract class BaseActor {
 
   public applyGhostProperties(): void {
     this.group.traverse((child) => {
-      if (child === this.colliderWireframe || child.name?.includes('collider')) {
+      if (child === this.colliderWireframe) {
         return
       }
       if (child instanceof THREE.Mesh) {
@@ -190,16 +190,36 @@ export abstract class BaseActor {
     if (!colliderBVH) {
       return { y: config.GROUND_Y, normal: new THREE.Vector3(0, 1, 0), hit: true }
     }
-    const rayOriginHeight = Math.max(1.5, 1.5 * this.scale)
-    const maxDropDistance = Math.max(2.5, 2.5 * this.scale)
-    const totalRayDistance = rayOriginHeight + maxDropDistance
+    const rayOriginHeight = Math.max(0.6, 0.6 * this.scale)
+    const maxDropDistance = Math.max(3.0, 3.0 * this.scale)
+    const rayStartY = currentY + rayOriginHeight
+    const minRayY = currentY - maxDropDistance
 
-    _tempRay.origin.set(x, currentY + rayOriginHeight, z)
+    _tempRay.origin.set(x, rayStartY, z)
     _tempRay.direction.set(0, -1, 0)
-    const hit = colliderBVH.raycastFirst(_tempRay)
 
-    if (hit && hit.face && hit.face.normal && hit.face.normal.y >= 0.55 && hit.distance <= totalRayDistance) {
-      return { y: (currentY + rayOriginHeight) - hit.distance, normal: hit.face.normal, hit: true }
+    let bestY: number | null = null
+    const bestNormal = new THREE.Vector3(0, 1, 0)
+
+    colliderBVH.shapecast({
+      intersectsBounds: (box: THREE.Box3) => _tempRay.intersectsBox(box),
+      intersectsTriangle: (tri: any) => {
+        tri.getNormal(_tempNormal)
+        if (_tempNormal.y >= 0.55) {
+          if (_tempRay.intersectTriangle(tri.a, tri.b, tri.c, false, _tempHitPoint)) {
+            if (_tempHitPoint.y <= rayStartY && _tempHitPoint.y >= minRayY) {
+              if (bestY === null || _tempHitPoint.y > bestY) {
+                bestY = _tempHitPoint.y
+                bestNormal.copy(_tempNormal)
+              }
+            }
+          }
+        }
+      }
+    })
+
+    if (bestY !== null) {
+      return { y: bestY, normal: bestNormal, hit: true }
     }
     return { y: -100.0, normal: new THREE.Vector3(0, 1, 0), hit: false }
   }

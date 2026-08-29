@@ -93,8 +93,8 @@ export const MAIN_LIGHT_OFFSET = new THREE.Vector3(-35, 55, 35)
 // Shadow Settings (Smart Target-Tracking for 100x100m stage coverage)
 export const SHADOW_MAP_WIDTH = 2048
 export const SHADOW_MAP_HEIGHT = 2048
-export const SHADOW_BIAS = -0.0001
-export const SHADOW_NORMAL_BIAS = 0.02
+export const SHADOW_BIAS = -0.0003
+export const SHADOW_NORMAL_BIAS = 0.05
 export const SHADOW_FRUSTUM_SIZE = 50 // Covers 120x120m full stage bounds
 
 // Hemisphere Light Config
@@ -114,7 +114,7 @@ export const EDGE_OPACITY = 0.4
 // Ground and Floor Height Config
 export const GROUND_Y = 0.0
 export const GRID_Y = 0.0
-export const FLOOR_Y = -0.002
+export const FLOOR_Y = -0.05
 export const DEFAULT_ACTOR_ROTATION_Y = 0 // 0 degrees in radians (facing +Z)
 
 // Floor Material Config
@@ -255,7 +255,13 @@ export function injectDitherShader(
   material: THREE.Material,
   uniformHolder?: { uDitherOpacity: { value: number } }
 ): { uDitherOpacity: { value: number } } {
+  if ((material as any).__ditherShaderInjected) {
+    return (material as any).__ditherUniform || { uDitherOpacity: { value: 1.0 } }
+  }
+  (material as any).__ditherShaderInjected = true
+
   const ditherUniform = uniformHolder || { uDitherOpacity: { value: 1.0 } }
+  ;(material as any).__ditherUniform = ditherUniform
 
   const originalOnBeforeCompile = material.onBeforeCompile
   material.onBeforeCompile = (shader, renderer) => {
@@ -281,20 +287,7 @@ export function injectDitherShader(
       shader.vertexShader = shader.vertexShader.replace(
         '#include <begin_vertex>',
         `#include <begin_vertex>
-        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
-      )
-    } else {
-      shader.vertexShader = shader.vertexShader.replace(
-        'void main() {',
-        `void main() {
-        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;`
-      )
-    }
-
-    if (shader.vertexShader.includes('#include <worldpos_vertex>')) {
-      shader.vertexShader = shader.vertexShader.replace(
-        '#include <worldpos_vertex>',
-        `#include <worldpos_vertex>
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
         #ifdef USE_INSTANCING
           vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(transformed, 1.0))).xyz;
         #else
@@ -305,6 +298,7 @@ export function injectDitherShader(
       shader.vertexShader = shader.vertexShader.replace(
         'void main() {',
         `void main() {
+        vInstanceDither = (instanceDither > 0.0) ? instanceDither : 1.0;
         #ifdef USE_INSTANCING
           vStageWorldPos = (modelMatrix * (instanceMatrix * vec4(position, 1.0))).xyz;
         #else
@@ -418,6 +412,111 @@ export function injectDitherShader(
 export const injectStageShader = injectDitherShader
 
 /**
+ * Injects rounded-box distance fade and background blend into the floor plane material.
+ * Completely free of Bayer dither matrix and attribute requirements.
+ */
+export function injectFloorShader(material: THREE.Material): void {
+  if ((material as any).__floorShaderInjected) return
+  ;(material as any).__floorShaderInjected = true
+
+  const originalOnBeforeCompile = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile.call(material, shader, renderer)
+    }
+
+    shader.uniforms.uStageFadeEnabled = stageFadeUniforms.uStageFadeEnabled
+    shader.uniforms.uStageFadeInnerRadius = stageFadeUniforms.uStageFadeInnerRadius
+    shader.uniforms.uStageFadeOuterRadius = stageFadeUniforms.uStageFadeOuterRadius
+    shader.uniforms.uStageFadeCornerRadius = stageFadeUniforms.uStageFadeCornerRadius
+    shader.uniforms.uStageFadeBgColor = stageFadeUniforms.uStageFadeBgColor
+
+    const floorVertexPars = `
+      varying vec3 vStageWorldPos;
+    `
+    shader.vertexShader = floorVertexPars + '\n' + shader.vertexShader
+
+    if (shader.vertexShader.includes('#include <begin_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vStageWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+      )
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        `void main() {
+        vStageWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;`
+      )
+    }
+
+    const floorFragmentPars = `
+      varying vec3 vStageWorldPos;
+      uniform float uStageFadeEnabled;
+      uniform float uStageFadeInnerRadius;
+      uniform float uStageFadeOuterRadius;
+      uniform float uStageFadeCornerRadius;
+      uniform vec3 uStageFadeBgColor;
+
+      float getFloorRoundedBoxDist(vec2 p) {
+        float cr = clamp(uStageFadeCornerRadius, 0.0, uStageFadeOuterRadius);
+        float s = max(0.0, uStageFadeOuterRadius - cr);
+        vec2 q = abs(p) - vec2(s);
+        return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) + cr;
+      }
+    `
+    shader.fragmentShader = floorFragmentPars + '\n' + shader.fragmentShader
+
+    const floorDiscardSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getFloorRoundedBoxDist(vStageWorldPos.xz);
+        if (distBox >= uStageFadeOuterRadius) {
+          discard;
+        }
+      }
+    `
+
+    if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        ${floorDiscardSnippet}`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        `void main() {
+        ${floorDiscardSnippet}`
+      )
+    }
+
+    const stageFadeColorBlendSnippet = `
+      if (uStageFadeEnabled > 0.5) {
+        float distBox = getFloorRoundedBoxDist(vStageWorldPos.xz);
+        float fadeFactor = smoothstep(uStageFadeInnerRadius, uStageFadeOuterRadius, distBox);
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, uStageFadeBgColor, fadeFactor);
+      }
+    `
+
+    if (shader.fragmentShader.includes('#include <colorspace_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <colorspace_fragment>',
+        `${stageFadeColorBlendSnippet}
+        #include <colorspace_fragment>`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'gl_FragColor =',
+        `${stageFadeColorBlendSnippet}
+        gl_FragColor =`
+      )
+    }
+  }
+
+  material.needsUpdate = true
+}
+
+/**
  * Injects rounded-box distance fade into Line materials (such as GridHelper).
  */
 export function injectGridFadeShader(material: THREE.Material): void {
@@ -500,5 +599,152 @@ export function injectGridFadeShader(material: THREE.Material): void {
   }
 
   material.transparent = true
+  material.needsUpdate = true
+}
+
+export const glbCutoutUniforms = {
+  uCameraPos: { value: new THREE.Vector3() },
+  uActorTargetPos: { value: new THREE.Vector3() },
+  uActorBasePos: { value: new THREE.Vector3() },
+  uCutoutRadius: { value: 1.8 },
+  uCutoutEnabled: { value: 1.0 },
+}
+
+/**
+ * Injects geometric camera-ray line-of-sight Bayer dither cutout into GLB materials.
+ * Smoothly dissolves occluding architecture between camera and actor, while strictly
+ * preserving floors, platforms, steps, and elements underneath the actor.
+ */
+export function injectGLBCutoutShader(material: THREE.Material): void {
+  if ((material as any).__glbCutoutInjected) return
+  ;(material as any).__glbCutoutInjected = true
+
+  const originalOnBeforeCompile = material.onBeforeCompile
+  material.onBeforeCompile = (shader, renderer) => {
+    if (originalOnBeforeCompile) {
+      originalOnBeforeCompile.call(material, shader, renderer)
+    }
+
+    shader.uniforms.uGLBCameraPos = glbCutoutUniforms.uCameraPos
+    shader.uniforms.uGLBActorTargetPos = glbCutoutUniforms.uActorTargetPos
+    shader.uniforms.uGLBActorBasePos = glbCutoutUniforms.uActorBasePos
+    shader.uniforms.uGLBCutoutRadius = glbCutoutUniforms.uCutoutRadius
+    shader.uniforms.uGLBCutoutEnabled = glbCutoutUniforms.uCutoutEnabled
+
+    const vertexPars = `
+      varying vec3 vGLBWorldPos;
+      varying vec3 vGLBWorldNormal;
+    `
+    shader.vertexShader = vertexPars + '\n' + shader.vertexShader
+
+    if (shader.vertexShader.includes('#include <worldpos_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <worldpos_vertex>',
+        `#include <worldpos_vertex>
+        vGLBWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        vGLBWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);`
+      )
+    } else if (shader.vertexShader.includes('#include <begin_vertex>')) {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+        vGLBWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+        vGLBWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);`
+      )
+    } else {
+      shader.vertexShader = shader.vertexShader.replace(
+        'void main() {',
+        `void main() {
+        vGLBWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+        vGLBWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);`
+      )
+    }
+
+    const fragmentPars = `
+      varying vec3 vGLBWorldPos;
+      varying vec3 vGLBWorldNormal;
+      uniform vec3 uGLBCameraPos;
+      uniform vec3 uGLBActorTargetPos;
+      uniform vec3 uGLBActorBasePos;
+      uniform float uGLBCutoutRadius;
+      uniform float uGLBCutoutEnabled;
+
+      float getGLBDitherThreshold(vec2 pos) {
+        int x = int(mod(pos.x, 4.0));
+        int y = int(mod(pos.y, 4.0));
+        if (x == 0) {
+          if (y == 0) return 0.0625;
+          if (y == 1) return 0.8125;
+          if (y == 2) return 0.25;
+          return 1.0;
+        } else if (x == 1) {
+          if (y == 0) return 0.5625;
+          if (y == 1) return 0.3125;
+          if (y == 2) return 0.75;
+          return 0.5;
+        } else if (x == 2) {
+          if (y == 0) return 0.1875;
+          if (y == 1) return 0.9375;
+          if (y == 2) return 0.125;
+          return 0.875;
+        } else {
+          if (y == 0) return 0.6875;
+          if (y == 1) return 0.4375;
+          if (y == 2) return 0.625;
+          return 0.375;
+        }
+      }
+    `
+    shader.fragmentShader = fragmentPars + '\n' + shader.fragmentShader
+
+    const cutoutSnippet = `
+      if (uGLBCutoutEnabled > 0.5) {
+        // Protect floors, steps, platforms, and anything below the actor's contact level
+        bool isBeneathActor = vGLBWorldPos.y < (uGLBActorBasePos.y + 0.1);
+        bool isUpwardSurface = vGLBWorldNormal.y > 0.45 && vGLBWorldPos.y < (uGLBActorTargetPos.y + 0.15);
+
+        if (!isBeneathActor && !isUpwardSurface) {
+          vec3 rayVec = uGLBActorTargetPos - uGLBCameraPos;
+          float rayLen = length(rayVec);
+          if (rayLen > 0.8) {
+            vec3 rayDir = rayVec / rayLen;
+            vec3 toFrag = vGLBWorldPos - uGLBCameraPos;
+            float t = dot(toFrag, rayDir);
+
+            // Only cutout obstacles strictly situated between camera and actor
+            if (t > 0.4 && t < (rayLen - 0.35)) {
+              vec3 proj = uGLBCameraPos + rayDir * t;
+              float distToRay = length(vGLBWorldPos - proj);
+              
+              float tNorm = clamp(t / rayLen, 0.0, 1.0);
+              float effRadius = uGLBCutoutRadius * mix(0.75, 1.1, tNorm);
+
+              if (distToRay < effRadius) {
+                float ditherFactor = smoothstep(effRadius * 0.35, effRadius, distToRay);
+                if (ditherFactor < 0.999 && ditherFactor < getGLBDitherThreshold(gl_FragCoord.xy)) {
+                  discard;
+                }
+              }
+            }
+          }
+        }
+      }
+    `
+
+    if (shader.fragmentShader.includes('#include <dithering_fragment>')) {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <dithering_fragment>',
+        `#include <dithering_fragment>
+        ${cutoutSnippet}`
+      )
+    } else {
+      shader.fragmentShader = shader.fragmentShader.replace(
+        'void main() {',
+        `void main() {
+        ${cutoutSnippet}`
+      )
+    }
+  }
+
   material.needsUpdate = true
 }

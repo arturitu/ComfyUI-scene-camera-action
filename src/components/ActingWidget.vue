@@ -1,6 +1,6 @@
 <template>
   <div ref="widgetContainerRef" class="three-container" @mouseenter="onNodePointerEnter" @mouseleave="onNodePointerLeave">
-    <div v-if="!state.scene_data" class="disabled-overlay">
+    <div v-if="!state.scene_data && !state.stage_data" class="disabled-overlay">
       <div class="disabled-title">Acting Canvas Disabled</div>
       <div class="disabled-subtitle">Connect a Stage or Acting 3D Node to activate.</div>
     </div>
@@ -141,7 +141,7 @@
     </div>
 
     <div class="info-overlay">
-      <template v-if="state.scene_data">
+      <template v-if="state.scene_data || state.stage_data">
         <div v-if="isPlaying" class="state-indicator playing">
           <Play :size="10" class="status-icon fill-icon" /> REPLAYING
         </div>
@@ -297,7 +297,8 @@ const state = reactive<ActingState>({
   duration: props.initialState?.duration ?? 7.0,
   spawn_point: props.initialState?.spawn_point,
   motion_data: props.initialState?.motion_data ?? '',
-  scene_data: props.initialState?.scene_data ?? null as any,
+  scene_data: props.initialState?.scene_data ?? props.initialState?.stage_data ?? null as any,
+  stage_data: props.initialState?.stage_data ?? props.initialState?.scene_data ?? null as any,
   actors: props.initialState?.actors ?? []
 })
 
@@ -527,6 +528,15 @@ const setState = (newState: Partial<ActingState>) => {
   }
   if (newState.hasOwnProperty('scene_data')) {
     state.scene_data = newState.scene_data as any
+    if (!state.stage_data) {
+      state.stage_data = newState.scene_data as any
+    }
+  }
+  if (newState.hasOwnProperty('stage_data')) {
+    state.stage_data = newState.stage_data as any
+    if (!state.scene_data) {
+      state.scene_data = newState.stage_data as any
+    }
   }
   if (newState.hasOwnProperty('actor_type')) {
     state.actor_type = newState.actor_type as any
@@ -580,18 +590,6 @@ const cleanup = () => {
   }
 }
 
-watch(() => state.stage_data || state.scene_data, (newVal) => {
-  if (threeActing) {
-    threeActing.setState({ stage_data: newVal ?? undefined, scene_data: newVal ?? undefined })
-  }
-})
-
-watch(() => state.actor_color, (newColor) => {
-  if (threeActing && newColor) {
-    threeActing.setActorColor(newColor)
-  }
-})
-
 const currentTime = ref(0)
 const practiceElapsed = ref(0)
 const previousActorsCount = ref(0)
@@ -627,7 +625,7 @@ const hasOtherActors = computed(() => {
 })
 
 const showTimeCounter = computed(() => {
-  if (!state.scene_data) return false
+  if (!state.scene_data && !state.stage_data) return false
   if (isRecording.value || isCounting.value || !!state.motion_data) return true
   return hasOtherActors.value
 })
