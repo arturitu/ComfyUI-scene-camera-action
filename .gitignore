@@ -13,6 +13,7 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+*.zip
 
 # Logs
 *.log

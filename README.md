@@ -1,6 +1,6 @@
 # ComfyUI-scene-camera-action
 
-[![ComfyUI Registry](https://img.shields.io/badge/ComfyUI_Registry-comfyui--scene--camera--action-5BAEE3.svg)](https://registry.comfy.org/)
+[![ComfyUI Registry](https://img.shields.io/badge/ComfyUI_Registry-comfyui--scene--camera--action-5BAEE3.svg)](https://registry.comfy.org/publishers/arturitu/nodes/comfyui-scene-camera-action)
 [![ComfyUI Manager](https://img.shields.io/badge/ComfyUI_Manager-Compatible-success.svg)](https://github.com/Comfy-Org/ComfyUI-Manager)
 [![Release](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://github.com/arturitu/ComfyUI-scene-camera-action/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -14,7 +14,7 @@ Stop prompting movement into a black box. **ComfyUI-scene-camera-action** turns 
 
 1. **Staging:** Build navigable 3D blockout sets with instant colliders — manually or via AI prompts (`SKILL.md`).
 2. **Acting:** Playable `WASD` controls & multi-track actor chaining with live ghost replays (no keyframing!).
-3. **Directing:** Live camera cuts with anti-collision **Spring Arm**, outputting crisp 720p HD reference video (`VIDEO`) for models like **Seedance 2.5**, **MiniMax H3**, or **HunyuanVideo**.
+3. **Directing:** Live camera cuts with anti-collision **Spring Arm**, outputting crisp 720p HD reference video (`VIDEO`) for models like **Seedance 2.5 / 2.0 Fast** or **MiniMax H3 Reference-to-Video**.
 
 ![Preview](scene-camera-action.png)
 
