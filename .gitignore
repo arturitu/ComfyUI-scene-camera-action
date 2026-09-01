@@ -41,3 +41,17 @@ scratch/
 input/
 output/
 temp/
+stages/
+*.blend
+*.blend1
+*_preview.png
+*generate_clay_stage.py
+scripts/build_*.py
+
+# Teamwork & Agent artifacts
+.agents/
+ORIGINAL_REQUEST.md
+PROJECT.md
+TEST_INFRA.md
+TEST_READY.md
+
