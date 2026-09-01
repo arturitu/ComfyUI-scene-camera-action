@@ -502,8 +502,15 @@ function getChainActorsForNode(actingNode: ComfyNode): any[] {
     }
   }
 
-  // Ensure no downstream tags leaked into upstream
-  upstreamActors = upstreamActors.filter((a: any) => !a.id?.startsWith('actor_ds_') && !a.isDownstreamPeer)
+  // Ensure no downstream tags leaked into upstream AND ensure every upstream actor has a non-empty trajectory
+  upstreamActors = upstreamActors.filter((a: any) => {
+    if (a.id?.startsWith('actor_ds_') || a.isDownstreamPeer) return false
+    const traj = a.trajectory || a.motion_data
+    if (!traj) return false
+    if (Array.isArray(traj) && traj.length === 0) return false
+    if (typeof traj === 'string' && (!traj.trim() || traj.trim() === '""' || traj.trim() === '{}')) return false
+    return true
+  })
 
   // 2. Downstream recorded actors (peers downstream in the chain with recorded trajectories for practice loop)
   const downstreamActors: any[] = []

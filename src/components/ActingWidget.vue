@@ -623,7 +623,16 @@ const updateTimeCounter = () => {
 
 const hasOtherActors = computed(() => {
   if (previousActorsCount.value > 0) return true
-  return Array.isArray(state.actors) && state.actors.length > 0
+  if (Array.isArray(state.actors) && state.actors.length > 0) {
+    return state.actors.some((a: any) => {
+      const traj = a.trajectory || a.motion_data
+      if (!traj) return false
+      if (Array.isArray(traj) && traj.length > 0) return true
+      if (typeof traj === 'string' && traj.trim() && traj.trim() !== '""' && traj.trim() !== '{}') return true
+      return false
+    })
+  }
+  return false
 })
 
 const showTimeCounter = computed(() => {
