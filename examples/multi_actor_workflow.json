@@ -1,0 +1,388 @@
+{
+  "last_node_id": 10,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "StagingNode",
+      "pos": [
+        100,
+        200
+      ],
+      "size": {
+        "0": 840,
+        "1": 690
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "title": "Staging (Industrial Ruin)",
+      "inputs": [
+        {
+          "name": "stage_data",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "stage_data"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "stage_data",
+          "type": "*",
+          "links": [
+            1
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StagingNode"
+      },
+      "widgets_values": [
+        "{\n  \"type\": \"cube_stage\",\n  \"num_assets\": 56,\n  \"nodes\": [\n    {\n      \"id\": \"group_5001\",\n      \"type\": \"group\",\n      \"name\": \"West Low Barriers (Channel Margin)\",\n      \"transform\": {\n        \"px\": -3.8,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1001\",\n          \"type\": \"block\",\n          \"name\": \"Concrete Slab Alpha\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.45,\n            \"pz\": -12,\n            \"rx\": 0.05,\n            \"ry\": 0.1,\n            \"rz\": -0.08,\n            \"sx\": 1.2,\n            \"sy\": 0.9,\n            \"sz\": 3.5\n          }\n        },\n        {\n          \"id\": \"block_1002\",\n          \"type\": \"block\",\n          \"name\": \"Barrier Block West 1\",\n          \"transform\": {\n            \"px\": -0.3,\n            \"py\": 0.7,\n            \"pz\": -7.5,\n            \"rx\": 0.12,\n            \"ry\": -0.2,\n            \"rz\": 0.15,\n            \"sx\": 1,\n            \"sy\": 1.4,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"block_1003\",\n          \"type\": \"block\",\n          \"name\": \"Stacked Barricade Lower\",\n          \"transform\": {\n            \"px\": 0.2,\n            \"py\": 0.6,\n            \"pz\": -2,\n            \"rx\": 0,\n            \"ry\": 0.05,\n            \"rz\": 0,\n            \"sx\": 1.4,\n            \"sy\": 1.2,\n            \"sz\": 4\n          }\n        },\n        {\n          \"id\": \"block_1004\",\n          \"type\": \"block\",\n          \"name\": \"Stacked Barricade Upper\",\n          \"transform\": {\n            \"px\": 0.1,\n            \"py\": 1.65,\n            \"pz\": -2.2,\n            \"rx\": -0.08,\n            \"ry\": 0.15,\n            \"rz\": 0.05,\n            \"sx\": 1.1,\n            \"sy\": 0.9,\n            \"sz\": 3.2\n          }\n        },\n        {\n          \"id\": \"block_1005\",\n          \"type\": \"block\",\n          \"name\": \"Broken Wall Section West\",\n          \"transform\": {\n            \"px\": -0.4,\n            \"py\": 1.1,\n            \"pz\": 4,\n            \"rx\": 0.05,\n            \"ry\": -0.1,\n            \"rz\": -0.12,\n            \"sx\": 1.2,\n            \"sy\": 2.2,\n            \"sz\": 3.6\n          }\n        },\n        {\n          \"id\": \"block_1006\",\n          \"type\": \"block\",\n          \"name\": \"Concrete Slab Beta\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.5,\n            \"pz\": 10.5,\n            \"rx\": -0.1,\n            \"ry\": 0.2,\n            \"rz\": 0.06,\n            \"sx\": 1.3,\n            \"sy\": 1,\n            \"sz\": 3.8\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5002\",\n      \"type\": \"group\",\n      \"name\": \"East Low Barriers (Channel Margin)\",\n      \"transform\": {\n        \"px\": 3.8,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1007\",\n          \"type\": \"block\",\n          \"name\": \"Barrier Block East 1\",\n          \"transform\": {\n            \"px\": 0.2,\n            \"py\": 0.65,\n            \"pz\": -11,\n            \"rx\": -0.08,\n            \"ry\": 0.15,\n            \"rz\": 0.1,\n            \"sx\": 1.3,\n            \"sy\": 1.3,\n            \"sz\": 3.2\n          }\n        },\n        {\n          \"id\": \"block_1008\",\n          \"type\": \"block\",\n          \"name\": \"Tilted Concrete Slab East\",\n          \"transform\": {\n            \"px\": -0.2,\n            \"py\": 0.8,\n            \"pz\": -5,\n            \"rx\": 0.15,\n            \"ry\": -0.1,\n            \"rz\": -0.14,\n            \"sx\": 1.5,\n            \"sy\": 1,\n            \"sz\": 4.2\n          }\n        },\n        {\n          \"id\": \"block_1009\",\n          \"type\": \"block\",\n          \"name\": \"Heavy Barricade Block\",\n          \"transform\": {\n            \"px\": 0.1,\n            \"py\": 0.9,\n            \"pz\": 1,\n            \"rx\": 0,\n            \"ry\": -0.05,\n            \"rz\": 0.04,\n            \"sx\": 1.4,\n            \"sy\": 1.8,\n            \"sz\": 3\n          }\n        },\n        {\n          \"id\": \"block_1010\",\n          \"type\": \"block\",\n          \"name\": \"Broken Wall Section East\",\n          \"transform\": {\n            \"px\": 0.3,\n            \"py\": 1.2,\n            \"pz\": 7,\n            \"rx\": -0.06,\n            \"ry\": 0.2,\n            \"rz\": 0.08,\n            \"sx\": 1.2,\n            \"sy\": 2.4,\n            \"sz\": 3.8\n          }\n        },\n        {\n          \"id\": \"block_1011\",\n          \"type\": \"block\",\n          \"name\": \"Barrier Block East 2\",\n          \"transform\": {\n            \"px\": -0.1,\n            \"py\": 0.55,\n            \"pz\": 12.5,\n            \"rx\": 0.1,\n            \"ry\": -0.15,\n            \"rz\": -0.05,\n            \"sx\": 1.2,\n            \"sy\": 1.1,\n            \"sz\": 3\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5003\",\n      \"type\": \"group\",\n      \"name\": \"Mud Channel Embankment Mounds\",\n      \"transform\": {\n        \"px\": 0,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1012\",\n          \"type\": \"block\",\n          \"name\": \"West Mud Embankment North\",\n          \"transform\": {\n            \"px\": -2.8,\n            \"py\": 0.05,\n            \"pz\": -8,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0.08,\n            \"sx\": 1.6,\n            \"sy\": 0.15,\n            \"sz\": 12\n          }\n        },\n        {\n          \"id\": \"block_1013\",\n          \"type\": \"block\",\n          \"name\": \"West Mud Embankment South\",\n          \"transform\": {\n            \"px\": -2.8,\n            \"py\": 0.05,\n            \"pz\": 6,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0.06,\n            \"sx\": 1.6,\n            \"sy\": 0.15,\n            \"sz\": 12\n          }\n        },\n        {\n          \"id\": \"block_1014\",\n          \"type\": \"block\",\n          \"name\": \"East Mud Embankment North\",\n          \"transform\": {\n            \"px\": 2.8,\n            \"py\": 0.05,\n            \"pz\": -8,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": -0.08,\n            \"sx\": 1.6,\n            \"sy\": 0.15,\n            \"sz\": 12\n          }\n        },\n        {\n          \"id\": \"block_1015\",\n          \"type\": \"block\",\n          \"name\": \"East Mud Embankment South\",\n          \"transform\": {\n            \"px\": 2.8,\n            \"py\": 0.05,\n            \"pz\": 6,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": -0.06,\n            \"sx\": 1.6,\n            \"sy\": 0.15,\n            \"sz\": 12\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5004\",\n      \"type\": \"group\",\n      \"name\": \"West High Structural Wing\",\n      \"transform\": {\n        \"px\": -8.5,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1016\",\n          \"type\": \"block\",\n          \"name\": \"Structural Column NW\",\n          \"transform\": {\n            \"px\": -1,\n            \"py\": 4.5,\n            \"pz\": -11,\n            \"rx\": 0.04,\n            \"ry\": 0,\n            \"rz\": -0.06,\n            \"sx\": 0.8,\n            \"sy\": 9,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"block_1017\",\n          \"type\": \"block\",\n          \"name\": \"Fractured Column MW\",\n          \"transform\": {\n            \"px\": -1.5,\n            \"py\": 3.2,\n            \"pz\": -1,\n            \"rx\": -0.08,\n            \"ry\": 0.2,\n            \"rz\": 0.12,\n            \"sx\": 0.9,\n            \"sy\": 6.4,\n            \"sz\": 0.9\n          }\n        },\n        {\n          \"id\": \"block_1018\",\n          \"type\": \"block\",\n          \"name\": \"Structural Column SW\",\n          \"transform\": {\n            \"px\": -0.8,\n            \"py\": 4.2,\n            \"pz\": 9,\n            \"rx\": 0.05,\n            \"ry\": -0.1,\n            \"rz\": -0.05,\n            \"sx\": 0.8,\n            \"sy\": 8.4,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"block_1019\",\n          \"type\": \"block\",\n          \"name\": \"Collapsed Main Beam NW\",\n          \"transform\": {\n            \"px\": 1.8,\n            \"py\": 4.2,\n            \"pz\": -7,\n            \"rx\": 0.15,\n            \"ry\": 0.35,\n            \"rz\": -0.62,\n            \"sx\": 0.6,\n            \"sy\": 0.6,\n            \"sz\": 10.5\n          }\n        },\n        {\n          \"id\": \"block_1020\",\n          \"type\": \"block\",\n          \"name\": \"Fallen Steel Girder MW\",\n          \"transform\": {\n            \"px\": 1.4,\n            \"py\": 2.8,\n            \"pz\": 3,\n            \"rx\": -0.45,\n            \"ry\": -0.25,\n            \"rz\": -0.55,\n            \"sx\": 0.5,\n            \"sy\": 0.5,\n            \"sz\": 8.2\n          }\n        },\n        {\n          \"id\": \"block_1021\",\n          \"type\": \"block\",\n          \"name\": \"High Structural Beam West\",\n          \"transform\": {\n            \"px\": -1.1,\n            \"py\": 8.8,\n            \"pz\": -1,\n            \"rx\": 0.02,\n            \"ry\": 0,\n            \"rz\": 0.03,\n            \"sx\": 0.6,\n            \"sy\": 0.6,\n            \"sz\": 18\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5005\",\n      \"type\": \"group\",\n      \"name\": \"East High Structural Wing\",\n      \"transform\": {\n        \"px\": 8.5,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1022\",\n          \"type\": \"block\",\n          \"name\": \"Structural Column NE\",\n          \"transform\": {\n            \"px\": 1,\n            \"py\": 4.8,\n            \"pz\": -10.5,\n            \"rx\": -0.05,\n            \"ry\": 0.1,\n            \"rz\": 0.04,\n            \"sx\": 0.8,\n            \"sy\": 9.6,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"block_1023\",\n          \"type\": \"block\",\n          \"name\": \"Structural Column ME\",\n          \"transform\": {\n            \"px\": 1.2,\n            \"py\": 4,\n            \"pz\": 0.5,\n            \"rx\": 0.06,\n            \"ry\": -0.15,\n            \"rz\": -0.08,\n            \"sx\": 0.85,\n            \"sy\": 8,\n            \"sz\": 0.85\n          }\n        },\n        {\n          \"id\": \"block_1024\",\n          \"type\": \"block\",\n          \"name\": \"Structural Column SE\",\n          \"transform\": {\n            \"px\": 0.8,\n            \"py\": 4.6,\n            \"pz\": 10,\n            \"rx\": -0.04,\n            \"ry\": 0.05,\n            \"rz\": 0.05,\n            \"sx\": 0.8,\n            \"sy\": 9.2,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"block_1025\",\n          \"type\": \"block\",\n          \"name\": \"Collapsed Main Beam NE\",\n          \"transform\": {\n            \"px\": -1.9,\n            \"py\": 4.4,\n            \"pz\": -5.5,\n            \"rx\": -0.2,\n            \"ry\": -0.3,\n            \"rz\": 0.58,\n            \"sx\": 0.6,\n            \"sy\": 0.6,\n            \"sz\": 11\n          }\n        },\n        {\n          \"id\": \"block_1026\",\n          \"type\": \"block\",\n          \"name\": \"Fallen Steel Girder SE\",\n          \"transform\": {\n            \"px\": -1.5,\n            \"py\": 2.9,\n            \"pz\": 6.5,\n            \"rx\": 0.82,\n            \"ry\": 0.3,\n            \"rz\": 0.52,\n            \"sx\": 0.5,\n            \"sy\": 0.5,\n            \"sz\": 8.8\n          }\n        },\n        {\n          \"id\": \"block_1027\",\n          \"type\": \"block\",\n          \"name\": \"High Structural Beam East\",\n          \"transform\": {\n            \"px\": 1,\n            \"py\": 8.6,\n            \"pz\": -0.2,\n            \"rx\": -0.03,\n            \"ry\": 0,\n            \"rz\": -0.02,\n            \"sx\": 0.6,\n            \"sy\": 0.6,\n            \"sz\": 19\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5006\",\n      \"type\": \"group\",\n      \"name\": \"Overhead Metal Frames & Gantries\",\n      \"transform\": {\n        \"px\": 0,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1028\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Main Beam North\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 8.2,\n            \"pz\": -7.5,\n            \"rx\": 0,\n            \"ry\": 0.05,\n            \"rz\": 0.03,\n            \"sx\": 18.5,\n            \"sy\": 0.5,\n            \"sz\": 0.6\n          }\n        },\n        {\n          \"id\": \"block_1029\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Top Chord North\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 9.2,\n            \"pz\": -7.5,\n            \"rx\": 0,\n            \"ry\": 0.05,\n            \"rz\": 0.03,\n            \"sx\": 18.5,\n            \"sy\": 0.35,\n            \"sz\": 0.35\n          }\n        },\n        {\n          \"id\": \"block_1030\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Strut N1\",\n          \"transform\": {\n            \"px\": -5,\n            \"py\": 8.7,\n            \"pz\": -7.5,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0.35,\n            \"sx\": 0.25,\n            \"sy\": 1.2,\n            \"sz\": 0.25\n          }\n        },\n        {\n          \"id\": \"block_1031\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Strut N2\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 8.7,\n            \"pz\": -7.5,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": -0.35,\n            \"sx\": 0.25,\n            \"sy\": 1.2,\n            \"sz\": 0.25\n          }\n        },\n        {\n          \"id\": \"block_1032\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Strut N3\",\n          \"transform\": {\n            \"px\": 5,\n            \"py\": 8.7,\n            \"pz\": -7.5,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0.35,\n            \"sx\": 0.25,\n            \"sy\": 1.2,\n            \"sz\": 0.25\n          }\n        },\n        {\n          \"id\": \"block_1033\",\n          \"type\": \"block\",\n          \"name\": \"Damaged Overhead Beam South\",\n          \"transform\": {\n            \"px\": -0.5,\n            \"py\": 7.1,\n            \"pz\": 5,\n            \"rx\": 0.12,\n            \"ry\": -0.08,\n            \"rz\": -0.18,\n            \"sx\": 18,\n            \"sy\": 0.55,\n            \"sz\": 0.65\n          }\n        },\n        {\n          \"id\": \"block_1034\",\n          \"type\": \"block\",\n          \"name\": \"Hanging Frame Segment\",\n          \"transform\": {\n            \"px\": 5.06,\n            \"py\": 1.88,\n            \"pz\": 5.2,\n            \"rx\": 0.35,\n            \"ry\": 0.15,\n            \"rz\": 0.45,\n            \"sx\": 0.4,\n            \"sy\": 5.57,\n            \"sz\": 0.4\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5007\",\n      \"type\": \"group\",\n      \"name\": \"West Perimeter Industrial Ruins\",\n      \"transform\": {\n        \"px\": -11,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1035\",\n          \"type\": \"block\",\n          \"name\": \"Ruined Wall Segment W1\",\n          \"transform\": {\n            \"px\": -1.5,\n            \"py\": 2.5,\n            \"pz\": -11,\n            \"rx\": 0,\n            \"ry\": 0.15,\n            \"rz\": 0.03,\n            \"sx\": 0.9,\n            \"sy\": 5,\n            \"sz\": 4.5\n          }\n        },\n        {\n          \"id\": \"block_1036\",\n          \"type\": \"block\",\n          \"name\": \"Ruined Wall Segment W2\",\n          \"transform\": {\n            \"px\": -2,\n            \"py\": 2,\n            \"pz\": 8,\n            \"rx\": 0.05,\n            \"ry\": -0.2,\n            \"rz\": -0.05,\n            \"sx\": 0.9,\n            \"sy\": 4,\n            \"sz\": 5.2\n          }\n        },\n        {\n          \"id\": \"block_1037\",\n          \"type\": \"block\",\n          \"name\": \"Collapsed Industrial Tank\",\n          \"transform\": {\n            \"px\": -2.5,\n            \"py\": 1.8,\n            \"pz\": -2,\n            \"rx\": 0.4,\n            \"ry\": 0.3,\n            \"rz\": -0.5,\n            \"sx\": 3.2,\n            \"sy\": 3.6,\n            \"sz\": 3.2\n          }\n        },\n        {\n          \"id\": \"block_1038\",\n          \"type\": \"block\",\n          \"name\": \"Rubble Pile West\",\n          \"transform\": {\n            \"px\": -0.5,\n            \"py\": 0.6,\n            \"pz\": 2.5,\n            \"rx\": 0.15,\n            \"ry\": 0.4,\n            \"rz\": -0.2,\n            \"sx\": 2.8,\n            \"sy\": 1.2,\n            \"sz\": 3.5\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"group_5008\",\n      \"type\": \"group\",\n      \"name\": \"East Perimeter Industrial Ruins\",\n      \"transform\": {\n        \"px\": 11,\n        \"py\": 0,\n        \"pz\": 0,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1,\n        \"sy\": 1,\n        \"sz\": 1\n      },\n      \"children\": [\n        {\n          \"id\": \"block_1039\",\n          \"type\": \"block\",\n          \"name\": \"Ruined Wall Segment E1\",\n          \"transform\": {\n            \"px\": 1.5,\n            \"py\": 2.8,\n            \"pz\": -9,\n            \"rx\": -0.04,\n            \"ry\": -0.12,\n            \"rz\": -0.02,\n            \"sx\": 0.9,\n            \"sy\": 5.6,\n            \"sz\": 4.8\n          }\n        },\n        {\n          \"id\": \"block_1040\",\n          \"type\": \"block\",\n          \"name\": \"Ruined Wall Segment E2\",\n          \"transform\": {\n            \"px\": 1.8,\n            \"py\": 2.2,\n            \"pz\": 9.5,\n            \"rx\": 0.03,\n            \"ry\": 0.18,\n            \"rz\": 0.04,\n            \"sx\": 0.9,\n            \"sy\": 4.4,\n            \"sz\": 5.5\n          }\n        },\n        {\n          \"id\": \"block_1041\",\n          \"type\": \"block\",\n          \"name\": \"Broken Generator Housing\",\n          \"transform\": {\n            \"px\": 2.2,\n            \"py\": 1.4,\n            \"pz\": -1,\n            \"rx\": -0.1,\n            \"ry\": 0.25,\n            \"rz\": 0.15,\n            \"sx\": 2.6,\n            \"sy\": 2.8,\n            \"sz\": 2.4\n          }\n        },\n        {\n          \"id\": \"block_1042\",\n          \"type\": \"block\",\n          \"name\": \"Rubble Pile East\",\n          \"transform\": {\n            \"px\": 0.8,\n            \"py\": 0.7,\n            \"pz\": -5.5,\n            \"rx\": -0.2,\n            \"ry\": -0.3,\n            \"rz\": 0.18,\n            \"sx\": 3,\n            \"sy\": 1.4,\n            \"sz\": 3.8\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"9a2e05f8-835b-4da5-aaeb-13e3d442447c\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 5.1,\n        \"py\": -4.92,\n        \"pz\": 40.58,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": -0.16,\n        \"sx\": 7.19,\n        \"sy\": 32.19,\n        \"sz\": 7.55\n      }\n    },\n    {\n      \"id\": \"node_pgndo9c\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": -9.48,\n        \"py\": -3.68,\n        \"pz\": 39.57,\n        \"rx\": 0.16,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 7.19,\n        \"sy\": 39.72,\n        \"sz\": 6.65\n      }\n    },\n    {\n      \"id\": \"node_g42lw20\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": -27.36,\n        \"py\": -4.44,\n        \"pz\": 39.51,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 7.19,\n        \"sy\": 27.51,\n        \"sz\": 6.65\n      }\n    },\n    {\n      \"id\": \"node_7lg7gk4\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": -20.41,\n        \"py\": -1.62,\n        \"pz\": 47.63,\n        \"rx\": -0.18,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 4.49,\n        \"sy\": 17.19,\n        \"sz\": 4.16\n      }\n    },\n    {\n      \"id\": \"node_yajz4bp\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 1.75,\n        \"py\": -4.96,\n        \"pz\": 45.29,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": -0.15,\n        \"sx\": 4.49,\n        \"sy\": 17.19,\n        \"sz\": 4.16\n      }\n    },\n    {\n      \"id\": \"node_urfjsoq\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 14.34,\n        \"py\": -1.62,\n        \"pz\": 44.23,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0.24,\n        \"sx\": 4.49,\n        \"sy\": 17.19,\n        \"sz\": 4.16\n      }\n    },\n    {\n      \"id\": \"node_l6s4ofe\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 16.55,\n        \"py\": -4.44,\n        \"pz\": 48.2,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 7.19,\n        \"sy\": 27.51,\n        \"sz\": 6.65\n      }\n    },\n    {\n      \"id\": \"1869436c-f915-4ede-bc0f-92dddf73b1fb\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 17,\n        \"py\": 0.95,\n        \"pz\": -1.6,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 10.08,\n        \"sy\": 22.77,\n        \"sz\": 10\n      }\n    },\n    {\n      \"id\": \"node_pyt6r9i\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 17.8,\n        \"py\": 0.95,\n        \"pz\": -16.34,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 10.08,\n        \"sy\": 39.92,\n        \"sz\": 12.99\n      }\n    },\n    {\n      \"id\": \"node_ssctxfd\",\n      \"type\": \"block\",\n      \"name\": \"Block\",\n      \"transform\": {\n        \"px\": 16.19,\n        \"py\": 0.95,\n        \"pz\": 16.49,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 10.08,\n        \"sy\": 34.34,\n        \"sz\": 12.99\n      }\n    },\n    {\n      \"id\": \"0829464e-41db-48cc-96f0-f801e37dab94\",\n      \"type\": \"group\",\n      \"name\": \"Group_6efiv\",\n      \"transform\": {\n        \"px\": -1.08,\n        \"py\": 2.24,\n        \"pz\": 50.3,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 1.95,\n        \"sy\": 1.95,\n        \"sz\": 1.95\n      },\n      \"children\": [\n        {\n          \"id\": \"node_su0os4m\",\n          \"type\": \"group\",\n          \"name\": \"Group_9zpu4\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0,\n            \"pz\": -0.01,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 1.57,\n            \"sx\": 0.82,\n            \"sy\": 0.82,\n            \"sz\": 0.82\n          },\n          \"children\": [\n            {\n              \"id\": \"node_30ctxax\",\n              \"type\": \"block\",\n              \"name\": \"Block\",\n              \"transform\": {\n                \"px\": 0,\n                \"py\": 0,\n                \"pz\": -0.05,\n                \"rx\": 0,\n                \"ry\": 0,\n                \"rz\": -0.76,\n                \"sx\": 5.24,\n                \"sy\": 5.62,\n                \"sz\": 4.85\n              }\n            },\n            {\n              \"id\": \"node_svvetw1\",\n              \"type\": \"block\",\n              \"name\": \"Block\",\n              \"transform\": {\n                \"px\": -0.28,\n                \"py\": 0,\n                \"pz\": 0.06,\n                \"rx\": 0,\n                \"ry\": 0,\n                \"rz\": 0.04,\n                \"sx\": 5.24,\n                \"sy\": 5.62,\n                \"sz\": 4.85\n              }\n            }\n          ]\n        },\n        {\n          \"id\": \"node_0o8j94y\",\n          \"type\": \"group\",\n          \"name\": \"Group_9zpu4\",\n          \"transform\": {\n            \"px\": 0.02,\n            \"py\": 0,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 1.18,\n            \"sx\": 0.82,\n            \"sy\": 0.82,\n            \"sz\": 0.82\n          },\n          \"children\": [\n            {\n              \"id\": \"node_30ctxax\",\n              \"type\": \"block\",\n              \"name\": \"Block\",\n              \"transform\": {\n                \"px\": 0,\n                \"py\": 0,\n                \"pz\": -0.05,\n                \"rx\": 0,\n                \"ry\": 0,\n                \"rz\": -0.76,\n                \"sx\": 5.24,\n                \"sy\": 5.62,\n                \"sz\": 4.85\n              }\n            },\n            {\n              \"id\": \"node_svvetw1\",\n              \"type\": \"block\",\n              \"name\": \"Block\",\n              \"transform\": {\n                \"px\": -0.28,\n                \"py\": 0,\n                \"pz\": 0.06,\n                \"rx\": 0,\n                \"ry\": 0,\n                \"rz\": 0.04,\n                \"sx\": 5.24,\n                \"sy\": 5.62,\n                \"sz\": 4.85\n              }\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"selectedPreset\": \"industrial_ruin.json\"\n}"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        100,
+        920
+      ],
+      "size": {
+        "0": 840,
+        "1": 130
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "title": "Step 1: Staging",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udccd Step 1 \u2014 3D Set Setup\n\"industrial_ruin.json\" preset is loaded. Both actors will perform inside this warehouse environment."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 2,
+      "type": "ActingNode",
+      "pos": [
+        1000,
+        200
+      ],
+      "size": {
+        "0": 800,
+        "1": 760
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "title": "Acting (Actor 1 - Human)",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "*",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "acting_data",
+          "type": "*",
+          "links": [
+            2
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ActingNode"
+      },
+      "widgets_values": [
+        "human",
+        10.0,
+        1.0,
+        "#F1DFBF",
+        7.0,
+        ""
+      ]
+    },
+    {
+      "id": 7,
+      "type": "Note",
+      "pos": [
+        1000,
+        990
+      ],
+      "size": {
+        "0": 800,
+        "1": 130
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "title": "Step 2: Record Actor 1",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udeb6 Step 2 \u2014 Record Human (Actor 1)\nClick \"Record\" and move the human character across the stage with W, A, S, D keys."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 3,
+      "type": "ActingNode",
+      "pos": [
+        1860,
+        200
+      ],
+      "size": {
+        "0": 800,
+        "1": 760
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "title": "Acting (Actor 2 - Quadruped)",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "*",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "acting_data",
+          "type": "*",
+          "links": [
+            3
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ActingNode"
+      },
+      "widgets_values": [
+        "quadruped",
+        10.0,
+        0.5,
+        "#E2B93B",
+        7.0,
+        ""
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Note",
+      "pos": [
+        1860,
+        990
+      ],
+      "size": {
+        "0": 800,
+        "1": 130
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "title": "Step 3: Record Actor 2 with Ghost Replay",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udc15 Step 3 \u2014 Record Quadruped (Actor 2)\nClick \"Record\" to control the quadruped. You will see a live ghost replay of Actor 1 for synchronized choreography!"
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 4,
+      "type": "DirectingNode",
+      "pos": [
+        2720,
+        200
+      ],
+      "size": {
+        "0": 800,
+        "1": 710
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "title": "Directing",
+      "inputs": [
+        {
+          "name": "acting",
+          "type": "*",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            4
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DirectingNode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 9,
+      "type": "Note",
+      "pos": [
+        2720,
+        940
+      ],
+      "size": {
+        "0": 800,
+        "1": 130
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "title": "Step 4: Direct Multi-Actor Scene",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83c\udfac Step 4 \u2014 Multi-Actor Camera Cuts\nWhen all actors are recorded, add live cuts along the timeline framing both actors, then hit Queue / Render."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 5,
+      "type": "SaveVideo",
+      "pos": [
+        3580,
+        200
+      ],
+      "size": {
+        "0": 460,
+        "1": 260
+      },
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "title": "Save Video",
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 4
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "multi_actor_industrial_previz",
+        "mp4"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "Note",
+      "pos": [
+        3580,
+        490
+      ],
+      "size": {
+        "0": 460,
+        "1": 260
+      },
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "title": "Step 5: Output & AI Video Reference",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udcbe Step 5 \u2014 Output & AI Video Reference\n\nSaves the combined multi-actor synchronized sequence as a 720p MP4.\n\nUse this VIDEO as reference with:\n- Seedance 2.5 / Seedance 2.0 Fast (Reference-to-Video / I2V)\n- MiniMax H3 Reference-to-Video\n\nPrompt your visual style in the AI model and let Scene-Camera-Action handle the choreography and camera angles!"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "*"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "*"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "*"
+    ],
+    [
+      4,
+      4,
+      0,
+      5,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "Multi-Actor Chaining Workflow (Human + Quadruped)",
+      "bounding": [
+        60,
+        120,
+        4050,
+        1030
+      ],
+      "color": "#2a6857",
+      "font_size": 24
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.45,
+      "offset": [
+        -20,
+        50
+      ]
+    }
+  },
+  "version": 0.4
+}

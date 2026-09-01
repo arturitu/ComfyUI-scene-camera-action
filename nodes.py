@@ -828,6 +828,7 @@ async def save_preset(request):
 
         if not filename or filename == "None":
             filename = "nueva_escena.json"
+        filename = os.path.basename(filename)
         if not filename.endswith(".json"):
             filename += ".json"
 

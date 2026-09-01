@@ -47793,12 +47793,18 @@ class ThreeActing {
     this.startAnimationLoop();
   }
   getAccumulatedActors() {
-    const upstream = (this.previousActorsData || []).filter(
-      (a) => {
-        var _a;
-        return !((_a = a.id) == null ? void 0 : _a.startsWith("actor_ds_")) && !a.isDownstreamPeer;
-      }
-    );
+    const upstream = (this.previousActorsData || []).filter((a) => {
+      var _a;
+      if (((_a = a.id) == null ? void 0 : _a.startsWith("actor_ds_")) || a.isDownstreamPeer) return false;
+      const traj = a.trajectory || a.motion_data;
+      if (!traj) return false;
+      if (Array.isArray(traj) && traj.length === 0) return false;
+      if (typeof traj === "string" && (!traj.trim() || traj.trim() === '""' || traj.trim() === "{}")) return false;
+      return true;
+    });
+    if (!this.trajectory || this.trajectory.length === 0) {
+      return upstream;
+    }
     const currentScale = this.state.actor_scale ?? (this.getActorType() === "quadruped" ? 0.5 : 1);
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
@@ -47915,7 +47921,7 @@ class ThreeActing {
     });
   }
   getPreviousActorsCount() {
-    return this.previousActorControllers.length;
+    return this.previousActorControllers.filter((p2) => p2.playbackController.getTrajectory().length > 0).length;
   }
   getTrajectory() {
     return this.trajectory;
@@ -49184,7 +49190,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
     const hasOtherActors = computed(() => {
       if (previousActorsCount.value > 0) return true;
-      return Array.isArray(state.actors) && state.actors.length > 0;
+      if (Array.isArray(state.actors) && state.actors.length > 0) {
+        return state.actors.some((a) => {
+          const traj = a.trajectory || a.motion_data;
+          if (!traj) return false;
+          if (Array.isArray(traj) && traj.length > 0) return true;
+          if (typeof traj === "string" && traj.trim() && traj.trim() !== '""' && traj.trim() !== "{}") return true;
+          return false;
+        });
+      }
+      return false;
     });
     const showTimeCounter = computed(() => {
       if (!state.scene_data && !state.stage_data) return false;
@@ -49447,11 +49462,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             ]),
             createBaseVNode("div", _hoisted_29$1, [
               state.actor_type === "car" ? (openBlock(), createElementBlock("div", _hoisted_30$1, [..._cache2[27] || (_cache2[27] = [
-                createStaticVNode('<div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>W</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>▲</kbd></div><span class="action-desc" data-v-2a0c2351>Accelerate</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>S</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>▼</kbd></div><span class="action-desc" data-v-2a0c2351>Brake / Reverse</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>A</kbd> <kbd data-v-2a0c2351>D</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>◀</kbd> <kbd data-v-2a0c2351>▶</kbd></div><span class="action-desc" data-v-2a0c2351>Steer Left / Right</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>Space</kbd></div><span class="action-desc" data-v-2a0c2351>Handbrake</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>W</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>▲</kbd></div><span class="action-desc" data-v-05838be3>Accelerate</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>S</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>▼</kbd></div><span class="action-desc" data-v-05838be3>Brake / Reverse</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>A</kbd> <kbd data-v-05838be3>D</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>◀</kbd> <kbd data-v-05838be3>▶</kbd></div><span class="action-desc" data-v-05838be3>Steer Left / Right</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>Space</kbd></div><span class="action-desc" data-v-05838be3>Handbrake</span></div>', 4)
               ])])) : state.actor_type === "quadruped" ? (openBlock(), createElementBlock("div", _hoisted_31$1, [..._cache2[28] || (_cache2[28] = [
-                createStaticVNode('<div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>W</kbd> <kbd data-v-2a0c2351>A</kbd> <kbd data-v-2a0c2351>S</kbd> <kbd data-v-2a0c2351>D</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>Arrows</kbd></div><span class="action-desc" data-v-2a0c2351>Move</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>Shift</kbd> + Move</div><span class="action-desc" data-v-2a0c2351>Run</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>C</kbd></div><span class="action-desc" data-v-2a0c2351>Sit (Toggle)</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>B</kbd></div><span class="action-desc" data-v-2a0c2351>Bark</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>Space</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>J</kbd></div><span class="action-desc" data-v-2a0c2351>Jump</span></div>', 5)
+                createStaticVNode('<div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>W</kbd> <kbd data-v-05838be3>A</kbd> <kbd data-v-05838be3>S</kbd> <kbd data-v-05838be3>D</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>Arrows</kbd></div><span class="action-desc" data-v-05838be3>Move</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>Shift</kbd> + Move</div><span class="action-desc" data-v-05838be3>Run</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>C</kbd></div><span class="action-desc" data-v-05838be3>Sit (Toggle)</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>B</kbd></div><span class="action-desc" data-v-05838be3>Bark</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>Space</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>J</kbd></div><span class="action-desc" data-v-05838be3>Jump</span></div>', 5)
               ])])) : (openBlock(), createElementBlock("div", _hoisted_32$1, [..._cache2[29] || (_cache2[29] = [
-                createStaticVNode('<div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>W</kbd> <kbd data-v-2a0c2351>A</kbd> <kbd data-v-2a0c2351>S</kbd> <kbd data-v-2a0c2351>D</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>Arrows</kbd></div><span class="action-desc" data-v-2a0c2351>Move</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>Shift</kbd> + Move</div><span class="action-desc" data-v-2a0c2351>Sprint (Fast Run)</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>C</kbd> (Hold)</div><span class="action-desc" data-v-2a0c2351>Crouch / Crouch Walk (+Move)</span></div><div class="control-row" data-v-2a0c2351><div class="key-group" data-v-2a0c2351><kbd data-v-2a0c2351>Space</kbd> <span class="or" data-v-2a0c2351>or</span> <kbd data-v-2a0c2351>J</kbd></div><span class="action-desc" data-v-2a0c2351>Jump</span></div>', 4)
+                createStaticVNode('<div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>W</kbd> <kbd data-v-05838be3>A</kbd> <kbd data-v-05838be3>S</kbd> <kbd data-v-05838be3>D</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>Arrows</kbd></div><span class="action-desc" data-v-05838be3>Move</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>Shift</kbd> + Move</div><span class="action-desc" data-v-05838be3>Sprint (Fast Run)</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>C</kbd> (Hold)</div><span class="action-desc" data-v-05838be3>Crouch / Crouch Walk (+Move)</span></div><div class="control-row" data-v-05838be3><div class="key-group" data-v-05838be3><kbd data-v-05838be3>Space</kbd> <span class="or" data-v-05838be3>or</span> <kbd data-v-05838be3>J</kbd></div><span class="action-desc" data-v-05838be3>Jump</span></div>', 4)
               ])]))
             ]),
             createBaseVNode("div", _hoisted_33$1, [
@@ -49466,7 +49481,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2a0c2351"]]);
+const ActingWidget = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-05838be3"]]);
 class CameraSpringArm {
   constructor() {
     __publicField(this, "currentDistance", -1);
@@ -51716,7 +51731,12 @@ function getChainActorsForNode(actingNode) {
   }
   upstreamActors = upstreamActors.filter((a) => {
     var _a2;
-    return !((_a2 = a.id) == null ? void 0 : _a2.startsWith("actor_ds_")) && !a.isDownstreamPeer;
+    if (((_a2 = a.id) == null ? void 0 : _a2.startsWith("actor_ds_")) || a.isDownstreamPeer) return false;
+    const traj = a.trajectory || a.motion_data;
+    if (!traj) return false;
+    if (Array.isArray(traj) && traj.length === 0) return false;
+    if (typeof traj === "string" && (!traj.trim() || traj.trim() === '""' || traj.trim() === "{}")) return false;
+    return true;
   });
   const downstreamActors = [];
   const visited = /* @__PURE__ */ new Set();

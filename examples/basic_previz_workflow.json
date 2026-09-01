@@ -1,0 +1,311 @@
+{
+  "last_node_id": 8,
+  "last_link_id": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "StagingNode",
+      "pos": [
+        100,
+        200
+      ],
+      "size": {
+        "0": 840,
+        "1": 690
+      },
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "title": "Staging (Race Track)",
+      "inputs": [
+        {
+          "name": "stage_data",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "stage_data"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "stage_data",
+          "type": "*",
+          "links": [
+            1
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StagingNode"
+      },
+      "widgets_values": [
+        "{\n  \"type\": \"cube_stage\",\n  \"num_assets\": 92,\n  \"nodes\": [\n    {\n      \"id\": \"grp_main_straight\",\n      \"type\": \"group\",\n      \"name\": \"Main Straight Track Limits\",\n      \"transform\": {\n        \"px\": 9.71,\n        \"py\": -0.15,\n        \"pz\": -2.54,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"b_main_outer\",\n          \"type\": \"block\",\n          \"name\": \"Outer Barrier\",\n          \"transform\": {\n            \"px\": 2.5,\n            \"py\": 0.4,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"b_main_inner\",\n          \"type\": \"block\",\n          \"name\": \"Inner Barrier\",\n          \"transform\": {\n            \"px\": -2.5,\n            \"py\": 0.4,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"k_main_outer\",\n          \"type\": \"block\",\n          \"name\": \"Outer Kerb\",\n          \"transform\": {\n            \"px\": 2.2,\n            \"py\": 0.05,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 0.1,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"k_main_inner\",\n          \"type\": \"block\",\n          \"name\": \"Inner Kerb\",\n          \"transform\": {\n            \"px\": -2.2,\n            \"py\": 0.05,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 0.1,\n            \"sz\": 20\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_back_straight\",\n      \"type\": \"group\",\n      \"name\": \"Back Straight Track Limits\",\n      \"transform\": {\n        \"px\": -19.95,\n        \"py\": -0.15,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"b_back_outer\",\n          \"type\": \"block\",\n          \"name\": \"Outer Barrier\",\n          \"transform\": {\n            \"px\": -2.5,\n            \"py\": 0.4,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"b_back_inner\",\n          \"type\": \"block\",\n          \"name\": \"Inner Barrier\",\n          \"transform\": {\n            \"px\": 2.5,\n            \"py\": 0.4,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"k_back_outer\",\n          \"type\": \"block\",\n          \"name\": \"Outer Kerb\",\n          \"transform\": {\n            \"px\": -2.2,\n            \"py\": 0.05,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 0.1,\n            \"sz\": 20\n          }\n        },\n        {\n          \"id\": \"k_back_inner\",\n          \"type\": \"block\",\n          \"name\": \"Inner Kerb\",\n          \"transform\": {\n            \"px\": 2.2,\n            \"py\": 0.05,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 0.1,\n            \"sz\": 20\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_north_curve\",\n      \"type\": \"group\",\n      \"name\": \"North Hairpin Curve\",\n      \"transform\": {\n        \"px\": -5.13,\n        \"py\": -0.15,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"b_north_out_0\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 1\",\n          \"transform\": {\n            \"px\": 8.5,\n            \"py\": 0.4,\n            \"pz\": -10,\n            \"rx\": 0,\n            \"ry\": -3.14,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_0\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 1\",\n          \"transform\": {\n            \"px\": 3.5,\n            \"py\": 0.4,\n            \"pz\": -10,\n            \"rx\": 0,\n            \"ry\": -3.14,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_1\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 2\",\n          \"transform\": {\n            \"px\": 8.08,\n            \"py\": 0.4,\n            \"pz\": -12.63,\n            \"rx\": 0,\n            \"ry\": -2.83,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_1\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 2\",\n          \"transform\": {\n            \"px\": 3.33,\n            \"py\": 0.4,\n            \"pz\": -11.08,\n            \"rx\": 0,\n            \"ry\": -2.83,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_2\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 3\",\n          \"transform\": {\n            \"px\": 6.88,\n            \"py\": 0.4,\n            \"pz\": -15,\n            \"rx\": 0,\n            \"ry\": -2.51,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_2\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 3\",\n          \"transform\": {\n            \"px\": 2.83,\n            \"py\": 0.4,\n            \"pz\": -12.06,\n            \"rx\": 0,\n            \"ry\": -2.51,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_3\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 4\",\n          \"transform\": {\n            \"px\": 5,\n            \"py\": 0.4,\n            \"pz\": -16.88,\n            \"rx\": 0,\n            \"ry\": -2.2,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_3\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 4\",\n          \"transform\": {\n            \"px\": 2.06,\n            \"py\": 0.4,\n            \"pz\": -12.83,\n            \"rx\": 0,\n            \"ry\": -2.2,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_4\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 5\",\n          \"transform\": {\n            \"px\": 2.63,\n            \"py\": 0.4,\n            \"pz\": -18.08,\n            \"rx\": 0,\n            \"ry\": -1.89,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_4\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 5\",\n          \"transform\": {\n            \"px\": 1.08,\n            \"py\": 0.4,\n            \"pz\": -13.33,\n            \"rx\": 0,\n            \"ry\": -1.89,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_5\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 6\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.4,\n            \"pz\": -18.5,\n            \"rx\": 0,\n            \"ry\": -1.57,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_5\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 6\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.4,\n            \"pz\": -13.5,\n            \"rx\": 0,\n            \"ry\": -1.57,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_6\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 7\",\n          \"transform\": {\n            \"px\": -2.63,\n            \"py\": 0.4,\n            \"pz\": -18.08,\n            \"rx\": 0,\n            \"ry\": -1.26,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_6\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 7\",\n          \"transform\": {\n            \"px\": -1.08,\n            \"py\": 0.4,\n            \"pz\": -13.33,\n            \"rx\": 0,\n            \"ry\": -1.26,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_7\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 8\",\n          \"transform\": {\n            \"px\": -5,\n            \"py\": 0.4,\n            \"pz\": -16.88,\n            \"rx\": 0,\n            \"ry\": -0.94,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_7\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 8\",\n          \"transform\": {\n            \"px\": -2.06,\n            \"py\": 0.4,\n            \"pz\": -12.83,\n            \"rx\": 0,\n            \"ry\": -0.94,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_8\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 9\",\n          \"transform\": {\n            \"px\": -6.88,\n            \"py\": 0.4,\n            \"pz\": -15,\n            \"rx\": 0,\n            \"ry\": -0.63,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_8\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 9\",\n          \"transform\": {\n            \"px\": -2.83,\n            \"py\": 0.4,\n            \"pz\": -12.06,\n            \"rx\": 0,\n            \"ry\": -0.63,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_9\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 10\",\n          \"transform\": {\n            \"px\": -8.08,\n            \"py\": 0.4,\n            \"pz\": -12.63,\n            \"rx\": 0,\n            \"ry\": -0.31,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_9\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 10\",\n          \"transform\": {\n            \"px\": -3.33,\n            \"py\": 0.4,\n            \"pz\": -11.08,\n            \"rx\": 0,\n            \"ry\": -0.31,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_north_out_10\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 11\",\n          \"transform\": {\n            \"px\": -8.5,\n            \"py\": 0.4,\n            \"pz\": -10,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_north_in_10\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 11\",\n          \"transform\": {\n            \"px\": -3.5,\n            \"py\": 0.4,\n            \"pz\": -10,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"tire_north_0\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 1\",\n          \"transform\": {\n            \"px\": 4.18,\n            \"py\": 0.4,\n            \"pz\": -18.2,\n            \"rx\": 0,\n            \"ry\": -2.04,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"tire_north_1\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 2\",\n          \"transform\": {\n            \"px\": 2.9,\n            \"py\": 0.4,\n            \"pz\": -18.73,\n            \"rx\": 0,\n            \"ry\": -1.89,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"tire_north_2\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 3\",\n          \"transform\": {\n            \"px\": 1.57,\n            \"py\": 0.4,\n            \"pz\": -19.07,\n            \"rx\": 0,\n            \"ry\": -1.74,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_south_curve\",\n      \"type\": \"group\",\n      \"name\": \"South Hairpin Curve\",\n      \"transform\": {\n        \"px\": -5.13,\n        \"py\": -0.15,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"b_south_out_0\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 1\",\n          \"transform\": {\n            \"px\": 8.5,\n            \"py\": 0.4,\n            \"pz\": 10,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_0\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 1\",\n          \"transform\": {\n            \"px\": 3.5,\n            \"py\": 0.4,\n            \"pz\": 10,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_1\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 2\",\n          \"transform\": {\n            \"px\": 8.08,\n            \"py\": 0.4,\n            \"pz\": 12.63,\n            \"rx\": 0,\n            \"ry\": -0.31,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_1\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 2\",\n          \"transform\": {\n            \"px\": 3.33,\n            \"py\": 0.4,\n            \"pz\": 11.08,\n            \"rx\": 0,\n            \"ry\": -0.31,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_2\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 3\",\n          \"transform\": {\n            \"px\": 6.88,\n            \"py\": 0.4,\n            \"pz\": 15,\n            \"rx\": 0,\n            \"ry\": -0.63,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_2\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 3\",\n          \"transform\": {\n            \"px\": 2.83,\n            \"py\": 0.4,\n            \"pz\": 12.06,\n            \"rx\": 0,\n            \"ry\": -0.63,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_3\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 4\",\n          \"transform\": {\n            \"px\": 5,\n            \"py\": 0.4,\n            \"pz\": 16.88,\n            \"rx\": 0,\n            \"ry\": -0.94,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_3\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 4\",\n          \"transform\": {\n            \"px\": 2.06,\n            \"py\": 0.4,\n            \"pz\": 12.83,\n            \"rx\": 0,\n            \"ry\": -0.94,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_4\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 5\",\n          \"transform\": {\n            \"px\": 2.63,\n            \"py\": 0.4,\n            \"pz\": 18.08,\n            \"rx\": 0,\n            \"ry\": -1.26,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_4\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 5\",\n          \"transform\": {\n            \"px\": 1.08,\n            \"py\": 0.4,\n            \"pz\": 13.33,\n            \"rx\": 0,\n            \"ry\": -1.26,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_5\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 6\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.4,\n            \"pz\": 18.5,\n            \"rx\": 0,\n            \"ry\": -1.57,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_5\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 6\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.4,\n            \"pz\": 13.5,\n            \"rx\": 0,\n            \"ry\": -1.57,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_6\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 7\",\n          \"transform\": {\n            \"px\": -2.63,\n            \"py\": 0.4,\n            \"pz\": 18.08,\n            \"rx\": 0,\n            \"ry\": -1.89,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_6\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 7\",\n          \"transform\": {\n            \"px\": -1.08,\n            \"py\": 0.4,\n            \"pz\": 13.33,\n            \"rx\": 0,\n            \"ry\": -1.89,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_7\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 8\",\n          \"transform\": {\n            \"px\": -5,\n            \"py\": 0.4,\n            \"pz\": 16.88,\n            \"rx\": 0,\n            \"ry\": -2.2,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_7\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 8\",\n          \"transform\": {\n            \"px\": -2.06,\n            \"py\": 0.4,\n            \"pz\": 12.83,\n            \"rx\": 0,\n            \"ry\": -2.2,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_8\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 9\",\n          \"transform\": {\n            \"px\": -6.88,\n            \"py\": 0.4,\n            \"pz\": 15,\n            \"rx\": 0,\n            \"ry\": -2.51,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_8\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 9\",\n          \"transform\": {\n            \"px\": -2.83,\n            \"py\": 0.4,\n            \"pz\": 12.06,\n            \"rx\": 0,\n            \"ry\": -2.51,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_9\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 10\",\n          \"transform\": {\n            \"px\": -8.08,\n            \"py\": 0.4,\n            \"pz\": 12.63,\n            \"rx\": 0,\n            \"ry\": -2.83,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_9\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 10\",\n          \"transform\": {\n            \"px\": -3.33,\n            \"py\": 0.4,\n            \"pz\": 11.08,\n            \"rx\": 0,\n            \"ry\": -2.83,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"b_south_out_10\",\n          \"type\": \"block\",\n          \"name\": \"Outer Wall 11\",\n          \"transform\": {\n            \"px\": -8.5,\n            \"py\": 0.4,\n            \"pz\": 10,\n            \"rx\": 0,\n            \"ry\": -3.14,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 2.8\n          }\n        },\n        {\n          \"id\": \"b_south_in_10\",\n          \"type\": \"block\",\n          \"name\": \"Inner Wall 11\",\n          \"transform\": {\n            \"px\": -3.5,\n            \"py\": 0.4,\n            \"pz\": 10,\n            \"rx\": 0,\n            \"ry\": -3.14,\n            \"rz\": 0,\n            \"sx\": 0.3,\n            \"sy\": 0.8,\n            \"sz\": 1.16\n          }\n        },\n        {\n          \"id\": \"tire_south_0\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 1\",\n          \"transform\": {\n            \"px\": 4.18,\n            \"py\": 0.4,\n            \"pz\": 18.2,\n            \"rx\": 0,\n            \"ry\": -1.1,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"tire_south_1\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 2\",\n          \"transform\": {\n            \"px\": 2.9,\n            \"py\": 0.4,\n            \"pz\": 18.73,\n            \"rx\": 0,\n            \"ry\": -1.25,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        },\n        {\n          \"id\": \"tire_south_2\",\n          \"type\": \"block\",\n          \"name\": \"Apex Tire Stack 3\",\n          \"transform\": {\n            \"px\": 1.57,\n            \"py\": 0.4,\n            \"pz\": 19.07,\n            \"rx\": 0,\n            \"ry\": -1.4,\n            \"rz\": 0,\n            \"sx\": 0.8,\n            \"sy\": 0.8,\n            \"sz\": 0.8\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_ramp_main\",\n      \"type\": \"group\",\n      \"name\": \"Main Straight Jump Ramp\",\n      \"transform\": {\n        \"px\": 9.71,\n        \"py\": -0.15,\n        \"pz\": -15.3,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"ramp1_wedge\",\n          \"type\": \"block\",\n          \"name\": \"Launch Incline\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.5,\n            \"pz\": 0,\n            \"rx\": -0.22,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 4.2,\n            \"sy\": 0.15,\n            \"sz\": 5\n          }\n        },\n        {\n          \"id\": \"ramp1_rail_l\",\n          \"type\": \"block\",\n          \"name\": \"Left Safety Rail\",\n          \"transform\": {\n            \"px\": -2.25,\n            \"py\": 0.55,\n            \"pz\": 0,\n            \"rx\": -0.22,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 0.7,\n            \"sz\": 5\n          }\n        },\n        {\n          \"id\": \"ramp1_rail_r\",\n          \"type\": \"block\",\n          \"name\": \"Right Safety Rail\",\n          \"transform\": {\n            \"px\": 2.25,\n            \"py\": 0.55,\n            \"pz\": 0,\n            \"rx\": -0.22,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 0.7,\n            \"sz\": 5\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_ramp_back\",\n      \"type\": \"group\",\n      \"name\": \"Back Straight Speed Ramp\",\n      \"transform\": {\n        \"px\": -19.95,\n        \"py\": -0.15,\n        \"pz\": -4.9,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"ramp2_wedge\",\n          \"type\": \"block\",\n          \"name\": \"Launch Incline\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.65,\n            \"pz\": 0,\n            \"rx\": 0.28,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 4.2,\n            \"sy\": 0.15,\n            \"sz\": 4.5\n          }\n        },\n        {\n          \"id\": \"ramp2_rail_l\",\n          \"type\": \"block\",\n          \"name\": \"Left Safety Rail\",\n          \"transform\": {\n            \"px\": -2.25,\n            \"py\": 0.7,\n            \"pz\": 0,\n            \"rx\": 0.28,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 0.7,\n            \"sz\": 4.5\n          }\n        },\n        {\n          \"id\": \"ramp2_rail_r\",\n          \"type\": \"block\",\n          \"name\": \"Right Safety Rail\",\n          \"transform\": {\n            \"px\": 2.25,\n            \"py\": 0.7,\n            \"pz\": 0,\n            \"rx\": 0.28,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 0.7,\n            \"sz\": 4.5\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_chicane\",\n      \"type\": \"group\",\n      \"name\": \"Back Straight Chicane\",\n      \"transform\": {\n        \"px\": -19.95,\n        \"py\": -0.15,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"chicane_curb_left\",\n          \"type\": \"block\",\n          \"name\": \"Left Chicane Curb\",\n          \"transform\": {\n            \"px\": -1.5,\n            \"py\": 0.2,\n            \"pz\": -5,\n            \"rx\": 0,\n            \"ry\": 0.2,\n            \"rz\": 0,\n            \"sx\": 1.2,\n            \"sy\": 0.4,\n            \"sz\": 2.5\n          }\n        },\n        {\n          \"id\": \"chicane_curb_right\",\n          \"type\": \"block\",\n          \"name\": \"Right Chicane Curb\",\n          \"transform\": {\n            \"px\": 1.5,\n            \"py\": 0.2,\n            \"pz\": -2,\n            \"rx\": 0,\n            \"ry\": -0.2,\n            \"rz\": 0,\n            \"sx\": 1.2,\n            \"sy\": 0.4,\n            \"sz\": 2.5\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_start_finish\",\n      \"type\": \"group\",\n      \"name\": \"Start Finish Line Gantry\",\n      \"transform\": {\n        \"px\": 9.71,\n        \"py\": -0.15,\n        \"pz\": 18.59,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"gantry_pillar_l\",\n          \"type\": \"block\",\n          \"name\": \"Left Pillar\",\n          \"transform\": {\n            \"px\": -3.2,\n            \"py\": 2.5,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 5,\n            \"sz\": 0.4\n          }\n        },\n        {\n          \"id\": \"gantry_pillar_r\",\n          \"type\": \"block\",\n          \"name\": \"Right Pillar\",\n          \"transform\": {\n            \"px\": 3.2,\n            \"py\": 2.5,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 5,\n            \"sz\": 0.4\n          }\n        },\n        {\n          \"id\": \"gantry_top_beam\",\n          \"type\": \"block\",\n          \"name\": \"Overhead Beam\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 5.2,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 6.8,\n            \"sy\": 0.6,\n            \"sz\": 0.5\n          }\n        },\n        {\n          \"id\": \"gantry_clock\",\n          \"type\": \"block\",\n          \"name\": \"Timing Display\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 4.6,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2,\n            \"sy\": 0.7,\n            \"sz\": 0.2\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_grandstand\",\n      \"type\": \"group\",\n      \"name\": \"Main Grandstand\",\n      \"transform\": {\n        \"px\": 23.76,\n        \"py\": -0.15,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"stand_tier_1\",\n          \"type\": \"block\",\n          \"name\": \"Seating Tier 1\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 0.4,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2.5,\n            \"sy\": 0.8,\n            \"sz\": 14\n          }\n        },\n        {\n          \"id\": \"stand_tier_2\",\n          \"type\": \"block\",\n          \"name\": \"Seating Tier 2\",\n          \"transform\": {\n            \"px\": 1.5,\n            \"py\": 1.1,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2.5,\n            \"sy\": 2.2,\n            \"sz\": 14\n          }\n        },\n        {\n          \"id\": \"stand_tier_3\",\n          \"type\": \"block\",\n          \"name\": \"Seating Tier 3\",\n          \"transform\": {\n            \"px\": 3,\n            \"py\": 1.8,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2.5,\n            \"sy\": 3.6,\n            \"sz\": 14\n          }\n        },\n        {\n          \"id\": \"stand_roof\",\n          \"type\": \"block\",\n          \"name\": \"Cantilever Roof\",\n          \"transform\": {\n            \"px\": 1,\n            \"py\": 4.2,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0.12,\n            \"sx\": 7,\n            \"sy\": 0.15,\n            \"sz\": 15\n          }\n        },\n        {\n          \"id\": \"stand_pillar_back_l\",\n          \"type\": \"block\",\n          \"name\": \"Back Column L\",\n          \"transform\": {\n            \"px\": 4,\n            \"py\": 2,\n            \"pz\": -6.5,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 4,\n            \"sz\": 0.4\n          }\n        },\n        {\n          \"id\": \"stand_pillar_back_r\",\n          \"type\": \"block\",\n          \"name\": \"Back Column R\",\n          \"transform\": {\n            \"px\": 4,\n            \"py\": 2,\n            \"pz\": 6.5,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.4,\n            \"sy\": 4,\n            \"sz\": 0.4\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"grp_control_tower\",\n      \"type\": \"group\",\n      \"name\": \"Race Control Tower\",\n      \"transform\": {\n        \"px\": 24.54,\n        \"py\": -0.15,\n        \"pz\": 23.54,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.47,\n        \"sy\": 2.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"tower_base\",\n          \"type\": \"block\",\n          \"name\": \"Tower Shaft\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 3,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 3,\n            \"sy\": 6,\n            \"sz\": 3\n          }\n        },\n        {\n          \"id\": \"tower_cabin\",\n          \"type\": \"block\",\n          \"name\": \"Control Glass Cabin\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 6.75,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 4.2,\n            \"sy\": 1.5,\n            \"sz\": 4.2\n          }\n        },\n        {\n          \"id\": \"tower_roof\",\n          \"type\": \"block\",\n          \"name\": \"Cabin Roof\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 7.6,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 4.6,\n            \"sy\": 0.2,\n            \"sz\": 4.6\n          }\n        },\n        {\n          \"id\": \"tower_antenna\",\n          \"type\": \"block\",\n          \"name\": \"Communications Mast\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": 8.7,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.15,\n            \"sy\": 2,\n            \"sz\": 0.15\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"ad2_board\",\n      \"type\": \"block\",\n      \"name\": \"Sponsor Board\",\n      \"transform\": {\n        \"px\": -19.74,\n        \"py\": 7.14,\n        \"pz\": 8.71,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 12.77,\n        \"sy\": 2.47,\n        \"sz\": 0.2\n      }\n    },\n    {\n      \"id\": \"1d5cd8ed-74bd-4639-af03-db3c6c75a050\",\n      \"type\": \"group\",\n      \"name\": \"Group_cwy5o\",\n      \"transform\": {\n        \"px\": -19.93,\n        \"py\": 5.01,\n        \"pz\": 8.71,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 2.56,\n        \"sy\": 3.47,\n        \"sz\": 2.47\n      },\n      \"children\": [\n        {\n          \"id\": \"ad2_post_r\",\n          \"type\": \"block\",\n          \"name\": \"Post R\",\n          \"transform\": {\n            \"px\": 2.45,\n            \"py\": 0,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 2,\n            \"sz\": 0.15\n          }\n        },\n        {\n          \"id\": \"ad2_post_l\",\n          \"type\": \"block\",\n          \"name\": \"Post L\",\n          \"transform\": {\n            \"px\": -2.45,\n            \"py\": 0,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 0.2,\n            \"sy\": 2,\n            \"sz\": 0.15\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"pit_wall_sep\",\n      \"type\": \"block\",\n      \"name\": \"Pit Lane Wall\",\n      \"transform\": {\n        \"px\": -26.31,\n        \"py\": 0.85,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 0.74,\n        \"sy\": 1.98,\n        \"sz\": 39.54\n      }\n    },\n    {\n      \"id\": \"pit_building_main\",\n      \"type\": \"block\",\n      \"name\": \"Garage Main Structure\",\n      \"transform\": {\n        \"px\": -41.49,\n        \"py\": 4.19,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 11.13,\n        \"sy\": 8.66,\n        \"sz\": 34.6\n      }\n    },\n    {\n      \"id\": \"garage_door_1\",\n      \"type\": \"block\",\n      \"name\": \"Garage Door 1\",\n      \"transform\": {\n        \"px\": -35.69,\n        \"py\": 2.59,\n        \"pz\": -11.07,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 0.24,\n        \"sy\": 5.45,\n        \"sz\": 6.93\n      }\n    },\n    {\n      \"id\": \"garage_door_2\",\n      \"type\": \"block\",\n      \"name\": \"Garage Door 2\",\n      \"transform\": {\n        \"px\": -35.69,\n        \"py\": 2.59,\n        \"pz\": -1.17,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 0.24,\n        \"sy\": 5.45,\n        \"sz\": 6.93\n      }\n    },\n    {\n      \"id\": \"garage_door_3\",\n      \"type\": \"block\",\n      \"name\": \"Garage Door 3\",\n      \"transform\": {\n        \"px\": -35.69,\n        \"py\": 2.59,\n        \"pz\": 8.71,\n        \"rx\": 0,\n        \"ry\": 0,\n        \"rz\": 0,\n        \"sx\": 0.24,\n        \"sy\": 5.45,\n        \"sz\": 6.93\n      }\n    },\n    {\n      \"id\": \"354e3d02-73cd-41da-b393-c6ef6bbfca5a\",\n      \"type\": \"group\",\n      \"name\": \"Group_gdzwo\",\n      \"transform\": {\n        \"px\": -31.12,\n        \"py\": 1.11,\n        \"pz\": -2.38,\n        \"rx\": 0,\n        \"ry\": -0.68,\n        \"rz\": 0,\n        \"sx\": 1.98,\n        \"sy\": 1.98,\n        \"sz\": 1.98\n      },\n      \"children\": [\n        {\n          \"id\": \"node_etc9opr\",\n          \"type\": \"block\",\n          \"name\": \"Block\",\n          \"transform\": {\n            \"px\": -0.01,\n            \"py\": 0.12,\n            \"pz\": 0.02,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 1.23,\n            \"sy\": 0.73,\n            \"sz\": 0.91\n          }\n        },\n        {\n          \"id\": \"85b3a3d9-9153-4464-b7a4-d1fdfc1bf9d3\",\n          \"type\": \"block\",\n          \"name\": \"Block\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": -0.23,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2.16,\n            \"sy\": 0.52,\n            \"sz\": 1.1\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"node_u6o5b0z\",\n      \"type\": \"group\",\n      \"name\": \"Group_gdzwo\",\n      \"transform\": {\n        \"px\": -30.96,\n        \"py\": 1.13,\n        \"pz\": 8.55,\n        \"rx\": 0,\n        \"ry\": -0.37,\n        \"rz\": 0,\n        \"sx\": 1.98,\n        \"sy\": 1.98,\n        \"sz\": 1.98\n      },\n      \"children\": [\n        {\n          \"id\": \"node_etc9opr\",\n          \"type\": \"block\",\n          \"name\": \"Block\",\n          \"transform\": {\n            \"px\": -0.01,\n            \"py\": 0.12,\n            \"pz\": 0.02,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 1.23,\n            \"sy\": 0.73,\n            \"sz\": 0.91\n          }\n        },\n        {\n          \"id\": \"85b3a3d9-9153-4464-b7a4-d1fdfc1bf9d3\",\n          \"type\": \"block\",\n          \"name\": \"Block\",\n          \"transform\": {\n            \"px\": 0,\n            \"py\": -0.23,\n            \"pz\": 0,\n            \"rx\": 0,\n            \"ry\": 0,\n            \"rz\": 0,\n            \"sx\": 2.16,\n            \"sy\": 0.52,\n            \"sz\": 1.1\n          }\n        }\n      ]\n    }\n  ],\n  \"selectedPreset\": \"race_track.json\",\n  \"spawn_point\": {\n    \"px\": 8.61,\n    \"py\": 0,\n    \"pz\": 5.056,\n    \"ry\": 0\n  }\n}"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "Note",
+      "pos": [
+        100,
+        920
+      ],
+      "size": {
+        "0": 840,
+        "1": 130
+      },
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "title": "Step 1: Staging",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udccd Step 1 \u2014 Select or Build Stage\nThe \"race_track.json\" preset is loaded. Orbit (Left Drag), Pan (Right Drag), or switch presets from the dropdown."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 2,
+      "type": "ActingNode",
+      "pos": [
+        1000,
+        200
+      ],
+      "size": {
+        "0": 800,
+        "1": 760
+      },
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "title": "Acting (Car)",
+      "inputs": [
+        {
+          "name": "stage",
+          "type": "*",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "acting_data",
+          "type": "*",
+          "links": [
+            2
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ActingNode"
+      },
+      "widgets_values": [
+        "car",
+        20.0,
+        1.0,
+        "#0284C7",
+        7.0,
+        ""
+      ]
+    },
+    {
+      "id": 6,
+      "type": "Note",
+      "pos": [
+        1000,
+        990
+      ],
+      "size": {
+        "0": 800,
+        "1": 130
+      },
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "title": "Step 2: Acting",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\ude97 Step 2 \u2014 Drive & Record\n1. Practice driving freely around the track with W, A, S, D keys.\n2. Click \"Record\" and drive for 7 seconds to capture your vehicle take."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 3,
+      "type": "DirectingNode",
+      "pos": [
+        1860,
+        200
+      ],
+      "size": {
+        "0": 800,
+        "1": 710
+      },
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "title": "Directing",
+      "inputs": [
+        {
+          "name": "acting",
+          "type": "*",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "links": [
+            3
+          ],
+          "shape": 3,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DirectingNode"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 7,
+      "type": "Note",
+      "pos": [
+        1860,
+        940
+      ],
+      "size": {
+        "0": 800,
+        "1": 130
+      },
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "title": "Step 3: Directing",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83c\udfac Step 3 \u2014 Camera Cuts & Render\n1. Scrub the timeline and click \"+ Cut\" to add dynamic camera angles (TPV, FPV, Tracking, Master).\n2. Click \"Queue Prompt\" (or \u25b6 Render) to capture 720p HD video."
+      ],
+      "color": "#234",
+      "bgcolor": "#345"
+    },
+    {
+      "id": 4,
+      "type": "SaveVideo",
+      "pos": [
+        2720,
+        200
+      ],
+      "size": {
+        "0": 460,
+        "1": 260
+      },
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "title": "Save Video",
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "link": 3
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveVideo"
+      },
+      "widgets_values": [
+        "race_track_car_previz",
+        "mp4"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "Note",
+      "pos": [
+        2720,
+        490
+      ],
+      "size": {
+        "0": 460,
+        "1": 260
+      },
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "title": "Step 4: Output & AI Video Reference",
+      "properties": {
+        "text": ""
+      },
+      "widgets_values": [
+        "\ud83d\udcbe Step 4 \u2014 Output & AI Video Reference\n\nYour crisp 720p previz MP4 is saved to ComfyUI/output/.\n\nUse this VIDEO as reference with:\n- Seedance 2.5 / Seedance 2.0 Fast (Reference-to-Video / I2V)\n- MiniMax H3 Reference-to-Video\n\nPrompt your visual style in the AI model and let Scene-Camera-Action handle the choreography and camera angles!"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "*"
+    ],
+    [
+      2,
+      2,
+      0,
+      3,
+      0,
+      "*"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "VIDEO"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "3D Previz Pipeline (ComfyUI-scene-camera-action)",
+      "bounding": [
+        60,
+        120,
+        3180,
+        1030
+      ],
+      "color": "#3f789e",
+      "font_size": 24
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.55,
+      "offset": [
+        -20,
+        50
+      ]
+    }
+  },
+  "version": 0.4
+}

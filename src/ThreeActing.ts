@@ -199,9 +199,17 @@ export class ThreeActing {
   }
 
   public getAccumulatedActors(): any[] {
-    const upstream = (this.previousActorsData || []).filter(
-      (a: any) => !a.id?.startsWith('actor_ds_') && !a.isDownstreamPeer
-    )
+    const upstream = (this.previousActorsData || []).filter((a: any) => {
+      if (a.id?.startsWith('actor_ds_') || a.isDownstreamPeer) return false
+      const traj = a.trajectory || a.motion_data
+      if (!traj) return false
+      if (Array.isArray(traj) && traj.length === 0) return false
+      if (typeof traj === 'string' && (!traj.trim() || traj.trim() === '""' || traj.trim() === '{}')) return false
+      return true
+    })
+    if (!this.trajectory || this.trajectory.length === 0) {
+      return upstream
+    }
     const currentScale = this.state.actor_scale ?? (this.getActorType() === 'quadruped' ? 0.5 : 1.0)
     const currentActorRecord = {
       id: `actor_${upstream.length + 1}`,
@@ -333,7 +341,7 @@ export class ThreeActing {
   }
 
   public getPreviousActorsCount(): number {
-    return this.previousActorControllers.length
+    return this.previousActorControllers.filter(p => p.playbackController.getTrajectory().length > 0).length
   }
 
   public getTrajectory(): Array<{ t: number; px: number; py: number; pz: number; rx: number; ry: number; rz: number }> {

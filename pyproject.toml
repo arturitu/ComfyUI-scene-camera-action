@@ -1,19 +1,51 @@
 [project]
 name = "comfyui-scene-camera-action"
 version = "0.5.0"
-description = "Interactive 3D scene staging, actor acting, and camera directing nodes for ComfyUI."
+description = "Interactive 3D scene staging, actor acting, and camera directing suite of custom nodes for ComfyUI."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "arturitu" }
+    { name = "Arturo Paracuellos", email = "arturo@unboring.net" }
 ]
 dependencies = [
     "pillow",
     "numpy",
     "typing_extensions"
 ]
+keywords = [
+    "comfyui",
+    "3d",
+    "camera",
+    "director",
+    "staging",
+    "acting",
+    "previz",
+    "animation",
+    "video",
+    "seedance",
+    "minimax"
+]
+classifiers = [
+    "Framework :: ComfyUI",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[project.urls]
+Homepage = "https://github.com/arturitu/ComfyUI-scene-camera-action"
+Repository = "https://github.com/arturitu/ComfyUI-scene-camera-action"
+"Issue Tracker" = "https://github.com/arturitu/ComfyUI-scene-camera-action/issues"
 
 [tool.comfy]
 PublisherId = "arturitu"
 DisplayName = "ComfyUI Scene Camera Action"
-Icon = "https://unboring.net/icon.png"
+Icon = "https://raw.githubusercontent.com/arturitu/ComfyUI-scene-camera-action/main/scene-camera-action.png"
+includes = [
+    "js",
+    "presets",
+    "skills",
+    "input",
+    "examples"
+]
+

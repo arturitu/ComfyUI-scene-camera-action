@@ -17,3 +17,10 @@ temp/
 *.jpg
 scene-camera-action.png
 img2.jpg
+.env*
+*.env
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json

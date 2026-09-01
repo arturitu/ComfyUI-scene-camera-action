@@ -13,6 +13,7 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+*.zip
 
 # Logs
 *.log
@@ -54,3 +55,12 @@ ORIGINAL_REQUEST.md
 PROJECT.md
 TEST_INFRA.md
 TEST_READY.md
+
+# Secrets, keys & credentials
+.env*
+*.env
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json
