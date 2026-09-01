@@ -638,6 +638,7 @@ async def get_preset(request):
     if not filename or filename == "None":
         return web.json_response({"type": "cube_stage", "nodes": []})
 
+    filename = os.path.basename(filename)
     filepath = os.path.join(PRESETS_DIR, filename)
     if not os.path.exists(filepath):
         try:
@@ -667,6 +668,7 @@ async def save_preset(request):
 
         if not filename or filename == "None":
             filename = "nueva_escena.json"
+        filename = os.path.basename(filename)
         if not filename.endswith(".json"):
             filename += ".json"
 

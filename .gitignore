@@ -56,3 +56,11 @@ PROJECT.md
 TEST_INFRA.md
 TEST_READY.md
 
+# Secrets, keys & credentials
+.env*
+*.env
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json
