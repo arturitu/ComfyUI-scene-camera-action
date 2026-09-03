@@ -1,0 +1,5890 @@
+{
+  "type": "cube_stage",
+  "nodes": [
+    {
+      "id": "group_ground_circulation",
+      "type": "group",
+      "name": "01 Ground, Roadway & Drainage System",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "pavement_main_alley",
+          "type": "block",
+          "name": "Main Alley Asphalt Pavement",
+          "transform": {
+            "px": 0.0,
+            "py": 0.025,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 5.6,
+            "sy": 0.05,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "sidewalk_west",
+          "type": "block",
+          "name": "West Sidewalk Slab",
+          "transform": {
+            "px": -3.7,
+            "py": 0.1,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.2,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "curb_west",
+          "type": "block",
+          "name": "West Granite Curb Line",
+          "transform": {
+            "px": -2.8,
+            "py": 0.11,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.22,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "sidewalk_east",
+          "type": "block",
+          "name": "East Sidewalk Slab",
+          "transform": {
+            "px": 3.7,
+            "py": 0.1,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.2,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "curb_east",
+          "type": "block",
+          "name": "East Granite Curb Line",
+          "transform": {
+            "px": 2.8,
+            "py": 0.11,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 0.22,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "cross_avenue_pavement",
+          "type": "block",
+          "name": "Rear Cross Avenue Pavement",
+          "transform": {
+            "px": 0.0,
+            "py": 0.025,
+            "pz": -33.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 70.0,
+            "sy": 0.05,
+            "sz": 10.0
+          }
+        },
+        {
+          "id": "cross_avenue_north_sidewalk",
+          "type": "block",
+          "name": "Rear Avenue North Sidewalk",
+          "transform": {
+            "px": 0.0,
+            "py": 0.1,
+            "pz": -37.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 70.0,
+            "sy": 0.2,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "cross_avenue_south_sidewalk_west",
+          "type": "block",
+          "name": "Rear Avenue South Sidewalk - West",
+          "transform": {
+            "px": -19.5,
+            "py": 0.1,
+            "pz": -29.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 31.0,
+            "sy": 0.2,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "cross_avenue_south_sidewalk_east",
+          "type": "block",
+          "name": "Rear Avenue South Sidewalk - East",
+          "transform": {
+            "px": 19.5,
+            "py": 0.1,
+            "pz": -29.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 31.0,
+            "sy": 0.2,
+            "sz": 2.0
+          }
+        },
+        {
+          "id": "block_72658",
+          "type": "block",
+          "name": "Foreground Deep Rain Puddle (Hero)",
+          "transform": {
+            "px": 0.2,
+            "py": 0.055,
+            "pz": 17.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.6,
+            "sy": 0.015,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_95129",
+          "type": "block",
+          "name": "Foreground Wet Splash Zone",
+          "transform": {
+            "px": -0.9,
+            "py": 0.055,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.8,
+            "sy": 0.015,
+            "sz": 2.5
+          }
+        },
+        {
+          "id": "block_22531",
+          "type": "block",
+          "name": "Midground Central Road Puddle",
+          "transform": {
+            "px": -0.4,
+            "py": 0.055,
+            "pz": 3.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.4,
+            "sy": 0.015,
+            "sz": 3.8
+          }
+        },
+        {
+          "id": "block_14566",
+          "type": "block",
+          "name": "Midground Right Curb Gutter Puddle",
+          "transform": {
+            "px": 1.8,
+            "py": 0.055,
+            "pz": -2.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.4,
+            "sy": 0.015,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "block_30104",
+          "type": "block",
+          "name": "Background Atmospheric Wet Patch",
+          "transform": {
+            "px": 0.1,
+            "py": 0.055,
+            "pz": -12.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 3.0,
+            "sy": 0.015,
+            "sz": 5.0
+          }
+        },
+        {
+          "id": "block_49337",
+          "type": "block",
+          "name": "Far Background Mist Puddle",
+          "transform": {
+            "px": -0.5,
+            "py": 0.055,
+            "pz": -22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.8,
+            "sy": 0.015,
+            "sz": 4.0
+          }
+        },
+        {
+          "id": "block_54225",
+          "type": "block",
+          "name": "Storm Sewer Grate West 1",
+          "transform": {
+            "px": -2.55,
+            "py": 0.06,
+            "pz": 22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_10543",
+          "type": "block",
+          "name": "Storm Sewer Grate East 1",
+          "transform": {
+            "px": 2.55,
+            "py": 0.06,
+            "pz": 22.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_65687",
+          "type": "block",
+          "name": "Storm Sewer Grate West 2",
+          "transform": {
+            "px": -2.55,
+            "py": 0.06,
+            "pz": 10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_37513",
+          "type": "block",
+          "name": "Storm Sewer Grate East 2",
+          "transform": {
+            "px": 2.55,
+            "py": 0.06,
+            "pz": 10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_95252",
+          "type": "block",
+          "name": "Storm Sewer Grate West 3",
+          "transform": {
+            "px": -2.55,
+            "py": 0.06,
+            "pz": -2.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_40769",
+          "type": "block",
+          "name": "Storm Sewer Grate East 3",
+          "transform": {
+            "px": 2.55,
+            "py": 0.06,
+            "pz": -2.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_46670",
+          "type": "block",
+          "name": "Storm Sewer Grate West 4",
+          "transform": {
+            "px": -2.55,
+            "py": 0.06,
+            "pz": -14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_93779",
+          "type": "block",
+          "name": "Storm Sewer Grate East 4",
+          "transform": {
+            "px": 2.55,
+            "py": 0.06,
+            "pz": -14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.45,
+            "sy": 0.02,
+            "sz": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_west_building",
+      "type": "group",
+      "name": "02 West Multi-Story Brick Building",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "west_main_brick_mass",
+          "type": "block",
+          "name": "West Building Main Brick Mass",
+          "transform": {
+            "px": -10.3,
+            "py": 10.0,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 11.4,
+            "sy": 20.0,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "west_cornice_molding",
+          "type": "block",
+          "name": "West Roof Cornice Molding",
+          "transform": {
+            "px": -4.4,
+            "py": 20.2,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.4,
+            "sz": 62.2
+          }
+        },
+        {
+          "id": "west_parapet_wall",
+          "type": "block",
+          "name": "West Roof Parapet Wall",
+          "transform": {
+            "px": -4.7,
+            "py": 20.7,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.8,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_31089",
+          "type": "block",
+          "name": "West Facade Belt Course Floor 1",
+          "transform": {
+            "px": -4.55,
+            "py": 4.5,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 0.25,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_47074",
+          "type": "block",
+          "name": "West Facade Belt Course Floor 2",
+          "transform": {
+            "px": -4.55,
+            "py": 8.5,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 0.25,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_50844",
+          "type": "block",
+          "name": "West Facade Belt Course Floor 3",
+          "transform": {
+            "px": -4.55,
+            "py": 12.5,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 0.25,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_59475",
+          "type": "block",
+          "name": "West Facade Belt Course Floor 4",
+          "transform": {
+            "px": -4.55,
+            "py": 16.5,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 0.25,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_62251",
+          "type": "block",
+          "name": "Service Doorway 1 Frame",
+          "transform": {
+            "px": -4.52,
+            "py": 1.4,
+            "pz": 19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 2.6,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_45108",
+          "type": "block",
+          "name": "Service Door 1 Dark Timber Panel",
+          "transform": {
+            "px": -4.6,
+            "py": 1.3,
+            "pz": 19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 1.3
+          }
+        },
+        {
+          "id": "block_22738",
+          "type": "block",
+          "name": "Service Door 1 Stone Overhang Lintels",
+          "transform": {
+            "px": -4.45,
+            "py": 2.75,
+            "pz": 19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_65357",
+          "type": "block",
+          "name": "Service Doorway 2 Frame",
+          "transform": {
+            "px": -4.52,
+            "py": 1.4,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 2.6,
+            "sz": 1.6
+          }
+        },
+        {
+          "id": "block_88934",
+          "type": "block",
+          "name": "Service Door 2 Panel",
+          "transform": {
+            "px": -4.6,
+            "py": 1.3,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.1,
+            "sy": 2.4,
+            "sz": 1.3
+          }
+        },
+        {
+          "id": "block_10826",
+          "type": "block",
+          "name": "Service Door 2 Stone Lintel",
+          "transform": {
+            "px": -4.45,
+            "py": 2.75,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_87026",
+          "type": "block",
+          "name": "West Window Pane Z27_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_61762",
+          "type": "block",
+          "name": "West Window Sill Z27_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_97313",
+          "type": "block",
+          "name": "West Window Lintel Z27_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_43976",
+          "type": "block",
+          "name": "West Window Pane Z27_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_39485",
+          "type": "block",
+          "name": "West Window Sill Z27_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_66403",
+          "type": "block",
+          "name": "West Window Lintel Z27_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_18483",
+          "type": "block",
+          "name": "West Window Pane Z27_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_71188",
+          "type": "block",
+          "name": "West Window Sill Z27_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_38448",
+          "type": "block",
+          "name": "West Window Lintel Z27_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_61204",
+          "type": "block",
+          "name": "West Window Pane Z27_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_82878",
+          "type": "block",
+          "name": "West Window Sill Z27_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_31528",
+          "type": "block",
+          "name": "West Window Lintel Z27_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": 27.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_33843",
+          "type": "block",
+          "name": "West Window Pane Z13_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_39147",
+          "type": "block",
+          "name": "West Window Sill Z13_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_98203",
+          "type": "block",
+          "name": "West Window Lintel Z13_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_51346",
+          "type": "block",
+          "name": "West Window Pane Z13_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_44505",
+          "type": "block",
+          "name": "West Window Sill Z13_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_79384",
+          "type": "block",
+          "name": "West Window Lintel Z13_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_15441",
+          "type": "block",
+          "name": "West Window Pane Z13_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_58015",
+          "type": "block",
+          "name": "West Window Sill Z13_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_96211",
+          "type": "block",
+          "name": "West Window Lintel Z13_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_81679",
+          "type": "block",
+          "name": "West Window Pane Z13_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_82512",
+          "type": "block",
+          "name": "West Window Sill Z13_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_99079",
+          "type": "block",
+          "name": "West Window Lintel Z13_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_16166",
+          "type": "block",
+          "name": "West Window Pane Z5_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_40209",
+          "type": "block",
+          "name": "West Window Sill Z5_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_43043",
+          "type": "block",
+          "name": "West Window Lintel Z5_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_69401",
+          "type": "block",
+          "name": "West Window Pane Z5_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_45802",
+          "type": "block",
+          "name": "West Window Sill Z5_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_36297",
+          "type": "block",
+          "name": "West Window Lintel Z5_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_91066",
+          "type": "block",
+          "name": "West Window Pane Z5_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_61273",
+          "type": "block",
+          "name": "West Window Sill Z5_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_50232",
+          "type": "block",
+          "name": "West Window Lintel Z5_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_74440",
+          "type": "block",
+          "name": "West Window Pane Z5_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_27336",
+          "type": "block",
+          "name": "West Window Sill Z5_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_79303",
+          "type": "block",
+          "name": "West Window Lintel Z5_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_60068",
+          "type": "block",
+          "name": "West Window Pane Z-3_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_72557",
+          "type": "block",
+          "name": "West Window Sill Z-3_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_96660",
+          "type": "block",
+          "name": "West Window Lintel Z-3_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_57044",
+          "type": "block",
+          "name": "West Window Pane Z-3_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_97432",
+          "type": "block",
+          "name": "West Window Sill Z-3_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_69045",
+          "type": "block",
+          "name": "West Window Lintel Z-3_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_33865",
+          "type": "block",
+          "name": "West Window Pane Z-3_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_41519",
+          "type": "block",
+          "name": "West Window Sill Z-3_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_68300",
+          "type": "block",
+          "name": "West Window Lintel Z-3_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_34465",
+          "type": "block",
+          "name": "West Window Pane Z-3_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_37524",
+          "type": "block",
+          "name": "West Window Sill Z-3_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_37022",
+          "type": "block",
+          "name": "West Window Lintel Z-3_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": -3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_57345",
+          "type": "block",
+          "name": "West Window Pane Z-11_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_58418",
+          "type": "block",
+          "name": "West Window Sill Z-11_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_76579",
+          "type": "block",
+          "name": "West Window Lintel Z-11_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_33374",
+          "type": "block",
+          "name": "West Window Pane Z-11_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_22248",
+          "type": "block",
+          "name": "West Window Sill Z-11_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_82081",
+          "type": "block",
+          "name": "West Window Lintel Z-11_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_28548",
+          "type": "block",
+          "name": "West Window Pane Z-11_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_28699",
+          "type": "block",
+          "name": "West Window Sill Z-11_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_82702",
+          "type": "block",
+          "name": "West Window Lintel Z-11_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_26968",
+          "type": "block",
+          "name": "West Window Pane Z-11_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_84324",
+          "type": "block",
+          "name": "West Window Sill Z-11_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_29859",
+          "type": "block",
+          "name": "West Window Lintel Z-11_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_98392",
+          "type": "block",
+          "name": "West Window Pane Z-19_Y6",
+          "transform": {
+            "px": -4.55,
+            "py": 6.5,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_18747",
+          "type": "block",
+          "name": "West Window Sill Z-19_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 5.55,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_12497",
+          "type": "block",
+          "name": "West Window Lintel Z-19_Y6",
+          "transform": {
+            "px": -4.45,
+            "py": 7.45,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_52054",
+          "type": "block",
+          "name": "West Window Pane Z-19_Y10",
+          "transform": {
+            "px": -4.55,
+            "py": 10.5,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_63180",
+          "type": "block",
+          "name": "West Window Sill Z-19_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 9.55,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_98903",
+          "type": "block",
+          "name": "West Window Lintel Z-19_Y10",
+          "transform": {
+            "px": -4.45,
+            "py": 11.45,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_96630",
+          "type": "block",
+          "name": "West Window Pane Z-19_Y14",
+          "transform": {
+            "px": -4.55,
+            "py": 14.5,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_58159",
+          "type": "block",
+          "name": "West Window Sill Z-19_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 13.55,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_93555",
+          "type": "block",
+          "name": "West Window Lintel Z-19_Y14",
+          "transform": {
+            "px": -4.45,
+            "py": 15.45,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_99103",
+          "type": "block",
+          "name": "West Window Pane Z-19_Y18",
+          "transform": {
+            "px": -4.55,
+            "py": 18.2,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 1.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_37399",
+          "type": "block",
+          "name": "West Window Sill Z-19_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 17.25,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.12,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_85447",
+          "type": "block",
+          "name": "West Window Lintel Z-19_Y18",
+          "transform": {
+            "px": -4.45,
+            "py": 19.15,
+            "pz": -19.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.16,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_86007",
+          "type": "block",
+          "name": "West Rainwater Downspout Pipe Z23",
+          "transform": {
+            "px": -4.42,
+            "py": 10.0,
+            "pz": 23.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 20.0,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_50407",
+          "type": "block",
+          "name": "Downspout Ground Cleanout Boot Z23",
+          "transform": {
+            "px": -4.38,
+            "py": 0.35,
+            "pz": 23.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.24,
+            "sy": 0.5,
+            "sz": 0.24
+          }
+        },
+        {
+          "id": "block_34218",
+          "type": "block",
+          "name": "West Rainwater Downspout Pipe Z9",
+          "transform": {
+            "px": -4.42,
+            "py": 10.0,
+            "pz": 9.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 20.0,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_51226",
+          "type": "block",
+          "name": "Downspout Ground Cleanout Boot Z9",
+          "transform": {
+            "px": -4.38,
+            "py": 0.35,
+            "pz": 9.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.24,
+            "sy": 0.5,
+            "sz": 0.24
+          }
+        },
+        {
+          "id": "block_48817",
+          "type": "block",
+          "name": "West Rainwater Downspout Pipe Z-7",
+          "transform": {
+            "px": -4.42,
+            "py": 10.0,
+            "pz": -7.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 20.0,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_42350",
+          "type": "block",
+          "name": "Downspout Ground Cleanout Boot Z-7",
+          "transform": {
+            "px": -4.38,
+            "py": 0.35,
+            "pz": -7.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.24,
+            "sy": 0.5,
+            "sz": 0.24
+          }
+        },
+        {
+          "id": "block_58298",
+          "type": "block",
+          "name": "West Rainwater Downspout Pipe Z-23",
+          "transform": {
+            "px": -4.42,
+            "py": 10.0,
+            "pz": -23.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 20.0,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "block_54706",
+          "type": "block",
+          "name": "Downspout Ground Cleanout Boot Z-23",
+          "transform": {
+            "px": -4.38,
+            "py": 0.35,
+            "pz": -23.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.24,
+            "sy": 0.5,
+            "sz": 0.24
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_west_fire_escapes",
+      "type": "group",
+      "name": "03 West Zigzag Fire Escape System",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "block_94540",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Platform Floor T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.5,
+            "pz": 14.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_61003",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam North T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.25,
+            "pz": 15.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_32393",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam South T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.25,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_79184",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Front Railing T2",
+          "transform": {
+            "px": -3.32,
+            "py": 4.95,
+            "pz": 14.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_30532",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A North Railing T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.95,
+            "pz": 15.58,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_89149",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A South Railing T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.95,
+            "pz": 12.82,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_89403",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Zigzag Stair Stringer T2_to_T3",
+          "transform": {
+            "px": -3.65,
+            "py": 6.5,
+            "pz": 13.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_99042",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Stair Handrail T2_to_T3",
+          "transform": {
+            "px": -3.35,
+            "py": 6.9,
+            "pz": 13.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_38500",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Platform Floor T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.5,
+            "pz": 11.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_15743",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam North T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.25,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_94656",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam South T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.25,
+            "pz": 10.6,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_80153",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Front Railing T3",
+          "transform": {
+            "px": -3.32,
+            "py": 8.95,
+            "pz": 11.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_35026",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A North Railing T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.95,
+            "pz": 13.18,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_78925",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A South Railing T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.95,
+            "pz": 10.42,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_48791",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Zigzag Stair Stringer T3_to_T4",
+          "transform": {
+            "px": -3.65,
+            "py": 10.5,
+            "pz": 13.0,
+            "rx": 1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_44182",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Stair Handrail T3_to_T4",
+          "transform": {
+            "px": -3.35,
+            "py": 10.9,
+            "pz": 13.0,
+            "rx": 1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_27486",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Platform Floor T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.5,
+            "pz": 14.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_95639",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam North T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.25,
+            "pz": 15.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_25079",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam South T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.25,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_92478",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Front Railing T4",
+          "transform": {
+            "px": -3.32,
+            "py": 12.95,
+            "pz": 14.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_67584",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A North Railing T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.95,
+            "pz": 15.58,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_54991",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A South Railing T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.95,
+            "pz": 12.82,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_15458",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Zigzag Stair Stringer T4_to_T5",
+          "transform": {
+            "px": -3.65,
+            "py": 14.5,
+            "pz": 13.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_16907",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Stair Handrail T4_to_T5",
+          "transform": {
+            "px": -3.35,
+            "py": 14.9,
+            "pz": 13.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_70301",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Platform Floor T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.5,
+            "pz": 11.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_35097",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam North T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.25,
+            "pz": 13.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_83441",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Support Beam South T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.25,
+            "pz": 10.6,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_92864",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Front Railing T5",
+          "transform": {
+            "px": -3.32,
+            "py": 16.95,
+            "pz": 11.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_97761",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A North Railing T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.95,
+            "pz": 13.18,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_19807",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A South Railing T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.95,
+            "pz": 10.42,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_40862",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Ground Drop Ladder Left Rail",
+          "transform": {
+            "px": -3.35,
+            "py": 3.3,
+            "pz": 14.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.04,
+            "sy": 2.4,
+            "sz": 0.04
+          }
+        },
+        {
+          "id": "block_84148",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Ground Drop Ladder Right Rail",
+          "transform": {
+            "px": -3.35,
+            "py": 3.3,
+            "pz": 13.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.04,
+            "sy": 2.4,
+            "sz": 0.04
+          }
+        },
+        {
+          "id": "block_79443",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Drop Ladder Rung 1",
+          "transform": {
+            "px": -3.35,
+            "py": 2.3,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_82222",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Drop Ladder Rung 2",
+          "transform": {
+            "px": -3.35,
+            "py": 2.7,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_88851",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Drop Ladder Rung 3",
+          "transform": {
+            "px": -3.35,
+            "py": 3.1,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_80099",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Drop Ladder Rung 4",
+          "transform": {
+            "px": -3.35,
+            "py": 3.5,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_70761",
+          "type": "block",
+          "name": "Hero Fire Escape Stack A Drop Ladder Rung 5",
+          "transform": {
+            "px": -3.35,
+            "py": 3.9,
+            "pz": 14.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_55593",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Platform Floor T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.5,
+            "pz": -9.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_35055",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam North T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.25,
+            "pz": -8.6,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_63570",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam South T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.25,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_75520",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Front Railing T2",
+          "transform": {
+            "px": -3.32,
+            "py": 4.95,
+            "pz": -9.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_32715",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B North Railing T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.95,
+            "pz": -8.42,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_63291",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B South Railing T2",
+          "transform": {
+            "px": -3.95,
+            "py": 4.95,
+            "pz": -11.18,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_80764",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Zigzag Stair Stringer T2_to_T3",
+          "transform": {
+            "px": -3.65,
+            "py": 6.5,
+            "pz": -11.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_42219",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Stair Handrail T2_to_T3",
+          "transform": {
+            "px": -3.35,
+            "py": 6.9,
+            "pz": -11.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_48596",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Platform Floor T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.5,
+            "pz": -12.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_76306",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam North T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.25,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_58249",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam South T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.25,
+            "pz": -13.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_32230",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Front Railing T3",
+          "transform": {
+            "px": -3.32,
+            "py": 8.95,
+            "pz": -12.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_66398",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B North Railing T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.95,
+            "pz": -10.82,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_57672",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B South Railing T3",
+          "transform": {
+            "px": -3.95,
+            "py": 8.95,
+            "pz": -13.58,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_30445",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Zigzag Stair Stringer T3_to_T4",
+          "transform": {
+            "px": -3.65,
+            "py": 10.5,
+            "pz": -11.0,
+            "rx": 1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_87419",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Stair Handrail T3_to_T4",
+          "transform": {
+            "px": -3.35,
+            "py": 10.9,
+            "pz": -11.0,
+            "rx": 1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_73306",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Platform Floor T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.5,
+            "pz": -9.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_59271",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam North T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.25,
+            "pz": -8.6,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_63056",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam South T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.25,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_58189",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Front Railing T4",
+          "transform": {
+            "px": -3.32,
+            "py": 12.95,
+            "pz": -9.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_57520",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B North Railing T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.95,
+            "pz": -8.42,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_11112",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B South Railing T4",
+          "transform": {
+            "px": -3.95,
+            "py": 12.95,
+            "pz": -11.18,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_51978",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Zigzag Stair Stringer T4_to_T5",
+          "transform": {
+            "px": -3.65,
+            "py": 14.5,
+            "pz": -11.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.1,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_65484",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Stair Handrail T4_to_T5",
+          "transform": {
+            "px": -3.35,
+            "py": 14.9,
+            "pz": -11.0,
+            "rx": -1.0304,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.8,
+            "sz": 4.6648
+          }
+        },
+        {
+          "id": "block_15681",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Platform Floor T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.5,
+            "pz": -12.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.08,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_39499",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam North T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.25,
+            "pz": -11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_34451",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Support Beam South T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.25,
+            "pz": -13.4,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.35,
+            "sz": 0.1
+          }
+        },
+        {
+          "id": "block_71712",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Front Railing T5",
+          "transform": {
+            "px": -3.32,
+            "py": 16.95,
+            "pz": -12.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 2.8
+          }
+        },
+        {
+          "id": "block_21511",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B North Railing T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.95,
+            "pz": -10.82,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_13879",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B South Railing T5",
+          "transform": {
+            "px": -3.95,
+            "py": 16.95,
+            "pz": -13.58,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 0.9,
+            "sz": 0.05
+          }
+        },
+        {
+          "id": "block_71760",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Ground Drop Ladder Left Rail",
+          "transform": {
+            "px": -3.35,
+            "py": 3.3,
+            "pz": -9.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.04,
+            "sy": 2.4,
+            "sz": 0.04
+          }
+        },
+        {
+          "id": "block_74200",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Ground Drop Ladder Right Rail",
+          "transform": {
+            "px": -3.35,
+            "py": 3.3,
+            "pz": -10.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.04,
+            "sy": 2.4,
+            "sz": 0.04
+          }
+        },
+        {
+          "id": "block_78509",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Drop Ladder Rung 1",
+          "transform": {
+            "px": -3.35,
+            "py": 2.3,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_48021",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Drop Ladder Rung 2",
+          "transform": {
+            "px": -3.35,
+            "py": 2.7,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_79008",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Drop Ladder Rung 3",
+          "transform": {
+            "px": -3.35,
+            "py": 3.1,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_20603",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Drop Ladder Rung 4",
+          "transform": {
+            "px": -3.35,
+            "py": 3.5,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_81429",
+          "type": "block",
+          "name": "Mid Fire Escape Stack B Drop Ladder Rung 5",
+          "transform": {
+            "px": -3.35,
+            "py": 3.9,
+            "pz": -10.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.03,
+            "sy": 0.03,
+            "sz": 0.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_east_building",
+      "type": "group",
+      "name": "04 East Industrial Warehouse Facade",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "east_main_wall_hull",
+          "type": "block",
+          "name": "East Building Industrial Wall Hull",
+          "transform": {
+            "px": 10.6,
+            "py": 10.0,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 11.4,
+            "sy": 20.0,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "east_spandrel_band",
+          "type": "block",
+          "name": "East Mezzanine Concrete Spandrel Band",
+          "transform": {
+            "px": 4.75,
+            "py": 4.6,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.5,
+            "sz": 62.0
+          }
+        },
+        {
+          "id": "block_94151",
+          "type": "block",
+          "name": "East Concrete Structural Pier 1",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": 31.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_33009",
+          "type": "block",
+          "name": "Pier Base Plinth 1",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": 31.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_29902",
+          "type": "block",
+          "name": "East Concrete Structural Pier 2",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": 24.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_50058",
+          "type": "block",
+          "name": "Pier Base Plinth 2",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": 24.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_61304",
+          "type": "block",
+          "name": "East Concrete Structural Pier 3",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_41943",
+          "type": "block",
+          "name": "Pier Base Plinth 3",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": 18.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_82211",
+          "type": "block",
+          "name": "East Concrete Structural Pier 4",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": 11.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_65067",
+          "type": "block",
+          "name": "Pier Base Plinth 4",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": 11.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_50378",
+          "type": "block",
+          "name": "East Concrete Structural Pier 5",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_69626",
+          "type": "block",
+          "name": "Pier Base Plinth 5",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": 5.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_50872",
+          "type": "block",
+          "name": "East Concrete Structural Pier 6",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": -1.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_81536",
+          "type": "block",
+          "name": "Pier Base Plinth 6",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": -1.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_65745",
+          "type": "block",
+          "name": "East Concrete Structural Pier 7",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": -8.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_23466",
+          "type": "block",
+          "name": "Pier Base Plinth 7",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": -8.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_69259",
+          "type": "block",
+          "name": "East Concrete Structural Pier 8",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": -14.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_58416",
+          "type": "block",
+          "name": "Pier Base Plinth 8",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": -14.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_26563",
+          "type": "block",
+          "name": "East Concrete Structural Pier 9",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": -21.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_74534",
+          "type": "block",
+          "name": "Pier Base Plinth 9",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": -21.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_43558",
+          "type": "block",
+          "name": "East Concrete Structural Pier 10",
+          "transform": {
+            "px": 4.55,
+            "py": 10.0,
+            "pz": -27.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.7,
+            "sy": 20.0,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_48999",
+          "type": "block",
+          "name": "Pier Base Plinth 10",
+          "transform": {
+            "px": 4.5,
+            "py": 0.6,
+            "pz": -27.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.85,
+            "sy": 1.0,
+            "sz": 1.1
+          }
+        },
+        {
+          "id": "block_62260",
+          "type": "block",
+          "name": "Loading Bay 1 (Foreground) Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_88126",
+          "type": "block",
+          "name": "Loading Bay 1 (Foreground) Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_47381",
+          "type": "block",
+          "name": "Loading Bay 1 (Foreground) South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 25.35,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_28011",
+          "type": "block",
+          "name": "Loading Bay 1 (Foreground) North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 30.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_60544",
+          "type": "block",
+          "name": "Loading Bay 2 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_75308",
+          "type": "block",
+          "name": "Loading Bay 2 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_19574",
+          "type": "block",
+          "name": "Loading Bay 2 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 18.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_17553",
+          "type": "block",
+          "name": "Loading Bay 2 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 23.65,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_82233",
+          "type": "block",
+          "name": "Loading Bay 3 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_72515",
+          "type": "block",
+          "name": "Loading Bay 3 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_44314",
+          "type": "block",
+          "name": "Loading Bay 3 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 12.35,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_20212",
+          "type": "block",
+          "name": "Loading Bay 3 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 17.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_28933",
+          "type": "block",
+          "name": "Loading Bay 4 (Hero Shutter) Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_52261",
+          "type": "block",
+          "name": "Loading Bay 4 (Hero Shutter) Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_20811",
+          "type": "block",
+          "name": "Loading Bay 4 (Hero Shutter) South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 5.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_11184",
+          "type": "block",
+          "name": "Loading Bay 4 (Hero Shutter) North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 10.65,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_65687",
+          "type": "block",
+          "name": "Loading Bay 5 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_72339",
+          "type": "block",
+          "name": "Loading Bay 5 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_60906",
+          "type": "block",
+          "name": "Loading Bay 5 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -0.65,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_31364",
+          "type": "block",
+          "name": "Loading Bay 5 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": 4.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_13521",
+          "type": "block",
+          "name": "Loading Bay 6 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_39697",
+          "type": "block",
+          "name": "Loading Bay 6 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_47197",
+          "type": "block",
+          "name": "Loading Bay 6 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -7.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_30962",
+          "type": "block",
+          "name": "Loading Bay 6 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -2.35,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_55788",
+          "type": "block",
+          "name": "Loading Bay 7 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_13911",
+          "type": "block",
+          "name": "Loading Bay 7 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_99737",
+          "type": "block",
+          "name": "Loading Bay 7 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -13.65,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_15667",
+          "type": "block",
+          "name": "Loading Bay 7 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -8.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_48409",
+          "type": "block",
+          "name": "Loading Bay 8 Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_39896",
+          "type": "block",
+          "name": "Loading Bay 8 Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_21658",
+          "type": "block",
+          "name": "Loading Bay 8 South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -20.15,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_41869",
+          "type": "block",
+          "name": "Loading Bay 8 North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -15.35,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_45786",
+          "type": "block",
+          "name": "Loading Bay 9 (Background) Metal Shutter Gate",
+          "transform": {
+            "px": 4.82,
+            "py": 2.1,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.15,
+            "sy": 3.8,
+            "sz": 4.6
+          }
+        },
+        {
+          "id": "block_21299",
+          "type": "block",
+          "name": "Loading Bay 9 (Background) Roller Shutter Casing",
+          "transform": {
+            "px": 4.65,
+            "py": 4.15,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.5,
+            "sy": 0.45,
+            "sz": 4.8
+          }
+        },
+        {
+          "id": "block_92423",
+          "type": "block",
+          "name": "Loading Bay 9 (Background) South Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -26.65,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_66522",
+          "type": "block",
+          "name": "Loading Bay 9 (Background) North Concrete Jamb",
+          "transform": {
+            "px": 4.7,
+            "py": 2.1,
+            "pz": -21.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 3.8,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_57691",
+          "type": "block",
+          "name": "East Warehouse Window Bay1_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_97135",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay1_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_12792",
+          "type": "block",
+          "name": "East Warehouse Window Bay1_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_19019",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay1_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_43348",
+          "type": "block",
+          "name": "East Warehouse Window Bay1_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_48210",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay1_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_50697",
+          "type": "block",
+          "name": "East Warehouse Window Bay1_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_38013",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay1_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": 27.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_53977",
+          "type": "block",
+          "name": "East Warehouse Window Bay2_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_38096",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay2_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_66734",
+          "type": "block",
+          "name": "East Warehouse Window Bay2_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_75127",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay2_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_22511",
+          "type": "block",
+          "name": "East Warehouse Window Bay2_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_92596",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay2_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_71056",
+          "type": "block",
+          "name": "East Warehouse Window Bay2_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_95337",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay2_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": 21.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_73228",
+          "type": "block",
+          "name": "East Warehouse Window Bay3_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_43412",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay3_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_53185",
+          "type": "block",
+          "name": "East Warehouse Window Bay3_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_45432",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay3_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_23530",
+          "type": "block",
+          "name": "East Warehouse Window Bay3_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_37652",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay3_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_70232",
+          "type": "block",
+          "name": "East Warehouse Window Bay3_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_47938",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay3_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": 14.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_59531",
+          "type": "block",
+          "name": "East Warehouse Window Bay4_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_82243",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay4_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_15257",
+          "type": "block",
+          "name": "East Warehouse Window Bay4_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_75193",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay4_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_47471",
+          "type": "block",
+          "name": "East Warehouse Window Bay4_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_73765",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay4_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_26358",
+          "type": "block",
+          "name": "East Warehouse Window Bay4_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_27088",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay4_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_26596",
+          "type": "block",
+          "name": "East Warehouse Window Bay5_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_94012",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay5_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_28791",
+          "type": "block",
+          "name": "East Warehouse Window Bay5_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_35512",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay5_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_96692",
+          "type": "block",
+          "name": "East Warehouse Window Bay5_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_83686",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay5_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_14052",
+          "type": "block",
+          "name": "East Warehouse Window Bay5_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_96753",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay5_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": 1.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_91248",
+          "type": "block",
+          "name": "East Warehouse Window Bay6_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_89375",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay6_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_61880",
+          "type": "block",
+          "name": "East Warehouse Window Bay6_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_21640",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay6_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_68145",
+          "type": "block",
+          "name": "East Warehouse Window Bay6_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_11239",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay6_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_59365",
+          "type": "block",
+          "name": "East Warehouse Window Bay6_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_56020",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay6_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": -4.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_93184",
+          "type": "block",
+          "name": "East Warehouse Window Bay7_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_54422",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay7_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_55976",
+          "type": "block",
+          "name": "East Warehouse Window Bay7_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_73976",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay7_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_12192",
+          "type": "block",
+          "name": "East Warehouse Window Bay7_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_21524",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay7_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_80267",
+          "type": "block",
+          "name": "East Warehouse Window Bay7_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_63580",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay7_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": -11.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_53171",
+          "type": "block",
+          "name": "East Warehouse Window Bay8_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_75295",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay8_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_96649",
+          "type": "block",
+          "name": "East Warehouse Window Bay8_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_91700",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay8_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_54686",
+          "type": "block",
+          "name": "East Warehouse Window Bay8_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_49193",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay8_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_18807",
+          "type": "block",
+          "name": "East Warehouse Window Bay8_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_47550",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay8_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_45735",
+          "type": "block",
+          "name": "East Warehouse Window Bay9_F2",
+          "transform": {
+            "px": 4.85,
+            "py": 7.0,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_31651",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay9_F2",
+          "transform": {
+            "px": 4.7,
+            "py": 8.2,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_89157",
+          "type": "block",
+          "name": "East Warehouse Window Bay9_F3",
+          "transform": {
+            "px": 4.85,
+            "py": 11.0,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_72627",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay9_F3",
+          "transform": {
+            "px": 4.7,
+            "py": 12.2,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_87289",
+          "type": "block",
+          "name": "East Warehouse Window Bay9_F4",
+          "transform": {
+            "px": 4.85,
+            "py": 15.0,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_72456",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay9_F4",
+          "transform": {
+            "px": 4.7,
+            "py": 16.2,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_50836",
+          "type": "block",
+          "name": "East Warehouse Window Bay9_F5",
+          "transform": {
+            "px": 4.85,
+            "py": 18.5,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.12,
+            "sy": 2.2,
+            "sz": 4.2
+          }
+        },
+        {
+          "id": "block_61675",
+          "type": "block",
+          "name": "East Window Concrete Lintel Bay9_F5",
+          "transform": {
+            "px": 4.7,
+            "py": 19.7,
+            "pz": -24.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.4,
+            "sy": 0.2,
+            "sz": 4.4
+          }
+        },
+        {
+          "id": "block_68714",
+          "type": "block",
+          "name": "East Upper Maintenance Platform Z8",
+          "transform": {
+            "px": 4.2,
+            "py": 9.0,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.1,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_74076",
+          "type": "block",
+          "name": "East Maintenance Railing Z8",
+          "transform": {
+            "px": 3.65,
+            "py": 9.45,
+            "pz": 8.25,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_73589",
+          "type": "block",
+          "name": "East Upper Maintenance Platform Z-17",
+          "transform": {
+            "px": 4.2,
+            "py": 9.0,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.1,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "block_46201",
+          "type": "block",
+          "name": "East Maintenance Railing Z-17",
+          "transform": {
+            "px": 3.65,
+            "py": 9.45,
+            "pz": -17.75,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.05,
+            "sy": 0.9,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "east_roof_parapet",
+          "type": "block",
+          "name": "East Roof Parapet Wall",
+          "transform": {
+            "px": 4.8,
+            "py": 20.5,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 1.0,
+            "sz": 62.0
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_terminus_skybridge",
+      "type": "group",
+      "name": "05 Alley Terminus, Skybridge & Rear Avenue",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "skybridge_main_body",
+          "type": "block",
+          "name": "Overhead Enclosed Skybridge Body",
+          "transform": {
+            "px": 0.0,
+            "py": 10.75,
+            "pz": -26.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.4,
+            "sy": 4.5,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "skybridge_window_ribbon",
+          "type": "block",
+          "name": "Skybridge South Viewing Window Ribbon",
+          "transform": {
+            "px": 0.0,
+            "py": 11.0,
+            "pz": -24.85,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 8.0,
+            "sy": 1.8,
+            "sz": 0.15
+          }
+        },
+        {
+          "id": "skybridge_roof_cap",
+          "type": "block",
+          "name": "Skybridge Roof Parapet Cap",
+          "transform": {
+            "px": 0.0,
+            "py": 13.15,
+            "pz": -26.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.8,
+            "sy": 0.3,
+            "sz": 3.6
+          }
+        },
+        {
+          "id": "skybridge_support_beam_south",
+          "type": "block",
+          "name": "Skybridge Steel Support Underbeam South",
+          "transform": {
+            "px": 0.0,
+            "py": 8.3,
+            "pz": -25.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.4,
+            "sy": 0.4,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "skybridge_support_beam_north",
+          "type": "block",
+          "name": "Skybridge Steel Support Underbeam North",
+          "transform": {
+            "px": 0.0,
+            "py": 8.3,
+            "pz": -27.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.4,
+            "sy": 0.4,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "background_terminal_block",
+          "type": "block",
+          "name": "Background City Terminal Building Block",
+          "transform": {
+            "px": 0.0,
+            "py": 12.0,
+            "pz": -42.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 72.0,
+            "sy": 24.0,
+            "sz": 8.0
+          }
+        },
+        {
+          "id": "background_terminal_tower",
+          "type": "block",
+          "name": "Background Terminal Central Tower Mass",
+          "transform": {
+            "px": 0.0,
+            "py": 20.0,
+            "pz": -41.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 18.0,
+            "sy": 8.0,
+            "sz": 6.0
+          }
+        },
+        {
+          "id": "water_tank_barrel",
+          "type": "block",
+          "name": "Rooftop Water Tank Barrel",
+          "transform": {
+            "px": 5.0,
+            "py": 26.0,
+            "pz": -40.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 3.2,
+            "sy": 3.5,
+            "sz": 3.2
+          }
+        },
+        {
+          "id": "water_tank_trestle",
+          "type": "block",
+          "name": "Rooftop Water Tank Steel Trestle Legs",
+          "transform": {
+            "px": 5.0,
+            "py": 24.1,
+            "pz": -40.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 2.6,
+            "sy": 1.8,
+            "sz": 2.6
+          }
+        },
+        {
+          "id": "block_85604",
+          "type": "block",
+          "name": "Cross Avenue Light Post X-18",
+          "transform": {
+            "px": -18.0,
+            "py": 3.8,
+            "pz": -36.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 7.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_64948",
+          "type": "block",
+          "name": "Cross Avenue Luminaire Arm X-18",
+          "transform": {
+            "px": -18.0,
+            "py": 7.3,
+            "pz": -36.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.2,
+            "sy": 0.2,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_36669",
+          "type": "block",
+          "name": "Cross Avenue Light Post X-6",
+          "transform": {
+            "px": -6.0,
+            "py": 3.8,
+            "pz": -36.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 7.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_90917",
+          "type": "block",
+          "name": "Cross Avenue Luminaire Arm X-6",
+          "transform": {
+            "px": -6.0,
+            "py": 7.3,
+            "pz": -36.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.2,
+            "sy": 0.2,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_43451",
+          "type": "block",
+          "name": "Cross Avenue Light Post X6",
+          "transform": {
+            "px": 6.0,
+            "py": 3.8,
+            "pz": -36.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 7.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_92445",
+          "type": "block",
+          "name": "Cross Avenue Luminaire Arm X6",
+          "transform": {
+            "px": 6.0,
+            "py": 7.3,
+            "pz": -36.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.2,
+            "sy": 0.2,
+            "sz": 1.4
+          }
+        },
+        {
+          "id": "block_69816",
+          "type": "block",
+          "name": "Cross Avenue Light Post X18",
+          "transform": {
+            "px": 18.0,
+            "py": 3.8,
+            "pz": -36.8,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 7.2,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_37067",
+          "type": "block",
+          "name": "Cross Avenue Luminaire Arm X18",
+          "transform": {
+            "px": 18.0,
+            "py": 7.3,
+            "pz": -36.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.2,
+            "sy": 0.2,
+            "sz": 1.4
+          }
+        }
+      ]
+    },
+    {
+      "id": "group_street_props",
+      "type": "group",
+      "name": "06 Street Props, Dumpsters & Industrial Utilities",
+      "transform": {
+        "px": 0.0,
+        "py": 0.0,
+        "pz": 0.0,
+        "rx": 0.0,
+        "ry": 0.0,
+        "rz": 0.0,
+        "sx": 1.0,
+        "sy": 1.0,
+        "sz": 1.0
+      },
+      "children": [
+        {
+          "id": "dumpster_1_body",
+          "type": "block",
+          "name": "Industrial Dumpster 1 Main Body",
+          "transform": {
+            "px": -2.0,
+            "py": 0.75,
+            "pz": 7.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.3,
+            "sy": 1.2,
+            "sz": 2.4
+          }
+        },
+        {
+          "id": "dumpster_1_lid",
+          "type": "block",
+          "name": "Industrial Dumpster 1 Angled Lid",
+          "transform": {
+            "px": -2.0,
+            "py": 1.45,
+            "pz": 7.0,
+            "rx": 0.08,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.35,
+            "sy": 0.15,
+            "sz": 2.45
+          }
+        },
+        {
+          "id": "block_72967",
+          "type": "block",
+          "name": "Dumpster 1 Wheel Caster Base North",
+          "transform": {
+            "px": -2.0,
+            "py": 0.1,
+            "pz": 7.9,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.1,
+            "sy": 0.2,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "block_96401",
+          "type": "block",
+          "name": "Dumpster 1 Wheel Caster Base South",
+          "transform": {
+            "px": -2.0,
+            "py": 0.1,
+            "pz": 6.1,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.1,
+            "sy": 0.2,
+            "sz": 0.2
+          }
+        },
+        {
+          "id": "dumpster_2_body",
+          "type": "block",
+          "name": "Dumpster 2 Body",
+          "transform": {
+            "px": 2.1,
+            "py": 0.7,
+            "pz": -8.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 1.1,
+            "sz": 1.8
+          }
+        },
+        {
+          "id": "block_85237",
+          "type": "block",
+          "name": "Dumpster 2 Lid",
+          "transform": {
+            "px": 2.1,
+            "py": 1.32,
+            "pz": -8.0,
+            "rx": -0.05,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.25,
+            "sy": 0.12,
+            "sz": 1.85
+          }
+        },
+        {
+          "id": "block_63270",
+          "type": "block",
+          "name": "Steel Oil Drum / Trash Can 1",
+          "transform": {
+            "px": -2.6,
+            "py": 0.45,
+            "pz": 15.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.9,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_10677",
+          "type": "block",
+          "name": "Steel Oil Drum / Trash Can 2",
+          "transform": {
+            "px": -2.5,
+            "py": 0.45,
+            "pz": 14.7,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.6,
+            "sy": 0.9,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_36930",
+          "type": "block",
+          "name": "East Pallet Stack",
+          "transform": {
+            "px": 3.7,
+            "py": 0.45,
+            "pz": 3.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.5,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_38772",
+          "type": "block",
+          "name": "Wooden Pallet 1",
+          "transform": {
+            "px": 3.7,
+            "py": 0.25,
+            "pz": 17.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 1.2,
+            "sy": 0.15,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_32838",
+          "type": "block",
+          "name": "High Voltage Electrical Breaker Cabinet",
+          "transform": {
+            "px": -4.42,
+            "py": 1.5,
+            "pz": 21.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 1.4,
+            "sz": 0.9
+          }
+        },
+        {
+          "id": "block_56247",
+          "type": "block",
+          "name": "Gas Meter Cluster",
+          "transform": {
+            "px": -4.42,
+            "py": 1.1,
+            "pz": 16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.22,
+            "sy": 0.8,
+            "sz": 1.2
+          }
+        },
+        {
+          "id": "block_65901",
+          "type": "block",
+          "name": "Telecom Conduit Junction Box",
+          "transform": {
+            "px": -4.42,
+            "py": 2.2,
+            "pz": 16.5,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.18,
+            "sy": 0.6,
+            "sz": 0.6
+          }
+        },
+        {
+          "id": "block_37429",
+          "type": "block",
+          "name": "Fire Department Siamese Connection Valve",
+          "transform": {
+            "px": -4.38,
+            "py": 0.6,
+            "pz": 11.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.35,
+            "sy": 0.4,
+            "sz": 0.4
+          }
+        },
+        {
+          "id": "block_19872",
+          "type": "block",
+          "name": "Midground Electrical Distribution Box",
+          "transform": {
+            "px": -4.42,
+            "py": 1.6,
+            "pz": -1.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 0.25,
+            "sy": 1.2,
+            "sz": 0.8
+          }
+        },
+        {
+          "id": "block_12254",
+          "type": "block",
+          "name": "Overhead Utility Steam Pipe Gantry Z16",
+          "transform": {
+            "px": 0.0,
+            "py": 14.5,
+            "pz": 16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.8,
+            "sy": 0.25,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_65226",
+          "type": "block",
+          "name": "Overhead High-Voltage Cable Line Z16",
+          "transform": {
+            "px": 0.0,
+            "py": 14.9,
+            "pz": 16.2,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.8,
+            "sy": 0.08,
+            "sz": 0.08
+          }
+        },
+        {
+          "id": "block_77689",
+          "type": "block",
+          "name": "Overhead Utility Steam Pipe Gantry Z0",
+          "transform": {
+            "px": 0.0,
+            "py": 15.0,
+            "pz": 0.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.8,
+            "sy": 0.25,
+            "sz": 0.25
+          }
+        },
+        {
+          "id": "block_57181",
+          "type": "block",
+          "name": "Overhead Utility Steam Pipe Gantry Z-16",
+          "transform": {
+            "px": 0.0,
+            "py": 14.8,
+            "pz": -16.0,
+            "rx": 0.0,
+            "ry": 0.0,
+            "rz": 0.0,
+            "sx": 9.8,
+            "sy": 0.25,
+            "sz": 0.25
+          }
+        }
+      ]
+    }
+  ],
+  "num_assets": 361
+}
